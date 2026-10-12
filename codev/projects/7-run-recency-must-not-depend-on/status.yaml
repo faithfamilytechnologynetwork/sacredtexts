@@ -1,7 +1,7 @@
 id: '7'
 title: run-recency-must-not-depend-on
 protocol: air
-phase: pr
+phase: verified
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -13,7 +13,7 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-10-12T16:17:23.614Z'
-updated_at: '2026-10-12T16:50:30.517Z'
+updated_at: '2026-10-12T16:50:40.444Z'
 pr_history:
   - phase: pr
     pr_number: 17
