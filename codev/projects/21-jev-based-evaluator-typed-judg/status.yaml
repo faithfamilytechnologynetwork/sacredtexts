@@ -1,0 +1,16 @@
+id: '21'
+title: jev-based-evaluator-typed-judg
+protocol: aspir
+phase: specify
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-23T23:35:10.141Z'
+updated_at: '2026-10-23T23:35:10.142Z'
