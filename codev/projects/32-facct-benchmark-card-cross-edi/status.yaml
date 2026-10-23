@@ -1,7 +1,7 @@
 id: '32'
 title: facct-benchmark-card-cross-edi
 protocol: aspir
-phase: specify
+phase: plan
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -10,7 +10,7 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-10-23T23:35:13.884Z'
-updated_at: '2026-10-23T23:38:49.332Z'
+updated_at: '2026-10-23T23:59:30.186Z'
