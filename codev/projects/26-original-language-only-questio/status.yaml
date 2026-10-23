@@ -27,13 +27,14 @@ gates:
     status: approved
     approved_at: '2026-10-21T23:43:10.209Z'
   verify-approval:
-    status: pending
+    status: approved
     requested_at: '2026-10-21T23:44:24.544Z'
+    approved_at: '2026-10-23T21:57:54.536Z'
 iteration: 1
 build_complete: true
 history: []
 started_at: '2026-10-20T22:41:46.537Z'
-updated_at: '2026-10-23T21:57:52.211Z'
+updated_at: '2026-10-23T21:57:54.536Z'
 force_advanced:
   phase: phase_5
   iteration: 3
