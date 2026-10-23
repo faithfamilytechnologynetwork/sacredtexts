@@ -10,12 +10,14 @@ out of the spec — those belong in codev/plans/32-*.md.
 ## Problem Statement
 
 A run of this benchmark produces a single accuracy percentage per model per task. That number is
-dangerous on its own: it mixes four different kinds of text (a public-domain KJV, two other
-public-domain Bible editions, Vatican-style documents, an English/Aramaic Talmud, Arabic Qur'an and
-hadith), it counts a refusal and a wrong verse as the same failure unless you look closely, and it
-says nothing about *who* the questions represent. A reader — especially a reviewer of the FAccT
-paper Jonathan Karr is drafting — cannot tell from the percentage alone what the benchmark is
-allowed to conclude.
+dangerous on its own: it mixes several different kinds of text — three public-domain English Bible
+editions (KJV, ASV 1901, WEB), three LDS English scriptures, an Aramaic Talmud, the Arabic Qur'an,
+and nine Arabic hadith collections — it counts a refusal and a wrong verse as the same failure
+unless you look closely, and it says nothing about *who* the questions represent. (The broader
+catalogue also holds Vatican-style encyclicals and an English Talmud, but those are **excluded** from
+this run because their language is not their canonical language — a fact the card must surface, not
+misreport as run content.) A reader — especially a reviewer of the FAccT paper Jonathan Karr is
+drafting — cannot tell from the percentage alone what the benchmark is allowed to conclude.
 
 Two specific blind spots matter most:
 
@@ -69,19 +71,23 @@ A reviewer can run one command against `runs/original-2026-10-21/` and get, writ
 a benchmark card (`facct.json` + `facct.md`) that:
 
 1. **Reports the run census** — who the questions represent, read from the manifest and catalogue:
-   a table by tradition, language, document type, and license; the catalogue languages that have
-   zero questions; and the texts excluded from the pool, each with the manifest's reason. No model is
-   named "better"; the census describes the questions, not the answers.
+   a table by tradition, language, document type, and license; the catalogue source languages (each
+   source's `language` field) that contribute zero questions to the pool; and the texts excluded from
+   the pool, each with the manifest's reason. No model is named "better"; the census describes the
+   questions, not the answers.
 2. **Reports outcomes in the contract's own terms** — the three outcomes `correct` / `incorrect` /
    `refused` straight from `scores.jsonl` / `summary.json`, with accuracy stated beside its coverage
    (so a high score on thin coverage cannot masquerade as mastery). No second refusal definition, no
    `fabrication` label, and the word "fabrication" does not appear for an unmatched answer.
 3. **Reports the edition counterfactual** — for the texts that have sibling editions (the three
-   English Bibles, and *only* those in this pool), how many `incorrect` text-retrieval cells would
-   have been `correct` under the containment contract if **any** indexed edition of the same citation
-   were accepted. Those specific misses are tagged `other_edition`. The card states plainly that this
-   counterfactual is computed for Bible citations only, because they are the only sibling editions in
-   the pool.
+   English Bibles, and *only* those in this pool), how many `incorrect` **`retrieve_quote`** cells
+   would have been `correct` under the containment contract if **any other** indexed edition of the
+   same citation were accepted. Those specific misses are tagged `other_edition`. The counterfactual
+   is reported as a numerator **and its denominator** (the incorrect Bible `retrieve_quote` cells,
+   ≈32 across the panel) per model, so a small count cannot be over-read. The card states plainly
+   that this counterfactual is computed for Bible `retrieve_quote` citations only — because the three
+   English Bibles are the only sibling editions in the pool, and `complete_unit` is excluded because
+   its gold is a *partial* unit (a continuation with no well-defined sibling-edition segment).
 4. **Carries the card's prose as a card** — the claim this run supports, what would make it fail,
    what the card will not conclude, and that scholar / community review is not attached — all held in
    **one editable place** so Jonathan can revise the wording while drafting the paper without
@@ -97,9 +103,11 @@ that renders `facct.json` with no scoring logic of its own.
 - [ ] A single CLI command reads `runs/original-2026-10-21/` and writes `runs/original-2026-10-21/facct.json` and `facct.md`, writing nothing outside that run directory and making zero network/API calls.
 - [ ] Every outcome count on the card (correct / incorrect / refused, per model and per task) equals the corresponding count in that run's `scores.jsonl` / `summary.json` — the card never recomputes an outcome.
 - [ ] The card contains no second refusal definition and no `fabrication` label; the string "fabrication" does not appear as a classification of a model answer.
-- [ ] The census table covers all 17 selected texts by tradition, language, document type, and license; lists catalogue languages with zero questions; and lists the 2 excluded texts with the manifest's reason for each.
-- [ ] The edition counterfactual reports, for the three English Bibles, the count of `incorrect` text-retrieval cells that contain some indexed edition's wording of the same citation, tags those cells `other_edition`, and states explicitly that it is Bible-only and why.
-- [ ] Citation handling does not silently mis-handle the Arabic (surah:ayah, hadith numbers) and Hebrew/Aramaic (daf:line) citations in the pool: either those citations are parsed correctly, or they are excluded from the edition counterfactual by construction (because they have no sibling edition) and the card says so — never parsed into a wrong edition match.
+- [ ] The census table covers all 17 selected texts by tradition, language, document type, and license; lists catalogue source languages that contribute zero questions to the pool; and lists the 2 excluded texts with the manifest's reason for each.
+- [ ] The edition counterfactual reports, for the three English Bibles, per model, the numerator (incorrect `retrieve_quote` cells whose answer contains some *other* indexed edition's wording of the same citation, under the containment contract) **and** the denominator (all incorrect Bible `retrieve_quote` cells), tags the qualifying cells `other_edition`, and states explicitly that it is Bible `retrieve_quote`-only and why (`complete_unit` excluded — partial gold).
+- [ ] Citation handling does not silently mis-handle the Arabic (surah:ayah, hadith numbers) and Hebrew/Aramaic (daf:line) citations in the pool: because those texts have no sibling edition they are excluded from the edition counterfactual by construction, and the card says so — a non-Bible citation is never matched to a Bible edition.
+- [ ] The edition index is built only from catalogue targets with `license != restricted` (equivalently `select_targets(include_restricted=False)`); a test asserts a restricted target (e.g. NABRE, a fourth English Bible of `work: The Bible`) never enters the index even when its local payload is present.
+- [ ] The card fails fast — non-zero exit, with neither `facct.json` nor `facct.md` partially written — when the evidence is inconsistent or incomplete: a missing run file, an answer/score row that will not join, a `scores.jsonl` count that disagrees with `summary.json`, or an unresolved catalogue target.
 - [ ] All card prose (claims, failure conditions, non-conclusions, review-not-attached) lives in one editable location, separate from the counting logic.
 - [ ] The copyright audit (`pipelines/sacredbench/audit.py`, run by `.codev/checks/test.sh`) passes: no committed card artifact embeds NABRE or Greek Orthodox TLG text or derives from a restricted source.
 - [ ] Where Jonathan's PR #30 code is carried over, his authorship is preserved on the carrying commit.
@@ -138,14 +146,25 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
 
 - `runs/original-2026-10-21/scores.jsonl` and `summary.json` are authoritative for outcomes; the card
   trusts `metrics.outcome` and the summary counts rather than recomputing them.
-- The embedded question in `answers.jsonl` carries `source` (tradition list, work, version, language,
-  document_type, citation) and an `expected` that holds the **citation**; the gold text for a
-  citation is resolved from the raw editions index, not from the answer row.
+- **The `expected` schema is task-dependent** (verified against the run): `retrieve_quote` →
+  `{text}`, `complete_unit` → `{text, full_text}`, `cite_passage` → `{citation}`, `verify_source` →
+  `{answer, true_*}`. The citation for every task is in `question.source.citation` (empty string on
+  `verify_source`). For the counterfactual's target cells (`retrieve_quote`), the **gold wording is
+  `expected.text`** on the answer row; the raw editions index supplies only the *sibling* editions'
+  wording of that citation, not the gold itself.
+- **Join mechanics:** `scores.jsonl` rows carry no text identity, so any per-text / per-tradition
+  breakdown joins a score row to its `answers.jsonl` row on `(question_id, model_id)`. The
+  text-retrieval sub-metrics (`exact / normalized / token_f1 / contains_reference`) exist only on
+  text-retrieval rows — `cite_passage` and `verify_source` rows carry different metric keys — so the
+  card must not assume them. `manifest.selected_texts` entries carry only `{work, version, language}`;
+  tradition / document_type / license come from the catalogue target or `question.source`.
 - The three English Bibles (KJV, ASV 1901, WEB) are the only sibling editions in this pool; no other
   text in the 17 has a second indexed edition of the same citation, so the edition counterfactual is
   inherently Bible-scoped.
 - The public-domain raw editions needed for the edition index are present under `texts/raw/`;
-  restricted payloads are absent and are never indexed or embedded.
+  restricted payloads are absent on this machine. Even so, the index is filtered on
+  `license != restricted` so that a restricted edition of the same `work` (e.g. NABRE, a fourth
+  English Bible) could never become an indexable sibling on a machine that does hold its payload.
 - Jonathan will review and may rewrite the card prose at PR time; the analysis counts are what must
   be correct and stable.
 
@@ -188,14 +207,18 @@ separate-file idea can be revisited if Jonathan asks for it during paper draftin
 
 ## Open Questions
 
-- **Important** — Should the edition counterfactual accept a sibling edition only when the answer
-  *contains* that edition's wording of the citation (containment, matching the headline contract), or
-  also when it is an exact normalized match? Recommendation: containment, to match Spec 15's headline;
-  surface the exact-only subset as an informational count if cheap.
-- **Important** — Does "license" on the card come from each text's `source.yaml` license field via
-  the catalogue, and how are encyclical-style documents (whose work name differs from the catalogue
-  target) resolved? Recommendation: read license from the catalogue targets with a documented
-  fallback for document types whose work title is file-derived.
+Resolved during spec review (recorded here so the plan does not re-decide them):
+
+- **RESOLVED (was Important)** — Edition-match rule: **containment**, matching Spec 15's headline.
+  (Exact normalized match is a *subset* of normalized containment, so there were never two distinct
+  rules.) A cell is tagged `other_edition` only when the answer contains the wording of an edition
+  *other than the one the prompt requested* — the requested edition is excluded, since reciting it
+  would already be `correct`.
+- **RESOLVED (was Important)** — License comes from the catalogue target's `license` field, joined on
+  `(work, version, language)`. The manifest's `selected_texts` / `excluded_texts` entries use the
+  catalogue targets' nominal work/version names, so the join is direct with no fallback. (A fallback
+  would only be needed if the card joined a *standardized* encyclical document back to a target,
+  which this card does not do.)
 - **Nice-to-know** — Should the viewer per-run card view ship in this PR or be deferred? It is
   optional; defer unless it is cheap once the JSON is stable.
 - **Nice-to-know** — Should the card also surface the three-edition agreement table (how often
@@ -206,18 +229,26 @@ separate-file idea can be revisited if Jonathan asks for it during paper draftin
 
 - **Census correctness (happy path):** Given the committed run, the card's census lists all 17
   selected texts with tradition/language/document_type/license, the 2 excluded texts with their
-  manifest reasons, and the catalogue languages with zero questions. Spot-checked against the
-  manifest.
+  manifest reasons, and the catalogue source languages that contribute zero questions. Spot-checked
+  against the manifest.
 - **Outcome fidelity (happy path):** For each model×task, the card's correct/incorrect/refused counts
   equal the counts derivable from `scores.jsonl` (and match `summary.json`). A deliberate mismatch in
   a fixture makes the test fail.
-- **Edition counterfactual (core):** A fixture with a Bible `retrieve_quote` cell whose answer is the
-  WEB wording of a citation the prompt asked for in KJV, scored `incorrect`, is tagged `other_edition`
-  and counted in the "would pass if any edition were gold" total. A genuinely wrong Bible answer is
-  not tagged.
+- **Edition counterfactual (core):** A fixture with a Bible `retrieve_quote` cell whose answer
+  contains the WEB wording of a citation the prompt asked for in KJV, scored `incorrect`, is tagged
+  `other_edition` and counted in the numerator; the denominator counts all incorrect Bible
+  `retrieve_quote` cells. A genuinely wrong Bible answer is not tagged; an answer that contains only
+  the *requested* edition's wording is not tagged.
+- **`complete_unit` is excluded (edge):** An incorrect Bible `complete_unit` cell is never tagged
+  `other_edition` and is not in the counterfactual denominator.
 - **Non-Bible citations are not mis-parsed (edge):** Qur'an `2:255`, a hadith number, and a Talmud
   daf:line citation are never matched to a Bible edition; they are excluded from the counterfactual by
-  construction, and the card says the counterfactual is Bible-only.
+  construction, and the card says the counterfactual is Bible `retrieve_quote`-only.
+- **Restricted edition never indexed (compliance):** With a restricted NABRE target present, the
+  EditionIndex excludes it, so no `other_edition` tag can ever reference a restricted edition.
+- **Fail-fast on bad evidence (error):** A run dir with a missing file, a non-joining answer/score
+  row, or a `scores.jsonl`↔`summary.json` count disagreement makes the command exit non-zero and
+  write neither `facct.json` nor `facct.md`.
 - **No forbidden vocabulary (regression):** The generated `facct.json`/`facct.md` contain no
   `fabrication` label and no second refusal definition; a grep-style assertion guards this.
 - **Audit passes (compliance):** After generating the card into a run dir, `audit.py` reports no
@@ -230,8 +261,9 @@ separate-file idea can be revisited if Jonathan asks for it during paper draftin
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
 | A vestige of the old eight-label contract (e.g. `fabrication`) survives the rework | Medium | High — reintroduces the second refusal definition the brief forbids | Delete the label set/regex wholesale; add a regression test asserting forbidden strings are absent and counts come from `scores.jsonl` |
-| `cite_key` mis-parses an Arabic/Hebrew citation into a Bible match | Low | High — a false `other_edition` tag on a non-Bible cell | Scope the counterfactual to Bible citations explicitly; test that non-Bible citations never match |
-| Card accidentally reads/derives from a restricted source | Low | High — public repo copyright violation | Index only public-domain raw editions; restricted texts are already excluded from the pool; gate on `audit.py` |
+| `cite_key` mis-parses an Arabic/Hebrew citation into a Bible match | Low | High — a false `other_edition` tag on a non-Bible cell | Scope the counterfactual to Bible `retrieve_quote` citations explicitly; test that non-Bible citations never match |
+| A restricted edition (e.g. NABRE) becomes an indexable sibling on a machine holding its payload | Low | High — public-repo copyright violation via an `other_edition` tag | Build the index from `select_targets(include_restricted=False)` (`license != restricted`), not from pool membership; test the exclusion with a restricted target present; gate on `audit.py` |
+| Partial card written before an inconsistency is detected | Low | Medium — a misleading half-card next to the run | Validate evidence (files present, joins resolve, counts agree) before writing; fail fast with non-zero exit and no partial file |
 | Re-running the card overwrites or rescoring mutates committed evidence | Low | High — corrupts the run's proof | Card writes only `facct.{json,md}`; never invokes score/collect/generate; test asserts other run files are untouched |
 | Prose and computed sections drift | Low | Medium | Keep prose adjacent to the builder in one block; the computed sections are assembled in the same place |
 | Unplanned API spend | Low | Medium | Card makes zero model calls by design; if any need appears, stop and ping the architect |

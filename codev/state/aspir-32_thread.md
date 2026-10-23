@@ -14,5 +14,17 @@ Part 3 of 3 of Jonathan Karr's PR #30. Rework his card against main's scoring co
 - Preserve Jonathan's authorship on carried-over commits (`git commit --author`). PR: "Part 3 of 3 of #30", closes #32. NO Generated-with/Co-Authored-By.
 - Viewer per-run card view = optional (reads facct.json, no new scoring). Likely defer.
 
+## Spec consult (specify iter1, 2026-10-23) — both REQUEST_CHANGES, HIGH. All folded in.
+codex + claude both verified against real data. Dispositions (ACCEPTED all):
+1. `expected` schema is TASK-DEPENDENT (claude, verified): retrieve_quote→{text}, complete_unit→{text,full_text}, cite_passage→{citation}, verify_source→{answer,true_*}. Citation always in source.citation. Gold wording for retrieve_quote = expected.text (NOT only raw index). Fixed Assumptions.
+2. Edition counterfactual scoped to retrieve_quote ONLY (both). complete_unit gold is partial → no well-defined sibling segment. Incorrect Bible cells: 32 retrieve_quote + 21 complete_unit = 53 (verified). Report numerator AND denominator per model.
+3. Open Q1 resolved: containment (exact is subset of containment — Q was ill-posed). other_edition = a DIFFERENT edition than requested (requested would already be correct).
+4. Restricted-index guard: real gate is select_targets(include_restricted=False)/license!=restricted on the EditionIndex, NOT pool exclusion. NABRE = 4th English Bible (work=The Bible, canonical_language=en) → indexable sibling if payload present. Added explicit filter + test criterion.
+5. Problem Statement factual fix (codex): run does NOT contain Vatican docs/English Talmud — those are EXCLUDED catalogue members. Reframed as catalogue coverage vs run composition.
+6. Zero-question languages (codex): disambiguated to catalogue SOURCE languages (each source's `language` field) contributing zero to pool.
+7. Fail-fast (codex): non-zero exit, no partial facct.{json,md}, on missing files / non-joining rows / scores↔summary disagreement. Added criterion + test + risk.
+8. Join mechanics (claude): scores.jsonl rows have no text identity → join answers.jsonl on (question_id,model_id); sub-metrics are task-scoped. Added to Assumptions.
+Structure verified conformant to spir/templates/spec.md (claude).
+
 ## Status
-- specify: spec drafted at codev/specs/32-facct-benchmark-card-cross-edi.md. Acked architect brief. Awaiting porch 3-way consult.
+- specify: spec revised with 2-way review folded. Committing "[Spec 32] Specification with multi-agent review". Next: porch next → likely spec-approval gate (HUMAN gate — stop & notify architect, do NOT self-approve).
