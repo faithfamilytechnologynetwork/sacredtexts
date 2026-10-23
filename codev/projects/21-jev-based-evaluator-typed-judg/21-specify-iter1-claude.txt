@@ -1,0 +1,57 @@
+I'll review this spec against the actual codebase before judging it.I verified the spec's factual claims against the actual tree rather than taking them on trust. Findings below.
+
+## Verification performed
+
+| Spec claim | Verdict |
+|---|---|
+| `graders.py` models a non-inline, verdict-less, `default=False` seam; `resolve_evaluators` fails fast on it | **Accurate** (`graders.py:36-38, 49-55, 102-106`). The `jev` descriptor is present *as a comment* at :54 — "the slot exists, nothing fills it" is fair. |
+| `DEFAULT_EVALUATORS` auto-excludes a non-inline/non-default grader | **Accurate** (:70-72) — success criterion 1 is mechanically verifiable. |
+| Refusal is owned by `outcomes.py`, excluded from accuracy | **Accurate** (`outcomes.py:1-39, 111-136`). |
+| PR #30 contains `jev.py`, `test_jev.py`, `cross_translation.py`, a `judge` CLI; unmerged | **Accurate** (fork `JonathanKarr33/sacredtexts@ea08f17`). |
+| Karr's `jev.py` hardcodes `typesafe/jev-1.13` and imports `EditionIndex`/`cite_key` from `cross_translation` | **Accurate** — and note the import is **top-level, non-optional**, so Open Question (a) requires an actual edit, not just passing `index=None`. |
+| Tutorial answers embed `question.source.citation` + `question.expected.text` | **Accurate** — confirmed `question` keys `[id, task, prompt, expected, source]`, `source.citation = "Chullin 26b:12"`. `judgment_state` will populate. |
+| Spec follows the delivered template | **Accurate** — matches `/opt/homebrew/lib/node_modules/@cluesmith/codev/skeleton/protocols/spir/templates/spec.md` heading-for-heading, in order, and matches sibling specs 15/26. No structural defect. |
+| `CODE_WALKTHROUGH.md` has an "Adding an evaluator" recipe to extend | **Accurate** (:233). |
+
+I did **not** attempt to re-verify the live `jev-latest` → `typesafe/jev-1.14-20261014` claim (no paid calls, and the key isn't mine to spend). Karr's `interpret()` does match the response shape the spec transcribes, which is corroborating.
+
+**Disclosure:** running a read-only inspection script via `uv --project pipelines run` caused uv to create `pipelines/.venv/` in your worktree. It is gitignored (`.gitignore:40`) and `git status` shows no tracked-file change. I left it in place rather than deleting it.
+
+## Issues
+
+**1. What the `graders.py` registration actually *means* is unspecified — the main clarity gap.** Success criterion 1 requires registering `jev` in `GRADERS`, which implies declaring `metric_keys`. But the module docstring promises those keys are "merged into each row's open metrics map by a later pass," and Approach 1 explicitly does **not** merge — it writes a sidecar whose fields are `refusal_p`, `matches_requested_p`, `kind`, `kind_probabilities`, `kind_confidence`. So as written, `jev`'s declared `metric_keys` would name fields nothing ever writes. (Also worth knowing: `submetrics_for` filters through `_CANONICAL_ORDER`, so such keys would be silently dropped if they ever did reach it.) State either (a) the exact `metric_keys` and that Part 2 records them *in the sidecar* under those names, or (b) that registration is selection/discovery-only and the merge is explicitly deferred.
+
+**2. Under Open Question (a), the title and Desired State overstate what ships.** The spec is titled "containment **and passage equivalence**," but option (a) leaves `other_indexed_wording` unable to fire — passage equivalence degrades to requested/neither. No success criterion covers the equivalence label, so the spec can be "fully satisfied" without delivering half of its stated purpose. Add an explicit fallback criterion: with empty alternates, `kind ∈ {refusal, requested_wording, neither}` and `other_indexed_wording` coverage is deferred to the cross-translation part — and retitle or caveat accordingly.
+
+**3. Spend precedent is factually wrong.** "Surfaced the way `collect`'s is" — `collect` surfaces nothing; it records per-row `usage`. The cost table is built in **`score.py:617-639` and rendered at :780-793**, and only from `configs/models.yaml` `price_in`/`price_out` (runs without prices are UNPRICED). Jev is different in kind: the Decisions API *returns* `usage.cost` per call. Say so, or a builder will go looking for a pricing hook that doesn't apply.
+
+**4. `jev-latest` is a floating alias used as the resume key.** `_existing` keys on `(question_id, model_id, judge_model)` where `judge_model` is the *requested* id. If the build rolls 1.14 → 1.15 between passes, resumption silently mixes builds in one judgments file and in one agreement report. The resolved build is recorded per cell and `summarize` already collects `judge_models` as a set — add a criterion that a multi-build file is flagged (warn or fail), and consider allowing a pinned build.
+
+**5. Restricted-text *transmission* is unaddressed (security/licensing).** Every criterion is about *committed artifacts*; `audit.py` enforces origin + content on commits. But judging sends `requested_text` — the expected reference — to a third party. I checked: neither committed run contains a restricted source (original run is BoM/D&C/PoGP, sunnah.com Arabic, WEB/ASV/KJV, Davidson Talmud, Uthmani QUL), so this is latent, not present. One constraint line would close it: the pass refuses or warns on cells whose `(work, version, language)` maps to a `restricted` catalogue target.
+
+**6. The $8 cap is an instruction with no mechanism.** Per-call cost is only known *after* the call. Cheap fix worth a criterion: a pre-flight "N pending cells × ~$3e-5 ≈ $X" line plus a `--limit`, so the cap is enforceable rather than aspirational.
+
+**7. One open question is mis-prioritized.** The refusal-probability threshold is filed "Nice-to-know," but you cannot produce the required agreement table without it. Promote it, or define the agreement report to tabulate the raw probability distribution per outcome class and avoid a threshold entirely.
+
+**8. Suggestion, aligned with your own lesson.** `lessons-critical.md` says mocking the provider seam hides live-only failures. Commit the live-verified response (redacted) as the fixture `interpret()` is tested against, so the fail-fast tests are pinned to the real shape rather than a hand-written mock.
+
+None of these require a redesign. (1) and (2) are the two I'd want fixed before planning; (3)–(7) are one-or-two-line additions. The spec is notably well-grounded — the live verification, the "never re-run score over committed evidence" framing, and the refusal-stays-an-outcome boundary all check out against the code.
+
+---
+VERDICT: COMMENT
+SUMMARY: Well-grounded, template-conformant spec whose claims I verified against the code; two clarity gaps (meaning of the grader registration, and passage-equivalence scope under the Critical open question) plus five small factual/criterion fixes.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Registering `jev` in `graders.py` while shipping only a sidecar leaves its declared `metric_keys` pointing at fields nothing writes; specify the keys and which artifact carries them, or state that registration is selection-only and the merge is deferred.
+- Under the recommended Open Question (a), `other_indexed_wording` can never fire, so "passage equivalence" in the title/Desired State is not actually delivered and no success criterion covers it; add an explicit fallback criterion and caveat the scope.
+- "Surfaced the way `collect` surfaces spend" is wrong — `collect` surfaces no spend; `score.py:617-639/780-793` does, and only from configured panel prices, whereas Jev returns `usage.cost` directly.
+- `jev-latest` is a floating alias and is the resume key, so a build roll silently mixes judge builds in one judgments file and agreement report; require that a multi-build file be flagged.
+- Restricted-text *transmission* to the judge API is uncovered (audit gate only governs committed artifacts); add a guard against judging cells whose source is a `restricted` target. Currently latent — neither committed run contains a restricted source.
+- The $8 budget cap has no enforcement mechanism; add a pre-flight cost estimate and a `--limit`.
+- The refusal-probability threshold is filed "Nice-to-know" but is required to produce the mandated agreement report.That background task was the duplicate template/module lookup I'd already resolved through other calls — it adds nothing to the review, which is complete above.
+
+Summary of where things stand: the spec is **COMMENT** (not blocking). Its factual claims check out against the code — the `graders.py` seam, `outcomes.py` refusal ownership, PR #30's contents, the tutorial `answers.jsonl` shape, and template conformance all verified. The two items I'd want tightened before planning are the meaning of the `graders.py` registration (declared `metric_keys` vs. a sidecar that writes differently-named fields) and the passage-equivalence scope under the Critical open question, which currently lets the spec be satisfied without delivering half its title. Five smaller fixes follow from there.That was the last of my stray background lookups — another template-location search I'd already answered directly (the installed skeleton at `/opt/homebrew/lib/node_modules/@cluesmith/codev/skeleton/protocols/spir/templates/spec.md`, which the spec matches heading-for-heading). No new information, and no outstanding work.
+
+The review stands as delivered: **VERDICT: COMMENT**, high confidence. Nothing further from me unless you want me to dig into one of the seven issues.
