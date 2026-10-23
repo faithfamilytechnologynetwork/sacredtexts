@@ -34,6 +34,15 @@ This is **diagnostic tooling, not a new headline.** The maintainer decision on S
 headline stays deterministic; this spec adds a recorded second opinion beside it, never a
 replacement for it.
 
+**Scope decision for Part 2 (pending architect confirmation — see Open Questions).** The
+passage-equivalence judgment needs an edition index of the citation's other wordings, which lives in
+`cross_translation.py` — a sibling part of the #30 split not yet on `main`. This spec therefore
+ships **containment + a refusal-probability cross-check now**, with the equivalence judgment's
+"other indexed wordings" **empty** until the cross-translation part lands: the `kind` label is still
+asked and recorded, but with no alternates the `other_indexed_wording` outcome cannot fire (it
+collapses to `refusal` / `requested_wording` / `neither`). Full `other_indexed_wording` coverage is
+an explicit follow-up. Everything in this spec is scoped to that decision.
+
 ## Current State
 
 - Scoring is deterministic and selectable (`score --evaluator`), headline = OR of selected inline
@@ -76,17 +85,36 @@ diagnostic metrics. Specifically:
   and never sets the headline.
 - The evaluator is registered through `graders.py` as a **non-inline, verdict-less, `default=False`**
   grader, so it is **never part of the default `score`** and selecting it inline fails fast (the seam
-  already enforces this). Its verdict + probability land as additional recorded metrics, merged by
-  its own pass — never mutating the deterministic headline.
-- Every judged cell is fully reproducible: the **requested** judge model and the **resolved** build,
-  the decision id, provider, the complete typed answers, and per-cell usage (input/output tokens and
-  cost) are recorded.
+  already enforces this). For Part 2 this registration is **selection/discovery-only**: it makes the
+  evaluator nameable and keeps the CLI/recipe coherent, but the typed verdicts are written to a
+  **sidecar judgments file** (authoritative schema below), **not** merged into `scores.jsonl`. The
+  merge-into-score-rows path the `graders.py` docstring envisions is an explicit follow-up for *new*
+  runs; it is **not built here** and the deterministic headline is never mutated. (Because
+  `submetrics_for` only emits keys in `_CANONICAL_ORDER`, a non-inline grader's `metric_keys` would
+  not reach `scores.jsonl` from `score` anyway — the sidecar is where its fields live.)
+- **Authoritative judgment-row schema (sidecar).** One JSON object per judged cell:
+  `question_id`, `model_id`, `model` (the answer's model), `rubric_id` (prompt/schema version),
+  `judge_model` (requested id), `judge_model_resolved` (the build Jev returns), `judge_provider`,
+  `decision_id`, `question_set_digest`, `answer_digest` (binds the row to the exact answer judged),
+  `refusal_p`, `matches_requested_p` (containment), `kind` + `kind_probabilities` + `kind_confidence`,
+  and `usage` (`in`/`out`/`cost`). This is the contract viewer/paper consumers read.
+- Every judged cell is fully reproducible: requested + resolved judge model, decision id, provider,
+  the complete typed answers, the question-set digest, an answer-content digest, and per-cell usage.
 - The pass is **resumable** (a re-run skips already-judged cells; failed cells stay pending and are
-  not written) and its **spend is surfaced** the way `collect`'s is.
+  not written) and its **spend is surfaced** directly from the Decisions API's returned
+  `usage.cost` per cell, summed per run. (This is unlike `score`, which derives cost from configured
+  panel prices in `configs/models.yaml` and reports UNPRICED without them — Jev needs no price config
+  because the API returns the cost.)
+- Only **text-retrieval cells** (`retrieve_quote`, `complete_unit`) are judged — the containment and
+  passage-wording questions are meaningless for `verify_source` (a Yes/No source check) and
+  `cite_passage` (a citation, not a quotation). Non-judged tasks are skipped and reported as skipped,
+  not failed.
 - The evaluator is **validated on the committed tutorial run** before it is trusted: an agreement
   report against the deterministic tiers (judge containment vs `contains_reference`; judge refusal
   probability vs the `refused` outcome) plus a **manual review of every disagreement cell**,
-  documented in the review.
+  documented in the review. The report both (a) classifies agreement using a **fixed threshold
+  `p ≥ 0.5`** and (b) tabulates the **raw probability distribution per deterministic outcome class**,
+  so the disagreement set is a stable, reproducible set rather than a threshold artefact.
 
 Users (the paper authors, benchmark maintainers) get a recorded, auditable answer to "is this miss a
 real miss, or an orthographic/edition/tradition variant?" without re-scoring the run or touching the
@@ -104,14 +132,23 @@ deterministic headline.
       servable; resolves to `typesafe/jev-1.14-20261014`), with `OPENROUTER_API_KEY` read from the
       environment only. An unexpected response shape (missing/mistyped `answers` fields) **fails
       loud**; there is no fallback and no silent default.
-- [ ] Each judged cell records: requested `judge_model`, resolved judge build, decision id, provider,
-      the full typed answers (refusal probability, containment/`matches_requested` probability, `kind`
-      choice + per-label probabilities + confidence), and usage (`in`/`out`/`cost`).
-- [ ] The pass is **resumable**: re-running over the same output skips cells already judged (keyed on
-      question × model × judge model) with zero new API calls; a failed cell stays pending (not
-      written) and the run reports it.
-- [ ] Total Jev spend for a run is **surfaced** (summed cost + per-cell cost available), comparable to
-      how `collect` surfaces spend.
+- [ ] Each judged cell records the full authoritative schema above (requested + resolved judge model,
+      decision id, provider, `rubric_id`, `question_set_digest`, `answer_digest`, the full typed
+      answers, usage).
+- [ ] Only `retrieve_quote` and `complete_unit` cells are judged; `verify_source`/`cite_passage` are
+      skipped and reported as skipped (not failed, not silently dropped).
+- [ ] The pass is **resumable** and **stale-safe**: re-running over the same output skips already-judged
+      cells with zero new API calls, where "already judged" is keyed on question × model **× the exact
+      answer content** (`answer_digest`) and the `rubric_id`/question-set-digest match — so a changed
+      answer, a changed prompt/schema, or a mismatched question set forces a re-judge or fails loud
+      rather than silently reusing a stale verdict. A failed cell stays pending (not written) and the
+      run reports it.
+- [ ] A judgments file that mixes **more than one resolved judge build** (the floating `jev-latest`
+      alias rolled between passes) is **flagged** (warn or fail); `summarize` reports the set of
+      resolved builds so a mixed-build agreement report is never silently produced.
+- [ ] Total Jev spend for a run is **surfaced** from the API-returned `usage.cost` (summed + per-cell),
+      and a **pre-flight estimate** (pending cells × typical per-cell cost) is printed before any calls;
+      a `--limit` on cells judged per invocation makes the $8 cap enforceable rather than aspirational.
 - [ ] Refusal is **not** turned into a grader. `outcomes.py` remains the sole owner of the `refused`
       outcome and the headline is unchanged; the judge's refusal signal is recorded as a diagnostic
       cross-check only.
@@ -125,6 +162,15 @@ deterministic headline.
 - [ ] The audit gate (`audit.py` in `.codev/checks/test.sh`) passes: **no key material, no NABRE/TLG
       text, no restricted-derived content** in any committed artifact. Live-run judgment output
       committed as evidence (if any) is over public-domain tutorial content only.
+- [ ] **Restricted text is never transmitted to the judge.** Because judging sends `requested_text`
+      (the expected reference) to a third-party API, the pass refuses (or at minimum warns and skips)
+      any cell whose source `(work, version, language)` maps to a `restricted` catalogue target. (This
+      is latent today — neither committed run contains a restricted source — but the guard must exist
+      before the pass is pointed at an arbitrary run.)
+- [ ] A **live-verified Decisions response is committed (redacted) as the test fixture** that the
+      fail-fast shape tests (`interpret`) run against, so the parser is pinned to the real wire shape,
+      not a hand-written mock (per the project's "mocking the provider seam hides live-only failures"
+      lesson).
 - [ ] The 'add an evaluator' recipe in `CODE_WALKTHROUGH.md` documents the Jev paid/separate-pass
       evaluator so a future contributor can follow the seam.
 - [ ] Carried-over Jev code from PR #30 preserves **Jonathan Karr's authorship** on the commit(s)
@@ -143,7 +189,11 @@ deterministic headline.
   - **Live-verified shape, fail fast, no fallbacks.** Model id derived from the real response, not the
     docs.
   - **Budget:** cap live spend during this project at **$8 total**; stop and ping the architect above
-    it. (Verification to date: ≈ $0.00005.)
+    it. (Verification to date: ≈ $0.00005.) The cap is made enforceable by a pre-flight cost estimate
+    and a `--limit` on cells per invocation — not left to vigilance.
+  - **Restricted-text transmission:** the judge call sends the expected reference text to a
+    third-party API; the pass must guard against sending any `restricted`-target source, independent
+    of the commit-time audit gate.
   - **Never re-run `collect`/`score` over committed run evidence** (`runs/original-2026-10-21`,
     `runs/tutorial-2026-10-11`); judge output goes to a fresh `runs/<id>/` or a sidecar; committed
     `scores.jsonl` stays byte-identical.
@@ -183,7 +233,14 @@ validate on the tutorial run via an agreement report + manual disagreement revie
   implemented; smallest diff; preserves Karr's authorship cleanly.
 - **Cons:** judgments live beside `scores.jsonl` rather than *inside* each score row, so viewer/paper
   consumers read a second file. (Viewer integration is a separate part of the #30 split anyway.)
-- **Risk/complexity:** Low. Main risk is the edition-index dependency for equivalence (Open Questions).
+- **Required edits to the carried-over code** (not just a config change): correct `JEV_MODEL` to
+  `jev-latest`; make the `cross_translation` import **optional** (it is top-level and non-optional in
+  Karr's file, so `index=None` alone does not avoid the import of the unmerged module); strengthen the
+  resume key to bind `answer_digest` + `rubric_id` + `question_set_digest`; add the task-type filter,
+  the restricted-target guard, the pre-flight estimate + `--limit`, and the multi-build flag; register
+  the `jev` descriptor in `graders.py`; extend the `CODE_WALKTHROUGH.md` recipe.
+- **Risk/complexity:** Low–Medium. Main risk is the edition-index dependency for equivalence (Open
+  Questions).
 
 ### Approach 2: Merge Jev verdicts directly into each `scores.jsonl` metrics row
 
@@ -204,38 +261,54 @@ for *new* runs can be noted for a later part without being built here.
 
 ## Open Questions
 
-- **Critical — passage-equivalence edition index.** Karr's equivalence judgment feeds Jev the "other
-  indexed wordings" of a citation, drawn from an `EditionIndex` in `cross_translation.py`, which is a
-  **sibling part of the #30 split not yet on `main`**. Without it, containment and the refusal
-  cross-check work fully, but the `other_indexed_wording` label can never fire (equivalence degrades
-  to requested/neither). Which path does the architect want?
-  (a) ship containment + refusal-diagnostic now, treat equivalence's alternates as empty until the
-  cross-translation part lands; (b) vendor a **minimal** citation→wordings index built from the
-  committed question pool within this spec; (c) sequence this part after cross-translation merges.
-  *Recommendation: (a) now with alternates optional, noting (b) as a cheap follow-up — it keeps Part 2
-  independent of the other split parts.*
+- **Critical — passage-equivalence edition index (needs architect confirmation before plan).** Karr's
+  equivalence judgment feeds Jev the "other indexed wordings" of a citation, drawn from an
+  `EditionIndex` in `cross_translation.py`, a **sibling part of the #30 split not yet on `main`**
+  (and imported at top level, so avoiding it is a code edit, not just `index=None`). Without it,
+  containment and the refusal cross-check work fully, but `other_indexed_wording` can never fire.
+  **This spec has provisionally taken option (a)** (ship containment + refusal-diagnostic now,
+  alternates empty) to stay internally consistent and testable, **but the choice is the architect's**:
+  (a) option taken — keep Part 2 independent of the other split parts; (b) vendor a **minimal**
+  citation→wordings index from the committed question pool within this spec so equivalence is
+  functional now; (c) sequence Part 2 after cross-translation merges. *Recommendation: (a) now, (b) as
+  a cheap follow-up. Confirm or redirect before the plan phase.*
 - **Important — committed surface.** Is the sidecar `judgments.jsonl` the only committed artifact for
   Part 2 (viewer/paper consumption being other parts), or should a merge-into-`scores.jsonl` path for
   *new* runs also ship now? *Recommendation: sidecar only; document the merge path.*
 - **Important — validation scope.** Confirm validation is the **tutorial run only** (architect brief
   says tutorial). The `original-2026-10-21` run is larger/paid; judging it would consume budget.
+- **Important — agreement threshold.** The agreement report needs a rule to turn a probability into
+  agree/disagree. *Resolved in this spec:* fixed `p ≥ 0.5` **and** a raw per-outcome-class
+  distribution, so the disagreement set is stable and threshold-robust.
 - **Nice-to-know — defaults.** Concurrency and retry defaults for the pass (Karr uses 4 workers,
-  2 retries); the leading-stance refusal-probability threshold for the agreement report.
+  2 retries).
 
 ## Test Scenarios
 
 - **Happy path (live, tutorial run):** judge the committed tutorial answers to a sidecar; every cell
   gets a typed verdict + probabilities + resolved build + usage; summary reports counts and total
   cost.
-- **Resumability:** re-running the pass over a partially-written output makes **zero** new API calls
-  for already-judged cells; interrupting mid-run leaves a valid, appendable file.
+- **Resumability + stale-safety:** re-running over a partially-written output makes **zero** new API
+  calls for already-judged cells; a cell whose answer content changed (`answer_digest` differs), or a
+  `rubric_id`/question-set-digest mismatch, forces a re-judge or fails loud rather than reusing a stale
+  verdict; interrupting mid-run leaves a valid, appendable file.
+- **Build-roll:** a judgments file containing two resolved builds is flagged by `summarize`/the agreement
+  step; a single-build file is not.
+- **Task scope:** `verify_source`/`cite_passage` cells are skipped and reported as skipped; only
+  `retrieve_quote`/`complete_unit` are judged.
 - **Fail-fast on shape:** a response missing `answers`, or with a mistyped `noul`/`choice`, or an
-  unknown `kind`, raises and the cell stays pending — no fallback value is written.
+  unknown `kind`, raises and the cell stays pending — no fallback value is written. The fixture for this
+  is the committed, redacted live response.
 - **Fail-fast on credentials:** missing `OPENROUTER_API_KEY` raises before any call.
+- **Budget guard:** a pre-flight estimate prints before calls; `--limit` stops the pass at N cells so a
+  run cannot silently exceed the cap.
+- **Restricted-target guard:** a cell whose source maps to a `restricted` target is refused/skipped
+  before its reference text is sent to the API.
 - **Non-default seam:** `score` with no `--evaluator` is byte-identical to before; `score --evaluator
   jev` fails fast; default headline unaffected.
 - **Agreement analysis:** containment judge vs `contains_reference`, and judge refusal probability vs
-  the `refused` outcome, are tabulated; disagreement cells enumerated for manual review.
+  the `refused` outcome, are tabulated at `p ≥ 0.5` and as a raw distribution; disagreement cells
+  enumerated for manual review.
 - **Evidence integrity:** committed `scores.jsonl`/`answers.jsonl` for the tutorial and original runs
   are byte-identical after the work; the audit gate passes.
 - **No-op on a fully-judged file:** `summarize` over a complete output reports the right counts and
@@ -247,8 +320,11 @@ for *new* runs can be noted for a later part without being built here.
 |------|-------------|--------|------------|
 | Edition index (equivalence) unavailable — cross_translation not on main | High | Medium | Make the index optional (containment + refusal-diagnostic unaffected); surface as Critical open question; recommend minimal vendored index as follow-up |
 | Accidentally re-scoring / overwriting committed run evidence | Low | High | Always write to a fresh/sidecar path; add an evidence byte-identity check to the review checklist; audit gate in test.sh |
-| Jev API shape drift vs Karr's code (wrong model id, field changes) | Medium | Medium | Model id and full shape **live-verified** for this spec; fail-fast on any unexpected field; record resolved build per cell |
-| Live spend exceeds budget | Low | Medium | Validation is the small tutorial run; per-call cost ≈ $3e-5; hard $8 cap with stop+ping; resumability avoids re-spend |
+| Jev API shape drift vs Karr's code (wrong model id, field changes) | Medium | Medium | Model id and full shape **live-verified** for this spec; fail-fast on any unexpected field; committed redacted live fixture pins the parser; record resolved build per cell |
+| `jev-latest` build rolls between passes → mixed builds in one file/report | Medium | Medium | Record resolved build per cell; `summarize` flags a multi-build file; allow pinning a build |
+| Stale verdict reused after an answer/prompt change | Medium | Medium | Resume key binds `answer_digest` + `rubric_id` + question-set digest; mismatch re-judges or fails loud |
+| Live spend exceeds budget | Low | Medium | Pre-flight estimate + `--limit`; validation is the small tutorial run; per-call cost ≈ $3e-5; hard $8 cap with stop+ping; resumability avoids re-spend |
+| Restricted reference text transmitted to the judge API | Low | High | Guard refuses/skips `restricted`-target cells before any send (separate from the commit-time audit gate); latent today (no committed restricted source) |
 | Key or restricted text leaking into a public commit | Low | High | Key from env only (never a file); audit gate; judge evidence committed only over public-domain tutorial content |
 | Jev verdict mistaken for the headline | Low | High | Non-inline/verdict-less/`default=False` registration; refusal stays an outcome; documented as diagnostic tier in the recipe |
 
