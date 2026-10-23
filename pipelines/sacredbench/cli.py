@@ -364,7 +364,9 @@ def score(
             # no-tools model keys identically to a bare run of the same model — its stale
             # row becomes supersedable. `model` is the raw API id, no marker.
             panel[m.id] = {"provider": m.provider, "model": m.model, "tools": list(m.tools),
-                           "endpoint": endpoint, "price_in": m.price_in, "price_out": m.price_out}
+                           "endpoint": endpoint, "max_tokens": m.max_tokens,
+                           "temperature": m.temperature,
+                           "price_in": m.price_in, "price_out": m.price_out}
         summary = score_file(answers, scores_out, expected, expected_tradition, panel,
                              expected_digest=gen.question_set_digest(qs), evaluators=evaluator or None,
                              expected_text=expected_text)

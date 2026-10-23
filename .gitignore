@@ -45,6 +45,7 @@ __pycache__/
 apps/viewer/node_modules/
 apps/viewer/dist/
 
-# Local secrets (keys come from env; never commit)
+# Local secrets (keys come from env; never commit). .env.example is the committed name list.
 .env
 .env.*
+!.env.example

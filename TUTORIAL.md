@@ -68,6 +68,11 @@ never in a file inside the project. (An alternative panel, `configs/models.examp
 Anthropic panel that also adds a web-search tool if you have an `ANTHROPIC_API_KEY` — not used
 here.)
 
+The key **names** the project understands are listed in `.env.example`
+(`ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`). You can copy
+it to `.env` and fill in only the keys your panel uses; `.env` is gitignored, so your keys never
+get committed.
+
 **Get the code** (replace `<this repo>` with the project's address):
 
 ```bash

@@ -263,7 +263,7 @@ def test_panel_tools_field_distinguishes_arms_and_dedupes_bare_model(tmp_path):
     assert p["haiku-search"]["model"] == p["haiku"]["model"] == "claude-haiku-5-5"
     assert p["haiku-search"]["tools"] == ["web_search"] and p["haiku"]["tools"] == []
     # panel carries only non-secret identity fields — tools replaces api_model
-    assert set(p["haiku"]) == {"provider", "model", "tools", "endpoint", "served_by"}
+    assert set(p["haiku"]) == {"provider", "model", "tools", "endpoint", "max_tokens", "temperature", "served_by"}
     # generated_at present and ISO-parseable (Issue #7 half)
     assert datetime.fromisoformat(summary["generated_at"])
 
@@ -295,7 +295,7 @@ def test_synthesised_panel_entry_defaults_tools_empty(tmp_path):
     g = summary["panel"]["ghost"]
     assert g["tools"] == []  # synthesised default, not missing/None
     assert g["model"] == "claude-haiku-5-5"  # recovered from usage
-    assert set(g) == {"provider", "model", "tools", "endpoint", "served_by"}
+    assert set(g) == {"provider", "model", "tools", "endpoint", "max_tokens", "temperature", "served_by"}
 
 
 def test_cli_score_panel_emits_tools_field_and_raw_model(tmp_path, monkeypatch):
@@ -339,6 +339,6 @@ def test_cli_score_panel_emits_tools_field_and_raw_model(tmp_path, monkeypatch):
     # stripped by score.py and api_model is gone — asserted here because this is the only path
     # that actually carries price fields into the build.
     for mid in ("haiku-search", "haiku"):
-        assert set(panel[mid]) == {"provider", "model", "tools", "endpoint", "served_by"}
+        assert set(panel[mid]) == {"provider", "model", "tools", "endpoint", "max_tokens", "temperature", "served_by"}
     blob = json.dumps(panel)
     assert "[no-tools]" not in blob and "[web_search]" not in blob  # no leftover marker

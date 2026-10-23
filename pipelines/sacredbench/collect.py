@@ -32,8 +32,13 @@ class CollectError(Exception):
 def _panel_fingerprint(m) -> str:
     """A model cell's panel identity — so a model id can't be silently re-pointed at a
     different provider/model/host/tools between resumes. The tools setting is part of the
-    identity (Spec 8): a web-search-on cell must never be resumed as web-search-off."""
-    return f"{m.provider}|{m.model}|{m.base_url or ''}|{','.join(m.tools)}"
+    identity (Spec 8): a web-search-on cell must never be resumed as web-search-off.
+    Temperature joins the identity only when set, so existing runs' fingerprints are
+    unchanged (an unset temperature means the host default stood)."""
+    base = f"{m.provider}|{m.model}|{m.base_url or ''}|{','.join(m.tools)}"
+    if m.temperature is not None:
+        base += f"|t={m.temperature}"
+    return base
 
 
 def _existing(
@@ -126,6 +131,8 @@ def collect(
             "model_id": m.id,
             "model": m.model,
             "provider": m.provider,
+            "max_tokens": m.max_tokens,
+            "temperature": m.temperature,
             "panel_fingerprint": _panel_fingerprint(m),
             "task": q.task,
             "answer": text,
