@@ -1,0 +1,14 @@
+id: '31'
+title: panel-temperature-optional-per
+protocol: air
+phase: implement
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-23T22:07:35.576Z'
+updated_at: '2026-10-23T22:07:35.578Z'
