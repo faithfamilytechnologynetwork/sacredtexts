@@ -32,3 +32,9 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - `graders.py` already models the non-inline `jev` grader seam (commented example, `inline=False`, verdict-less, `default=False`); `resolve_evaluators` fails fast if a non-inline grader is selected inline on `score`.
 - `score.py` writes per-row `metrics` map that a separate pass can merge into.
 - `outcomes.py` owns refusal (`classify_refusal`, `_with_outcome`).
+
+## 2026-10-23 — Specify DONE, holding before plan
+- Spec drafted, 2-way consult (codex REQUEST_CHANGES / claude COMMENT) folded (13 points, all actioned), rebuttal written. `porch done` advanced phase to **plan**.
+- Commits: initial draft / with-review / rebuttal.
+- Pinged architect with spec summary + 2 decisions: (1) model id must be `jev-latest` not jev-1.13/jev-router; (2) Critical scope call on the passage-equivalence edition index (option (a) provisionally taken vs (b) vendor minimal index).
+- **HOLDING: do not start plan work until architect answers the scope question** (per brief: "ping me with the spec summary before the plan phase").
