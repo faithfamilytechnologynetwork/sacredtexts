@@ -15,6 +15,11 @@ models:
     base_url: https://openrouter.ai/api/v1
     api_key_env: OPENROUTER_API_KEY
     max_tokens: 4096             # headroom so a long Arabic/Aramaic quote does not trip truncation
+    # temperature: 0             # optional; pins sampling and joins the panel fingerprint.
+    #                              NOT set here: this config reproduces the committed
+    #                              runs/original-2026-10-21 run, whose answers were collected
+    #                              with no temperature — setting it would change the fingerprint
+    #                              and break `score --config` against that run.
   - id: opus
     provider: openai
     model: anthropic/claude-opus-5-5

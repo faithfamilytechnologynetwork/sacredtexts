@@ -656,6 +656,8 @@ def score_file(
                 # defaults to [] so a bare model keys identically to a no-tools config.
                 "tools": p.get("tools") or [],
                 "endpoint": p.get("endpoint"),
+                "max_tokens": p.get("max_tokens"),
+                "temperature": p.get("temperature"),
                 "served_by": sorted(um.get("served_by", {})) or None,
             }
     # Evaluator provenance (Spec 15, decision #5): which named graders decided the headline for the
@@ -756,14 +758,19 @@ def summary_markdown(summary: dict) -> str:
     panel = summary.get("panel") or {}
     if panel:
         lines += ["", "### Panel composition (committed-artifact proof — provider / model / tools / endpoint, no secrets)"]
-        lines += ["| model_id | provider | model | tools | endpoint | served_by |", "|" + "---|" * 6]
+        lines += [
+            "| model_id | provider | model | tools | endpoint | max_tokens | temperature | served_by |",
+            "|" + "---|" * 8,
+        ]
         for mid in sorted(panel):
             p = panel[mid]
             served = ", ".join(p.get("served_by") or []) or "—"
             tools = ", ".join(p.get("tools") or []) or "—"
+            max_tokens = "—" if p.get("max_tokens") is None else p.get("max_tokens")
+            temperature = "—" if p.get("temperature") is None else p.get("temperature")
             lines.append(
                 f"| {mid} | {p.get('provider') or '—'} | {p.get('model') or '—'} "
-                f"| {tools} | {p.get('endpoint') or '—'} | {served} |"
+                f"| {tools} | {p.get('endpoint') or '—'} | {max_tokens} | {temperature} | {served} |"
             )
 
     usage = summary.get("usage") or {}

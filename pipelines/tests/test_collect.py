@@ -93,6 +93,9 @@ def test_resume_under_changed_panel_identity_refused(tmp_path, monkeypatch):
     row = _rows(answers)[0]
     # fingerprint is provider|model|base_url|tools (tools empty here -> trailing "|")
     assert row["provider"] == "anthropic" and row["panel_fingerprint"] == "anthropic|m-m||"
+    # max_tokens is recorded; an unset temperature is recorded as null and stays out of
+    # the fingerprint (so existing runs' fingerprints are unchanged)
+    assert row["max_tokens"] == 1024 and row["temperature"] is None
 
 
 def test_legacy_answers_without_digest_refused(tmp_path, monkeypatch):
