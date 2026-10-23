@@ -1,7 +1,7 @@
 id: '26'
 title: original-language-only-questio
 protocol: aspir
-phase: verify
+phase: verified
 plan_phases:
   - id: phase_1
     title: 'Catalogue metadata: requested_as / canonical_language'
@@ -34,7 +34,7 @@ iteration: 1
 build_complete: true
 history: []
 started_at: '2026-10-20T22:41:46.537Z'
-updated_at: '2026-10-23T21:57:54.536Z'
+updated_at: '2026-10-23T21:57:56.276Z'
 force_advanced:
   phase: phase_5
   iteration: 3
