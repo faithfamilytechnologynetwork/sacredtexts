@@ -1,7 +1,7 @@
 id: '31'
 title: panel-temperature-optional-per
 protocol: air
-phase: implement
+phase: pr
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,7 +11,7 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-10-23T22:07:35.576Z'
-updated_at: '2026-10-23T22:14:27.152Z'
+updated_at: '2026-10-23T22:14:45.043Z'
 pr_history:
   - phase: implement
     pr_number: 33
