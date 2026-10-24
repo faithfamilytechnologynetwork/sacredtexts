@@ -34,14 +34,31 @@ This is **diagnostic tooling, not a new headline.** The maintainer decision on S
 headline stays deterministic; this spec adds a recorded second opinion beside it, never a
 replacement for it.
 
-**Scope decision for Part 2 (pending architect confirmation — see Open Questions).** The
-passage-equivalence judgment needs an edition index of the citation's other wordings, which lives in
-`cross_translation.py` — a sibling part of the #30 split not yet on `main`. This spec therefore
-ships **containment + a refusal-probability cross-check now**, with the equivalence judgment's
-"other indexed wordings" **empty** until the cross-translation part lands: the `kind` label is still
-asked and recorded, but with no alternates the `other_indexed_wording` outcome cannot fire (it
-collapses to `refusal` / `requested_wording` / `neither`). Full `other_indexed_wording` coverage is
-an explicit follow-up. Everything in this spec is scoped to that decision.
+**Scope decision for Part 2 (architect-confirmed 2026-10-24).** Option (a): ship **containment + a
+refusal-probability cross-check now**; passage equivalence is **explicitly OFF unless an index is
+supplied**, not "empty until later". Concretely:
+
+- The judge takes an optional **`--equivalence-index <path>`**. **Without it**, the rubric does
+  **not ask the equivalence question at all**, and the sidecar records equivalence as
+  **`not_evaluated`** — never as a no-match or a silent null, so no consumer can misread an absent
+  judgment as a negative verdict.
+- The equivalence-index producer is **not built in #21**: it is being built **concurrently in #32**
+  (a sibling builder), whose cross-edition reading needs the same data. This spec **consumes** that
+  producer's schema verbatim (below) and does **not** invent its own. #21 must **not depend on #32's
+  branch** — its tests use a hand-written fixture in this schema.
+- `jev.py` must **not** import `cross_translation` at top level: the import is dropped entirely (no
+  stub module). The alternate-wordings lookup is driven solely by a supplied `--equivalence-index`.
+
+**Equivalence-index file schema (consumed verbatim from #32; architect-pinned 2026-10-24):**
+- Index file (`--equivalence-index <path>`): **JSONL, one row per `(work, citation, language)`**,
+  each row `{ "work": str, "citation": str, "language": str, "wordings": [{ "version": str, "text":
+  str }, …] }`. Same-canonical-language editions only; restricted editions already filtered out by the
+  producer; **rows with a single wording are omitted**.
+- Manifest at `<path>.manifest.json`: `{ "corpus_hash": str, "row_count": int, "digest": str,
+  "excluded_restricted": [version ids] }`.
+- **Consumer rules:** **fail fast** if the manifest is missing, or if its `corpus_hash` differs from
+  the run manifest's `corpus_hash`; **record the index `digest`** on each sidecar row that used the
+  index.
 
 ## Current State
 
@@ -92,14 +109,26 @@ diagnostic metrics. Specifically:
   runs; it is **not built here** and the deterministic headline is never mutated. (Because
   `submetrics_for` only emits keys in `_CANONICAL_ORDER`, a non-inline grader's `metric_keys` would
   not reach `scores.jsonl` from `score` anyway — the sidecar is where its fields live.)
+- **The resolved judge build is part of the grader's identity**, treated like a panel fingerprint
+  (architect-decided 2026-10-24). `jev-latest` floats, so the build it resolved to
+  (`typesafe/jev-1.14-20261014` today) is recorded on **every sidecar row**, in the **sidecar
+  header/manifest**, and in the **evaluator provenance** that `score --evaluator` emits — so a summary
+  states which judge build produced the verdicts. **Resuming onto an existing sidecar whose recorded
+  resolved build differs from the current call's fails fast** with a clear error naming both builds.
+  There are **no mixed-build files** — the earlier "flag a mixed-build file" idea is superseded by
+  this hard fail.
 - **Authoritative judgment-row schema (sidecar).** One JSON object per judged cell:
   `question_id`, `model_id`, `model` (the answer's model), `rubric_id` (prompt/schema version),
   `judge_model` (requested id), `judge_model_resolved` (the build Jev returns), `judge_provider`,
   `decision_id`, `question_set_digest`, `answer_digest` (binds the row to the exact answer judged),
-  `refusal_p`, `matches_requested_p` (containment), `kind` + `kind_probabilities` + `kind_confidence`,
-  and `usage` (`in`/`out`/`cost`). This is the contract viewer/paper consumers read.
+  `index_digest` (the equivalence-index digest when one was used, else absent), `refusal_p`,
+  `matches_requested_p` (containment), `kind` + `kind_probabilities` + `kind_confidence` **or**
+  `equivalence: "not_evaluated"` when no index was supplied, and `usage` (`in`/`out`/`cost`). A
+  sidecar **header/manifest** records the resolved judge build, `rubric_id`, question-set digest, and
+  (if used) the index digest for the whole file. This is the contract viewer/paper consumers read.
 - Every judged cell is fully reproducible: requested + resolved judge model, decision id, provider,
-  the complete typed answers, the question-set digest, an answer-content digest, and per-cell usage.
+  the question-set digest, an answer-content digest, the equivalence-index digest if any, and per-cell
+  usage.
 - The pass is **resumable** (a re-run skips already-judged cells; failed cells stay pending and are
   not written) and its **spend is surfaced** directly from the Decisions API's returned
   `usage.cost` per cell, summed per run. (This is unlike `score`, which derives cost from configured
@@ -133,8 +162,20 @@ deterministic headline.
       environment only. An unexpected response shape (missing/mistyped `answers` fields) **fails
       loud**; there is no fallback and no silent default.
 - [ ] Each judged cell records the full authoritative schema above (requested + resolved judge model,
-      decision id, provider, `rubric_id`, `question_set_digest`, `answer_digest`, the full typed
-      answers, usage).
+      decision id, provider, `rubric_id`, `question_set_digest`, `answer_digest`, `index_digest` when
+      an index was used, the typed answers, usage), and the sidecar carries a header/manifest with the
+      resolved build, `rubric_id`, question-set digest, and index digest (if any).
+- [ ] **The resolved judge build is treated as grader identity.** It is recorded per row, in the
+      sidecar manifest, and in the evaluator provenance that `score --evaluator` emits. **Resuming onto
+      a sidecar whose recorded resolved build differs from the current call FAILS FAST** with a clear
+      error naming both builds; there are no mixed-build files. Pinning a build is permitted.
+- [ ] **Passage equivalence is OFF unless `--equivalence-index <path>` is supplied.** Without it the
+      rubric does not ask the equivalence question and the sidecar records `equivalence:
+      "not_evaluated"` (never a no-match or null). With it, the index is consumed in #32's verbatim
+      schema; the pass **fails fast** if the index manifest is missing or its `corpus_hash` differs
+      from the run manifest's, and records the index `digest` on each row that used it. #21 does not
+      depend on #32's branch (tests use a hand-written fixture).
+- [ ] `jev.py` does **not** import `cross_translation` (no top-level import, no stub module).
 - [ ] Only `retrieve_quote` and `complete_unit` cells are judged; `verify_source`/`cite_passage` are
       skipped and reported as skipped (not failed, not silently dropped).
 - [ ] The pass is **resumable** and **stale-safe**: re-running over the same output skips already-judged
@@ -143,12 +184,10 @@ deterministic headline.
       answer, a changed prompt/schema, or a mismatched question set forces a re-judge or fails loud
       rather than silently reusing a stale verdict. A failed cell stays pending (not written) and the
       run reports it.
-- [ ] A judgments file that mixes **more than one resolved judge build** (the floating `jev-latest`
-      alias rolled between passes) is **flagged** (warn or fail); `summarize` reports the set of
-      resolved builds so a mixed-build agreement report is never silently produced.
 - [ ] Total Jev spend for a run is **surfaced** from the API-returned `usage.cost` (summed + per-cell),
       and a **pre-flight estimate** (pending cells × typical per-cell cost) is printed before any calls;
-      a `--limit` on cells judged per invocation makes the $8 cap enforceable rather than aspirational.
+      a `--limit` on cells judged per invocation makes the $8 cap enforceable. **The pre-flight estimate
+      for the live validation pass is shown to the architect before that pass runs.**
 - [ ] Refusal is **not** turned into a grader. `outcomes.py` remains the sole owner of the `refused`
       outcome and the headline is unchanged; the judge's refusal signal is recorded as a diagnostic
       cross-check only.
@@ -206,6 +245,20 @@ deterministic headline.
     `uv --project pipelines run python -m sacredbench …`.
   - Depends on **#15** (merged: the graders seam + `outcomes.py` are on `main`).
   - Keep it simple (no speculative generality beyond the seam that already exists).
+- **Baked (architect decisions, 2026-10-24):**
+  - Model id is **`jev-latest`**; the **resolved build is grader identity** (recorded per row + in the
+    sidecar manifest + in `score --evaluator` provenance); resume with a different resolved build
+    **fails fast**, no mixed-build files; pinning a build is allowed.
+  - Scope is option (a): **equivalence OFF unless `--equivalence-index` supplied** → records
+    `not_evaluated`; `jev.py` drops the `cross_translation` import entirely.
+  - The equivalence-index schema is **#32's, consumed verbatim** (see Scope decision); #21 does **not**
+    build the producer and does **not** depend on #32's branch (tests use a hand-written fixture);
+    fail fast on a missing index manifest or a `corpus_hash` mismatch with the run manifest; record the
+    index `digest` per row.
+  - The live validation pass's **pre-flight cost estimate is shown to the architect before it runs**;
+    its sidecar is **new evidence beside the tutorial run**, never modifying `scores.jsonl`/
+    `summary.json`; audit passes; spend within the $8 cap.
+  - `refusal_p` is **diagnostic only**; `outcomes.py` stays the sole source of `refused`.
 
 ## Assumptions
 
@@ -215,9 +268,10 @@ deterministic headline.
   which the judge state requires — verified against `runs/tutorial-2026-10-11/answers.jsonl`.
 - `OPENROUTER_API_KEY` is present in the project-local `.env` (symlinked to `sacredtexts/.env`) and
   carries decisions-API access.
-- The passage-equivalence feature's "indexed other wordings" needs an edition index of the question
-  pool's citations. See Open Questions (Critical) — the source of that index is **not yet settled**
-  because `cross_translation.py` is a sibling part of the #30 split not on `main`.
+- The passage-equivalence feature's "indexed other wordings" come from an `--equivalence-index` built
+  by **#32** (concurrent sibling builder) in a fixed schema (see Scope decision). #21 consumes it but
+  does not build it and does not depend on #32's branch — the equivalence path is off (recording
+  `not_evaluated`) whenever no index is supplied.
 
 ## Solution Approaches
 
@@ -234,13 +288,15 @@ validate on the tutorial run via an agreement report + manual disagreement revie
 - **Cons:** judgments live beside `scores.jsonl` rather than *inside* each score row, so viewer/paper
   consumers read a second file. (Viewer integration is a separate part of the #30 split anyway.)
 - **Required edits to the carried-over code** (not just a config change): correct `JEV_MODEL` to
-  `jev-latest`; make the `cross_translation` import **optional** (it is top-level and non-optional in
-  Karr's file, so `index=None` alone does not avoid the import of the unmerged module); strengthen the
-  resume key to bind `answer_digest` + `rubric_id` + `question_set_digest`; add the task-type filter,
-  the restricted-target guard, the pre-flight estimate + `--limit`, and the multi-build flag; register
-  the `jev` descriptor in `graders.py`; extend the `CODE_WALKTHROUGH.md` recipe.
-- **Risk/complexity:** Low–Medium. Main risk is the edition-index dependency for equivalence (Open
-  Questions).
+  `jev-latest`; **drop the `cross_translation` import entirely** (no stub) and drive alternates only
+  from an optional `--equivalence-index` in #32's schema (manifest + `corpus_hash` fail-fast, record
+  index digest); record the resolved build per row + manifest + provenance and **fail fast on a
+  build-mismatched resume**; strengthen the resume key to bind `answer_digest` + `rubric_id` +
+  `question_set_digest`; make the `kind`/equivalence question conditional on an index (`not_evaluated`
+  otherwise); add the task-type filter, the restricted-target guard, and the pre-flight estimate +
+  `--limit`; register the `jev` descriptor in `graders.py`; extend the `CODE_WALKTHROUGH.md` recipe.
+- **Risk/complexity:** Low–Medium. The edition-index dependency is resolved (consume #32's schema;
+  off by default), so the residual risk is mainly live-API shape drift, covered by the pinned fixture.
 
 ### Approach 2: Merge Jev verdicts directly into each `scores.jsonl` metrics row
 
@@ -261,22 +317,19 @@ for *new* runs can be noted for a later part without being built here.
 
 ## Open Questions
 
-- **Critical — passage-equivalence edition index (needs architect confirmation before plan).** Karr's
-  equivalence judgment feeds Jev the "other indexed wordings" of a citation, drawn from an
-  `EditionIndex` in `cross_translation.py`, a **sibling part of the #30 split not yet on `main`**
-  (and imported at top level, so avoiding it is a code edit, not just `index=None`). Without it,
-  containment and the refusal cross-check work fully, but `other_indexed_wording` can never fire.
-  **This spec has provisionally taken option (a)** (ship containment + refusal-diagnostic now,
-  alternates empty) to stay internally consistent and testable, **but the choice is the architect's**:
-  (a) option taken — keep Part 2 independent of the other split parts; (b) vendor a **minimal**
-  citation→wordings index from the committed question pool within this spec so equivalence is
-  functional now; (c) sequence Part 2 after cross-translation merges. *Recommendation: (a) now, (b) as
-  a cheap follow-up. Confirm or redirect before the plan phase.*
+- **RESOLVED (architect, 2026-10-24) — passage-equivalence edition index.** Option (a) with
+  tightening: equivalence is **OFF unless `--equivalence-index` is supplied** (records
+  `not_evaluated`, never a silent negative); the index schema is **#32's, consumed verbatim**; #21
+  does not build the producer and does not depend on #32's branch; `jev.py` drops the
+  `cross_translation` import entirely. (See Scope decision + Constraints.)
+- **RESOLVED (architect, 2026-10-24) — floating `jev-latest` build.** The resolved build is grader
+  identity; a build-mismatched resume **fails fast**; no mixed-build files.
 - **Important — committed surface.** Is the sidecar `judgments.jsonl` the only committed artifact for
   Part 2 (viewer/paper consumption being other parts), or should a merge-into-`scores.jsonl` path for
   *new* runs also ship now? *Recommendation: sidecar only; document the merge path.*
-- **Important — validation scope.** Confirm validation is the **tutorial run only** (architect brief
-  says tutorial). The `original-2026-10-21` run is larger/paid; judging it would consume budget.
+- **RESOLVED (architect, 2026-10-24) — validation scope.** The **tutorial run only**; its judgment
+  sidecar is new evidence beside the run, never modifying `scores.jsonl`/`summary.json`; the live
+  pass's pre-flight cost estimate is shown to the architect before it runs.
 - **Important — agreement threshold.** The agreement report needs a rule to turn a probability into
   agree/disagree. *Resolved in this spec:* fixed `p ≥ 0.5` **and** a raw per-outcome-class
   distribution, so the disagreement set is stable and threshold-robust.
@@ -292,8 +345,14 @@ for *new* runs can be noted for a later part without being built here.
   calls for already-judged cells; a cell whose answer content changed (`answer_digest` differs), or a
   `rubric_id`/question-set-digest mismatch, forces a re-judge or fails loud rather than reusing a stale
   verdict; interrupting mid-run leaves a valid, appendable file.
-- **Build-roll:** a judgments file containing two resolved builds is flagged by `summarize`/the agreement
-  step; a single-build file is not.
+- **Build-roll:** resuming onto a sidecar whose recorded resolved build differs from the current call
+  **fails fast** with an error naming both builds; a same-build resume proceeds. The resolved build
+  appears in the sidecar manifest and in `score --evaluator` provenance.
+- **Equivalence off by default:** without `--equivalence-index`, no equivalence question is asked and
+  each row records `equivalence: "not_evaluated"`.
+- **Equivalence with index:** given a hand-written fixture index (+manifest) in #32's schema whose
+  `corpus_hash` matches the run manifest, the equivalence question is asked and the row records the
+  `kind` plus the index `digest`; a **missing manifest or a `corpus_hash` mismatch fails fast**.
 - **Task scope:** `verify_source`/`cite_passage` cells are skipped and reported as skipped; only
   `retrieve_quote`/`complete_unit` are judged.
 - **Fail-fast on shape:** a response missing `answers`, or with a mistyped `noul`/`choice`, or an
@@ -318,10 +377,10 @@ for *new* runs can be noted for a later part without being built here.
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Edition index (equivalence) unavailable — cross_translation not on main | High | Medium | Make the index optional (containment + refusal-diagnostic unaffected); surface as Critical open question; recommend minimal vendored index as follow-up |
+| Edition index (equivalence) unavailable — producer is in concurrent #32 | Medium | Low | Equivalence OFF by default (records `not_evaluated`); consume #32's schema verbatim; tests use a hand-written fixture; no dependency on #32's branch |
 | Accidentally re-scoring / overwriting committed run evidence | Low | High | Always write to a fresh/sidecar path; add an evidence byte-identity check to the review checklist; audit gate in test.sh |
 | Jev API shape drift vs Karr's code (wrong model id, field changes) | Medium | Medium | Model id and full shape **live-verified** for this spec; fail-fast on any unexpected field; committed redacted live fixture pins the parser; record resolved build per cell |
-| `jev-latest` build rolls between passes → mixed builds in one file/report | Medium | Medium | Record resolved build per cell; `summarize` flags a multi-build file; allow pinning a build |
+| `jev-latest` build rolls between passes → mixed builds in one file/report | Medium | Medium | Resolved build is grader identity (row + manifest + provenance); build-mismatched resume **fails fast**, no mixed-build files; allow pinning a build |
 | Stale verdict reused after an answer/prompt change | Medium | Medium | Resume key binds `answer_digest` + `rubric_id` + question-set digest; mismatch re-judges or fails loud |
 | Live spend exceeds budget | Low | Medium | Pre-flight estimate + `--limit`; validation is the small tutorial run; per-call cost ≈ $3e-5; hard $8 cap with stop+ping; resumability avoids re-spend |
 | Restricted reference text transmitted to the judge API | Low | High | Guard refuses/skips `restricted`-target cells before any send (separate from the commit-time audit gate); latent today (no committed restricted source) |
@@ -340,6 +399,9 @@ for *new* runs can be noted for a later part without being built here.
 - Spec 26 — original-language default and `verify_source` hardening (context for the question pool).
 - `CODE_WALKTHROUGH.md` — "Adding an evaluator (a named grader)" recipe (to be extended for the paid
   separate-pass evaluator).
-- Architect brief, 2026-10-23 — baked decisions captured in Constraints.
+- Architect brief, 2026-10-23, and decisions of 2026-10-24 — baked decisions captured in Constraints
+  (model id `jev-latest` + resolved-build-as-identity; scope option (a) with `--equivalence-index`
+  off-by-default; #32's index schema consumed verbatim; pre-flight estimate shown before the live pass).
+- Issue #32 (concurrent sibling) — produces the `--equivalence-index` file this spec consumes.
 - Live verification: OpenRouter `POST /api/alpha/decisions`, model `jev-latest` →
   `typesafe/jev-1.14-20261014`; `v1/models` catalog entry for `typesafe/jev-router` (empty endpoints).
