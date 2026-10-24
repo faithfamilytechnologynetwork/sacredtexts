@@ -34,5 +34,21 @@ Structure verified conformant to spir/templates/spec.md (claude).
 2. Viewer card view DROPPED entirely (out of scope; its own issue if wanted). No half-scoped items.
 3. Every number in facct.md derived at build time from scores.jsonl/summary.json, never typed. Test: card headline figures == summary.json (anti-drift, cf Spec 26 docstring drift).
 
+## Plan (4 phases, foundation-first)
+1. Shared edition_index.py module + `edition-index` CLI (JSONL+manifest, frozen schema for #21, restricted filter, determinism).
+2. facct.py card data → facct.json (census, outcomes-from-scores, Bible retrieve_quote counterfactual, fail-fast). Promotes score's contains_reference predicate to public + reuses it.
+3. facct.md: one prose block, both files written by default within run_dir (atomic both-or-neither), anti-drift.
+4. Generate+commit card for runs/original-2026-10-21; EXTEND audit.py to scan .md + test; byte-digest integrity; real-run drift guard.
+Carry-over phases (1-3) committed --author="Jonathan Karr <jka83321@gmail.com>".
+Scope decision: 3-edition agreement table EXCLUDED (keep docs bar simple).
+
+## Plan consult (plan iter1, 2026-10-23) — both REQUEST_CHANGES HIGH, all folded
+Both verified real data; claude confirmed ≈32 incorrect Bible retrieve_quote cells exactly. Key facts I re-verified:
+- audit.py (L130/132) scans only .json/.jsonl → .md NOT covered. Extend in Phase 4.
+- score.py: _contains(L193) + _bounded_equal(L252); contains_reference uses _bounded_equal(L305). Reuse THAT predicate (promote to public) — don't reimplement containment.
+- generate.corpus_hash = sha256[:16] (L465); question_set_digest [:16] (L453) → pin digest length.
+- index must read texts/raw/** via convert.convert_target (standardized is gitignored/absent in CI).
+Dispositions: (1) pin containment to score's predicate+normalize (2) pin corpus_hash/digest/ordering/excluded_restricted (3) extend audit to .md+test (4) write both files by default atomically within run_dir (5) byte-digest integrity not git status (6) raw-source pin (7) both-files (8) exclude agreement table + add real-run drift guard. Rebuttal committed.
+
 ## Status
-- specify: architect GO received + 3 tweaks folded. Committing "[Spec 32] Specification with user feedback". ASPIR has no spec gate → proceeding to PLAN phase.
+- plan: 2-way review folded, rebuttal written. Committing "[Spec 32] Plan with multi-agent review" then porch done. ASPIR has no plan gate → will advance toward implement. Architect asked to be pinged with spec summary before plan (done); no explicit ask to ping before implement, but will keep architect posted.
