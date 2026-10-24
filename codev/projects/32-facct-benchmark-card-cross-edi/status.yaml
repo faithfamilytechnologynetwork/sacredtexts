@@ -5,24 +5,24 @@ phase: implement
 plan_phases:
   - id: phase_1
     title: Shared EditionIndex module and export CLI
-    status: in_progress
+    status: complete
   - id: phase_2
     title: 'FAccT card data: census, outcomes, edition counterfactual (facct.json)'
-    status: pending
+    status: in_progress
   - id: phase_3
     title: FAccT markdown card with single prose block (facct.md)
     status: pending
   - id: phase_4
     title: Generate and commit the card for runs/original-2026-10-21
     status: pending
-current_plan_phase: phase_1
+current_plan_phase: phase_2
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 2
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -37,4 +37,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_1-iter1-claude.txt
 started_at: '2026-10-23T23:35:13.884Z'
-updated_at: '2026-10-24T00:27:05.135Z'
+updated_at: '2026-10-24T00:31:39.828Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-10-24T00:31:39.828Z'
