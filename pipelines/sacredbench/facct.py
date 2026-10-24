@@ -125,29 +125,72 @@ def _census(manifest: dict, raw_root: Path) -> dict:
     }
 
 
+def _index_unique(rows: list[dict], kind: str) -> dict[tuple[str, str], dict]:
+    """Index rows by ``(question_id, model_id)``, failing fast on a missing or duplicate key."""
+    out: dict[tuple[str, str], dict] = {}
+    for r in rows:
+        key = (r.get("question_id"), r.get("model_id"))
+        if key[0] is None or key[1] is None:
+            raise FacctError(f"{kind} row missing question_id/model_id: {key}")
+        if key in out:
+            raise FacctError(f"duplicate {kind} row for {key}")
+        out[key] = r
+    return out
+
+
 def _outcome_counts(scores: list[dict]) -> dict[tuple[str, str], Counter]:
     counts: dict[tuple[str, str], Counter] = defaultdict(Counter)
     for s in scores:
+        task = s.get("task")
+        if task is None:
+            raise FacctError(f"score row {s.get('question_id')}/{s.get('model_id')} is missing 'task'")
         outcome = (s.get("metrics") or {}).get("outcome")
         if outcome not in _OUTCOMES:
             raise FacctError(
                 f"score row {s.get('question_id')}/{s.get('model_id')} has unknown outcome {outcome!r}"
             )
-        counts[(s["model_id"], s["task"])][outcome] += 1
+        counts[(s["model_id"], task)][outcome] += 1
     return counts
 
 
 def _verify_against_summary(counts: dict[tuple[str, str], Counter], summary: dict) -> None:
+    """Both directions: the scores' (model, task) set must equal the summary's, every per-task
+    outcome count must agree, and each model's ``_overall`` must equal the sum of its task counts —
+    so neither an empty/short ``scores.jsonl`` nor a corrupted ``_overall`` can slip through."""
     models = summary.get("models") or {}
+    score_keys = set(counts)
+    summary_keys = {
+        (model, task)
+        for model, blocks in models.items()
+        for task in blocks
+        if task != "_overall"
+    }
+    if score_keys != summary_keys:
+        raise FacctError(
+            "scores.jsonl and summary.json cover different model/task sets: "
+            f"only-in-scores={sorted(score_keys - summary_keys)}, "
+            f"only-in-summary={sorted(summary_keys - score_keys)}"
+        )
     for (model, task), c in counts.items():
-        block = (models.get(model) or {}).get(task)
-        if block is None:
-            raise FacctError(f"summary.json has no block for model {model!r} task {task!r}")
+        block = models[model][task]
         for outcome in _OUTCOMES:
             if int(block.get(outcome, 0)) != c[outcome]:
                 raise FacctError(
                     f"scores.jsonl and summary.json disagree for {model}/{task} on {outcome}: "
                     f"scores={c[outcome]} summary={block.get(outcome)}"
+                )
+    for model in models:
+        agg = Counter()
+        for (m, _task), c in counts.items():
+            if m == model:
+                for outcome in _OUTCOMES:
+                    agg[outcome] += c[outcome]
+        overall = models[model].get("_overall") or {}
+        for outcome in _OUTCOMES:
+            if int(overall.get(outcome, 0)) != agg[outcome]:
+                raise FacctError(
+                    f"summary.json _overall for {model} disagrees with the summed task scores on "
+                    f"{outcome}: _overall={overall.get(outcome)} scores={agg[outcome]}"
                 )
 
 
@@ -168,15 +211,18 @@ def _outcomes(counts: dict[tuple[str, str], Counter], summary: dict) -> dict:
                 "accuracy": block.get("accuracy"),
                 "coverage": block.get("coverage"),
             }
-        overall = models[model].get("_overall") or {}
+        # overall COUNTS are summed from the verified per-task scores (not copied from summary),
+        # so the card's overall can never disagree with its own by_task; accuracy/coverage are the
+        # derived rates from the (now count-verified) summary _overall.
+        overall_summary = models[model].get("_overall") or {}
+        agg = {o: sum(by_task[t][o] for t in by_task) for o in _OUTCOMES}
         out[model] = {
             "by_task": by_task,
             "overall": {
-                "correct": overall.get("correct"),
-                "incorrect": overall.get("incorrect"),
-                "refused": overall.get("refused"),
-                "accuracy": overall.get("accuracy"),
-                "coverage": overall.get("coverage"),
+                **agg,
+                "n": sum(agg.values()),
+                "accuracy": overall_summary.get("accuracy"),
+                "coverage": overall_summary.get("coverage"),
             },
         }
     return out
@@ -185,9 +231,9 @@ def _outcomes(counts: dict[tuple[str, str], Counter], summary: dict) -> dict:
 def _counterfactual(scores: list[dict], ans_by: dict[tuple[str, str], dict], raw_root: Path) -> dict:
     docs, _excluded = load_edition_documents(raw_root)
     index = index_documents(docs)
-    per_model: dict[str, dict] = defaultdict(lambda: {"numerator": 0, "denominator": 0, "tagged": []})
+    per_model: dict[str, dict] = {}
     for model_id in {s.get("model_id") for s in scores}:
-        per_model[model_id]  # seed every panel model, so a model with zero misses shows 0/0
+        per_model[model_id] = {"numerator": 0, "denominator": 0, "tagged": []}  # seed so 0-miss models show 0/0
 
     for s in scores:
         if s.get("task") != "retrieve_quote":
@@ -220,6 +266,7 @@ def _counterfactual(scores: list[dict], ans_by: dict[tuple[str, str], dict], raw
             per_model[model]["numerator"] += 1
             per_model[model]["tagged"].append(
                 {
+                    "tag": "other_edition",
                     "question_id": s["question_id"],
                     "citation": citation,
                     "requested_version": requested_version,
@@ -248,12 +295,16 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
     summary = _load_json(run_dir / "summary.json")
     manifest = _load_json(run_dir / "questions.jsonl.manifest.json")
 
-    ans_by = {(a.get("question_id"), a.get("model_id")): a for a in answers}
-    for s in scores:
-        if (s.get("question_id"), s.get("model_id")) not in ans_by:
-            raise FacctError(
-                f"score row {s.get('question_id')}/{s.get('model_id')} has no matching answer row"
-            )
+    ans_by = _index_unique(answers, "answer")
+    score_by = _index_unique(scores, "score")
+    if set(score_by) != set(ans_by):
+        only_scores = sorted(set(score_by) - set(ans_by))
+        only_answers = sorted(set(ans_by) - set(score_by))
+        raise FacctError(
+            f"scores.jsonl and answers.jsonl do not join one-to-one: "
+            f"{len(only_scores)} score row(s) without an answer (e.g. {only_scores[:3]}), "
+            f"{len(only_answers)} answer row(s) without a score (e.g. {only_answers[:3]})"
+        )
 
     counts = _outcome_counts(scores)
     _verify_against_summary(counts, summary)

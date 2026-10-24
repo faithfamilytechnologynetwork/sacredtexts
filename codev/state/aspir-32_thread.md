@@ -95,6 +95,15 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - REAL RUN VERIFIED: 17 texts, 476 Q; counterfactual denom total=32 (gpt-oss 0/17, haiku 3/15, opus 0/0), 3 other_edition tags (haiku: Jeremiah 38:15 ASV→KJV etc). Run evidence untouched.
 - Suite 407 pass/1 skip. Commit authored Jonathan (facct.py reworked from his PR#30 facct.py).
 
+## Phase_2 impl review (2026-10-23): codex + claude both REQUEST_CHANGES HIGH — all fixed (415 pass)
+- Must-fix: scores↔summary verify made BIDIRECTIONAL (set equality) + _overall recomputed from summed task counts (+raise). _outcomes overall derived from scores not copied. Tests: empty scores/dropped task/corrupted _overall all raise.
+- Must-fix: join one-to-one via _index_unique (dup+missing key) + both-key-set equality. Tests: dup answer, unmatched answer.
+- Must-fix: requested-edition guard now tested (Test 6:6 KJV-requested answer=KJV wording, incorrect, NOT tagged; deleting guard breaks test).
+- Minors: tag:"other_edition" field added to each tagged cell; s["task"] KeyError→FacctError; evidence-immutability test (sha256 4 inputs); explicit per_model seeding.
+- Real run still: denom 32, num 3, tags carry "tag" field. Fix commit authored as me.
+- PHASE 3 TODO (from reviews): prose must explain zero_question_languages=['grc'] is a held-back source (TLG restricted), NOT a coverage gap.
+
 ## Status
-- phase_2 complete. Committing (author Jonathan) + porch done. Next: phase_3 (facct.md, both files atomic within run_dir, prose block, anti-drift) then phase_4 (audit .md extension, byte-digest integrity, generate+commit real card, drift guard).
-- NOTE: context-refresh at phase_1→2 boundary did NOT run (porch moved to implement task directly; no boundary-bound self-refresh cmd surfaced). Context intact, ample budget. May run at phase_2→3 if porch emits it.
+- phase_2 fixes done, rebuttal committed. porch iter flow next (likely iter2 review → advance to phase_3).
+- Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
+- NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.
