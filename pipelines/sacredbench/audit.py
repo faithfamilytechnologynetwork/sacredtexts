@@ -10,6 +10,11 @@ target. Since restricted payloads are never committed, origin is the enforceable
 proxy for "contains restricted text": an artifact derived from a restricted source
 is exactly what must not be here.
 
+The scanned set is ``.json`` / ``.jsonl`` / ``.md`` (``_AUDITED_SUFFIXES``): the ``.md``
+inclusion puts the human-readable FAccT card (Spec 32 ``facct.md``) inside the gate. The
+origin layer applies only to the structured ``.json`` / ``.jsonl`` documents; a ``.md`` card
+has no source dict, so it gets the content (restricted-text fingerprint) layer only.
+
 Run it over the evidence before committing, and in the test gate:
 
     uv --project pipelines run python -m sacredbench audit runs/<id> texts/standardized
@@ -29,6 +34,11 @@ from sacredbench.score import strip_script_marks
 # in CI / a fresh clone), the audit ALSO scans committed text for restricted units,
 # so a restricted unit mislabeled with a public (work, version, language) is caught.
 _MIN_FINGERPRINT = 60  # chars of normalized text — long enough to not false-positive
+
+# Committed artifacts that are content-scanned. ``.md`` is included so a human-readable card
+# (Spec 32 facct.md) is inside the copyright gate, not merely beside it. The origin layer still
+# applies only to the structured ``.json`` / ``.jsonl`` documents (a ``.md`` has no source dict).
+_AUDITED_SUFFIXES = (".json", ".jsonl", ".md")
 
 
 class AuditError(Exception):
@@ -91,8 +101,13 @@ def restricted_keys(sources: list[cat.Source]) -> set[tuple[str, str, str]]:
 
 
 def _iter_source_dicts(path: Path):
-    """Yield the ``source`` metadata of every record in a standardized document or
-    an evidence row (questions/answers jsonl)."""
+    """Yield the ``(work, version, language)`` source metadata of every record in a standardized
+    document, an evidence row (questions/answers jsonl), or a FAccT card (``facct.json``).
+
+    The card carries its texts under ``census.selected_texts[*] = {work, version, language}`` rather
+    than a ``source`` dict, so the origin layer covers the card too — a card built over a run that
+    named a restricted edition would be flagged by origin, not left to the (body-free) content layer.
+    """
     text = path.read_text(encoding="utf-8").strip()
     if not text:
         return
@@ -109,6 +124,13 @@ def _iter_source_dicts(path: Path):
             src = q.get("source") if isinstance(q, dict) else None
         if isinstance(src, dict):
             yield src
+        # FAccT card: census.selected_texts entries are themselves {work, version, language}
+        census = d.get("census")
+        selected = census.get("selected_texts") if isinstance(census, dict) else None
+        if isinstance(selected, list):
+            for entry in selected:
+                if isinstance(entry, dict):
+                    yield entry
 
 
 def audit_paths(
@@ -127,17 +149,20 @@ def audit_paths(
     violations: list[str] = []
     for p in paths:
         p = Path(p)
-        files = sorted(f for f in p.rglob("*") if f.suffix in (".json", ".jsonl")) if p.is_dir() else [p]
+        files = sorted(f for f in p.rglob("*") if f.suffix in _AUDITED_SUFFIXES) if p.is_dir() else [p]
         for f in files:
-            if f.suffix not in (".json", ".jsonl"):
+            if f.suffix not in _AUDITED_SUFFIXES:
                 continue
             flagged = False
-            for src in _iter_source_dicts(f):
-                key = (src.get("work"), src.get("version"), src.get("language"))
-                if key in restricted:
-                    violations.append(f"{f}: derived from restricted source {key}")
-                    flagged = True
-                    break  # one origin violation per file is enough
+            # ORIGIN layer applies only to structured documents (a source (work, version, language));
+            # a .md card has no source dict, so it gets the content layer only.
+            if f.suffix in (".json", ".jsonl"):
+                for src in _iter_source_dicts(f):
+                    key = (src.get("work"), src.get("version"), src.get("language"))
+                    if key in restricted:
+                        violations.append(f"{f}: derived from restricted source {key}")
+                        flagged = True
+                        break  # one origin violation per file is enough
             if flagged or not fingerprints:
                 continue
             blob = _norm(f.read_text(encoding="utf-8"))

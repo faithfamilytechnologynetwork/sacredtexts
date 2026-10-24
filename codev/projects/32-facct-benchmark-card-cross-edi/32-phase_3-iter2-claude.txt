@@ -1,0 +1,46 @@
+I'll read the implementation files to review phase 3.## Review — Spec 32, Phase 3 (`facct.md` markdown card)
+
+**What I did:** read `facct.py`, `cli.py`, `test_facct.py`, `pipelines/README.md` from disk; rendered the real card for `runs/original-2026-10-21` to **stdout only** (`PYTHONDONTWRITEBYTECODE=1`, no files written); ran `pipelines/tests/test_facct.py` (all writes go to `tmp_path`) — **31 passed**. I made no change to the worktree.
+
+### Phase-3 deliverables: met
+
+| Deliverable | Status |
+|---|---|
+| `facct <run_dir>` writes both files by default, override must stay inside run dir | ✅ `_within` validates both destinations incl. defaults; `--json == --md` rejected; run dir itself rejected |
+| Census + outcomes (accuracy beside coverage) + counterfactual (num/denom + scope note) | ✅ verified in the real render |
+| All prose in one editable place | ✅ `CARD_PROSE` now holds intros, labels, templates **and** table headers; `report_markdown` is pipes + interpolation only. The iter-1 split (`_COUNTERFACTUAL_SCOPE`) is genuinely gone |
+| No typed figures | ✅ "three" is gone; `3 … (ASV (1901), KJV, WEB)` is interpolated from `census["selected_texts"]`, guarded by a test |
+| Per-text census in the markdown | ✅ 17-row table with license per text |
+| Both-or-neither / atomic | ✅ build + both renders complete before any write; staged `.tmp` + `os.replace` |
+| Drift guard | ✅ single-cell mutation test **plus** the systematic every-count/accuracy/coverage/numerator/denominator test |
+| No `fabrication`, no verse bodies | ✅ tested |
+
+The rendered card reads cleanly against the docs bar: one linear track, no asides, a non-engineer can follow it. The counterfactual denominators sum to 32, matching the spec's expected figure, and `opus` honestly shows `0 / 0`.
+
+### Substantive suggestions (not spec criteria — your call / Jonathan's)
+
+1. **The card says "For this panel" but never shows the panel.** The outcomes table identifies models as `gpt-oss-20b`, `haiku`, `opus`. `summary.json`/`facct.json` carry the real identity — `anthropic/claude-haiku-5-5`, `anthropic/claude-opus-5-5`, `openai/gpt-oss-20b`, all via `openrouter.ai`, `tools: []`. A FAccT reviewer reading `facct.md` standalone cannot tell *which* Haiku or whether search was on — and tool-use is part of panel identity in this project by design, so two runs of the same model with search on/off render identical cards. `report["panel"]` is already in hand; a 4-row provider/model/tools/endpoint table would close it.
+2. **The correctness rule is never stated.** The card explains refusals and coverage carefully, but not what makes an answer `correct` — containment of the reference wording (`evaluators: ["strict","containment"]`, which `facct.json` carries and the markdown drops). A reader will assume exact match, and the counterfactual section leans on containment without naming it.
+3. **"English" is hardcoded while the count and versions are derived.** `counterfactual_intro_template` / `counterfactual_scope_template` say "{n} … different **English** editions" but `bible_editions` is not language-filtered. Add a public-domain Latin or Greek Bible to the pool and the prose asserts something false — the exact drift class the spec warns about. Either derive the language from the data or drop the adjective.
+4. **"The four tasks" is a typed count and is not derived from the run.** A run generated with `--tasks retrieve_quote` would gloss four tasks while reporting one. Rendering the gloss list filtered by the tasks actually present in `report["outcomes"]` fixes both. Minor: the gloss order (`retrieve_quote…`) differs from the table order (alphabetical).
+
+### Minor
+
+- **The new hardening is untested.** The symlinked-default rejection, `--json == --md`, `--md .`, and "pre-existing `facct.{json,md}` are left byte-identical on a build failure" are all asserted in the rebuttal but have no test. `test_cli_both_or_neither_on_bad_evidence` only covers the case where neither file exists yet — the interesting case is a stale card surviving intact.
+- `tmp_json` is not cleaned up if `tmp_md.write_text` raises (e.g. `--md` resolving to a directory, which also surfaces as a raw `IsADirectoryError` rather than a clean error), leaving `facct.json.tmp` beside the committed run evidence. A `try/finally` unlink would keep the run dir clean.
+- `_pct` handles `None` but `_rates` never produces it, so an all-refused cell renders `0.0%` accuracy rather than `—`. Not triggered by this run; `_rates` is Phase 2 anyway.
+
+None of the above contradicts a spec success criterion or a phase-3 acceptance criterion, so this does not block the phase.
+
+---
+VERDICT: COMMENT
+SUMMARY: Phase-3 card is complete, prose is genuinely unified, numbers are derived and drift-guarded; the rendered card omits the panel identity and the containment rule it claims to rest on, and the new path/atomicity guards are untested.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `facct.md` claims "For this panel" but never renders `report["panel"]`; models appear only as aliases (`haiku`, `opus`), so the paper card hides which model/provider/tools produced the numbers.
+- The correctness rule (containment; `evaluators: ["strict","containment"]`) is in `facct.json` but absent from the markdown, so a reader will assume exact match — and the counterfactual depends on containment.
+- `counterfactual_intro_template`/`scope_template` hardcode "English" while the edition count and version list are derived — a non-English Bible in the pool would make the prose false.
+- "The four tasks" count and gloss list are typed rather than derived from the tasks present in the run (`--tasks` subset run would gloss tasks it never asked).
+- New output-safety guards (symlinked default, `--json == --md`, run-dir-itself, stale-card-survives-failure) have no tests; `facct.json.tmp` can be left behind if the second staged write fails.

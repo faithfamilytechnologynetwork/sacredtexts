@@ -23,6 +23,8 @@ from sacredbench import schema
 from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.config import ConfigError, load_config
+from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
+from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
@@ -384,12 +386,97 @@ def score(
     typer.echo(md)
 
 
+@app.command("edition-index")
+def edition_index_cmd(
+    out: Path = typer.Option(Path("texts/edition_index.jsonl"), help="JSONL export path; a sibling .manifest.json is written beside it"),
+    raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root"),
+) -> None:
+    """Export editions that share a citation (same canonical language, license != restricted).
+
+    The shared cross-edition producer: the FAccT card reads this index in-process; issue #21
+    consumes the file. Restricted editions (e.g. NABRE) are never indexed or exported. Makes
+    no network call.
+    """
+    indexed, all_docs, excluded = load_edition_documents(raw_root)
+    manifest = write_export(indexed, all_docs, excluded, out)
+    typer.echo(
+        f"wrote {out} and {out}.manifest.json — {manifest['row_count']} rows, "
+        f"corpus_hash {manifest['corpus_hash']}, digest {manifest['digest']}, "
+        f"excluded_restricted {manifest['excluded_restricted']}"
+    )
+
+
+# The only existing files a card write may replace are the card's own two outputs. Any OTHER
+# existing file in the run dir (questions.jsonl, scores.jsonl, answers.jsonl, summary.json/md,
+# README.md, …) is off-limits — the card writes only new files or re-writes itself.
+_CARD_OUTPUTS = ("facct.json", "facct.md")
+
+
+def _within(run_dir: Path, path: Path) -> Path:
+    """Resolve ``path`` to a card output file strictly inside ``run_dir``.
+
+    Inverse rule (so no enumeration of evidence names can go stale): the target must be a file inside
+    the run dir, and if it already exists it must be one of the card's own outputs
+    (``facct.json`` / ``facct.md``) **at that literal location** — any other existing file is
+    rejected. Resolution follows symlinks, so a symlink at the default or an override pointing at a
+    different file (e.g. a `facct.json` symlinked onto `scores.jsonl`) is rejected; the run directory
+    itself and existing directories are rejected too.
+    """
+    run_dir = run_dir.resolve()
+    target = (run_dir / path) if not path.is_absolute() else path
+    resolved = target.resolve()
+    if resolved == run_dir or run_dir not in resolved.parents:
+        raise typer.BadParameter(f"{path} must resolve to a file inside the run directory {run_dir}")
+    if resolved.is_dir():
+        raise typer.BadParameter(f"{path} resolves to a directory, not a file")
+    if target.exists() or target.is_symlink():
+        card_paths = {run_dir / name for name in _CARD_OUTPUTS}  # literal, not symlink-followed
+        if resolved not in card_paths:
+            raise typer.BadParameter(
+                f"{path} already exists in the run dir and is not a card output "
+                f"(facct.json / facct.md); refusing to overwrite it"
+            )
+    return resolved
+
+
+@app.command()
+def facct(
+    run_dir: Path = typer.Argument(help="a finished run directory (reads scores.jsonl, summary.json, answers.jsonl, manifest)"),
+    json_out: Path = typer.Option(None, "--json", help="facct.json path (default: <run_dir>/facct.json)"),
+    md_out: Path = typer.Option(None, "--md", help="facct.md path (default: <run_dir>/facct.md)"),
+    raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root (catalogue + edition index)"),
+) -> None:
+    """Write the FAccT card — facct.json AND facct.md — for a finished run.
+
+    Pure analysis: reads committed run evidence, never re-scores, never calls a model. Every
+    number on the card is derived from scores.jsonl / summary.json. Both files are written into
+    the run directory by default; an override path must stay within it. Fails fast (no partial
+    write) on inconsistent evidence, and writes both files atomically (both-or-neither).
+    """
+    # Validate BOTH destinations (including the defaults) before doing any work.
+    json_path = _within(run_dir, json_out if json_out is not None else Path("facct.json"))
+    md_path = _within(run_dir, md_out if md_out is not None else Path("facct.md"))
+    if json_path == md_path:
+        raise typer.BadParameter("--json and --md must be different paths")
+
+    # Build (fails fast on bad evidence) then write both files atomically: both or neither.
+    report = build_facct(run_dir, raw_root)
+    write_card(report, json_path, md_path)
+
+    cf = report["edition_counterfactual"]["by_model"]
+    other_edition = sum(b["numerator"] for b in cf.values())
+    typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "
+               f"{report['census']['n_questions']} questions, {other_edition} other_edition tag(s) "
+               f"across {len(cf)} model(s)")
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
-        gen.GenerateError, ScoreError, aud.AuditError, ConfigError,
+        gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
+        FacctError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

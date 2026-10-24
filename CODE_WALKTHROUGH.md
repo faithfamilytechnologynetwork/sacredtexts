@@ -46,7 +46,9 @@ sacredtexts/
 │       ├── score.py           Grades answers (exact / normalized / word-overlap). Open when adding a task (RECIPE B).
 │       ├── audit.py           Copyright gate: fails if any artifact derives from a restricted source. Open to understand the licence enforcement.
 │       ├── export.py          Assembles the shared "interchange" JSON and checks the merge is lossless.
-│       └── cli.py             The command-line entry points (convert, generate, collect, score, …). Open to see how a stage is wired.
+│       ├── edition_index.py   Shared cross-edition index: editions that share a citation (Spec 32). `edition-index` exports JSONL+manifest (frozen for #21); the FAccT card reads it in-process.
+│       ├── facct.py           The FAccT benchmark card (Spec 32): census + outcomes (from scores.jsonl) + the Bible edition counterfactual → facct.{json,md}. A pure analysis stage; never re-scores.
+│       └── cli.py             The command-line entry points (convert, generate, collect, score, edition-index, facct, …). Open to see how a stage is wired.
 ├── texts/
 │   ├── raw/<tradition>/        Source scripture as obtained, one folder per tradition, each with a source.yaml catalogue. Add a text's data here (RECIPE A).
 │   └── standardized/           Converted texts in the standard format. Rebuilt by `convert`; never committed.

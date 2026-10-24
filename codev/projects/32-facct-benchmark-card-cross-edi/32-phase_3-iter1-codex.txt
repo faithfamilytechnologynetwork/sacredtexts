@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Markdown rendering is largely complete, but the card contains a misleading benchmark claim and the CLI does not fully satisfy its output-safety guarantees.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `CARD_PROSE["claims"]` says all reported accuracy figures measure whether models “returned the requested wording of a citation” (`facct.py:383-384`). The table also covers `cite_passage`, `verify_source`, and `complete_unit`; those tasks do not all evaluate requested citation wording. Rephrase the claim to accurately cover all four tasks.
+- The promised both-or-neither behavior is not atomic. `cli.py:437-439` writes JSON before attempting the Markdown write, so an invalid Markdown parent, I/O error, or similar failure leaves JSON modified without Markdown. Also, `--json` and `--md` may resolve to the same path, causing Markdown to overwrite JSON. Stage and validate both outputs before committing them, reject identical destinations, and add a write-failure test.
+- Default output paths bypass `_within` (`cli.py:432-433`). An existing `run_dir/facct.json` or `facct.md` symlink can therefore write outside the run directory, contrary to the phase’s path-safety requirement. Validate resolved default paths as well as overrides.
+- The “one editable prose block” is incomplete: `report_markdown()` hardcodes reader-facing prose such as “This run asked…”, “Languages with zero questions”, “Excluded from the pool”, table labels, and the scope label outside `CARD_PROSE`. Move reader-facing wording into the designated block or narrow the documented guarantee.
+- The anti-drift test checks only one task’s accuracy. Phase 3 calls for every headline outcome count, accuracy, and coverage value to be tied to the fixture summary. Add systematic assertions for every model/task and overall row, including coverage and counts.

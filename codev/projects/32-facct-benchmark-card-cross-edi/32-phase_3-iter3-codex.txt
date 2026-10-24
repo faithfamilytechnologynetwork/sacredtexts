@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The card is substantially complete, but it misstates scoring for two tasks and can overwrite run evidence through allowed output paths.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `CARD_PROSE["correctness_note_template"]` (`facct.py:398-401`) says every correct answer contains the reference wording. That is true only for text-retrieval tasks; `cite_passage` requires a single matching citation and `verify_source` requires the correct leading Yes/No stance (`score.py:318-327`). The real run includes both tasks, so the card contradicts the scoring contract. Use task-specific wording and add coverage using all four tasks.
+- `_within()` (`cli.py:409-418`) permits output paths that resolve to evidence files inside the run. For example, `--json summary.json`, or a default `facct.json` symlink to `scores.jsonl`, passes validation and `write_card()` replaces authoritative evidence after reading it. This violates the requirement to write only new card paths and never modify run evidence. Reject direct and symlink-resolved aliases of required input files, with tests confirming neither card nor evidence is changed.

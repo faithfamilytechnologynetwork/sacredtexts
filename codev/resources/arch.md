@@ -142,9 +142,41 @@ is a static SPA host (`server/index.mjs`, hono + history fallback; no `/api` pro
 KJV/Qur'an(ar)/Talmud(he) 2×2 web-search on/off panel). The per-user
 `configs/models.yaml` is gitignored; keys come from the environment only.
 
+## FAccT card + edition index (Spec 32)
+
+`edition_index.py` is the **shared cross-edition producer** (carried from PR #30's
+`cross_translation.py`): it indexes same-canonical-language, non-restricted editions that share a
+citation. Both consumers group identically — in-process (`EditionIndex.by_cite`, keyed on
+`(work, language, raw citation)`) and the file export (`export_rows`, grouped on the same key) —
+so #21 (file) and the card (in-process) can never see different sibling sets; `cite_key` /
+`is_verse_citation` is only the "is this a Bible-style verse" predicate (the non-Bible guard).
+`sacredbench edition-index --out <path>` writes JSONL + `.manifest.json`. **The export row/manifest
+schema is frozen** (row `{work, citation, language, wordings:[{version,text}]}`, one per
+`(work,citation,language)`, wordings sorted, single-wording rows omitted, `license != restricted`;
+manifest `{corpus_hash, row_count, digest, excluded_restricted}`) — don't change it without #21.
+`corpus_hash` is **generate's corpus hash over the full non-restricted converted set** (translations
+included, before the language filter), so it equals a run manifest's `corpus_hash` for the same
+corpus — #21's consumer fail-fasts unless index corpus_hash == run corpus_hash.
+`facct.py` (`sacredbench facct <run_dir>` → `facct.{json,md}` beside the run) is a pure
+analysis/visualisation stage: census + the three outcomes read verbatim from `scores.jsonl` + the
+Bible-`retrieve_quote` edition counterfactual (reusing `score.bounded_contains`). The counterfactual
+considers only editions in the run manifest's `selected_texts`, scoped to the question's language, so
+a Bible edition added to the catalogue later cannot change a historic run's card. The card records a
+`selected_corpus_hash` (generate's hash over only the run's selected editions) beside the run's
+`corpus_hash`: it changes iff a *selected* edition's wording changes (the committed-card regression
+test then fails — remedy: regenerate) and is unaffected by unrelated catalogue additions, so adding a
+drop-in tradition leaves a historic card buildable and byte-identical. It is recorded, not enforced. It never re-scores
+or calls a model, fails fast with no partial write, and writes both files atomically (the shared
+`edition_index.atomic_write_texts`). All card prose is in one editable block `facct.CARD_PROSE`
+(Jonathan Karr owns the wording for the FAccT paper); every number is interpolated from the run,
+pinned by `test_original_run_regression.py::test_committed_facct_card_matches_the_run`.
+
 ## Test gate
 
 Per-builder dispatcher `.codev/checks/test.sh` (global `porch.checks` is unsuitable for
 a multi-app repo): routes touched dirs → `pipelines` (`uv … pytest`) and `apps/viewer`
 (`pnpm … vitest`). It diffs `origin/main...HEAD`, so changes must be committed to be
-tested.
+tested. The pipelines pytest includes the copyright audit, which content-scans
+`.json`/`.jsonl`/**`.md`** (`audit._AUDITED_SUFFIXES`) — the `.md` inclusion (Spec 32) puts the
+FAccT card inside the gate; the origin layer stays structured-docs-only (a `.md` has no source
+dict, and also recognises a card's `census.selected_texts` origins).

@@ -1,0 +1,40 @@
+I'll review phase_4 by reading the actual files from disk.## Review — Phase 4: Generate and commit the card for `runs/original-2026-10-21`
+
+I read every phase-4 file from disk and independently recomputed the card's numbers from the committed evidence rather than trusting the builder's notes. The tree was not modified (read-only commands plus `pytest`, which writes only gitignored caches).
+
+### What I verified independently
+
+**Evidence integrity (the criterion that matters most here).** `git diff <merge-base>...HEAD -- runs/original-2026-10-21/` adds exactly three things: `facct.json`, `facct.md`, and the README section. `scores.jsonl`, `answers.jsonl`, `summary.json` and the manifest are byte-untouched (git's content hashes are a stronger proof than the sha256 capture the plan asked for). No `generate`/`collect`/`score` ran over committed evidence.
+
+**Card numbers equal `summary.json`, not approximately.** I diffed every model × task × `_overall` cell (correct/incorrect/refused/accuracy/coverage) between `summary.json` and `facct.json`: zero mismatches. No typed figures.
+
+**Counterfactual recomputed from scratch.** Joining `scores.jsonl` to `answers.jsonl` myself and filtering `work == "The Bible"`, `task == retrieve_quote`: gpt-oss-20b 17 incorrect, haiku 15 incorrect, opus 0 incorrect (21/21 correct). Denominators on the card are 17 / 15 / 0 — total 32, matching the plan's "≈32". The `0 of 0` for opus is real, not a bug, and the card explains it in prose.
+
+**The three `other_edition` tags are genuine.** I pulled the two sampled cells: `Mark 1:23` asked as ASV, haiku answered "And there was in their synagogue…" (KJV — ASV has "straightway"); `Jeremiah 38:15` likewise KJV wording under an ASV request. These are exactly the finding the spec wanted surfaced, not false positives.
+
+**Audit `.md` extension is real, not nominal.** The diff is minimal and correctly scopes the *origin* layer to `.json`/`.jsonl` (a `.md` has no source dict) while putting `.md` inside the *content* layer. `test_md_card_is_content_scanned` is non-vacuous: without `.md` in `_AUDITED_SUFFIXES`, `audit_paths([md], sources, {fp})` returns `[]` and the assertion fails. `uv run python -m sacredbench audit runs/original-2026-10-21` → clean (origin-only; payloads absent, as documented).
+
+**Drift guard runs and is stronger than planned.** `test_committed_facct_card_matches_the_run` compares the committed `facct.json` to a full `build_facct(RUN)` rebuild — it does *not* skip (only the standardized-corpus generation test skips). `build_facct` is read-only; all writing is isolated in `write_card`. I also confirmed `report_markdown(build_facct(RUN))` is **byte-identical** to the committed `facct.md`.
+
+**Suite:** `uv --project pipelines run pytest pipelines` → 436 passed, 1 skipped.
+
+### Comments (non-blocking)
+
+1. **`facct.md` has no committed-run drift guard** — only `facct.json` does. The card a FAccT reviewer actually reads is the markdown one, and a prose edit to `CARD_PROSE` without regeneration would leave it stale while the JSON guard stays green. One line closes it, and it passes today (verified byte-identical above):
+   ```python
+   assert (RUN / "facct.md").read_text(encoding="utf-8") == report_markdown(rebuilt)
+   ```
+2. **The audit's origin layer is blind to the card's census shape.** `_iter_source_dicts` looks for `source` (or `question.source`); `facct.json` carries `census.selected_texts[*] = {work, version, language}` at a different path. So a card built over a run that *did* include a restricted target would name e.g. `NABRE` and sail past the origin layer, with the content layer silent because the card deliberately embeds no passage bodies. Not a copyright violation (a version *name* is not restricted text — the run README names NABRE already) and not a plan item, so not a change request. But since this phase exists to put the card inside the gate, teaching `_iter_source_dicts` about `census.selected_texts` would make that true rather than incidental.
+3. **The full-rebuild guard couples the test to `texts/raw`.** Adding a fourth public-domain Bible edition changes the counterfactual and fails the test. That is the right behavior, but a future contributor could read the failure as "loosen the assert". Worth a sentence in the test docstring saying the remedy is *regenerate the card*.
+4. **Two card-prose nits for Jonathan at PR time** (wording is explicitly provisional, so these are his call, not a code issue):
+   - Talmud Bavli (William Davidson Edition – **Aramaic**) renders as Language "**Hebrew (he)**". Faithful to the catalogue's `language: he`, but a reviewer may read it as an error on a text the card itself elsewhere describes with "Talmud daf:line".
+   - The panel table shows Provider `openai` for `anthropic/claude-opus-5-5` / `-haiku-5-5` (OpenRouter's OpenAI-compatible endpoint). The run README explains this; the card does not, and a FAccT reader seeing the card alone will likely read it as a mistake.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 4 delivers a correct, independently verified card — numbers match `summary.json` exactly, the 32-cell counterfactual and its 3 tags check out against the raw evidence, committed evidence is byte-untouched, the `.md` audit extension is real, and the suite is green; only non-blocking polish remains.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Non-blocking: (1) `facct.md` lacks a committed-run drift guard (JSON only) — a one-line assert would close it and passes today; (2) the audit's origin layer cannot read `facct.json`'s `census.selected_texts` shape, so card-level restricted-origin coverage is incidental rather than enforced; (3) the full-rebuild guard couples the test to `texts/raw` — note the "regenerate the card" remedy in the docstring; (4) prose nits for Jonathan: Aramaic Talmud labeled "Hebrew (he)", and provider `openai` shown for `anthropic/claude-*` without the OpenRouter explanation the run README carries.

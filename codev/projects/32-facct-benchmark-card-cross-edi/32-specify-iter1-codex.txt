@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The feature is feasible and well bounded, but the counterfactual and census contracts need clarification before implementation.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The edition counterfactual is underspecified for `complete_unit`. Unlike `retrieve_quote`, its gold answer is only the remaining half of a verse. The spec must define how an alternative edition’s completion is derived and aligned, or explicitly limit the counterfactual to `retrieve_quote`; otherwise implementations can produce materially different counts.
+- Resolve the two “Important” open questions before approval. In particular, normalized exact match is already a subset of normalized containment, so the first question does not describe two distinct acceptance rules. State the required rule directly and whether the requested edition itself is excluded when assigning `other_edition`.
+- The Problem Statement inaccurately describes the committed run as containing Vatican documents and an English/Aramaic Talmud. The verified manifest contains neither Vatican documents nor the English Talmud: both are excluded, while only the Aramaic Talmud is selected. Reframe this as catalogue coverage versus actual run composition.
+- “Catalogue languages with zero questions” is ambiguous. The catalogue has target languages and canonical languages; for example, Latin appears only as the encyclicals’ `canonical_language`, while their target language is English. Define which language universe the zero-coverage list uses.
+- Define failure behavior for inconsistent or incomplete evidence: missing files, duplicate/missing answer-score join keys, summary counts disagreeing with `scores.jsonl`, unresolved catalogue targets, or missing indexed Bible citations. The tests mention deliberate summary mismatch but do not specify whether generation must fail or merely report it. Fail-fast without partially replacing either output is the safest contract.
