@@ -52,3 +52,9 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - porch advanced to IMPLEMENT phase_1 "Jev judge pass and CLI".
 - Karr authorship: `git commit --author="Jonathan Karr <jka83321@gmail.com>"` on the jev.py commit.
 - HOLD POINT remains: Phase 4 live pass needs architect pre-flight sign-off (~$0.011, 400 cells).
+
+## 2026-10-24 — Phase 1 DONE (Jev judge pass + CLI)
+- `jev.py` (carried from Karr, corrected), `cli.py` judge/judge-summary, `test_jev.py` (13 tests), fixture `testdata/jev_decision_sample.json`, TUTORIAL/README judge step. Full suite: 399 passed, 1 pre-existing skip.
+- Pre-flight dry run on committed tutorial answers = 400 cells ~$0.0108 (matches plan). Refuses to spend without --yes.
+- Committed authored by **Jonathan Karr <jka83321@gmail.com>** (carries his code) — `[Spec 21][Phase 1]`.
+- **TODO before PR**: strip `Co-Authored-By: Claude Opus 4.8` trailers from my earlier spec/plan/thread/rebuttal commits — global CLAUDE.md + architect brief both say NO Co-Authored-By. I wrongly added them during spec/plan; stopped as of Phase 1. Clean the branch history (message-only rewrite, tree unchanged) just before opening the PR, verify with git log.
