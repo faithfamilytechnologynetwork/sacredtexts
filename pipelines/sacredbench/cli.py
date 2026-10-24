@@ -8,7 +8,6 @@ Run from the repo root:
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -25,7 +24,7 @@ from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.config import ConfigError, load_config
 from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
-from sacredbench.facct import FacctError, build_facct, report_markdown
+from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
@@ -439,19 +438,9 @@ def facct(
     if json_path == md_path:
         raise typer.BadParameter("--json and --md must be different paths")
 
-    # Build and render BOTH before writing EITHER; then stage to temp files and swap both into
-    # place, so a failure anywhere leaves neither the JSON nor the Markdown touched.
+    # Build (fails fast on bad evidence) then write both files atomically: both or neither.
     report = build_facct(run_dir, raw_root)
-    json_text = json.dumps(report, ensure_ascii=False, indent=1) + "\n"
-    markdown = report_markdown(report)
-    json_path.parent.mkdir(parents=True, exist_ok=True)
-    md_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_json = json_path.with_name(json_path.name + ".tmp")
-    tmp_md = md_path.with_name(md_path.name + ".tmp")
-    tmp_json.write_text(json_text, encoding="utf-8")
-    tmp_md.write_text(markdown, encoding="utf-8")
-    os.replace(tmp_json, json_path)
-    os.replace(tmp_md, md_path)
+    write_card(report, json_path, md_path)
 
     cf = report["edition_counterfactual"]["by_model"]
     other_edition = sum(b["numerator"] for b in cf.values())

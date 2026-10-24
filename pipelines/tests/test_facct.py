@@ -19,7 +19,7 @@ from typer.testing import CliRunner
 
 from sacredbench import facct as facct_mod
 from sacredbench.cli import app
-from sacredbench.facct import FacctError, build_facct, report_markdown, write_facct_json
+from sacredbench.facct import FacctError, build_facct, report_markdown, write_card, write_facct_json
 
 runner = CliRunner()
 
@@ -509,6 +509,62 @@ def test_cli_both_or_neither_on_bad_evidence(tmp_path):
     result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw)])
     assert result.exit_code != 0
     assert not (run / "facct.json").exists() and not (run / "facct.md").exists()
+
+
+def test_markdown_renders_panel_and_correctness_rule(tmp_path):
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    assert "## The panel" in md
+    assert "m1" in md and "| p |" in md  # provider from the fixture panel
+    # the correctness rule (containment + the evaluator names) is stated on the card
+    assert "contains" in md.lower()
+    assert "strict, containment" in md
+
+
+def test_markdown_glosses_only_tasks_present(tmp_path):
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    assert "**retrieve_quote**" in md and "**complete_unit**" in md
+    # cite_passage / verify_source are not in the fixture run, so they are not glossed
+    assert "**cite_passage**" not in md and "**verify_source**" not in md
+
+
+def test_write_card_is_atomic_rollback_on_second_stage_failure(tmp_path, monkeypatch):
+    report, run, _raw = _build(tmp_path)
+    jp, mp = run / "facct.json", run / "facct.md"
+    jp.write_text("OLD-JSON")
+    mp.write_text("OLD-MD")
+    import os as _os
+
+    real_replace = _os.replace
+    calls = {"n": 0}
+
+    def flaky_replace(src, dst):
+        calls["n"] += 1
+        if calls["n"] == 2:  # fail on the second swap (the markdown)
+            raise OSError("boom")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(facct_mod.os, "replace", flaky_replace)
+    with pytest.raises(OSError):
+        write_card(report, jp, mp)
+    # both files are left byte-identical to their prior contents (first swap rolled back)
+    assert jp.read_text() == "OLD-JSON"
+    assert mp.read_text() == "OLD-MD"
+    # no stray temp files left in the run dir
+    assert not list(run.glob("facct.*.tmp")) and not list(run.glob("facct.*.bak.*"))
+
+
+def test_cli_leaves_stale_card_intact_on_bad_evidence(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    (run / "facct.json").write_text("STALE-JSON")
+    (run / "facct.md").write_text("STALE-MD")
+    (run / "summary.json").unlink()  # build fails
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw)])
+    assert result.exit_code != 0
+    assert (run / "facct.json").read_text() == "STALE-JSON"  # untouched
+    assert (run / "facct.md").read_text() == "STALE-MD"
 
 
 # --- real committed run ------------------------------------------------------

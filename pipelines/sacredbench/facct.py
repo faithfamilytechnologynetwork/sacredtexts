@@ -21,6 +21,9 @@ predicate behind the headline — never a private matcher.
 from __future__ import annotations
 
 import json
+import os
+import shutil
+import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -347,16 +350,24 @@ def write_facct_json(report: dict, out_path: Path) -> None:
 # from the run it describes.
 # ============================================================================================
 CARD_PROSE = {
+    "title_template": "FAccT benchmark card — {run}",
     "tagline": "What this benchmark run is allowed to mean — and what it is not.",
-    # the four task names glossed for a reader who has not read the pipeline
-    "tasks_heading": "The four tasks",
-    "tasks_intro": "Each question uses one of four tasks:",
+    # the task names glossed for a reader who has not read the pipeline (only the tasks actually
+    # present in the run are rendered — the gloss list is not a fixed count)
+    "tasks_heading": "The tasks",
+    "tasks_intro": "Each question uses one of these tasks:",
     "task_glosses": {
         "retrieve_quote": "quote a named edition's exact wording of a citation",
         "complete_unit": "continue a verse or unit from its opening words",
         "cite_passage": "name the citation a quoted passage comes from",
         "verify_source": "judge whether a passage really is from a claimed source",
     },
+    "panel_heading": "The panel",
+    "panel_intro": (
+        "The models behind the numbers, with any tools they were given — tool use is part of a "
+        "model's identity here, so the same model with search on and off are different panellists."
+    ),
+    "tools_none": "none",
     "census_heading": "Who the questions represent",
     "census_intro": (
         "The questions are drawn from original-language editions only: a text is asked about just "
@@ -384,18 +395,25 @@ CARD_PROSE = {
         "only answered questions, and coverage is the share of questions that were answered. A high "
         "accuracy on low coverage is not mastery; read the two together."
     ),
+    "correctness_note_template": (
+        "An answer counts as correct when it *contains* the reference wording (graders: {evaluators}) "
+        "— not an exact string match. 'Contains' is a word-bounded, script-aware match, the same one "
+        "the edition question below uses."
+    ),
+    "overall_label": "overall",
     "counterfactual_heading": "Would another edition have passed?",
     "counterfactual_intro_template": (
-        "{n} of the texts are different English editions of the same Bible ({versions}). When a model "
-        "was asked for one edition's wording of a verse and missed, it sometimes answered with a "
-        "faithful wording of the *same verse from a different edition*. The count below is how many of "
-        "those misses were really another edition of the right verse."
+        "{n} of the texts are different editions of the same Bible ({versions}). When a model was "
+        "asked for one edition's wording of a verse and missed, it sometimes answered with a faithful "
+        "wording of the *same verse from a different edition*. The count below is how many of those "
+        "misses were really another edition of the right verse."
     ),
+    "counterfactual_scope_label": "Scope:",
     "counterfactual_scope_template": (
         "Bible retrieve_quote cells only. complete_unit is excluded (its gold is a partial unit with "
-        "no well-defined sibling-edition segment); the {n} English Bible editions ({versions}) are the "
-        "only sibling editions in the pool, and non-Bible citations (Arabic surah:ayah, hadith "
-        "numbers, Talmud daf:line) are never matched to a Bible edition."
+        "no well-defined sibling-edition segment); the {n} Bible editions ({versions}) are the only "
+        "sibling editions in the pool, and non-Bible citations (Arabic surah:ayah, hadith numbers, "
+        "Talmud daf:line) are never matched to a Bible edition."
     ),
     "claims_heading": "What this card claims",
     "claims": [
@@ -426,6 +444,7 @@ CARD_PROSE = {
     ),
     # table column headers (reader-facing labels, kept here so all wording is in one place)
     "headers": {
+        "panel": ["Model", "Provider", "Model ID", "Tools", "Endpoint"],
         "tradition": ["Tradition", "Texts"],
         "texts": ["Text", "Language", "Tradition", "Type", "License"],
         "outcomes": ["Model", "Task", "Correct", "Incorrect", "Refused", "Accuracy", "Coverage"],
@@ -457,13 +476,29 @@ def report_markdown(report: dict) -> str:
     census = report["census"]
     cf = report["edition_counterfactual"]
     bibles = cf["bible_editions"]
-    lines: list[str] = [f"# FAccT benchmark card — {report['run']}", "", f"*{p['tagline']}*", ""]
+    lines: list[str] = [f"# {p['title_template'].format(run=report['run'])}", "",
+                        f"*{p['tagline']}*", ""]
 
-    # --- tasks gloss ---
-    lines += [f"## {p['tasks_heading']}", "", p["tasks_intro"], ""]
-    for task, gloss in p["task_glosses"].items():
-        lines.append(f"- **{task}** — {gloss}")
-    lines.append("")
+    # --- panel ---
+    panel = report.get("panel") or {}
+    if panel:
+        lines += [f"## {p['panel_heading']}", "", p["panel_intro"], ""]
+        panel_rows = [
+            [model, info.get("provider", "—"), info.get("model", "—"),
+             ", ".join(info.get("tools") or []) or p["tools_none"], info.get("endpoint", "—")]
+            for model, info in panel.items()
+        ]
+        lines += _table(p["headers"]["panel"], panel_rows)
+        lines.append("")
+
+    # --- tasks gloss (only the tasks actually present in the run) ---
+    present_tasks = sorted({task for block in report["outcomes"].values() for task in block["by_task"]})
+    if present_tasks:
+        lines += [f"## {p['tasks_heading']}", "", p["tasks_intro"], ""]
+        for task in present_tasks:
+            gloss = p["task_glosses"].get(task)
+            lines.append(f"- **{task}**" + (f" — {gloss}" if gloss else ""))
+        lines.append("")
 
     # --- census ---
     lines += [f"## {p['census_heading']}", "", p["census_intro"], ""]
@@ -491,13 +526,14 @@ def report_markdown(report: dict) -> str:
 
     # --- outcomes ---
     lines += [f"## {p['outcomes_heading']}", "", p["outcomes_intro"], ""]
+    lines += [p["correctness_note_template"].format(evaluators=", ".join(report.get("evaluators") or [])), ""]
     rows: list[list[str]] = []
     for model, block in report["outcomes"].items():
         for task, t in block["by_task"].items():
             rows.append([model, task, t["correct"], t["incorrect"], t["refused"],
                          _pct(t["accuracy"]), _pct(t["coverage"])])
         o = block["overall"]
-        rows.append([model, "**overall**", o["correct"], o["incorrect"], o["refused"],
+        rows.append([model, f"**{p['overall_label']}**", o["correct"], o["incorrect"], o["refused"],
                      f"**{_pct(o['accuracy'])}**", f"**{_pct(o['coverage'])}**"])
     lines += _table(p["headers"]["outcomes"], rows,
                     ["---", "---", "---:", "---:", "---:", "---:", "---:"])
@@ -509,7 +545,7 @@ def report_markdown(report: dict) -> str:
     lines += _table(p["headers"]["counterfactual"],
                     [[m, b["numerator"], b["denominator"]] for m, b in cf["by_model"].items()],
                     ["---", "---:", "---:"])
-    lines += ["", f"*Scope: {cf['scope']}*", ""]
+    lines += ["", f"*{p['counterfactual_scope_label']} {cf['scope']}*", ""]
 
     # --- prose sections ---
     for heading, items in ((p["claims_heading"], p["claims"]),
@@ -521,3 +557,58 @@ def report_markdown(report: dict) -> str:
     lines += [f"## {p['review_heading']}", "", p["review_note"], ""]
 
     return "\n".join(lines)
+
+
+def write_card(report: dict, json_path: Path, md_path: Path) -> None:
+    """Write ``facct.json`` and ``facct.md`` atomically — both or neither.
+
+    Both files are rendered in memory first, then each is written to a collision-safe temp file in
+    its own (already-validated) directory and swapped into place with ``os.replace``. If the second
+    swap fails, the first is rolled back to its prior contents (or removed if it did not exist), so a
+    failure never leaves a fresh file beside a stale one, and temp files are always cleaned up.
+    """
+    json_path, md_path = Path(json_path), Path(md_path)
+    payloads = [
+        (json_path, json.dumps(report, ensure_ascii=False, indent=1) + "\n"),
+        (md_path, report_markdown(report)),
+    ]
+    staged: list[tuple[Path, Path]] = []  # (temp, final)
+    try:
+        for final, text in payloads:
+            fd, tmp = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".", suffix=".tmp")
+            os.close(fd)
+            Path(tmp).write_text(text, encoding="utf-8")
+            staged.append((Path(tmp), final))
+    except BaseException:
+        for tmp, _final in staged:
+            tmp.unlink(missing_ok=True)
+        raise
+
+    swapped: list[tuple[Path, Path | None]] = []  # (final, backup-or-None)
+    pending_backup: Path | None = None  # backup of the target currently being swapped
+    try:
+        for tmp, final in staged:
+            pending_backup = None
+            if final.exists():
+                fd, bak = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".bak.")
+                os.close(fd)
+                shutil.copy2(final, bak)
+                pending_backup = Path(bak)
+            os.replace(tmp, final)  # if this raises, pending_backup is the orphan to clean
+            swapped.append((final, pending_backup))
+            pending_backup = None
+    except BaseException:
+        if pending_backup is not None:
+            pending_backup.unlink(missing_ok=True)
+        for final, backup in reversed(swapped):  # roll back already-swapped targets
+            if backup is not None:
+                os.replace(backup, final)
+            else:
+                final.unlink(missing_ok=True)
+        for tmp, _final in staged:
+            tmp.unlink(missing_ok=True)
+        raise
+    finally:
+        for _final, backup in swapped:
+            if backup is not None:
+                backup.unlink(missing_ok=True)
