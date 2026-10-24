@@ -157,7 +157,7 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
     — one row per `(work, citation, language)`; `wordings` sorted by version; only
     same-canonical-language editions; `license != restricted` filtered (NABRE never appears); rows
     with a single wording are omitted.
-  - manifest: `{"corpus_hash": str, "row_count": int, "digest": <sha256 prefix of the file>, "excluded_restricted": [<version ids>]}`.
+  - manifest: `{"corpus_hash": str, "row_count": int, "digest": <sha256 prefix of the file>, "excluded_restricted": [<version ids>]}`. `excluded_restricted` lists the restricted editions that *would otherwise have been eligible siblings* — i.e. restricted targets with `language == canonical_language` (on the real catalogue: `NABRE`, `TLG`) — not every restricted target. (This narrowing is part of the frozen contract for #21.)
   The file export exists for #21; the card consumes the module in-process. A restricted payload
   present locally must never reach the exported file.
 - **No viewer work in this spec.** The viewer per-run card view is **out of scope** — if wanted later

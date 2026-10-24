@@ -11,8 +11,11 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
+from typer.testing import CliRunner
+
 from sacredbench import catalogue as cat
 from sacredbench import generate as gen
+from sacredbench.cli import app
 from sacredbench.edition_index import (
     cite_key,
     export_rows,
@@ -21,6 +24,8 @@ from sacredbench.edition_index import (
     write_export,
 )
 from sacredbench.schema import Document, Entry
+
+runner = CliRunner()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -207,6 +212,20 @@ def _fixture_raw_with_present_restricted(root: Path) -> Path:
     )
     _write(raw / "Translation" / "talmud_en.json", _bible("Genesis", [(1, 1, "an english rendering")]))
     return raw
+
+
+def test_cli_edition_index_writes_both_files(tmp_path):
+    raw = _fixture_raw_with_present_restricted(tmp_path)
+    out = tmp_path / "idx.jsonl"
+    result = runner.invoke(app, ["edition-index", "--out", str(out), "--raw-root", str(raw)])
+    assert result.exit_code == 0, result.output
+    assert out.exists() and (tmp_path / "idx.jsonl.manifest.json").exists()
+    manifest = json.loads((tmp_path / "idx.jsonl.manifest.json").read_text())
+    assert manifest["excluded_restricted"] == ["NABRE"]
+    assert "NABRE" in result.output  # the echo surfaces the exclusions
+    # the restricted + non-canonical editions never reach the exported file
+    body = out.read_text()
+    assert "SECRET" not in body and "english rendering" not in body
 
 
 def test_restricted_edition_never_indexed_even_when_payload_present(tmp_path):

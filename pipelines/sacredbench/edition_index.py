@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass
@@ -95,6 +96,10 @@ def index_documents(docs: list[Document]) -> EditionIndex:
     by_cite: dict[tuple[str, int, int], list[Passage]] = defaultdict(list)
     by_norm: dict[str, list[Passage]] = defaultdict(list)
     for doc in docs:
+        # NOTE: this collapses the tradition LIST to its first element (arch invariant:
+        # "tradition is a LIST"). Fine for the edition index (it only needs edition identity),
+        # but a consumer that needs tradition (e.g. the Spec 32 census) must read it from the
+        # catalogue/question source, NOT from Passage.tradition.
         tradition = doc.tradition[0] if doc.tradition else "unknown"
         for entry in doc.entries:
             key = cite_key(entry.citation)
@@ -195,12 +200,22 @@ def build_manifest(docs: list[Document], body: str, excluded_restricted: list[st
 
 
 def write_export(docs: list[Document], excluded_restricted: list[str], out_path: Path) -> dict:
-    """Write ``out_path`` (JSONL) and ``<out_path>.manifest.json``; return the manifest."""
+    """Write ``out_path`` (JSONL) and ``<out_path>.manifest.json``; return the manifest.
+
+    Both-or-neither: the rows are built (and may raise :class:`EditionIndexError` on a
+    conflicting duplicate) before anything is written, and the two files are staged to temp
+    paths and swapped into place, so a failure never leaves a fresh index beside a stale manifest.
+    """
     out_path = Path(out_path)
     body = _serialize_rows(export_rows(docs))
     manifest = build_manifest(docs, body, excluded_restricted)
+    manifest_text = json.dumps(manifest, ensure_ascii=False, indent=1) + "\n"
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(body, encoding="utf-8")
     manifest_path = out_path.with_name(out_path.name + ".manifest.json")
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    tmp_jsonl = out_path.with_name(out_path.name + ".tmp")
+    tmp_manifest = manifest_path.with_name(manifest_path.name + ".tmp")
+    tmp_jsonl.write_text(body, encoding="utf-8")
+    tmp_manifest.write_text(manifest_text, encoding="utf-8")
+    os.replace(tmp_jsonl, out_path)
+    os.replace(tmp_manifest, manifest_path)
     return manifest
