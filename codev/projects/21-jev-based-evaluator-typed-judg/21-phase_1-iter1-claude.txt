@@ -1,0 +1,45 @@
+I'll start by reading the implementation files.I read the implementation files, the spec/plan phase-1 sections, the commit, the docs diff, and the prior codex review. I did **not** run the test suite or `uv` — that writes to the builder's live worktree/venv cache — and I changed nothing.
+
+## What's solid
+
+- **Karr authorship preserved** on `fe1e929` (`Author: Jonathan Karr <jka83321@gmail.com>`) — verified via `git show`.
+- **No `cross_translation` import** anywhere in `jev.py`; `_alternates` takes an injected index and is inert in phase 1. Phase-1 acceptance criterion met.
+- **Judge is off the default path**: `from sacredbench import jev` is a function-local import in the `judge`/`judge-summary` commands only; `grep -i jev` over `score.py`/`collect.py` is empty, and `test_jev.py:218` pins that.
+- **Restricted guard is non-vacuous** — I checked both ends: `audit.restricted_keys` returns `(work, version, language)` and `runs/tutorial-2026-10-11/answers.jsonl` rows carry `question.source.language`, so the `_partition` key (jev.py:302) actually matches (e.g. `("The Bible","NABRE","en")`).
+- **Retry policy** in `post_decision` (jev.py:205) is correct under Python precedence: 401/403 and non-429 4xx raise immediately; 429 and 5xx retry.
+- Resume/stale-safety, build-pinning under the lock, task filter, `--yes` gating, and the docs (TUTORIAL/README) all match what the plan asked for, and the fixture is the real wire shape.
+
+## Issues
+
+**1. Total spend is never surfaced (explicit spec criterion, unmet).** The spec requires spend "summed + per-cell"; `summarize()` (jev.py:456-462) returns `n`/`kinds`/`refusal_p_ge_0.5`/`judge_models`/`rubric_id` with no cost, and the CLI's post-run echo (cli.py:433-435) prints no total. Per-cell `usage.cost` is recorded, so this is a few lines in `summarize` + one echo line. (Codex found this too.)
+
+**2. Sidecar with rows but no manifest → a silent mixed-build file.** `_load_manifest` (jev.py:256-257) returns `None` when the manifest file is absent, *without checking whether `out` already has rows*. `established[0]` then starts `None`, the first new response pins a possibly-different build and writes a fresh manifest, and the file now mixes builds — the exact outcome the spec says must never exist. Fix: in `judge`/`estimate`, if `out` exists and is non-empty while `_manifest_path(out)` does not, raise. (Codex found this too; I agree it's real.)
+
+**3. Row schema deviates from the spec's authoritative schema.** The spec pins flat `kind` + `kind_probabilities` + `kind_confidence`; `interpret` (jev.py:176-180) emits nested `equivalence: {kind, probabilities, confidence}`. The nested form is arguably nicer (it unifies with the `"not_evaluated"` sentinel), but phase 1 owns this contract and two downstream consumers already assume the flat names: the plan's phase-2 grader registration is `Grader("jev", ("matches_requested_p","refusal_p","kind"), …)`, and phase 4's agreement module reads these rows. Either align to the spec or get the deviation ratified and update the plan's phase-2 metric keys — don't let phases 2/4 discover it.
+
+**4. `interpret` is loose where the spec says fail loud.** `choice` is validated against `_KINDS`, but `noul` is only checked for *presence* (jev.py:155-158) — a string or bool passes through into `refusal_p`/`matches_requested_p`. And `usage` defaults to `{}` (jev.py:159), so a missing usage block silently yields `cost: None` — which is a budget control quietly reading zero. `decision_id`/`judge_provider` can likewise be `None` while the spec lists them as reproducibility fields (only `judge_model_resolved` is enforced, jev.py:183).
+
+**5. Live smoke not done (phase-1 deliverable).** The plan's phase 1 ends with "a single-cell live smoke (≈$0.00003) … before later phases build on the HTTP/parse code," citing the hot-tier lesson that mocking the provider seam hides live-only failures. The thread (line 58) records only a *pre-flight dry run* — zero calls — and there is no judgments sidecar anywhere in the tree or in `tmp/`. The specify-phase live verification was a scratch call, not a pass through `post_decision`/`judge`, so the request body this code builds (`{"model","state","questions"}` from `build_questions`) has never hit the wire. One cell, ~$3e-5, well under the cap.
+
+**6. Test gaps against the plan's own test plan.** `--limit` has no test at all (`grep limit pipelines/tests/test_jev.py` is empty) though the plan lists "pre-flight/`--limit` behaviour"; there's no concurrent build-conflict test (the code path via `conflict`/`established` is only exercised serially by `test_build_mismatch_on_resume_fails_fast`); no missing-manifest-resume test (issue 2); no cost-sum assertion (issue 1). The 13 tests present are well-targeted otherwise.
+
+## Minor
+
+- `from sacredbench.score import normalize  # noqa: F401` (jev.py:42) is unused — "kept for parity" is dead weight; drop it or use it.
+- `jev.JevError` isn't in `main()`'s handled tuple (cli.py:457-460). Both `jev.estimate`/`jev.judge` call sites wrap it, but a mid-run build conflict then surfaces as a Typer *usage* error with a `Usage:` banner, and `jev.summarize(out)` / `answers.read_text()` can still throw raw tracebacks on a malformed or missing file.
+- `test_score_and_collect_do_not_invoke_the_judge` asserts `"jev" not in score.py`. Phase 2 adds `score --judgments` to `score.py`; one explanatory comment saying "Jev" will break it. Consider asserting on imports rather than a substring before phase 2 lands.
+- On resume, a manifest whose `question_set_digest` is `None` is accepted and never upgraded (jev.py:263, `_write_manifest` is only reachable when `established[0] is None`), so the binding stays unrecorded for the file's life.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core judge pass, resume/build-identity, restricted guard and Karr authorship are correct, but total spend is never surfaced, a manifest-less sidecar can silently go mixed-build, the row schema deviates from the spec's pinned shape, and the required single-cell live smoke was not run.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `summarize()`/CLI never sum API-returned `usage.cost` — the spec's "total spend surfaced (summed + per-cell)" criterion is unmet (jev.py:456-462, cli.py:433).
+- A non-empty sidecar whose `.manifest.json` is absent is accepted; the next response pins a new build and appends, producing the forbidden mixed-build file (jev.py:256).
+- Row schema uses nested `equivalence:{kind,probabilities,confidence}` instead of the spec's flat `kind`/`kind_probabilities`/`kind_confidence`; phase 2's planned grader metric keys and phase 4's agreement module assume the flat names.
+- `interpret()` accepts non-numeric `noul`, and silently tolerates missing `usage`/`decision_id`/`provider` — "fail loud on mistyped fields" is only enforced for `choice` (jev.py:155-184).
+- The phase-1 single-cell live smoke (~$3e-5) through `post_decision`/`judge` was not performed — only a zero-call pre-flight dry run; no sidecar exists anywhere in the tree.
+- Test gaps vs the plan's test plan: no `--limit` test, no concurrent build-conflict test, no missing-manifest-resume test, no cost-sum assertion.

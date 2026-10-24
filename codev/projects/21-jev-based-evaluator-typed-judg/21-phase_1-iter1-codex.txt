@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core judge flow is sound, but Phase 1 misses required spend reporting and has fail-open response/sidecar identity validation.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `summarize()` and the CLI never sum or display API-returned `usage.cost`. Phase 1 explicitly requires total Jev spend surfaced per run, in addition to per-cell usage.
+- `interpret()` accepts mistyped probabilities and incomplete authoritative fields: non-numeric `noul` values pass, while missing/null decision ID, provider, usage fields, and malformed equivalence probabilities/confidence are written rather than failing loud.
+- An existing nonempty sidecar without its manifest is accepted. The next response establishes a new build and is appended, potentially creating the forbidden mixed-build file. A sidecar without its required manifest should fail fast.
+- Question-set binding is not fully stale-safe: missing row digests are ignored, and a manifest with a missing digest is accepted even when current answers provide one. This can stamp an unverified digest onto rows rather than failing loud.
+- Planned tests are incomplete: no total-cost assertion, missing-manifest resume test, mistyped-probability tests, actual concurrent build-conflict test, or meaningful `--limit`/CLI pre-flight confirmation test. The targeted suite could not be executed in this read-only environment because `uv` attempted to write its cache.
