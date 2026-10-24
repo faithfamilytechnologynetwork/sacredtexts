@@ -95,8 +95,15 @@ a benchmark card (`facct.json` + `facct.md`) that:
 
 The card is a pure analysis/visualisation stage: it reads committed run evidence plus the public
 raw editions, never re-runs `generate` / `collect` / `score`, never calls a model, and writes only
-to a new path under the run directory. Optionally, the viewer gains a read-only per-run card view
-that renders `facct.json` with no scoring logic of its own.
+to a new path under the run directory. **Every number in the card is derived at build time from
+`scores.jsonl` / `summary.json`; no figure is ever typed into the prose**, so the card cannot drift
+from the run it describes.
+
+Separately, the edition data the counterfactual needs is produced by a **shared, standalone
+EditionIndex module** (not private to the card), because issue #21 (the Jev passage-equivalence
+judge) consumes the same data. The module exposes a CLI subcommand that exports the index as JSONL +
+a manifest, mirroring the `questions.jsonl` convention; the card builds its counterfactual from this
+same module in-process.
 
 ## Success Criteria
 
@@ -107,6 +114,9 @@ that renders `facct.json` with no scoring logic of its own.
 - [ ] The edition counterfactual reports, for the three English Bibles, per model, the numerator (incorrect `retrieve_quote` cells whose answer contains some *other* indexed edition's wording of the same citation, under the containment contract) **and** the denominator (all incorrect Bible `retrieve_quote` cells), tags the qualifying cells `other_edition`, and states explicitly that it is Bible `retrieve_quote`-only and why (`complete_unit` excluded — partial gold).
 - [ ] Citation handling does not silently mis-handle the Arabic (surah:ayah, hadith numbers) and Hebrew/Aramaic (daf:line) citations in the pool: because those texts have no sibling edition they are excluded from the edition counterfactual by construction, and the card says so — a non-Bible citation is never matched to a Bible edition.
 - [ ] The edition index is built only from catalogue targets with `license != restricted` (equivalently `select_targets(include_restricted=False)`); a test asserts a restricted target (e.g. NABRE, a fourth English Bible of `work: The Bible`) never enters the index even when its local payload is present.
+- [ ] A standalone EditionIndex module exposes `sacredbench edition-index --out <path>`, writing JSONL rows `{work, citation, language, wordings:[{version, text}, …]}` (one row per `(work, citation, language)`, `wordings` sorted by version, same-canonical-language editions only, single-wording rows omitted) plus `<path>.manifest.json` `{corpus_hash, row_count, digest, excluded_restricted}`. A test asserts the exported file never contains a restricted version even when its payload is present locally, and that `excluded_restricted` names it.
+- [ ] The card builds its counterfactual from that same EditionIndex module in-process (no divergent second implementation).
+- [ ] No number in `facct.md` is typed into the prose; every headline figure is computed from `scores.jsonl` / `summary.json` at build time. A test asserts the card's headline figures equal `summary.json`'s, so the card cannot drift from the run.
 - [ ] The card fails fast — non-zero exit, with neither `facct.json` nor `facct.md` partially written — when the evidence is inconsistent or incomplete: a missing run file, an answer/score row that will not join, a `scores.jsonl` count that disagrees with `summary.json`, or an unresolved catalogue target.
 - [ ] All card prose (claims, failure conditions, non-conclusions, review-not-attached) lives in one editable location, separate from the counting logic.
 - [ ] The copyright audit (`pipelines/sacredbench/audit.py`, run by `.codev/checks/test.sh`) passes: no committed card artifact embeds NABRE or Greek Orthodox TLG text or derives from a restricted source.
@@ -139,8 +149,19 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
 - **Docs bar is Waleed's**: one linear recipe, non-engineer readable, no asides.
 - **Card wording is provisional** (Jonathan is drafting the paper): the card's prose lives in one
   editable place.
-- **Viewer** per-run card view is optional; if built, it reads `facct.json` and adds no new scoring
-  logic.
+- **EditionIndex is a shared producer** (architect decision, 2026-10-24), because issue #21 needs the
+  same passage-equivalence data. It is a standalone module with a CLI subcommand
+  `sacredbench edition-index --out <path>` that writes JSONL + a `<path>.manifest.json`, mirroring the
+  `questions.jsonl` convention. **Fixed schema so #21 can consume it unchanged:**
+  - row: `{"work": str, "citation": str, "language": str, "wordings": [{"version": str, "text": str}, …]}`
+    — one row per `(work, citation, language)`; `wordings` sorted by version; only
+    same-canonical-language editions; `license != restricted` filtered (NABRE never appears); rows
+    with a single wording are omitted.
+  - manifest: `{"corpus_hash": str, "row_count": int, "digest": <sha256 prefix of the file>, "excluded_restricted": [<version ids>]}`.
+  The file export exists for #21; the card consumes the module in-process. A restricted payload
+  present locally must never reach the exported file.
+- **No viewer work in this spec.** The viewer per-run card view is **out of scope** — if wanted later
+  it is its own issue (architect decision, 2026-10-24). No half-scoped items.
 
 ## Assumptions
 
@@ -174,10 +195,13 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
 
 Carry over Jonathan's `facct.py` and `cross_translation.py`, strip the old contract out of them
 (delete the eight-label set, the `_REFUSAL` regex / `is_refusal`, the `fabrication` and exact-match
-headline), and re-point the card at `scores.jsonl` / `summary.json` for the three outcomes. Keep his
-`EditionIndex` / citation machinery for the edition counterfactual, scoped to Bible citations. Hold
-all card prose (uses, non-uses, claims, review-not-attached) in one clearly-marked constants block in
-`facct.py`. Expose it as a `facct` CLI subcommand that writes `facct.{json,md}` beside the run.
+headline), and re-point the card at `scores.jsonl` / `summary.json` for the three outcomes. Lift his
+`EditionIndex` / citation machinery into a **standalone shared module** (so #21 can consume the same
+data) with a `sacredbench edition-index --out <path>` export (JSONL + manifest); the card builds its
+counterfactual from that module in-process, scoped to Bible citations. Hold all card prose (uses,
+non-uses, claims, review-not-attached) in one clearly-marked constants block in `facct.py`. Expose
+the card as a `facct` CLI subcommand that writes `facct.{json,md}` beside the run, with every number
+computed from `scores.jsonl` / `summary.json` at build time.
 
 - **Pros:** Preserves the valuable core and Jonathan's authorship; one contract, one refusal
   definition; the counterfactual reuses proven index code; prose is in one file Jonathan can edit.
@@ -219,8 +243,6 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
   catalogue targets' nominal work/version names, so the join is direct with no fallback. (A fallback
   would only be needed if the card joined a *standardized* encyclical document back to a target,
   which this card does not do.)
-- **Nice-to-know** — Should the viewer per-run card view ship in this PR or be deferred? It is
-  optional; defer unless it is cheap once the JSON is stable.
 - **Nice-to-know** — Should the card also surface the three-edition agreement table (how often
   KJV/ASV/WEB agree after normalization) that Jonathan's `cross_translation.py` already computes? It
   is informative context for the edition counterfactual; include if it fits the one-recipe doc bar.
@@ -245,7 +267,15 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
   daf:line citation are never matched to a Bible edition; they are excluded from the counterfactual by
   construction, and the card says the counterfactual is Bible `retrieve_quote`-only.
 - **Restricted edition never indexed (compliance):** With a restricted NABRE target present, the
-  EditionIndex excludes it, so no `other_edition` tag can ever reference a restricted edition.
+  EditionIndex excludes it, so no `other_edition` tag can ever reference a restricted edition, and the
+  exported `edition-index` file and its `excluded_restricted` manifest field reflect the exclusion.
+- **EditionIndex export schema (core):** `sacredbench edition-index --out <path>` writes one JSONL row
+  per `(work, citation, language)` with `wordings` sorted by version and single-wording rows omitted,
+  plus a manifest carrying `corpus_hash`, `row_count`, `digest`, and `excluded_restricted`. A
+  single-wording citation (no sibling edition) produces no row.
+- **Headline figures equal summary (drift guard):** Every headline number rendered in `facct.md`
+  equals the corresponding value in `summary.json`; a fixture whose `summary.json` is edited makes the
+  test fail (the card never carries a typed-in number).
 - **Fail-fast on bad evidence (error):** A run dir with a missing file, a non-joining answer/score
   row, or a `scores.jsonl`↔`summary.json` count disagreement makes the command exit non-zero and
   write neither `facct.json` nor `facct.md`.
@@ -264,6 +294,8 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
 | `cite_key` mis-parses an Arabic/Hebrew citation into a Bible match | Low | High — a false `other_edition` tag on a non-Bible cell | Scope the counterfactual to Bible `retrieve_quote` citations explicitly; test that non-Bible citations never match |
 | A restricted edition (e.g. NABRE) becomes an indexable sibling on a machine holding its payload | Low | High — public-repo copyright violation via an `other_edition` tag | Build the index from `select_targets(include_restricted=False)` (`license != restricted`), not from pool membership; test the exclusion with a restricted target present; gate on `audit.py` |
 | Partial card written before an inconsistency is detected | Low | Medium — a misleading half-card next to the run | Validate evidence (files present, joins resolve, counts agree) before writing; fail fast with non-zero exit and no partial file |
+| A typed-in figure in the card prose drifts from the run (as Spec 26 docstrings once did) | Medium | Medium — a card that contradicts its own run | Derive every number from `scores.jsonl` / `summary.json` at build time; test that the card's headline figures equal `summary.json` |
+| The shared EditionIndex schema is changed later and breaks #21's consumer | Low | Medium — a downstream break in the Jev judge | Freeze the row/manifest schema in this spec; cover it with an export-schema test so a change is caught |
 | Re-running the card overwrites or rescoring mutates committed evidence | Low | High — corrupts the run's proof | Card writes only `facct.{json,md}`; never invokes score/collect/generate; test asserts other run files are untouched |
 | Prose and computed sections drift | Low | Medium | Keep prose adjacent to the builder in one block; the computed sections are assembled in the same place |
 | Unplanned API spend | Low | Medium | Card makes zero model calls by design; if any need appears, stop and ping the architect |
@@ -271,8 +303,10 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
 ## References
 
 - Issue #32 — FAccT benchmark card + cross-edition reading (part 3 of 3 of PR #30).
+- Issue #21 — Jev passage-equivalence judge; consumes the shared EditionIndex export (schema frozen
+  in Constraints).
 - PR #30 (Jonathan Karr) — original `facct.py`, `cross_translation.py`, viewer `FacctReading`, under
-  the Oct-11 contract.
+  the Oct-11 contract. (The viewer piece is out of scope for this spec.)
 - Spec 15 — scoring = named graders + always-on outcome; refusal is an outcome; containment headline.
 - Spec 26 — 17-text original-language pool; `verify_source` hardening.
 - `pipelines/sacredbench/outcomes.py` — the single refusal/outcome definition.

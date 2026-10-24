@@ -26,5 +26,13 @@ codex + claude both verified against real data. Dispositions (ACCEPTED all):
 8. Join mechanics (claude): scores.jsonl rows have no text identity → join answers.jsonl on (question_id,model_id); sub-metrics are task-scoped. Added to Assumptions.
 Structure verified conformant to spir/templates/spec.md (claude).
 
+## Architect GO + 3 tweaks (2026-10-24) — folded into spec
+1. EditionIndex = SHARED standalone module (for #21). CLI `sacredbench edition-index --out <path>` → JSONL + manifest, mirrors questions.jsonl convention. FROZEN schema:
+   row: {work, citation, language, wordings:[{version,text},...]} — one row per (work,citation,language); wordings sorted by version; same-canonical-language editions only; license!=restricted (NABRE never appears); single-wording rows omitted.
+   manifest <path>.manifest.json: {corpus_hash, row_count, digest(sha256 prefix of file), excluded_restricted:[version ids]}.
+   Card builds counterfactual from this module in-process; file export is for #21. Test: restricted payload present locally never reaches file + named in excluded_restricted.
+2. Viewer card view DROPPED entirely (out of scope; its own issue if wanted). No half-scoped items.
+3. Every number in facct.md derived at build time from scores.jsonl/summary.json, never typed. Test: card headline figures == summary.json (anti-drift, cf Spec 26 docstring drift).
+
 ## Status
-- specify: spec revised with 2-way review folded. Committing "[Spec 32] Specification with multi-agent review". Next: porch next → likely spec-approval gate (HUMAN gate — stop & notify architect, do NOT self-approve).
+- specify: architect GO received + 3 tweaks folded. Committing "[Spec 32] Specification with user feedback". ASPIR has no spec gate → proceeding to PLAN phase.
