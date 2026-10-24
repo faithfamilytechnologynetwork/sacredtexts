@@ -195,6 +195,22 @@ uv --project pipelines run python -m sacredbench score runs/my-run/answers.jsonl
   --questions runs/my-run/questions.jsonl --config configs/models.yaml
 ```
 
+### Optional: a Jev reading (paid, separate, never rescoring) 💲
+
+The deterministic headline above never changes. As a **diagnostic**, the Jev judge
+(`jev-latest` on OpenRouter's Decisions API, same `OPENROUTER_API_KEY`) can give a typed,
+probabilistic second opinion per text-retrieval cell — is a miss a genuine miss, or the right
+passage in different orthography? It writes a **resumable sidecar** beside the run and prints a
+pre-flight cost estimate; it refuses to spend without `--yes`:
+
+```bash
+uv --project pipelines run python -m sacredbench judge runs/my-run/answers.jsonl \
+  --out runs/my-run/judgments.jsonl        # shows the estimate, then stops
+uv --project pipelines run python -m sacredbench judge runs/my-run/answers.jsonl \
+  --out runs/my-run/judgments.jsonl --yes  # actually judges (paid)
+uv --project pipelines run python -m sacredbench judge-summary runs/my-run/judgments.jsonl
+```
+
 Then audit the whole finished run one more time, now that it holds answers and scores:
 
 ```bash

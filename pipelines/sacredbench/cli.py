@@ -571,6 +571,73 @@ def editions(
     typer.echo(format_editions(edition_run(raw_root)))
 
 
+@app.command()
+def judge(
+    answers: Path = typer.Argument(help="answers.jsonl from `collect`"),
+    out: Path = typer.Option(Path("runs/judgments.jsonl"), help="sidecar judgments file (resumable)"),
+    model: str = typer.Option(None, help="Decisions model id (default: the floating jev-latest alias)"),
+    concurrency: int = typer.Option(4, help="parallel decision calls"),
+    limit: int = typer.Option(None, help="cap cells judged this invocation (budget guard)"),
+    raw_root: Path = typer.Option(Path("texts/raw"), help="catalogue root for the restricted-target guard"),
+    yes: bool = typer.Option(False, "--yes", help="skip the pre-flight confirmation and judge now"),
+) -> None:
+    """Jev judgments (PAID, Decisions API) for already-collected answers → a sidecar. Never rescoring.
+
+    Prints a pre-flight estimate and stops unless --yes is given, so a live pass cannot start
+    unseen. Judges only text-retrieval cells; skips restricted-source cells before any send.
+    """
+    from sacredbench import jev
+
+    jev_model = model or jev.JEV_MODEL
+    rows = [json.loads(line) for line in answers.read_text(encoding="utf-8").splitlines() if line.strip()]
+    sources = _require_catalogue(raw_root)
+    restricted = frozenset(aud.restricted_keys(sources))
+
+    try:
+        est = jev.estimate(rows, out, restricted_keys=restricted, limit=limit)
+    except jev.JevError as e:
+        raise typer.BadParameter(str(e))
+    typer.echo(
+        f"pre-flight: {est['pending']} cell(s) to judge with {jev_model} "
+        f"(~${est['estimated_usd']:.4f}); {est['already_judged']} already judged, "
+        f"{est['skipped_task']} non-text-retrieval skipped, "
+        f"{est['skipped_restricted']} restricted-source skipped"
+    )
+    if est["pending"] == 0:
+        typer.echo("nothing to judge.")
+        return
+    if not yes:
+        typer.secho("PAID live pass — re-run with --yes to proceed.", fg="yellow")
+        raise typer.Exit(2)
+
+    try:
+        done, failed, messages = jev.judge(
+            rows, out, model=jev_model, concurrency=concurrency, limit=limit, restricted_keys=restricted,
+        )
+    except jev.JevError as e:
+        raise typer.BadParameter(str(e))
+    summary = jev.summarize(out)
+    typer.echo(f"judged {done} -> {out}; file has {summary['n']} row(s) {summary['kinds']}")
+    if summary["judge_models"]:
+        typer.echo("resolved judge model(s): " + ", ".join(summary["judge_models"]))
+    if failed:
+        typer.secho(f"{failed} cell(s) FAILED (still pending; re-run to retry):", fg="red", err=True)
+        for msg in messages:
+            typer.secho(f"  {msg}", fg="red", err=True)
+        raise typer.Exit(1)
+
+
+@app.command("judge-summary")
+def judge_summary(
+    out: Path = typer.Argument(help="a judgments sidecar written by `judge`"),
+) -> None:
+    """Counts + resolved build(s) over a finished sidecar. No network, no calls."""
+    from sacredbench import jev
+
+    s = jev.summarize(out)
+    typer.echo(json.dumps(s, ensure_ascii=False, indent=1))
+
+
 def main() -> None:
     try:
         app()

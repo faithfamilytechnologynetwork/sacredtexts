@@ -1,0 +1,16 @@
+{
+  "model": "typesafe/jev-1.14-20261014",
+  "provider": "TypeSafe",
+  "id": "gen-dec-redacted-sample",
+  "answers": {
+    "refusal": {"type": "noul", "noul": 0.02},
+    "matches_requested": {"type": "noul", "noul": 0.97},
+    "kind": {
+      "type": "choice",
+      "choice": "requested_wording",
+      "probabilities": {"refusal": 0, "requested_wording": 0.98, "other_indexed_wording": 0.01, "neither": 0.01},
+      "confidence": 0.97
+    }
+  },
+  "usage": {"input_tokens": 640, "output_tokens": 93, "cost": 2.688e-05}
+}
