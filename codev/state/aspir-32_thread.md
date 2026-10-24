@@ -64,5 +64,28 @@ Commit authored to Jonathan Karr <jka83321@gmail.com> (carries his code).
 - Suite: 394 passed/1 skip. Rebuttal committed. Phase_1 fixes commit authored as me (review-response work, not new carried code).
 Phase2 reminder: filter Bible-only via work=="The Bible"; source tradition from catalogue not Passage; reuse score's contains_reference predicate (promote _bounded_equal).
 
+## Phase_1 COMPLETE ✓ (commits 5a4c64b carry-over[Jonathan], + fix commit, + polish commit). iter2 both APPROVE. Suite 395 pass/1 skip.
+
+## === PHASE 2 RESUME NOTES (card data → facct.json) ===
+Goal: pipelines/sacredbench/facct.py `build_facct(run_dir)` → writes facct.json. Pure analysis, no network, fail-fast no-partial.
+Reads from run_dir: scores.jsonl, summary.json, answers.jsonl, questions.jsonl.manifest.json. Plus catalogue (cat.discover_catalogue) + edition_index module in-process.
+
+DATA SHAPES (verified):
+- scores.jsonl row: {question_id, model_id, task, metrics:{...,outcome}}. outcome∈{correct,incorrect,refused}. Text-retrieval metrics also: exact/normalized/token_f1/contains_reference. cite_passage: {correct,n_candidates,outcome}. verify_source: {parsed,expected,correct,outcome}. NO text identity on score rows → JOIN to answers.jsonl on (question_id, model_id).
+- answers.jsonl row has embedded `question`: {id,task,prompt,expected,source}. source={tradition[list],work,version,language,document_type,citation,requested_as}. expected is TASK-DEPENDENT: retrieve_quote→{text}, complete_unit→{text,full_text}, cite_passage→{citation}, verify_source→{answer,true_*}. Gold wording for retrieve_quote = expected.text. citation always in source.citation.
+- summary.json: {models:{<id>:{<task>:{n,accuracy,coverage,correct,incorrect,refused,refused_rate,...}, _overall:{...}}}, by_tradition, by_text, usage, panel, evaluators:["strict","containment"], generated_at}.
+- manifest: selected_texts[17]({work,version,language}), excluded_texts[2]({work,version,language,reason}), corpus_hash, question_set_digest, n_questions.
+
+PHASE 2 BUILD (from plan + reviews):
+1. census: 17 selected texts by tradition/doc_type/license(from catalogue target join on (work,version,language)) + language; source languages contributing zero questions; 2 excluded texts w/ manifest reasons. SOURCE tradition/doc_type/license from CATALOGUE target, NOT Passage.
+2. outcomes: counts straight from scores.jsonl metrics.outcome (verify vs summary.json). NO recompute, NO fabrication label, NO 2nd refusal regex.
+3. counterfactual: incorrect Bible retrieve_quote cells only (NOT complete_unit). Filter Bible via work=="The Bible" (by_cite has no work!). For each, check if answer CONTAINS some OTHER edition's wording of same citation using PROMOTED score predicate. Tag other_edition. Report numerator+denominator per model. Requested edition excluded. Non-Bible citations never match (cite_key returns None).
+   → MUST FIRST promote score._bounded_equal (word-bounded over normalize, used by contains_reference L305) to PUBLIC in score.py; reuse verbatim. facct.py defines NO containment/normalize of its own. Test it agrees with scorer boundary/script cases.
+4. fail-fast FacctError (no partial facct.json) on: missing file, non-joining row, unresolved catalogue target, scores↔summary count disagreement.
+CLI: @app.command("facct") run_dir arg, writes facct.json by default. Wire FacctError in main().
+Tests: test_facct.py — outcome fidelity, counterfactual core, complete_unit excluded, non-Bible not matched, requested-edition not tagged, fail-fast, no-fabrication, no-private-matcher.
+Expected real numbers: 32 incorrect Bible retrieve_quote cells across panel (21 complete_unit excluded).
+Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose block, anti-drift. Phase4: extend audit.py to .md + test, byte-digest integrity, real-run drift guard, author carry phases to Jonathan.
+
 ## Status
-- implement phase_1: review fixes done. Committing + porch done. Raw consult .txt files (all phases) still untracked — commit with PR.
+- phase_1 complete. porch emitted context-refresh at phase_1→phase_2 boundary; running builder-refresh. Resume phase_2 from notes above.
