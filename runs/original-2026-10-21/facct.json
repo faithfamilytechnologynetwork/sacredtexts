@@ -1,0 +1,448 @@
+{
+ "run": "original-2026-10-21",
+ "question_set_digest": "de65959a99dea9b3",
+ "corpus_hash": "5ae493e7e249575c",
+ "panel": {
+  "gpt-oss-20b": {
+   "provider": "openai",
+   "model": "openai/gpt-oss-20b",
+   "tools": [],
+   "endpoint": "openrouter.ai",
+   "served_by": [
+    "AkashML",
+    "Amazon Bedrock",
+    "CoreWeave",
+    "Darkbloom",
+    "DeepInfra",
+    "DekaLLM",
+    "Google",
+    "Groq",
+    "Parasail",
+    "SiliconFlow"
+   ]
+  },
+  "haiku": {
+   "provider": "openai",
+   "model": "anthropic/claude-haiku-5-5",
+   "tools": [],
+   "endpoint": "openrouter.ai",
+   "served_by": [
+    "Claude Platform on AWS"
+   ]
+  },
+  "opus": {
+   "provider": "openai",
+   "model": "anthropic/claude-opus-5-5",
+   "tools": [],
+   "endpoint": "openrouter.ai",
+   "served_by": [
+    "Amazon Bedrock",
+    "Claude Platform on AWS"
+   ]
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "census": {
+  "n_texts": 17,
+  "n_questions": 476,
+  "selected_texts": [
+   {
+    "work": "Book of Mormon",
+    "version": "2013 edition",
+    "language": "en",
+    "tradition": [
+     "The Church of Jesus Christ of Latter-Day Saints"
+    ],
+    "document_type": "scripture",
+    "license": "open"
+   },
+   {
+    "work": "Doctrine and Covenants",
+    "version": "2013 edition",
+    "language": "en",
+    "tradition": [
+     "The Church of Jesus Christ of Latter-Day Saints"
+    ],
+    "document_type": "scripture",
+    "license": "open"
+   },
+   {
+    "work": "Jami` at-Tirmidhi",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Musnad Ahmad",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Muwatta Malik",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Pearl of Great Price",
+    "version": "2013 edition",
+    "language": "en",
+    "tradition": [
+     "The Church of Jesus Christ of Latter-Day Saints"
+    ],
+    "document_type": "scripture",
+    "license": "open"
+   },
+   {
+    "work": "Sahih Muslim",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Sahih al-Bukhari",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Sunan Abi Dawud",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Sunan Ibn Majah",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Sunan al-Darimi",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Sunan an-Nasa'i",
+    "version": "sunnah.com Arabic",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "hadith_collection",
+    "license": "public-domain"
+   },
+   {
+    "work": "Talmud Bavli",
+    "version": "William Davidson Edition - Aramaic",
+    "language": "he",
+    "tradition": [
+     "Judaism"
+    ],
+    "document_type": "talmud",
+    "license": "open"
+   },
+   {
+    "work": "The Bible",
+    "version": "ASV (1901)",
+    "language": "en",
+    "tradition": [
+     "Protestant Christian"
+    ],
+    "document_type": "scripture",
+    "license": "public-domain"
+   },
+   {
+    "work": "The Bible",
+    "version": "KJV",
+    "language": "en",
+    "tradition": [
+     "Protestant Christian"
+    ],
+    "document_type": "scripture",
+    "license": "public-domain"
+   },
+   {
+    "work": "The Bible",
+    "version": "WEB",
+    "language": "en",
+    "tradition": [
+     "Protestant Christian"
+    ],
+    "document_type": "scripture",
+    "license": "public-domain"
+   },
+   {
+    "work": "The Qur'an",
+    "version": "Uthmani (QUL)",
+    "language": "ar",
+    "tradition": [
+     "Sunni Islam"
+    ],
+    "document_type": "scripture",
+    "license": "public-domain"
+   }
+  ],
+  "by_tradition": {
+   "Judaism": 1,
+   "Protestant Christian": 3,
+   "Sunni Islam": 10,
+   "The Church of Jesus Christ of Latter-Day Saints": 3
+  },
+  "by_language": {
+   "ar": 10,
+   "en": 6,
+   "he": 1
+  },
+  "by_document_type": {
+   "hadith_collection": 9,
+   "scripture": 7,
+   "talmud": 1
+  },
+  "by_license": {
+   "open": 4,
+   "public-domain": 13
+  },
+  "excluded_texts": [
+   {
+    "work": "Papal Encyclicals",
+    "version": "Vatican English",
+    "language": "en",
+    "reason": "language 'en' != canonical_language 'la'"
+   },
+   {
+    "work": "Talmud Bavli",
+    "version": "William Davidson Edition - English",
+    "language": "en",
+    "reason": "language 'en' != canonical_language 'he'"
+   }
+  ],
+  "zero_question_languages": [
+   "grc"
+  ]
+ },
+ "outcomes": {
+  "gpt-oss-20b": {
+   "by_task": {
+    "cite_passage": {
+     "correct": 1,
+     "incorrect": 116,
+     "refused": 2,
+     "n": 119,
+     "accuracy": 0.0085,
+     "coverage": 0.9832
+    },
+    "complete_unit": {
+     "correct": 0,
+     "incorrect": 52,
+     "refused": 67,
+     "n": 119,
+     "accuracy": 0.0,
+     "coverage": 0.437
+    },
+    "retrieve_quote": {
+     "correct": 0,
+     "incorrect": 32,
+     "refused": 87,
+     "n": 119,
+     "accuracy": 0.0,
+     "coverage": 0.2689
+    },
+    "verify_source": {
+     "correct": 63,
+     "incorrect": 56,
+     "refused": 0,
+     "n": 119,
+     "accuracy": 0.5294,
+     "coverage": 1.0
+    }
+   },
+   "overall": {
+    "correct": 64,
+    "incorrect": 256,
+    "refused": 156,
+    "n": 476,
+    "accuracy": 0.2,
+    "coverage": 0.6723
+   }
+  },
+  "haiku": {
+   "by_task": {
+    "cite_passage": {
+     "correct": 33,
+     "incorrect": 68,
+     "refused": 18,
+     "n": 119,
+     "accuracy": 0.3267,
+     "coverage": 0.8487
+    },
+    "complete_unit": {
+     "correct": 23,
+     "incorrect": 84,
+     "refused": 12,
+     "n": 119,
+     "accuracy": 0.215,
+     "coverage": 0.8992
+    },
+    "retrieve_quote": {
+     "correct": 9,
+     "incorrect": 30,
+     "refused": 80,
+     "n": 119,
+     "accuracy": 0.2308,
+     "coverage": 0.3277
+    },
+    "verify_source": {
+     "correct": 113,
+     "incorrect": 6,
+     "refused": 0,
+     "n": 119,
+     "accuracy": 0.9496,
+     "coverage": 1.0
+    }
+   },
+   "overall": {
+    "correct": 178,
+    "incorrect": 188,
+    "refused": 110,
+    "n": 476,
+    "accuracy": 0.4863,
+    "coverage": 0.7689
+   }
+  },
+  "opus": {
+   "by_task": {
+    "cite_passage": {
+     "correct": 54,
+     "incorrect": 63,
+     "refused": 2,
+     "n": 119,
+     "accuracy": 0.4615,
+     "coverage": 0.9832
+    },
+    "complete_unit": {
+     "correct": 65,
+     "incorrect": 44,
+     "refused": 10,
+     "n": 119,
+     "accuracy": 0.5963,
+     "coverage": 0.916
+    },
+    "retrieve_quote": {
+     "correct": 43,
+     "incorrect": 20,
+     "refused": 56,
+     "n": 119,
+     "accuracy": 0.6825,
+     "coverage": 0.5294
+    },
+    "verify_source": {
+     "correct": 118,
+     "incorrect": 1,
+     "refused": 0,
+     "n": 119,
+     "accuracy": 0.9916,
+     "coverage": 1.0
+    }
+   },
+   "overall": {
+    "correct": 280,
+    "incorrect": 128,
+    "refused": 68,
+    "n": 476,
+    "accuracy": 0.6863,
+    "coverage": 0.8571
+   }
+  }
+ },
+ "edition_counterfactual": {
+  "scope": "Bible retrieve_quote cells only. complete_unit is excluded (its gold is a partial unit with no well-defined sibling-edition segment); the 3 Bible editions (ASV (1901), KJV, WEB) are the only sibling editions in the pool, and non-Bible citations (Arabic surah:ayah, hadith numbers, Talmud daf:line) are never matched to a Bible edition.",
+  "bible_editions": [
+   "ASV (1901)",
+   "KJV",
+   "WEB"
+  ],
+  "by_model": {
+   "gpt-oss-20b": {
+    "numerator": 0,
+    "denominator": 17,
+    "tagged": []
+   },
+   "haiku": {
+    "numerator": 3,
+    "denominator": 15,
+    "tagged": [
+     {
+      "tag": "other_edition",
+      "question_id": "retrieve_quote-f2d41688633b",
+      "citation": "Jeremiah 38:15",
+      "requested_version": "ASV (1901)",
+      "other_editions": [
+       "KJV"
+      ]
+     },
+     {
+      "tag": "other_edition",
+      "question_id": "retrieve_quote-96dbddf3e587",
+      "citation": "Joshua 17:8",
+      "requested_version": "ASV (1901)",
+      "other_editions": [
+       "KJV"
+      ]
+     },
+     {
+      "tag": "other_edition",
+      "question_id": "retrieve_quote-5f4eae0cb5ef",
+      "citation": "Mark 1:23",
+      "requested_version": "ASV (1901)",
+      "other_editions": [
+       "KJV"
+      ]
+     }
+    ]
+   },
+   "opus": {
+    "numerator": 0,
+    "denominator": 0,
+    "tagged": []
+   }
+  }
+ }
+}

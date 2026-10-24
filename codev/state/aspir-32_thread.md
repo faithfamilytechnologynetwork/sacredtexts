@@ -121,8 +121,19 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - Drift guard: systematic test (every model×task×overall count/accuracy/coverage + counterfactual num/denom in card).
 - Fix commit authored as me. Rebuttal committed.
 
+## Phase_3 iter2+iter3: both REQUEST_CHANGES each round, all folded. iter3 force-advanced (max_iterations=3) with rebuttal as disposition → phase_3 ✓. All phase_3 fixes committed (atomic write_card w/ rollback, panel+correctness-rule on card, per-task correctness, evidence-alias rejection, lang names, 0/0 note).
+
+## PORCH SEQUENCING SLIP (recovered): chained `porch next >/dev/null; porch done` after phase_3 accidentally consumed phase_4's BUILD task and ran porch done on empty phase_4 → porch jumped to phase_4 "Run 2-way consultation" at iter1 before build. RECOVERY: implemented+committed phase_4 BEFORE running the consult, so the consult reviews real committed work. Lesson: don't chain porch next/done across a phase boundary.
+
+## PHASE 4 COMPLETE ✓ (generate+commit real card; audit .md; drift guard)
+- audit.py: _AUDITED_SUFFIXES now (.json,.jsonl,.md). Origin layer still json/jsonl only (md has no source dict); .md gets CONTENT layer (restricted fingerprint scan). test_audit: test_md_card_is_content_scanned + committed-evidence filter includes .md.
+- Generated runs/original-2026-10-21/facct.{json,md} via CLI. Evidence sha256 BYTE-UNCHANGED (verified before/after). audit OK (origin-only, restricted payloads absent — .md has no origin so trivially clean in CI; content layer proven by test).
+- test_original_run_regression.py::test_committed_facct_card_matches_the_run — committed facct.json == fresh build_facct(RUN) (full dict). Catches a future rebaseline that moves scores/summary without regenerating the card.
+- audit.py docstring + runs README updated. Suite 436 pass/1 skip; dispatcher green.
+- Real card: 17 texts, 476 Q, counterfactual denom 32 / 3 other_edition. Reads clean against docs bar.
+
 ## Status
-- phase_3 fixes done. porch iter flow (likely iter2 review → advance to phase_4).
+- phase_4 implemented+committed (author me). NEXT: run phase_4 2-way consult (reviews committed work), fold, porch done. THEN: PR — "Part 3 of 3 of #30", closes #32, loop Jonathan on card wording, NO Generated-with/Co-Authored-By. Commit untracked consult .txt files (all phases) + .builder-prompt etc NOT (those are builder scaffolding, gitignored? check). Open PR during/after final phase.
 - Phase_4: extend audit.py suffix set to scan .md + test_audit injection test; byte-digest integrity (sha256 3 evidence files before/after); GENERATE+COMMIT real card into runs/original-2026-10-21/facct.{json,md} + README line; real-run drift guard in test_original_run_regression.py. Author carry phases to Jonathan. THEN PR ("Part 3 of 3 of #30", closes #32, loop Jonathan on wording, NO Generated-with/Co-Authored-By). Commit untracked consult .txt files with PR.
 - Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
 - NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.

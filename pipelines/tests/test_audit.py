@@ -37,7 +37,7 @@ def test_committed_run_evidence_is_clean():
         ["git", "-C", str(REPO_ROOT), "ls-files", "runs/"],
         capture_output=True, text=True, check=True,
     ).stdout.split()
-    paths = [REPO_ROOT / p for p in tracked if p.endswith((".json", ".jsonl"))]
+    paths = [REPO_ROOT / p for p in tracked if p.endswith((".json", ".jsonl", ".md"))]
     if not paths:
         import pytest
         pytest.skip("no committed run evidence")
@@ -59,6 +59,20 @@ def test_content_layer_catches_restricted_text_under_a_public_label(tmp_path):
     assert audit_paths([p], sources) == []
     # with the restricted fingerprint supplied: caught
     v = audit_paths([p], sources, {fp})
+    assert len(v) == 1 and "restricted text" in v[0]
+
+
+def test_md_card_is_content_scanned(tmp_path):
+    # a .md card (Spec 32 facct.md) must be inside the copyright gate: restricted wording embedded
+    # in a Markdown file is caught by the content layer, where before .md was skipped entirely.
+    sources = cat.discover_catalogue(RAW)
+    secret = "this exact wording belongs to a copyrighted restricted translation and must never be committed here"
+    fp = _norm(secret)
+    md = tmp_path / "facct.md"
+    md.write_text(f"# FAccT card\n\nSome prose and then a leaked verse: {secret}\n")
+    # clean without fingerprints (payloads absent), caught when the fingerprint is supplied
+    assert audit_paths([md], sources) == []
+    v = audit_paths([md], sources, {fp})
     assert len(v) == 1 and "restricted text" in v[0]
 
 
