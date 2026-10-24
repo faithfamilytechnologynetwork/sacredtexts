@@ -146,7 +146,8 @@ converters (registry) · `export.py` assemble shards → interchange + round-tri
 `generate.py` templates → questions · `config.py` model
 panel YAML · `providers.py` anthropic/openai-compatible/gemini seam ·
 `collect.py` resumable fan-out · `score.py` metrics + summary (panel + usage) ·
-`audit.py` restricted-origin/-content copyright audit · `cli.py` Typer app.
+`audit.py` restricted-origin/-content copyright audit · `jev.py` paid Jev judge
+(Decisions API) → resumable sidecar, diagnostic only, never rescoring · `cli.py` Typer app.
 
 Verified live (2026-10-10): 3-question smoke vs claude-haiku-5-5 — collect and
 score worked end-to-end; Haiku returned a near-miss paraphrase of Luke 19:17
