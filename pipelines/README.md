@@ -135,6 +135,13 @@ uv --project pipelines run python -m sacredbench score runs/answers.jsonl \
 #    because restricted payloads are never committed, making origin the enforceable
 #    proxy there.
 uv --project pipelines run python -m sacredbench audit runs/ texts/standardized
+
+# 7. Edition index (Spec 32): export the editions that share a citation, for the
+#    FAccT card's cross-edition reading (in-process) and issue #21 (via the file).
+#    One row per (work, citation, language) with >=2 wordings; same-canonical-language
+#    editions only; restricted editions (NABRE, TLG) are never indexed. Writes JSONL +
+#    a sibling .manifest.json (corpus_hash, row_count, digest, excluded_restricted).
+uv --project pipelines run python -m sacredbench edition-index --out texts/edition_index.jsonl
 ```
 
 Tests: `uv --project pipelines run pytest pipelines` (fixtures are real-SHAPE but

@@ -23,6 +23,7 @@ from sacredbench import schema
 from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.config import ConfigError, load_config
+from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
@@ -384,12 +385,32 @@ def score(
     typer.echo(md)
 
 
+@app.command("edition-index")
+def edition_index_cmd(
+    out: Path = typer.Option(Path("texts/edition_index.jsonl"), help="JSONL export path; a sibling .manifest.json is written beside it"),
+    raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root"),
+) -> None:
+    """Export editions that share a citation (same canonical language, license != restricted).
+
+    The shared cross-edition producer: the FAccT card reads this index in-process; issue #21
+    consumes the file. Restricted editions (e.g. NABRE) are never indexed or exported. Makes
+    no network call.
+    """
+    docs, excluded = load_edition_documents(raw_root)
+    manifest = write_export(docs, excluded, out)
+    typer.echo(
+        f"wrote {out} and {out}.manifest.json — {manifest['row_count']} rows, "
+        f"corpus_hash {manifest['corpus_hash']}, digest {manifest['digest']}, "
+        f"excluded_restricted {manifest['excluded_restricted']}"
+    )
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
-        gen.GenerateError, ScoreError, aud.AuditError, ConfigError,
+        gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

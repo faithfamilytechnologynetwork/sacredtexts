@@ -50,5 +50,11 @@ Both verified real data; claude confirmed ≈32 incorrect Bible retrieve_quote c
 - index must read texts/raw/** via convert.convert_target (standardized is gitignored/absent in CI).
 Dispositions: (1) pin containment to score's predicate+normalize (2) pin corpus_hash/digest/ordering/excluded_restricted (3) extend audit to .md+test (4) write both files by default atomically within run_dir (5) byte-digest integrity not git status (6) raw-source pin (7) both-files (8) exclude agreement table + add real-run drift guard. Rebuttal committed.
 
+## IMPLEMENT phase_1 DONE (2026-10-23)
+Created pipelines/sacredbench/edition_index.py (carries over Jonathan's cite_key/Passage/EditionIndex/index_documents from PR#30 cross_translation.py; added language to Passage, load_edition_documents, export_rows, write_export/build_manifest). CLI `edition-index` wired + EditionIndexError in main() handler. Tests: test_edition_index.py (7 pass). README line added.
+Verified real catalogue: 31,102 Bible rows (KJV/ASV/WEB share every citation), excluded_restricted=['NABRE','TLG']. NABRE=The Bible/NABRE/en/en (restricted, 4th English Bible) — filtered by license even with payload present (test proves it). Full suite 393 passed/1 skip.
+Export default path: texts/edition_index.jsonl (NOT committed — derived on demand; card uses module in-process; #21 regenerates).
+Commit authored to Jonathan Karr <jka83321@gmail.com> (carries his code).
+
 ## Status
-- plan: 2-way review folded, rebuttal written. Committing "[Spec 32] Plan with multi-agent review" then porch done. ASPIR has no plan gate → will advance toward implement. Architect asked to be pinged with spec summary before plan (done); no explicit ask to ping before implement, but will keep architect posted.
+- implement phase_1 complete. Committing then porch done 32 (marks phase_1 ready). Then /compact advised before phase_2 (per porch), phase_2 = facct.py card data (facct.json). Raw consult .txt files (specify+plan) still untracked — will commit with PR.
