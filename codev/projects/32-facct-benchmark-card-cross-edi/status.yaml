@@ -1,16 +1,28 @@
 id: '32'
 title: facct-benchmark-card-cross-edi
 protocol: aspir
-phase: plan
-plan_phases: []
-current_plan_phase: null
+phase: implement
+plan_phases:
+  - id: phase_1
+    title: Shared EditionIndex module and export CLI
+    status: in_progress
+  - id: phase_2
+    title: 'FAccT card data: census, outcomes, edition counterfactual (facct.json)'
+    status: pending
+  - id: phase_3
+    title: FAccT markdown card with single prose block (facct.md)
+    status: pending
+  - id: phase_4
+    title: Generate and commit the card for runs/original-2026-10-21
+    status: pending
+current_plan_phase: phase_1
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-10-23T23:35:13.884Z'
-updated_at: '2026-10-24T00:05:20.391Z'
+updated_at: '2026-10-24T00:12:15.239Z'
