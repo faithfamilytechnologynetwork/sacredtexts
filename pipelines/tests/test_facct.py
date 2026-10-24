@@ -195,6 +195,75 @@ def test_outcome_counts_match_scores(tmp_path):
     assert ov["n"] == 7
 
 
+def _run_with_unselected_editions(root: Path) -> tuple[Path, Path]:
+    """A raw tree + run where the catalogue holds a 4th English Bible and a Spanish Bible that are
+    NOT in the run's selected_texts, used to prove the counterfactual ignores them (BLOCKING 2)."""
+    raw = root / "texts" / "raw"
+    base = ("    converter: bible_flat\n    work: The Bible\n    document_type: scripture\n"
+            "    tradition: [Protestant Christian]\n    license: public-domain\n"
+            "    requested_as: [the Bible]\n")
+    _write(
+        raw / "Bibles" / "source.yaml",
+        PROV + "targets:\n"
+        "  - payload: kjv.json\n    version: KJV\n    language: en\n" + base + "    canonical_language: en\n"
+        "  - payload: asv.json\n    version: ASV (1901)\n    language: en\n" + base + "    canonical_language: en\n"
+        "  - payload: fourth.json\n    version: FOURTH\n    language: en\n" + base + "    canonical_language: en\n"
+        "  - payload: rvr.json\n    version: RVR\n    language: es\n" + base + "    canonical_language: es\n",
+    )
+    _write(raw / "Bibles" / "kjv.json", _bible_payload({"Gen 1:1": "kjv one one", "Gen 1:2": "kjv one two"}))
+    _write(raw / "Bibles" / "asv.json", _bible_payload({"Gen 1:1": "asv one one", "Gen 1:2": "asv one two"}))
+    _write(raw / "Bibles" / "fourth.json", _bible_payload({"Gen 1:1": "fourth one one"}))
+    _write(raw / "Bibles" / "rvr.json", _bible_payload({"Gen 1:2": "spanish uno dos"}))
+
+    # all requested KJV, all incorrect; answers carry a NON-selected edition (c1 FOURTH, c2 Spanish)
+    # and one SELECTED edition (c3 ASV) as the positive control.
+    cells = [
+        ("Gen 1:1", "the answer is fourth one one"),   # FOURTH not in selected -> not tagged
+        ("Gen 1:2", "it reads spanish uno dos"),        # Spanish (es) different language -> not tagged
+        ("Gen 1:2", "it reads asv one two"),            # ASV selected, different edition -> tagged
+    ]
+    answers, scores = [], []
+    for i, (citation, answer) in enumerate(cells):
+        qid = f"retrieve_quote-{i:04d}"
+        answers.append({"question_id": qid, "model_id": "m1", "task": "retrieve_quote", "answer": answer,
+                        "question": {"id": qid, "task": "retrieve_quote", "prompt": "p",
+                                     "expected": {"text": "gold"},
+                                     "source": {"tradition": ["Protestant Christian"], "work": "The Bible",
+                                                "version": "KJV", "language": "en",
+                                                "document_type": "scripture", "citation": citation}}})
+        scores.append({"question_id": qid, "model_id": "m1", "task": "retrieve_quote",
+                       "metrics": {"correct": 0, "outcome": "incorrect"}})
+    summary = {"models": {"m1": {"retrieve_quote": {"correct": 0, "incorrect": 3, "refused": 0, "n": 3,
+                                                    "accuracy": 0.0, "coverage": 1.0},
+                                 "_overall": {"correct": 0, "incorrect": 3, "refused": 0, "n": 3,
+                                              "accuracy": 0.0, "coverage": 1.0}}},
+               "panel": {"m1": {"provider": "p", "model": "m", "tools": []}},
+               "evaluators": ["strict", "containment"]}
+    manifest = {"question_set_digest": "d", "corpus_hash": "c", "n_questions": 3,
+                "selected_texts": [{"work": "The Bible", "version": "KJV", "language": "en"},
+                                   {"work": "The Bible", "version": "ASV (1901)", "language": "en"}],
+                "excluded_texts": []}
+    run = root / "runs" / "excl"
+    _write(run / "answers.jsonl", "\n".join(json.dumps(r) for r in answers) + "\n")
+    _write(run / "scores.jsonl", "\n".join(json.dumps(r) for r in scores) + "\n")
+    _write(run / "summary.json", json.dumps(summary))
+    _write(run / "questions.jsonl.manifest.json", json.dumps(manifest))
+    return run, raw
+
+
+def test_counterfactual_counts_only_run_selected_editions(tmp_path):
+    run, raw = _run_with_unselected_editions(tmp_path)
+    block = build_facct(run, raw_root=raw)["edition_counterfactual"]["by_model"]["m1"]
+    assert block["denominator"] == 3  # all three are incorrect Bible retrieve_quote cells
+    assert block["numerator"] == 1    # only the ASV (selected) answer is rescued
+    assert len(block["tagged"]) == 1
+    tag = block["tagged"][0]
+    assert tag["citation"] == "Gen 1:2" and tag["other_editions"] == ["ASV (1901)"]
+    # the 4th English Bible (not selected) and the Spanish edition (other language) never appear
+    all_tagged = json.dumps(block["tagged"])
+    assert "FOURTH" not in all_tagged and "RVR" not in all_tagged
+
+
 # --- edition counterfactual --------------------------------------------------
 
 
@@ -545,7 +614,9 @@ def test_write_card_is_atomic_rollback_on_second_stage_failure(tmp_path, monkeyp
             raise OSError("boom")
         return real_replace(src, dst)
 
-    monkeypatch.setattr(facct_mod.os, "replace", flaky_replace)
+    from sacredbench import edition_index as ei_mod
+
+    monkeypatch.setattr(ei_mod.os, "replace", flaky_replace)  # write_card delegates to the shared helper
     with pytest.raises(OSError):
         write_card(report, jp, mp)
     # both files are left byte-identical to their prior contents (first swap rolled back)
@@ -613,7 +684,9 @@ def test_real_run_census_and_counterfactual():
         pytest.skip("no committed run / raw tree")
     report = build_facct(run)
     assert report["census"]["n_texts"] == 17
-    assert report["census"]["zero_question_languages"] == ["grc"]
+    # zero-question languages are the union of target languages and canonical languages minus the
+    # pool: grc (restricted TLG) AND la (encyclicals' canonical language, carried by no target's language)
+    assert report["census"]["zero_question_languages"] == ["grc", "la"]
     assert {e["work"] for e in report["census"]["excluded_texts"]} == {"Papal Encyclicals", "Talmud Bavli"}
     # 32 incorrect Bible retrieve_quote cells across the panel (verified count)
     cf = report["edition_counterfactual"]["by_model"]

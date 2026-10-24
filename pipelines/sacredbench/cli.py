@@ -397,8 +397,8 @@ def edition_index_cmd(
     consumes the file. Restricted editions (e.g. NABRE) are never indexed or exported. Makes
     no network call.
     """
-    docs, excluded = load_edition_documents(raw_root)
-    manifest = write_export(docs, excluded, out)
+    indexed, all_docs, excluded = load_edition_documents(raw_root)
+    manifest = write_export(indexed, all_docs, excluded, out)
     typer.echo(
         f"wrote {out} and {out}.manifest.json — {manifest['row_count']} rows, "
         f"corpus_hash {manifest['corpus_hash']}, digest {manifest['digest']}, "
@@ -406,24 +406,36 @@ def edition_index_cmd(
     )
 
 
-# The run evidence a card reads — a card output path must never resolve onto one of these.
-_RUN_EVIDENCE = ("scores.jsonl", "answers.jsonl", "summary.json", "questions.jsonl.manifest.json")
+# The only existing files a card write may replace are the card's own two outputs. Any OTHER
+# existing file in the run dir (questions.jsonl, scores.jsonl, answers.jsonl, summary.json/md,
+# README.md, …) is off-limits — the card writes only new files or re-writes itself.
+_CARD_OUTPUTS = ("facct.json", "facct.md")
 
 
 def _within(run_dir: Path, path: Path) -> Path:
-    """Resolve ``path`` and require it to be a NEW card file strictly inside ``run_dir``.
+    """Resolve ``path`` to a card output file strictly inside ``run_dir``.
 
-    Resolution follows symlinks, so a symlink (at the default path or an override) pointing outside
-    the run, or onto a run-evidence file, is rejected; the run directory itself and existing
-    directories are rejected too (the target must be a writable file within the run)."""
+    Inverse rule (so no enumeration of evidence names can go stale): the target must be a file inside
+    the run dir, and if it already exists it must be one of the card's own outputs
+    (``facct.json`` / ``facct.md``) **at that literal location** — any other existing file is
+    rejected. Resolution follows symlinks, so a symlink at the default or an override pointing at a
+    different file (e.g. a `facct.json` symlinked onto `scores.jsonl`) is rejected; the run directory
+    itself and existing directories are rejected too.
+    """
     run_dir = run_dir.resolve()
-    resolved = (run_dir / path).resolve() if not path.is_absolute() else path.resolve()
+    target = (run_dir / path) if not path.is_absolute() else path
+    resolved = target.resolve()
     if resolved == run_dir or run_dir not in resolved.parents:
         raise typer.BadParameter(f"{path} must resolve to a file inside the run directory {run_dir}")
     if resolved.is_dir():
         raise typer.BadParameter(f"{path} resolves to a directory, not a file")
-    if any(resolved == (run_dir / name).resolve() for name in _RUN_EVIDENCE):
-        raise typer.BadParameter(f"{path} would overwrite run evidence; choose a different card path")
+    if target.exists() or target.is_symlink():
+        card_paths = {run_dir / name for name in _CARD_OUTPUTS}  # literal, not symlink-followed
+        if resolved not in card_paths:
+            raise typer.BadParameter(
+                f"{path} already exists in the run dir and is not a card output "
+                f"(facct.json / facct.md); refusing to overwrite it"
+            )
     return resolved
 
 

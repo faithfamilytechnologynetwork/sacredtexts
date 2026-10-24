@@ -11,16 +11,20 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
+import pytest
 from typer.testing import CliRunner
 
 from sacredbench import catalogue as cat
 from sacredbench import generate as gen
 from sacredbench.cli import app
 from sacredbench.edition_index import (
-    cite_key,
+    EditionIndexError,
+    atomic_write_texts,
     export_rows,
     index_documents,
+    is_verse_citation,
     load_edition_documents,
+    lookup_key,
     write_export,
 )
 from sacredbench.schema import Document, Entry
@@ -58,16 +62,19 @@ def _doc(work: str, version: str, entries: list[tuple[str, str]], language: str 
     )
 
 
-# --- cite_key: Bible-style only ---------------------------------------------
+# --- is_verse_citation: the non-Bible guard ---------------------------------
 
 
-def test_cite_key_parses_bible_and_rejects_non_bible():
-    assert cite_key("Romans 3:23") == ("romans", 3, 23)
-    assert cite_key("Song of Solomon 1:1") == ("song of solomon", 1, 1)
-    # Arabic surah:ayah (no book token), hadith numbers, Talmud daf:line never parse to a Bible key
-    assert cite_key("2:255") is None
-    assert cite_key("Sahih al-Bukhari 1") is None
-    assert cite_key("Berakhot 2a:1") is None
+def test_is_verse_citation_accepts_bible_rejects_non_bible():
+    assert is_verse_citation("Romans 3:23")
+    assert is_verse_citation("Song of Solomon 1:1")
+    # Arabic surah:ayah (no book token), hadith numbers, Talmud daf:line are not verse citations
+    assert not is_verse_citation("2:255")
+    assert not is_verse_citation("Sahih al-Bukhari 1")
+    assert not is_verse_citation("Berakhot 2a:1")
+    # lookup_key is (work, language, citation) for a verse, None otherwise
+    assert lookup_key("The Bible", "en", "Romans 3:23") == ("The Bible", "en", "Romans 3:23")
+    assert lookup_key("The Qur'an", "ar", "2:255") is None
 
 
 # --- export rows: schema, ordering, omission --------------------------------
@@ -92,15 +99,34 @@ def test_export_rows_schema_ordering_and_single_wording_omitted():
     assert [w["version"] for w in john["wordings"]] == ["ASV (1901)", "KJV"]
 
 
-def test_index_documents_bucket_by_cite_and_norm():
+def test_index_documents_buckets_by_work_language_citation():
     docs = [
         _doc("The Bible", "KJV", [("Genesis 1:1", "In the beginning God")]),
         _doc("The Bible", "WEB", [("Genesis 1:1", "In the beginning, God")]),
     ]
     idx = index_documents(docs)
-    assert len(idx.by_cite[("genesis", 1, 1)]) == 2
-    # passages carry language
+    assert len(idx.by_cite[("The Bible", "en", "Genesis 1:1")]) == 2  # keyed on (work, language, citation)
     assert {p.language for p in idx.passages} == {"en"}
+
+
+def test_in_process_siblings_equal_exported_rows():
+    # the two consumers of the frozen schema (card in-process, #21 via the file) group identically
+    docs = [
+        _doc("The Bible", "KJV", [("Genesis 1:1", "a b c d"), ("John 3:16", "e f g h")]),
+        _doc("The Bible", "ASV (1901)", [("Genesis 1:1", "a b c d"), ("John 3:16", "i j k l")]),
+        _doc("The Bible", "WEB", [("Genesis 1:1", "m n o p")]),  # single-wording John 3:16 omitted
+    ]
+    idx = index_documents(docs)
+    in_process = {
+        (w, lg, c): sorted(p.version for p in ps)
+        for (w, lg, c), ps in idx.by_cite.items()
+        if len(ps) >= 2
+    }
+    exported = {
+        (r["work"], r["language"], r["citation"]): [wd["version"] for wd in r["wordings"]]
+        for r in export_rows(docs)
+    }
+    assert in_process == exported
 
 
 # --- determinism + hash sensitivity -----------------------------------------
@@ -111,9 +137,9 @@ def test_export_is_byte_stable_and_hash_sensitive(tmp_path):
         _doc("The Bible", "KJV", [("Genesis 1:1", "In the beginning God")]),
         _doc("The Bible", "ASV (1901)", [("Genesis 1:1", "In the beginning God")]),
     ]
-    m1 = write_export(docs, [], tmp_path / "a.jsonl")
+    m1 = write_export(docs, docs, [], tmp_path / "a.jsonl")  # indexed == all_docs in this unit fixture
     bytes1 = (tmp_path / "a.jsonl").read_bytes()
-    m2 = write_export(docs, [], tmp_path / "b.jsonl")
+    m2 = write_export(docs, docs, [], tmp_path / "b.jsonl")
     bytes2 = (tmp_path / "b.jsonl").read_bytes()
     assert bytes1 == bytes2  # byte-stable on identical input
     assert m1["digest"] == m2["digest"] == hashlib.sha256(bytes1).hexdigest()[:16]
@@ -125,9 +151,21 @@ def test_export_is_byte_stable_and_hash_sensitive(tmp_path):
         _doc("The Bible", "KJV", [("Genesis 1:1", "In the beginning God")]),
         _doc("The Bible", "ASV (1901)", [("Genesis 1:1", "In the beginning, God.")]),
     ]
-    m3 = write_export(docs2, [], tmp_path / "c.jsonl")
+    m3 = write_export(docs2, docs2, [], tmp_path / "c.jsonl")
     assert m3["digest"] != m1["digest"]
     assert m3["corpus_hash"] != m1["corpus_hash"]
+
+
+def test_corpus_hash_is_over_the_full_nonrestricted_set_not_the_indexed_subset(tmp_path):
+    # the export's corpus_hash is generate's hash over ALL non-restricted docs (translations
+    # included), so adding a translation (not indexed) still moves corpus_hash — that is what makes
+    # it comparable to a run manifest's corpus_hash.
+    indexed = [_doc("The Bible", "KJV", [("Genesis 1:1", "a b c d")])]
+    translation = _doc("The Bible", "Translation", [("Genesis 1:1", "w x y z")], language="xx")
+    m_no = write_export(indexed, indexed, [], tmp_path / "a.jsonl")
+    m_yes = write_export(indexed, indexed + [translation], [], tmp_path / "b.jsonl")
+    assert m_no["corpus_hash"] != m_yes["corpus_hash"]  # full-set hash moved
+    assert m_no["digest"] == m_yes["digest"]  # the rows (from indexed only) did not
 
 
 def test_manifest_shape(tmp_path):
@@ -135,11 +173,40 @@ def test_manifest_shape(tmp_path):
         _doc("The Bible", "KJV", [("Genesis 1:1", "a b c d e")]),
         _doc("The Bible", "WEB", [("Genesis 1:1", "a b c d e")]),
     ]
-    m = write_export(docs, ["NABRE", "TLG"], tmp_path / "idx.jsonl")
+    m = write_export(docs, docs, ["NABRE", "TLG"], tmp_path / "idx.jsonl")
     assert set(m) == {"corpus_hash", "row_count", "digest", "excluded_restricted"}
     assert m["excluded_restricted"] == ["NABRE", "TLG"]
     manifest_on_disk = json.loads((tmp_path / "idx.jsonl.manifest.json").read_text())
     assert manifest_on_disk == m
+
+
+def test_write_export_atomic_rollback_on_second_swap_failure(tmp_path, monkeypatch):
+    from sacredbench import edition_index as ei_mod
+
+    docs = [
+        _doc("The Bible", "KJV", [("Genesis 1:1", "a b c d")]),
+        _doc("The Bible", "WEB", [("Genesis 1:1", "e f g h")]),
+    ]
+    out = tmp_path / "idx.jsonl"
+    manifest_path = tmp_path / "idx.jsonl.manifest.json"
+    out.write_text("OLD-INDEX")
+    manifest_path.write_text("OLD-MANIFEST")
+    real_replace = ei_mod.os.replace
+    calls = {"n": 0}
+
+    def flaky(src, dst):
+        calls["n"] += 1
+        if calls["n"] == 2:  # fail swapping the manifest
+            raise OSError("boom")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(ei_mod.os, "replace", flaky)
+    with pytest.raises(OSError):
+        write_export(docs, docs, [], out)
+    # neither file is left half-updated (the index swap was rolled back)
+    assert out.read_text() == "OLD-INDEX"
+    assert manifest_path.read_text() == "OLD-MANIFEST"
+    assert not list(tmp_path.glob("idx.jsonl*.tmp")) and not list(tmp_path.glob("idx.jsonl*.bak.*"))
 
 
 # --- the restricted-license filter (a present payload is still excluded) -----
@@ -230,13 +297,15 @@ def test_cli_edition_index_writes_both_files(tmp_path):
 
 def test_restricted_edition_never_indexed_even_when_payload_present(tmp_path):
     raw = _fixture_raw_with_present_restricted(tmp_path)
-    docs, excluded = load_edition_documents(raw)
-    versions = {d.version for d in docs}
+    indexed, all_docs, excluded = load_edition_documents(raw)
+    versions = {d.version for d in indexed}
     assert "NABRE" not in versions  # license filter, not payload-absence, excludes it
     assert excluded == ["NABRE"]  # named in the manifest exclusions
-    # the non-canonical-language English Talmud edition is kept out by the pool rule
+    # the non-canonical-language English Talmud edition is kept out of the INDEX by the pool rule,
+    # but is in all_docs (it is a non-restricted converted doc that generate would hash)
     assert "Davidson English" not in versions
-    rows = export_rows(docs)
+    assert "Davidson English" in {d.version for d in all_docs}
+    rows = export_rows(indexed)
     serialized = json.dumps(rows, ensure_ascii=False)
     assert "NABRE" not in serialized and "SECRET" not in serialized
     assert "english rendering" not in serialized
@@ -245,10 +314,6 @@ def test_restricted_edition_never_indexed_even_when_payload_present(tmp_path):
 
 
 def test_conflicting_duplicate_wording_fails_fast():
-    import pytest
-
-    from sacredbench.edition_index import EditionIndexError
-
     docs = [
         _doc("The Bible", "KJV", [("Genesis 1:1", "wording one")]),
         _doc("The Bible", "KJV", [("Genesis 1:1", "a DIFFERENT wording")]),  # same version, conflicts
@@ -263,19 +328,33 @@ def test_conflicting_duplicate_wording_fails_fast():
 def test_real_catalogue_indexes_bibles_and_excludes_restricted():
     raw = REPO_ROOT / "texts" / "raw"
     if not raw.exists():
-        import pytest
-
         pytest.skip("no raw texts tree")
-    docs, excluded = load_edition_documents(raw)
-    versions = {(d.work, d.version) for d in docs}
+    indexed, _all, excluded = load_edition_documents(raw)
+    versions = {(d.work, d.version) for d in indexed}
     # the three public English Bibles are indexed
     assert ("The Bible", "KJV") in versions
     assert ("The Bible", "ASV (1901)") in versions
     assert ("The Bible", "WEB") in versions
     # NABRE (restricted) is not
     assert ("The Bible", "NABRE") not in versions
-    assert "NABRE" in excluded
+    assert excluded == ["NABRE", "TLG"]  # both restricted same-canonical-language editions, pinned
     # the canonical-language guard keeps non-canonical editions OUT of the index:
     # the English Talmud (en / canonical he) and the Papal Encyclicals (en / canonical la)
     assert ("Talmud Bavli", "William Davidson Edition - English") not in versions
-    assert all(d.work != "Papal Encyclicals" for d in docs)
+    assert all(d.work != "Papal Encyclicals" for d in indexed)
+
+
+def test_real_catalogue_export_corpus_hash_equals_run_manifest():
+    # BLOCKING 1: the export manifest's corpus_hash must equal the run manifest's, so #21's consumer
+    # (fail unless index corpus_hash == run corpus_hash) passes when the corpus is the same.
+    raw = REPO_ROOT / "texts" / "raw"
+    run_manifest = REPO_ROOT / "runs" / "original-2026-10-21" / "questions.jsonl.manifest.json"
+    if not raw.exists() or not run_manifest.exists():
+        pytest.skip("no raw tree / committed run")
+    indexed, all_docs, excluded = load_edition_documents(raw)
+    body = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in export_rows(indexed))
+    from sacredbench.edition_index import build_manifest
+
+    manifest = build_manifest(all_docs, body, excluded)
+    run_corpus_hash = json.loads(run_manifest.read_text())["corpus_hash"]
+    assert manifest["corpus_hash"] == run_corpus_hash

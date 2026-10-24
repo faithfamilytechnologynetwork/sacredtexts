@@ -262,9 +262,6 @@ def bounded_contains(answer: str, expected: str) -> bool:
     return re.search(r"(?<!\w)" + re.escape(ne) + r"(?!\w)", normalize(answer)) is not None
 
 
-# Private alias kept for the existing internal callers and the outcomes module.
-_bounded_equal = bounded_contains
-
 
 def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, int]:
     """Returns (correct, n_candidates). A multi-candidate answer scores 0; otherwise
@@ -281,7 +278,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
-    return int(_bounded_equal(answer, expected_citation)), n
+    return int(bounded_contains(answer, expected_citation)), n
 
 
 def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None) -> dict:
@@ -302,7 +299,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             raise GraderError("empty grader list passed to score_answer")
         target = expected["text"]
         # all primitives are computed; only the selected graders' fields (+ always-on token_f1)
-        # are emitted. contains_reference reuses _bounded_equal (word-bounded normalised
+        # are emitted. contains_reference reuses bounded_contains (word-bounded normalised
         # containment); the bool(normalize(target)) guard stops an empty reference (whose escaped
         # regex matches everywhere) from scoring 1. Containment is confined to these two
         # text-retrieval tasks — the provenance branches below never see it.
@@ -310,7 +307,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             "exact": int(answer.strip() == target.strip()),
             "normalized": int(normalize(answer) == normalize(target)),
             "token_f1": round(token_f1(answer, target), 4),
-            "contains_reference": int(bool(normalize(target)) and _bounded_equal(answer, target)),
+            "contains_reference": int(bool(normalize(target)) and bounded_contains(answer, target)),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))

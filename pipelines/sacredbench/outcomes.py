@@ -33,7 +33,7 @@ Both halves matter:
   committed leading verdict is graded even with a trailing disclaimer, and a negation-evasion with no
   leading verdict is refused, not scored correct.
 
-This module is deliberately thin: the primitives (``normalize``, ``_bounded_equal``, ``parse_yes_no``)
+This module is deliberately thin: the primitives (``normalize``, ``bounded_contains``, ``parse_yes_no``)
 live in ``score.py`` and are imported lazily so there is no import cycle (``score`` imports this inside
 ``score_answer``).
 """
@@ -121,14 +121,14 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
         return False
 
     if task in _TEXT_RETRIEVAL:
-        from .score import _bounded_equal
+        from .score import bounded_contains
 
         # The containment half is load-bearing, not redundant: under the default graders a contained
         # answer already has correct=1 (so `_with_outcome`'s `not correct` gate excludes it), but under
         # `--evaluator strict` a contained-but-not-normalized answer scores correct=0, so only this
         # check stops a decline-prefixed correct retrieval from being mislabelled `refused`. Keep it.
         target = expected.get("text", "")
-        return not (target and _bounded_equal(answer, target))
+        return not (target and bounded_contains(answer, target))
     # cite_passage (and any future provenance task that routes here): a leading decline cue IS the
     # refusal — the model declined to answer — gated in `_with_outcome` on `not correct` so a
     # decline-prefixed but DELIVERED-correct answer stays an answer. (verify_source no longer reaches

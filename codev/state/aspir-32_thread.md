@@ -140,8 +140,20 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - Consult .txt + context.md files ARE committed (repo convention: spec 1 has them). .builder-* NOT tracked → leave untracked.
 - PR: base main, "Part 3 of 3 of #30", "Closes #32", loop @JonathanKarr33 on provisional card wording. NO Generated-with/Co-Authored-By (architect + CLAUDE.md override the attribution reminder).
 
+## PR #34 opened (base main, "Part 3 of 3 of #30", Closes #32, @JonathanKarr33 on wording). Review-phase checks green. porch done --pr 34 recorded.
+
+## PR #34 review round 1 + 1b (2026-10-24): codex RC + claude APPROVE consult; architect integration review 3 blocking + 2 non-blocking (r1) + items 6-9 (r1b). ALL FOLDED. Not merged. Suite 442 pass/1 skip.
+- B1 corpus_hash: export now = gen.corpus_hash over FULL non-restricted set (load_edition_documents→(indexed,all,excluded)); ==run manifest 5ae493e7e249575c. VERIFIED.
+- B2 counterfactual bound to run: candidates must be in manifest selected_texts + question language (structural via by_cite key). Card byte-identical (32/3 unchanged). Tests added.
+- B3 atomic: one shared edition_index.atomic_write_texts (mkstemp+rollback) for write_export AND write_card. 2nd-swap-failure tests both sides.
+- N4: _bounded_equal alias deleted; score.py+outcomes.py use bounded_contains.
+- N5+item8: by_cite re-keyed (work, language, RAW citation) == export_rows grouping; cite_key→is_verse_citation predicate only; _BOOK_ALIAS deleted; equality test.
+- item6: _within inverse rule (new file or facct.json/md only; else reject) +tests. item7: by_norm + Passage.norm removed. item9: zero-question langs = union(target langs, canonical langs) − pool → Latin now shown; card changed on that ONE line, re-pinned.
+- claude extras: README de-hardcoded (points to facct.md); TLG pinned in real-catalogue test; CODE_WALKTHROUGH lists 2 new modules. arch.md note updated.
+- NOT folded (architect's): Qur'an tradition data→#27; cli.py conflict with #21→merge-order.
+
 ## Status
-- review: committing review doc + governance + consult outputs, then push + create PR, porch done, signal PR_READY, notify architect. PR gate is HUMAN — stop & wait after.
+- round 1/1b fixes committed+pushed (updates PR #34). Rebuttal at codev/projects/.../32-review-iter1-rebuttals.md. Refresh PR desc (corpus_hash semantics). Reply architect with tip. PR gate still HUMAN — do NOT merge; porch review-phase 2-way consult was already run (will re-run if porch asks). Wait for architect.
 - Phase_4: extend audit.py suffix set to scan .md + test_audit injection test; byte-digest integrity (sha256 3 evidence files before/after); GENERATE+COMMIT real card into runs/original-2026-10-21/facct.{json,md} + README line; real-run drift guard in test_original_run_regression.py. Author carry phases to Jonathan. THEN PR ("Part 3 of 3 of #30", closes #32, loop Jonathan on wording, NO Generated-with/Co-Authored-By). Commit untracked consult .txt files with PR.
 - Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
 - NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.

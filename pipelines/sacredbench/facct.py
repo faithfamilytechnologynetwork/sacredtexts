@@ -21,15 +21,17 @@ predicate behind the headline — never a private matcher.
 from __future__ import annotations
 
 import json
-import os
-import shutil
-import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
 from sacredbench import catalogue as cat
 from sacredbench import score
-from sacredbench.edition_index import cite_key, index_documents, load_edition_documents
+from sacredbench.edition_index import (
+    atomic_write_texts,
+    index_documents,
+    load_edition_documents,
+    lookup_key,
+)
 
 _BIBLE = "The Bible"
 _OUTCOMES = ("correct", "incorrect", "refused")
@@ -95,10 +97,15 @@ def _census(manifest: dict, raw_root: Path) -> dict:
         by_document_type[target.document_type] += 1
         by_license[target.license] += 1
 
-    # Source languages present in the catalogue that contribute zero questions to the pool.
-    all_languages = {t.language for t in targets_by_key.values()}
+    # Languages present in the catalogue — as a target's language OR a text's canonical language —
+    # that contribute zero questions to the pool. The canonical-language union surfaces e.g. Latin
+    # (the encyclicals' canonical language, carried by no target's `language`), not only Greek.
+    catalogue_languages = set()
+    for t in targets_by_key.values():
+        catalogue_languages.add(t.language)
+        catalogue_languages.add(t.canonical_language)
     pool_languages = {st.get("language") for st in selected}
-    zero_question_languages = sorted(all_languages - pool_languages)
+    zero_question_languages = sorted(catalogue_languages - pool_languages)
 
     return {
         "n_texts": len(texts),
@@ -225,9 +232,14 @@ def _outcomes(counts: dict[tuple[str, str], Counter], summary: dict) -> dict:
     return out
 
 
-def _counterfactual(scores: list[dict], ans_by: dict[tuple[str, str], dict], raw_root: Path) -> dict:
-    docs, _excluded = load_edition_documents(raw_root)
-    index = index_documents(docs)
+def _counterfactual(
+    scores: list[dict],
+    ans_by: dict[tuple[str, str], dict],
+    raw_root: Path,
+    selected_keys: set[tuple[str, str, str]],
+) -> dict:
+    indexed, _all, _excluded = load_edition_documents(raw_root)
+    index = index_documents(indexed)
     per_model: dict[str, dict] = {}
     for model_id in {s.get("model_id") for s in scores}:
         per_model[model_id] = {"numerator": 0, "denominator": 0, "tagged": []}  # seed so 0-miss models show 0/0
@@ -244,18 +256,23 @@ def _counterfactual(scores: list[dict], ans_by: dict[tuple[str, str], dict], raw
         model = s["model_id"]
         per_model[model]["denominator"] += 1
         citation = source.get("citation") or ""
+        language = source.get("language") or ""
         requested_version = source.get("version")
-        key = cite_key(citation)
+        # by_cite is keyed on (work, language, citation): the lookup is already scoped to this
+        # question's work AND language, so a same-work different-language edition is never a candidate.
+        key = lookup_key(source.get("work") or "", language, citation)
         if key is None:
             continue  # non-Bible-style citation: never matched to a Bible edition
         answer_text = answer_row.get("answer") or ""
         matched: list[str] = []
         for passage in index.by_cite.get(key, []):
-            if passage.work != _BIBLE:  # by_cite is work-blind; Bible-only here (see EditionIndex note)
+            # only editions the RUN actually selected count (so adding a Bible edition to the
+            # catalogue later cannot change this historic run's card), and never the requested one.
+            if (passage.work, passage.version, passage.language) not in selected_keys:
                 continue
             if passage.version == requested_version:  # the requested edition is not "another edition"
                 continue
-            if not passage.norm or passage.version in matched:
+            if passage.version in matched or not score.normalize(passage.text):
                 continue
             if score.bounded_contains(answer_text, passage.text):
                 matched.append(passage.version)
@@ -317,6 +334,12 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
     scope = CARD_PROSE["counterfactual_scope_template"].format(
         n=len(bible_editions), versions=", ".join(bible_editions)
     )
+    # the editions this run actually selected — the counterfactual considers only these, so a Bible
+    # edition added to the catalogue later cannot change this historic run's card.
+    selected_keys = {
+        (t.get("work"), t.get("version"), t.get("language"))
+        for t in (manifest.get("selected_texts") or [])
+    }
     return {
         "run": run_dir.name,
         "question_set_digest": manifest.get("question_set_digest"),
@@ -328,7 +351,7 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
         "edition_counterfactual": {
             "scope": scope,
             "bible_editions": bible_editions,
-            "by_model": _counterfactual(scores, ans_by, raw_root),
+            "by_model": _counterfactual(scores, ans_by, raw_root, selected_keys),
         },
     }
 
@@ -589,54 +612,11 @@ def report_markdown(report: dict) -> str:
 def write_card(report: dict, json_path: Path, md_path: Path) -> None:
     """Write ``facct.json`` and ``facct.md`` atomically — both or neither.
 
-    Both files are rendered in memory first, then each is written to a collision-safe temp file in
-    its own (already-validated) directory and swapped into place with ``os.replace``. If the second
-    swap fails, the first is rolled back to its prior contents (or removed if it did not exist), so a
-    failure never leaves a fresh file beside a stale one, and temp files are always cleaned up.
+    Both files are rendered in memory first, then written through the shared
+    :func:`edition_index.atomic_write_texts` (collision-safe temps, swap-all, rollback on failure),
+    so a failure never leaves a fresh file beside a stale one.
     """
-    json_path, md_path = Path(json_path), Path(md_path)
-    payloads = [
-        (json_path, json.dumps(report, ensure_ascii=False, indent=1) + "\n"),
-        (md_path, report_markdown(report)),
-    ]
-    staged: list[tuple[Path, Path]] = []  # (temp, final)
-    try:
-        for final, text in payloads:
-            final.parent.mkdir(parents=True, exist_ok=True)
-            fd, tmp = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".", suffix=".tmp")
-            os.close(fd)
-            Path(tmp).write_text(text, encoding="utf-8")
-            staged.append((Path(tmp), final))
-    except BaseException:
-        for tmp, _final in staged:
-            tmp.unlink(missing_ok=True)
-        raise
-
-    swapped: list[tuple[Path, Path | None]] = []  # (final, backup-or-None)
-    pending_backup: Path | None = None  # backup of the target currently being swapped
-    try:
-        for tmp, final in staged:
-            pending_backup = None
-            if final.exists():
-                fd, bak = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".bak.")
-                os.close(fd)
-                shutil.copy2(final, bak)
-                pending_backup = Path(bak)
-            os.replace(tmp, final)  # if this raises, pending_backup is the orphan to clean
-            swapped.append((final, pending_backup))
-            pending_backup = None
-    except BaseException:
-        if pending_backup is not None:
-            pending_backup.unlink(missing_ok=True)
-        for final, backup in reversed(swapped):  # roll back already-swapped targets
-            if backup is not None:
-                os.replace(backup, final)
-            else:
-                final.unlink(missing_ok=True)
-        for tmp, _final in staged:
-            tmp.unlink(missing_ok=True)
-        raise
-    finally:
-        for _final, backup in swapped:
-            if backup is not None:
-                backup.unlink(missing_ok=True)
+    atomic_write_texts([
+        (Path(json_path), json.dumps(report, ensure_ascii=False, indent=1) + "\n"),
+        (Path(md_path), report_markdown(report)),
+    ])

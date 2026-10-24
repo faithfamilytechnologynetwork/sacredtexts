@@ -135,8 +135,9 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
   `uv --project pipelines run python -m sacredbench facct runs/original-2026-10-21` — and committed
   beside it. It carries the run census (who the questions represent, by tradition / language /
   document type / license), the three outcomes taken verbatim from `scores.jsonl`, and the Bible
-  `retrieve_quote` edition counterfactual (32 incorrect Bible retrieve_quote cells across the panel;
-  3 answered a different edition of the same verse). It never re-scores and never calls a model;
+  `retrieve_quote` edition counterfactual (how many Bible retrieve_quote misses actually quoted a
+  different edition of the same verse — see `facct.md` for the per-model counts). It never re-scores
+  and never calls a model;
   every number is derived from `scores.jsonl` / `summary.json`, pinned by
   `test_original_run_regression.py::test_committed_facct_card_matches_the_run`. The card wording is
   provisional pending Jonathan Karr's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).

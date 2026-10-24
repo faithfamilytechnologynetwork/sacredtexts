@@ -62,7 +62,7 @@ This run asked **476 questions** across **17 texts**.
 | The Bible (WEB) | English (en) | Protestant Christian | scripture | public-domain |
 | The Qur'an (Uthmani (QUL)) | Arabic (ar) | Sunni Islam | scripture | public-domain |
 
-**Languages with zero questions:** Greek (grc). A language listed here is present in the catalogue but asked no questions in this run. It is a held-back or out-of-pool source, not a gap the models failed to cover.
+**Languages with zero questions:** Greek (grc), Latin (la). A language listed here is present in the catalogue but asked no questions in this run. It is a held-back or out-of-pool source, not a gap the models failed to cover.
 
 **Excluded from the pool.** These texts are in the catalogue but outside this run's pool, each for the stated reason (an edition whose language is not its canonical language).
 

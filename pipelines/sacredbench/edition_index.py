@@ -13,6 +13,11 @@ restricted edition of a work already in the index (e.g. NABRE, a fourth English 
 can never become a sibling — even when its held-back payload is present locally. The
 file export is deterministic: rows sorted by ``(work, citation, language)``, wordings
 sorted by version, and rows with a single wording omitted.
+
+The manifest's ``corpus_hash`` is **generate's corpus hash**, taken over every non-restricted
+converted doc (translations included, before the language filter) — the same set ``generate``
+hashes — so it is directly comparable to a run manifest's ``corpus_hash``: #21's consumer can
+fail-fast unless the index and the run were built from the same corpus.
 """
 
 from __future__ import annotations
@@ -21,6 +26,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import tempfile
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,18 +36,11 @@ from sacredbench import catalogue as cat
 from sacredbench import convert as conv
 from sacredbench import generate as gen
 from sacredbench.schema import Document
-from sacredbench.score import normalize
 
 
 class EditionIndexError(Exception):
     pass
 
-
-# normalize() turns an apostrophe into a space, so "Solomon's Song" is "solomon s
-# song". The two KJV files name that book differently. (Carried over from PR #30.)
-_BOOK_ALIAS = {
-    "solomon s song": "song of solomon",
-}
 
 _CITE = re.compile(r"^(?P<book>.+?)\s+(?P<ch>\d+)\s*:\s*(?P<vs>\d+)\s*$")
 
@@ -53,48 +53,47 @@ class Passage:
     language: str
     citation: str
     text: str
-    norm: str
-    cite_key: tuple[str, int, int] | None
-    book: str | None
+
+
+# The ``by_cite`` key: (work, language, raw citation string). export_rows groups on the SAME key,
+# so the in-process index and the exported file are the same grouping by construction.
+LookupKey = tuple[str, str, str]  # (work, language, citation)
 
 
 @dataclass
 class EditionIndex:
     passages: list[Passage]
-    # NOTE: by_cite is keyed on the Bible-style (book, chapter, verse) ONLY — it carries no
-    # ``work`` component, and LDS scriptures also use Book-chapter:verse citations. A consumer
-    # that wants Bible editions (e.g. the Spec 32 counterfactual) must filter on
-    # ``passage.work == "The Bible"``, not trust the cite-key alone.
-    by_cite: dict[tuple[str, int, int], list[Passage]]
-    by_norm: dict[str, list[Passage]]
+    # Keyed on (work, language, citation): work + language are IN the key, so a lookup is already
+    # scoped to one work and one language — a consumer never re-filters on work (LDS scriptures also
+    # use Book-chapter:verse, and a Bible could exist in more than one language). Only Bible-style
+    # verse citations are bucketed (``cite_key is not None``), so a non-Bible citation is never a key.
+    by_cite: dict[LookupKey, list[Passage]]
 
 
-def cite_key(citation: str) -> tuple[str, int, int] | None:
-    """``(book, chapter, verse)`` for a Bible-style verse citation, else None.
+def is_verse_citation(citation: str) -> bool:
+    """True iff ``citation`` is a Bible-style ``Book chapter:verse`` — the non-Bible guard.
 
-    Book names are folded with the scorer's ``normalize`` plus the Song of Solomon
-    alias, so editions that name a book differently line up. Non-``Book chapter:verse``
-    citations (Arabic ``surah:ayah`` with no book, hadith numbers, Talmud ``daf:line``)
-    return None and are therefore never matched to a Bible edition.
+    Arabic ``surah:ayah`` (no book token), hadith numbers, and Talmud ``daf:line`` are not, so they
+    are never bucketed and never matched to a Bible edition.
     """
-    match = _CITE.match(citation.strip())
-    if not match:
-        return None
-    book = normalize(match.group("book"))
-    book = _BOOK_ALIAS.get(book, book)
-    return book, int(match.group("ch")), int(match.group("vs"))
+    return _CITE.match(citation.strip()) is not None
 
 
-def _book_display(citation: str) -> str | None:
-    match = _CITE.match(citation.strip())
-    return match.group("book") if match else None
+# Back-compat predicate name; returns a truthy match object or None (callers use it as a bool).
+def cite_key(citation: str):
+    """Deprecated spelling of :func:`is_verse_citation` kept as a predicate (truthy / None)."""
+    return _CITE.match(citation.strip())
+
+
+def lookup_key(work: str, language: str, citation: str) -> LookupKey | None:
+    """The ``by_cite`` key for a work's language edition of a citation, or None for a non-verse one."""
+    return (work, language, citation) if is_verse_citation(citation) else None
 
 
 def index_documents(docs: list[Document]) -> EditionIndex:
-    """Build the in-process index: passages keyed by Bible cite-key and by normalized text."""
+    """Build the in-process index: passages bucketed by (work, language, citation)."""
     passages: list[Passage] = []
-    by_cite: dict[tuple[str, int, int], list[Passage]] = defaultdict(list)
-    by_norm: dict[str, list[Passage]] = defaultdict(list)
+    by_cite: dict[LookupKey, list[Passage]] = defaultdict(list)
     for doc in docs:
         # NOTE: this collapses the tradition LIST to its first element (arch invariant:
         # "tradition is a LIST"). Fine for the edition index (it only needs edition identity),
@@ -102,7 +101,6 @@ def index_documents(docs: list[Document]) -> EditionIndex:
         # catalogue/question source, NOT from Passage.tradition.
         tradition = doc.tradition[0] if doc.tradition else "unknown"
         for entry in doc.entries:
-            key = cite_key(entry.citation)
             passage = Passage(
                 tradition=tradition,
                 work=doc.work,
@@ -110,36 +108,41 @@ def index_documents(docs: list[Document]) -> EditionIndex:
                 language=doc.language,
                 citation=entry.citation,
                 text=entry.text,
-                norm=normalize(entry.text),
-                cite_key=key,
-                book=_book_display(entry.citation),
             )
             passages.append(passage)
-            if key is not None:
-                by_cite[key].append(passage)
-            if passage.norm:
-                by_norm[passage.norm].append(passage)
-    return EditionIndex(passages=passages, by_cite=dict(by_cite), by_norm=dict(by_norm))
+            if is_verse_citation(entry.citation):
+                by_cite[(doc.work, doc.language, entry.citation)].append(passage)
+    return EditionIndex(passages=passages, by_cite=dict(by_cite))
 
 
-def load_edition_documents(raw_root: Path = cat.RAW_ROOT) -> tuple[list[Document], list[str]]:
-    """Convert the indexable corpus from ``texts/raw/**`` and name the restricted exclusions.
+def load_edition_documents(
+    raw_root: Path = cat.RAW_ROOT,
+) -> tuple[list[Document], list[Document], list[str]]:
+    """Convert the corpus from ``texts/raw/**`` and name the restricted exclusions.
 
-    Reads raw payloads through ``convert.convert_target`` (as the audit does), never the
-    gitignored ``texts/standardized/``. Keeps only non-restricted, same-canonical-language
-    editions. Returns ``(docs, excluded_restricted)`` where ``excluded_restricted`` is the
-    sorted, de-duplicated versions of the restricted targets that would otherwise be
-    eligible siblings (``language == canonical_language``) — the NABRE / TLG exclusions.
+    Reads raw payloads through ``convert.convert_target`` (as the audit does), never the gitignored
+    ``texts/standardized/``. Returns ``(indexed_docs, all_nonrestricted_docs, excluded_restricted)``:
+
+    - ``indexed_docs`` — the same-canonical-language editions (the question-pool rule, Spec 26); the
+      index and the export rows are built from these.
+    - ``all_nonrestricted_docs`` — **every** non-restricted converted doc, translations included,
+      BEFORE the language filter. This is exactly the set ``generate`` hashes, so a ``corpus_hash``
+      over it equals a run manifest's ``corpus_hash`` for the same corpus (what #21's consumer check
+      compares).
+    - ``excluded_restricted`` — sorted, de-duplicated versions of the restricted targets that would
+      otherwise be eligible siblings (``language == canonical_language``): the NABRE / TLG exclusions.
     """
     sources = cat.discover_catalogue(raw_root)
-    docs: list[Document] = []
+    all_docs: list[Document] = []
+    indexed: list[Document] = []
     for t in sorted(
         cat.select_targets(sources, include_restricted=False),
         key=lambda t: (t.work, t.version, t.language),
     ):
-        if t.language != t.canonical_language:
-            continue  # original-language editions only — the question-pool rule (Spec 26)
-        docs.extend(conv.convert_target(t.payload_paths(raw_root), t))
+        docs = conv.convert_target(t.payload_paths(raw_root), t)
+        all_docs.extend(docs)
+        if t.language == t.canonical_language:
+            indexed.extend(docs)
     excluded_restricted = sorted(
         {
             t.version
@@ -147,7 +150,7 @@ def load_edition_documents(raw_root: Path = cat.RAW_ROOT) -> tuple[list[Document
             if t.license == "restricted" and t.language == t.canonical_language
         }
     )
-    return docs, excluded_restricted
+    return indexed, all_docs, excluded_restricted
 
 
 def export_rows(docs: list[Document]) -> list[dict]:
@@ -185,37 +188,89 @@ def _serialize_rows(rows: list[dict]) -> str:
     return "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
 
 
-def build_manifest(docs: list[Document], body: str, excluded_restricted: list[str]) -> dict:
+def build_manifest(all_docs: list[Document], body: str, excluded_restricted: list[str]) -> dict:
     """The sibling ``.manifest.json`` for an export whose JSONL bytes are ``body``.
 
-    ``corpus_hash`` = ``generate.corpus_hash`` over all indexed docs (before the
-    single-wording omission); ``digest`` = sha256[:16] of the written JSONL bytes.
+    ``corpus_hash`` is **generate's corpus hash** over ``all_docs`` (every non-restricted converted
+    doc — the same set ``generate`` hashes), so it equals a run manifest's ``corpus_hash`` for the
+    same corpus and #21's consumer can fail-fast when the index was built from a different corpus.
+    ``digest`` = sha256[:16] of the written JSONL bytes.
     """
     return {
-        "corpus_hash": gen.corpus_hash(docs),
+        "corpus_hash": gen.corpus_hash(all_docs),
         "row_count": body.count("\n"),
         "digest": hashlib.sha256(body.encode("utf-8")).hexdigest()[:16],
         "excluded_restricted": list(excluded_restricted),
     }
 
 
-def write_export(docs: list[Document], excluded_restricted: list[str], out_path: Path) -> dict:
-    """Write ``out_path`` (JSONL) and ``<out_path>.manifest.json``; return the manifest.
+def atomic_write_texts(payloads: list[tuple[Path, str]]) -> None:
+    """Write several (path, text) files atomically — all or none.
 
-    Both-or-neither: the rows are built (and may raise :class:`EditionIndexError` on a
-    conflicting duplicate) before anything is written, and the two files are staged to temp
-    paths and swapped into place, so a failure never leaves a fresh index beside a stale manifest.
+    Each file is staged to a collision-safe temp (``tempfile.mkstemp`` in its own parent dir) and
+    swapped into place with ``os.replace``; if a later swap fails, the already-swapped targets are
+    rolled back to their prior bytes (or removed if new), and every temp/backup is cleaned up. Shared
+    by the edition-index export and the FAccT card writer so there is one both-or-neither path.
+    """
+    staged: list[tuple[Path, Path]] = []  # (temp, final)
+    try:
+        for final, text in payloads:
+            final.parent.mkdir(parents=True, exist_ok=True)
+            fd, tmp = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".", suffix=".tmp")
+            os.close(fd)
+            Path(tmp).write_text(text, encoding="utf-8")
+            staged.append((Path(tmp), final))
+    except BaseException:
+        for tmp, _final in staged:
+            tmp.unlink(missing_ok=True)
+        raise
+
+    swapped: list[tuple[Path, Path | None]] = []  # (final, backup-or-None)
+    pending_backup: Path | None = None
+    try:
+        for tmp, final in staged:
+            pending_backup = None
+            if final.exists():
+                fd, bak = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".bak.")
+                os.close(fd)
+                shutil.copy2(final, bak)
+                pending_backup = Path(bak)
+            os.replace(tmp, final)
+            swapped.append((final, pending_backup))
+            pending_backup = None
+    except BaseException:
+        if pending_backup is not None:
+            pending_backup.unlink(missing_ok=True)
+        for final, backup in reversed(swapped):
+            if backup is not None:
+                os.replace(backup, final)
+            else:
+                final.unlink(missing_ok=True)
+        for tmp, _final in staged:
+            tmp.unlink(missing_ok=True)
+        raise
+    finally:
+        for _final, backup in swapped:
+            if backup is not None:
+                backup.unlink(missing_ok=True)
+
+
+def write_export(
+    indexed_docs: list[Document],
+    all_docs: list[Document],
+    excluded_restricted: list[str],
+    out_path: Path,
+) -> dict:
+    """Write ``out_path`` (JSONL rows from ``indexed_docs``) and ``<out_path>.manifest.json``.
+
+    Both-or-neither: rows (which may raise :class:`EditionIndexError` on a conflicting duplicate) and
+    the manifest (``corpus_hash`` over ``all_docs``) are built before anything is written, then both
+    files are written atomically via :func:`atomic_write_texts`.
     """
     out_path = Path(out_path)
-    body = _serialize_rows(export_rows(docs))
-    manifest = build_manifest(docs, body, excluded_restricted)
+    body = _serialize_rows(export_rows(indexed_docs))
+    manifest = build_manifest(all_docs, body, excluded_restricted)
     manifest_text = json.dumps(manifest, ensure_ascii=False, indent=1) + "\n"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path = out_path.with_name(out_path.name + ".manifest.json")
-    tmp_jsonl = out_path.with_name(out_path.name + ".tmp")
-    tmp_manifest = manifest_path.with_name(manifest_path.name + ".tmp")
-    tmp_jsonl.write_text(body, encoding="utf-8")
-    tmp_manifest.write_text(manifest_text, encoding="utf-8")
-    os.replace(tmp_jsonl, out_path)
-    os.replace(tmp_manifest, manifest_path)
+    atomic_write_texts([(out_path, body), (manifest_path, manifest_text)])
     return manifest
