@@ -24,7 +24,7 @@ from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.config import ConfigError, load_config
 from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
-from sacredbench.facct import FacctError, build_facct, write_facct_json
+from sacredbench.facct import FacctError, build_facct, report_markdown, write_facct_json
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
@@ -406,25 +406,42 @@ def edition_index_cmd(
     )
 
 
+def _within(run_dir: Path, path: Path) -> Path:
+    """Resolve ``path`` and require it to sit inside ``run_dir`` (no writing outside the run)."""
+    run_dir = run_dir.resolve()
+    resolved = (run_dir / path).resolve() if not path.is_absolute() else path.resolve()
+    if run_dir != resolved and run_dir not in resolved.parents:
+        raise typer.BadParameter(f"{path} resolves outside the run directory {run_dir}")
+    return resolved
+
+
 @app.command()
 def facct(
     run_dir: Path = typer.Argument(help="a finished run directory (reads scores.jsonl, summary.json, answers.jsonl, manifest)"),
-    out: Path = typer.Option(None, help="facct.json path (default: <run_dir>/facct.json)"),
+    json_out: Path = typer.Option(None, "--json", help="facct.json path (default: <run_dir>/facct.json)"),
+    md_out: Path = typer.Option(None, "--md", help="facct.md path (default: <run_dir>/facct.md)"),
     raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root (catalogue + edition index)"),
 ) -> None:
-    """Write the FAccT card data (census, outcomes, edition counterfactual) for a finished run.
+    """Write the FAccT card — facct.json AND facct.md — for a finished run.
 
     Pure analysis: reads committed run evidence, never re-scores, never calls a model. Every
-    number is derived from scores.jsonl / summary.json. Fails fast (no partial write) on
-    inconsistent evidence.
+    number on the card is derived from scores.jsonl / summary.json. Both files are written into
+    the run directory by default; an override path must stay within it. Fails fast (no partial
+    write) on inconsistent evidence.
     """
+    json_path = _within(run_dir, json_out) if json_out is not None else run_dir / "facct.json"
+    md_path = _within(run_dir, md_out) if md_out is not None else run_dir / "facct.md"
+    # Build and render BOTH before writing EITHER, so a failure leaves neither file touched.
     report = build_facct(run_dir, raw_root)
-    out_path = out if out is not None else run_dir / "facct.json"
-    write_facct_json(report, out_path)
+    markdown = report_markdown(report)
+    write_facct_json(report, json_path)
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.write_text(markdown, encoding="utf-8")
     cf = report["edition_counterfactual"]["by_model"]
     other_edition = sum(b["numerator"] for b in cf.values())
-    typer.echo(f"wrote {out_path} — {report['census']['n_texts']} texts, {report['census']['n_questions']} questions, "
-               f"{other_edition} other_edition tag(s) across {len(cf)} model(s)")
+    typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "
+               f"{report['census']['n_questions']} questions, {other_edition} other_edition tag(s) "
+               f"across {len(cf)} model(s)")
 
 
 def main() -> None:

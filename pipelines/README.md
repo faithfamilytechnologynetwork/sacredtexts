@@ -142,6 +142,12 @@ uv --project pipelines run python -m sacredbench audit runs/ texts/standardized
 #    editions only; restricted editions (NABRE, TLG) are never indexed. Writes JSONL +
 #    a sibling .manifest.json (corpus_hash, row_count, digest, excluded_restricted).
 uv --project pipelines run python -m sacredbench edition-index --out texts/edition_index.jsonl
+
+# 8. FAccT benchmark card (Spec 32): read a finished run and write facct.json + facct.md
+#    beside it — the run census (who the questions represent), the three outcomes taken
+#    verbatim from scores.jsonl, and the Bible retrieve_quote edition counterfactual. Pure
+#    analysis: never re-scores, never calls a model; every number is derived from the run.
+uv --project pipelines run python -m sacredbench facct runs/<id>
 ```
 
 Tests: `uv --project pipelines run pytest pipelines` (fixtures are real-SHAPE but

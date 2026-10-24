@@ -15,8 +15,13 @@ from textwrap import dedent
 
 import pytest
 
+from typer.testing import CliRunner
+
 from sacredbench import facct as facct_mod
-from sacredbench.facct import FacctError, build_facct, write_facct_json
+from sacredbench.cli import app
+from sacredbench.facct import FacctError, build_facct, report_markdown, write_facct_json
+
+runner = CliRunner()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -392,6 +397,83 @@ def test_module_defines_no_private_containment_or_normalizer():
     assert "score.bounded_contains" in src
     assert "def normalize" not in src
     assert "def bounded_contains" not in src  # does not redefine it
+
+
+# --- markdown card (Phase 3) -------------------------------------------------
+
+
+def test_markdown_has_all_prose_sections(tmp_path):
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    for heading in ("Who the questions represent", "What the models did",
+                    "Would another edition have passed?", "What this card claims",
+                    "What would make this card wrong", "What this card does not conclude",
+                    "Community review"):
+        assert f"## {heading}" in md
+
+
+def test_markdown_numbers_come_from_data_not_typed(tmp_path):
+    report, run, raw = _build(tmp_path)
+    md = report_markdown(report)
+    acc = report["outcomes"]["m1"]["by_task"]["retrieve_quote"]["accuracy"]
+    assert f"{round(acc * 100, 1)}%" in md  # 1/5 = 20.0%
+
+    # flip one incorrect retrieve_quote cell to correct in BOTH scores and summary; the rendered
+    # accuracy must move with the data (proving nothing is typed into the prose).
+    scores = [json.loads(l) for l in (run / "scores.jsonl").read_text().splitlines()]
+    for s in scores:
+        if s["question_id"] == "retrieve_quote-0001":  # Test 2:2, was incorrect
+            s["metrics"] = {"correct": 1, "outcome": "correct"}
+    (run / "scores.jsonl").write_text("\n".join(json.dumps(s) for s in scores) + "\n")
+    summary = json.loads((run / "summary.json").read_text())
+    rq = summary["models"]["m1"]["retrieve_quote"]
+    rq["correct"] += 1
+    rq["incorrect"] -= 1
+    ov = summary["models"]["m1"]["_overall"]
+    ov["correct"] += 1
+    ov["incorrect"] -= 1
+    (run / "summary.json").write_text(json.dumps(summary))
+
+    md2 = report_markdown(build_facct(run, raw_root=raw))
+    assert "40.0%" in md2  # 2/5 now
+    assert "40.0%" not in md  # and was not there before
+
+
+def test_markdown_has_no_fabrication_and_no_verse_bodies(tmp_path):
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    assert "fabrication" not in md.lower()
+    # the card embeds citations and numbers only — never the edition wording text
+    for body in ("iota kappa lambda mu", "alpha beta gamma delta", "epsilon zeta eta theta"):
+        assert body not in md
+
+
+def test_cli_writes_both_files_into_run_dir(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw)])
+    assert result.exit_code == 0, result.output
+    assert (run / "facct.json").exists() and (run / "facct.md").exists()
+    assert "fabrication" not in (run / "facct.md").read_text().lower()
+
+
+def test_cli_rejects_output_path_outside_run(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw),
+                                 "--md", str(tmp_path / "escape.md")])
+    assert result.exit_code != 0
+    assert not (tmp_path / "escape.md").exists()
+    assert not (run / "facct.json").exists()  # nothing written when the path is rejected
+
+
+def test_cli_both_or_neither_on_bad_evidence(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    (run / "summary.json").unlink()  # build will fail
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw)])
+    assert result.exit_code != 0
+    assert not (run / "facct.json").exists() and not (run / "facct.md").exists()
 
 
 # --- real committed run ------------------------------------------------------

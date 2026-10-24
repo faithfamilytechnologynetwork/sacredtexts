@@ -336,3 +336,176 @@ def write_facct_json(report: dict, out_path: Path) -> None:
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+# ============================================================================================
+# CARD PROSE — the one editable place.
+#
+# Jonathan Karr owns this wording while drafting the FAccT paper. Everything a reader reads as
+# words (not numbers) lives in this block; it is deliberately separated from the counting logic
+# above, which Jonathan does not need to touch. The markdown renderer below interpolates the
+# numbers from the card data — no figure is ever typed into this prose, so the card cannot drift
+# from the run it describes.
+# ============================================================================================
+CARD_PROSE = {
+    "tagline": "What this benchmark run is allowed to mean — and what it is not.",
+    "census_heading": "Who the questions represent",
+    "census_intro": (
+        "The questions are drawn from original-language editions only: a text is asked about just "
+        "when the edition is in its own canonical language. The table below is the make-up of the "
+        "questions in this run — not a ranking of anyone's scripture, and not a measure of how well "
+        "a model knows a faith."
+    ),
+    "zero_language_note": (
+        "A language listed here is present in the catalogue but asked no questions in this run. It "
+        "is a held-back or out-of-pool source, not a gap the models failed to cover."
+    ),
+    "excluded_note": (
+        "These texts are in the catalogue but outside this run's pool, each for the stated reason "
+        "(an edition whose language is not its canonical language)."
+    ),
+    "outcomes_heading": "What the models did",
+    "outcomes_intro": (
+        "Each answer is one of three outcomes: correct, incorrect, or a refusal. A refusal — the "
+        "model declining to answer — is neither right nor wrong, so it is set aside: accuracy counts "
+        "only answered questions, and coverage is the share of questions that were answered. A high "
+        "accuracy on low coverage is not mastery; read the two together."
+    ),
+    "counterfactual_heading": "Would another edition have passed?",
+    "counterfactual_intro": (
+        "Three of the texts are different English editions of the same Bible (KJV, ASV 1901, WEB). "
+        "When a model was asked for one edition's wording of a verse and missed, it sometimes "
+        "answered with a faithful wording of the *same verse from a different edition*. The count "
+        "below is how many of those misses were really another edition of the right verse."
+    ),
+    "claims_heading": "What this card claims",
+    "claims": [
+        "For this panel, on these original-language editions, the accuracy-with-coverage figures "
+        "above describe how often each model returned the requested wording of a citation.",
+        "Some Bible misses are edition mismatches, not wrong verses; the edition count says how many.",
+    ],
+    "failure_heading": "What would make this card wrong",
+    "failure": [
+        "If the scoring contract behind these outcomes changed and the card were not rebuilt from "
+        "the new scores, every number here would be stale.",
+        "If a citation were matched to an edition it does not belong to, the edition count would be "
+        "inflated; the count is computed for Bible verse citations only, for exactly this reason.",
+    ],
+    "non_conclusions_heading": "What this card does not conclude",
+    "non_conclusions": [
+        "It does not rank traditions and does not measure knowledge of any faith.",
+        "A tradition's column is the slice that was asked — which may be a hadith collection or an "
+        "English-language question set — not that community's whole scripture.",
+        "The edition count is reported for the three English Bibles only; the other texts have no "
+        "second indexed edition in this run, so the question does not arise for them.",
+    ],
+    "review_heading": "Community review",
+    "review_note": (
+        "Scholar and community review of this card is not attached. The card reports what the run "
+        "measured; it is not an adjudication by any tradition."
+    ),
+}
+
+
+def _pct(x: float | None) -> str:
+    return "—" if x is None else f"{round(x * 100, 1)}%"
+
+
+def _n(x) -> str:
+    return "—" if x is None else f"{x:,}"
+
+
+def report_markdown(report: dict) -> str:
+    """Render the human-readable card from the card data. Every number comes from ``report``
+    (which is derived from ``scores.jsonl`` / ``summary.json``); the words come from
+    :data:`CARD_PROSE`. No figure is typed in here."""
+    p = CARD_PROSE
+    census = report["census"]
+    lines: list[str] = []
+    lines.append(f"# FAccT benchmark card — {report['run']}")
+    lines.append("")
+    lines.append(f"*{p['tagline']}*")
+    lines.append("")
+
+    # --- census ---
+    lines.append(f"## {p['census_heading']}")
+    lines.append("")
+    lines.append(p["census_intro"])
+    lines.append("")
+    lines.append(f"This run asked **{_n(census['n_questions'])} questions** across "
+                 f"**{_n(census['n_texts'])} texts**.")
+    lines.append("")
+    lines.append("| Tradition | Texts |")
+    lines.append("| --- | ---: |")
+    for trad, count in census["by_tradition"].items():
+        lines.append(f"| {trad} | {count} |")
+    lines.append("")
+    lines.append("| Language | Texts | | Document type | Texts | | License | Texts |")
+    lines.append("| --- | ---: | --- | --- | ---: | --- | --- | ---: |")
+    langs = list(census["by_language"].items())
+    doctypes = list(census["by_document_type"].items())
+    lics = list(census["by_license"].items())
+    for i in range(max(len(langs), len(doctypes), len(lics))):
+        lg = f"{langs[i][0]} | {langs[i][1]}" if i < len(langs) else " | "
+        dt = f"{doctypes[i][0]} | {doctypes[i][1]}" if i < len(doctypes) else " | "
+        lc = f"{lics[i][0]} | {lics[i][1]}" if i < len(lics) else " | "
+        lines.append(f"| {lg} | | {dt} | | {lc} |")
+    lines.append("")
+    if census["zero_question_languages"]:
+        lines.append(f"**Languages with zero questions:** {', '.join(census['zero_question_languages'])}. "
+                     + p["zero_language_note"])
+        lines.append("")
+    if census["excluded_texts"]:
+        lines.append(f"**Excluded from the pool.** {p['excluded_note']}")
+        lines.append("")
+        for e in census["excluded_texts"]:
+            lines.append(f"- {e['work']} ({e['version']}, {e['language']}) — {e['reason']}")
+        lines.append("")
+
+    # --- outcomes ---
+    lines.append(f"## {p['outcomes_heading']}")
+    lines.append("")
+    lines.append(p["outcomes_intro"])
+    lines.append("")
+    lines.append("| Model | Task | Correct | Incorrect | Refused | Accuracy | Coverage |")
+    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: |")
+    for model in report["outcomes"]:
+        block = report["outcomes"][model]
+        for task, t in block["by_task"].items():
+            lines.append(f"| {model} | {task} | {t['correct']} | {t['incorrect']} | {t['refused']} "
+                         f"| {_pct(t['accuracy'])} | {_pct(t['coverage'])} |")
+        o = block["overall"]
+        lines.append(f"| {model} | **overall** | {o['correct']} | {o['incorrect']} | {o['refused']} "
+                     f"| **{_pct(o['accuracy'])}** | **{_pct(o['coverage'])}** |")
+    lines.append("")
+
+    # --- edition counterfactual ---
+    lines.append(f"## {p['counterfactual_heading']}")
+    lines.append("")
+    lines.append(p["counterfactual_intro"])
+    lines.append("")
+    lines.append("| Model | Another edition would have passed | Of incorrect Bible retrieve_quote |")
+    lines.append("| --- | ---: | ---: |")
+    for model, b in report["edition_counterfactual"]["by_model"].items():
+        lines.append(f"| {model} | {b['numerator']} | {b['denominator']} |")
+    lines.append("")
+    lines.append(f"*Scope: {report['edition_counterfactual']['scope']}*")
+    lines.append("")
+
+    # --- prose sections (claims / failure / non-conclusions / review) ---
+    for heading, items in (
+        (p["claims_heading"], p["claims"]),
+        (p["failure_heading"], p["failure"]),
+        (p["non_conclusions_heading"], p["non_conclusions"]),
+    ):
+        lines.append(f"## {heading}")
+        lines.append("")
+        for item in items:
+            lines.append(f"- {item}")
+        lines.append("")
+    lines.append(f"## {p['review_heading']}")
+    lines.append("")
+    lines.append(p["review_note"])
+    lines.append("")
+
+    return "\n".join(lines)
