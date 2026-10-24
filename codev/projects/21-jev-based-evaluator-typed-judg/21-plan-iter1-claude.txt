@@ -1,0 +1,53 @@
+I'll verify the plan against the actual codebase before judging it.I read the plan, the spec, and the actual code it targets. Everything below is verified against files in the builder's worktree (read-only: `git log/ls-files/check-ignore`, `gh pr view/diff`, file reads). I made no changes to the tree.
+
+## What's right
+
+- **Approach 1 (sidecar) is the correct call** and is well-matched to the code. `DEFAULT_EVALUATORS` is computed as `g.default and g.inline` (`graders.py:70-72`), so a `default=False, inline=False` descriptor genuinely cannot reach the default set, and `resolve_evaluators` already raises `"separate-pass grader ... cannot be run inline"` (`graders.py:102-106`). Phase 2 is a true registration, not a rework.
+- **Audit safety checks out.** `audit.py:_iter_source_dicts` yields only rows with a `source` (or `question.source`); judgment rows per the spec schema have neither, so the origin layer skips them, and since the schema carries digests rather than text, the local content layer can't trip either. `git check-ignore runs/tutorial-2026-10-11/judgments.jsonl` is clean (`.gitignore:31-34` un-ignores the three committed run dirs), so Phase 4's artifacts are committable with no `.gitignore` work.
+- **Viewer is unaffected**: `localResults.ts:348-351` fetches exactly `summary.json`/`scores.jsonl`/`answers.jsonl`/`questions.jsonl`; a new sidecar file doesn't perturb it.
+- **Budget math is comfortable**: the tutorial run is 100 questions × 4 models = 400 answers, **all `retrieve_quote`**, so the live pass is ~400 cells ≈ **$0.011** at the verified $2.7e-5/call. Worth stating that number in Phase 4 as the expected pre-flight figure.
+- Phase dependency graph (3 off 1; 4 off 1+2) is sound, and the per-phase single-commit-with-Karr-authorship shape is right.
+
+## Issues
+
+**1. Phase 2 will be silently undone by an existing test.** `pipelines/tests/test_graders.py:80-96` does `GRADERS["jev"] = jev` … `finally: del GRADERS["jev"]`. Once Phase 2 registers `jev` for real, that test **deletes the real registry entry** for the rest of the session — an order-dependent failure for any later test (including Phase 2's own) that asserts `jev` is registered. `test_graders.py` is not in Phase 2's files-to-modify list; it must be.
+
+**2. `summary["evaluators"]` has two live consumers; "neighbourhood" is too vague.** It is a flat `list[str]` (`score.py:666`), rendered by `apps/viewer/src/components/LeaderboardTable.tsx:48` and pinned by `test_score.py:256` (`== ["strict","containment"]`). The plan should state explicitly that `evaluators` stays a name list and the judge build goes in a **new sibling key**. Related tripwire: `test_tutorial_run.py:66` asserts `"cost" not in json.dumps(summary).lower()` — any judge provenance carrying a cost/usage field into a summary fails that guard.
+
+**3. Implicit sidecar discovery in `score.py` erodes evidence reproducibility.** Phase 2 says "when a judgments sidecar + manifest exist for the run". After Phase 4 commits `runs/tutorial-2026-10-11/judgments.jsonl`, re-scoring the committed answers would then emit a summary that differs from the committed `summary.json` — the documented command no longer reproduces committed evidence. No test goes red (the regression tests compare `scores.jsonl`, not summaries), which makes it a *silent* erosion of exactly the invariant this project guards. Recommend an **explicit `score --judgments <path>`** flag: it satisfies the spec ("provenance that `score --evaluator` emits") while keeping default output independent of what files happen to sit beside the answers.
+
+**4. Phase 3's `corpus_hash` fail-fast has no defined input.** The judge takes `answers.jsonl`; answer rows carry `question_set_digest` but **not** `corpus_hash` (verified in `runs/tutorial-2026-10-11/answers.jsonl`). `corpus_hash` exists only in `runs/<id>/questions.jsonl.manifest.json` — named after the questions file, not a generic `manifest.json`. The plan says "the run manifest's `corpus_hash`" as though a single known file; it must specify how that file is located (an explicit `--questions`/`--run-manifest` option, not co-location guessing), or this spec success criterion is unimplementable as written.
+
+**5. No step to obtain PR #30's code.** `jev.py` exists nowhere in this worktree and no local ref carries it; PR #30 is open from the fork `JonathanKarr33:faact_mprovements_karr`. Phase 1 should name the retrieval path (`gh pr diff 30`, or `gh api .../contents/...?ref=`) plus the `--author` commit mechanics. Helpful finding to fold in: jev.py's only non-stdlib imports are `sacredbench.cross_translation` (`EditionIndex`, `cite_key`) and `sacredbench.score.normalize` — so nothing from PR #30's `providers.py`/`config.py`/`collect.py` needs carrying. But note `cite_key` also comes from `cross_translation` and must be re-implemented locally since the import is dropped.
+
+**6. `summarize()` is unplanned.** Karr's jev.py already defines `summarize(path)`, and the spec's test scenarios include *"No-op on a fully-judged file: `summarize` over a complete output reports the right counts and resolved build(s) without calls."* No phase has a deliverable, CLI surface, or test for it.
+
+**7. Two spec scenarios missing from test plans**: credential fail-fast (missing `OPENROUTER_API_KEY` raises before any call) and an explicit assertion that `score`/`collect` never invoke the judge.
+
+**8. All live contact is deferred to Phase 4**, three phases after the HTTP/parse code lands — against this project's own hot-tier lesson ("mocking the provider seam hides live-only failures"). A **one-cell live smoke at the end of Phase 1** costs ≈$0.00003, is noise against the $8 cap, and catches model-id/auth/shape drift before two phases are built on top. Keep the architect ping for Phase 4's full pass as-is.
+
+**9. Metric-key skew (minor).** Phase 2 uses `("jev_matches_requested","jev_refusal_p")`; `graders.py:54` and `test_graders.py:81` use `("jev_verdict","jev_prob")`. Inert in Part 2 (nothing merges into score rows), but pick one and make the sidecar field names agree, or the later merge part inherits the skew. Also update the `graders.py:17-19` docstring ("We do not build it here") when registering.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Right approach and sound phasing, but four concrete gaps (a test that deletes the new registration, an underspecified summary-provenance shape, implicit sidecar discovery in score, and no defined source for the run's corpus_hash) would each bite a builder mid-phase.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `test_graders.py:80-96` does `del GRADERS["jev"]` in a `finally` — it will delete Phase 2's real registration; that file must be in Phase 2's modify list.
+- `summary["evaluators"]` is a `list[str]` consumed by `LeaderboardTable.tsx:48` and pinned by `test_score.py:256`; Phase 2 must state the judge build goes in a new sibling key, and avoid any `cost` field (`test_tutorial_run.py:66`).
+- Implicit "sidecar exists beside the run" discovery in `score.py` means a re-score of the tutorial run stops reproducing its committed `summary.json` after Phase 4, silently (no test catches it); use an explicit `score --judgments <path>`.
+- Phase 3's `corpus_hash` fail-fast has no defined input: answers rows lack `corpus_hash`; it lives only in `runs/<id>/questions.jsonl.manifest.json`. Specify an explicit option rather than co-location.
+- No step for retrieving PR #30's code (not in the worktree; fork `JonathanKarr33:faact_mprovements_karr`); note that only `cross_translation` and `score.normalize` are imported, and `cite_key` must be re-implemented locally.
+- `summarize()` (spec's "no-op on a fully-judged file" scenario) has no deliverable, CLI surface, or test in any phase.
+- Missing test-plan items: `OPENROUTER_API_KEY` fail-fast; judge never invoked by `score`/`collect`.
+- Consider a ~$0.00003 single-cell live smoke in Phase 1 rather than deferring all live contact to Phase 4.
+
+---
+
+## ⚠️ REPOSITORY MOVED during the claude review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: e4827a71425f89853f8091f6d7d122a0c5486e59 -> db0fc4415ba775eb711b9e402e78493174dc8c3a
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.
