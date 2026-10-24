@@ -45,3 +45,10 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - Karr authorship for carried code: `Jonathan Karr <jka83321@gmail.com>` (from PR #30 commits) → use `git commit --author` on the jev.py commit.
 - Wrote plan (4 phases): (1) Jev judge pass + CLI [Karr authorship], (2) grader registration + evaluator provenance + recipe, (3) equivalence-index consumer (#32 schema), (4) validation on committed tutorial run. Committed "[Spec 21] Initial implementation plan". PLAN_DRAFTED signalled; porch ran plan checks OK.
 - 2-way plan consult (codex+claude) running in background.
+
+## 2026-10-24 — Plan DONE → implement/phase_1
+- 2-way plan consult: both REQUEST_CHANGES (codex 7 issues, claude 9), both code-grounded + complementary. Folded all 16 into plan ("[Spec 21] Plan with multi-agent review"), rebuttal written. "Repo moved" banner in both = my own thread/porch commits, plan file untouched — verified via git log.
+- Key plan refinements: explicit `score --judgments <path>` provenance opt-in (NO implicit sidecar discovery) w/ build in a NEW sibling summary key (evaluators stays list[str], no cost field — test_tutorial_run.py:66 guards it); fix test_graders.py del-in-finally that would delete the real jev registration; grader metric_keys = sidecar names (matches_requested_p/refusal_p/kind); index_digest in sidecar manifest identity + resume fail-fast; --equivalence-index moved to Phase 3 w/ explicit --questions source for corpus_hash (answers lack it; lives in questions.jsonl.manifest.json); PR#30 retrieval path + local cite_key reimpl (drop cross_translation import); keep summarize(); 1-cell live smoke at end of Phase 1; agreement = tested module; generated_at defeats summary byte-identity (compare modulo timestamp; Phase 4 never re-runs score so git diff must be empty).
+- porch advanced to IMPLEMENT phase_1 "Jev judge pass and CLI".
+- Karr authorship: `git commit --author="Jonathan Karr <jka83321@gmail.com>"` on the jev.py commit.
+- HOLD POINT remains: Phase 4 live pass needs architect pre-flight sign-off (~$0.011, 400 cells).
