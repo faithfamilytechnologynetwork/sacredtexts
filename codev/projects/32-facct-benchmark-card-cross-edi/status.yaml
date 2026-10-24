@@ -11,18 +11,18 @@ plan_phases:
     status: complete
   - id: phase_3
     title: FAccT markdown card with single prose block (facct.md)
-    status: in_progress
+    status: complete
   - id: phase_4
     title: Generate and commit the card for runs/original-2026-10-21
-    status: pending
-current_plan_phase: phase_3
+    status: in_progress
+current_plan_phase: phase_4
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -85,7 +85,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter3-claude.txt
 started_at: '2026-10-23T23:35:13.884Z'
-updated_at: '2026-10-24T01:33:41.106Z'
+updated_at: '2026-10-24T01:33:42.895Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-10-24T00:31:39.828Z'
@@ -93,6 +93,8 @@ context_refreshes:
   - boundary: plan-phase:phase_3
     at: '2026-10-24T00:59:56.246Z'
     acknowledged_at: '2026-10-24T01:00:09.990Z'
+  - boundary: plan-phase:phase_4
+    at: '2026-10-24T01:33:42.895Z'
 force_advanced:
   phase: phase_3
   iteration: 3
