@@ -1,16 +1,28 @@
 id: '21'
 title: jev-based-evaluator-typed-judg
 protocol: aspir
-phase: plan
-plan_phases: []
-current_plan_phase: null
+phase: implement
+plan_phases:
+  - id: phase_1
+    title: Jev judge pass and CLI
+    status: in_progress
+  - id: phase_2
+    title: Grader seam registration and evaluator provenance
+    status: pending
+  - id: phase_3
+    title: Equivalence-index consumer
+    status: pending
+  - id: phase_4
+    title: Validation on the committed tutorial run
+    status: pending
+current_plan_phase: phase_1
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-10-23T23:35:10.141Z'
-updated_at: '2026-10-24T00:05:47.335Z'
+updated_at: '2026-10-24T00:13:15.713Z'
