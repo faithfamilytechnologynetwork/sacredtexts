@@ -60,6 +60,10 @@ class Passage:
 @dataclass
 class EditionIndex:
     passages: list[Passage]
+    # NOTE: by_cite is keyed on the Bible-style (book, chapter, verse) ONLY — it carries no
+    # ``work`` component, and LDS scriptures also use Book-chapter:verse citations. A consumer
+    # that wants Bible editions (e.g. the Spec 32 counterfactual) must filter on
+    # ``passage.work == "The Bible"``, not trust the cite-key alone.
     by_cite: dict[tuple[str, int, int], list[Passage]]
     by_norm: dict[str, list[Passage]]
 
@@ -152,9 +156,16 @@ def export_rows(docs: list[Document]) -> list[dict]:
     for doc in docs:
         for entry in doc.entries:
             key = (doc.work, entry.citation, doc.language)
-            # one wording per version; first occurrence wins (docs iterate in a
-            # deterministic order, so this is stable)
-            groups.setdefault(key, {}).setdefault(doc.version, entry.text)
+            vmap = groups.setdefault(key, {})
+            # one wording per version; a second, DIFFERING wording for the same
+            # (work, citation, version) is a data conflict — fail fast rather than
+            # silently drop one (this producer's output is consumed by #21).
+            if doc.version in vmap and vmap[doc.version] != entry.text:
+                raise EditionIndexError(
+                    f"conflicting wordings for {doc.work!r} {entry.citation!r} "
+                    f"[{doc.version}] in {doc.language}"
+                )
+            vmap[doc.version] = entry.text
     rows: list[dict] = []
     for (work, citation, language), vmap in groups.items():
         if len(vmap) < 2:

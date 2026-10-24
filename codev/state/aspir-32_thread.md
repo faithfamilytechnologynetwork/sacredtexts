@@ -56,5 +56,13 @@ Verified real catalogue: 31,102 Bible rows (KJV/ASV/WEB share every citation), e
 Export default path: texts/edition_index.jsonl (NOT committed — derived on demand; card uses module in-process; #21 regenerates).
 Commit authored to Jonathan Karr <jka83321@gmail.com> (carries his code).
 
+## Phase_1 impl review (2026-10-23): codex APPROVE, claude REQUEST_CHANGES — both fixed
+- Fix1: canonical-language guard (language==canonical) was untested → added assertions (real catalogue: Talmud-English/Encyclicals absent; tmp fixture: non-canonical Davidson-English edition). Removing guard now fails.
+- Fix2: default --out texts/edition_index.jsonl was NOT gitignored (17MB) → added to .gitignore (both file+manifest).
+- Minor adopted: export_rows now RAISES EditionIndexError on conflicting (work,citation,version) duplicate (fail-fast; +test). Gives EditionIndexError a real use.
+- Minor adopted: NOTE on by_cite that Bible consumer (Phase2) must filter work=="The Bible" (LDS also uses Book ch:verse).
+- Suite: 394 passed/1 skip. Rebuttal committed. Phase_1 fixes commit authored as me (review-response work, not new carried code).
+Phase2 reminder: filter Bible-only via work=="The Bible"; source tradition from catalogue not Passage; reuse score's contains_reference predicate (promote _bounded_equal).
+
 ## Status
-- implement phase_1 complete. Committing then porch done 32 (marks phase_1 ready). Then /compact advised before phase_2 (per porch), phase_2 = facct.py card data (facct.json). Raw consult .txt files (specify+plan) still untracked — will commit with PR.
+- implement phase_1: review fixes done. Committing + porch done. Raw consult .txt files (all phases) still untracked — commit with PR.

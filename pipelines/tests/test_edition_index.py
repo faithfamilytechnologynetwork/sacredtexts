@@ -188,6 +188,24 @@ def _fixture_raw_with_present_restricted(root: Path) -> Path:
         "    canonical_language: en\n",
     )
     _write(raw / "Restricted" / "nabre.json", _bible("Genesis", [(1, 1, "SECRET restricted NABRE wording")]))
+    # A non-canonical-language edition (English rendering of a Hebrew-canonical work):
+    # language en != canonical_language he, so the pool rule must keep it OUT of the index.
+    _write(
+        raw / "Translation" / "source.yaml",
+        PROV
+        + "targets:\n"
+        "  - payload: talmud_en.json\n"
+        "    converter: bible_flat\n"
+        "    work: Talmud Bavli\n"
+        "    version: Davidson English\n"
+        "    language: en\n"
+        "    document_type: scripture\n"
+        "    tradition: [Jewish]\n"
+        "    license: public-domain\n"
+        "    requested_as: [the Talmud]\n"
+        "    canonical_language: he\n",
+    )
+    _write(raw / "Translation" / "talmud_en.json", _bible("Genesis", [(1, 1, "an english rendering")]))
     return raw
 
 
@@ -197,11 +215,27 @@ def test_restricted_edition_never_indexed_even_when_payload_present(tmp_path):
     versions = {d.version for d in docs}
     assert "NABRE" not in versions  # license filter, not payload-absence, excludes it
     assert excluded == ["NABRE"]  # named in the manifest exclusions
+    # the non-canonical-language English Talmud edition is kept out by the pool rule
+    assert "Davidson English" not in versions
     rows = export_rows(docs)
     serialized = json.dumps(rows, ensure_ascii=False)
     assert "NABRE" not in serialized and "SECRET" not in serialized
+    assert "english rendering" not in serialized
     # the two public editions still form a sibling row
     assert rows and [w["version"] for w in rows[0]["wordings"]] == ["ASV (1901)", "KJV"]
+
+
+def test_conflicting_duplicate_wording_fails_fast():
+    import pytest
+
+    from sacredbench.edition_index import EditionIndexError
+
+    docs = [
+        _doc("The Bible", "KJV", [("Genesis 1:1", "wording one")]),
+        _doc("The Bible", "KJV", [("Genesis 1:1", "a DIFFERENT wording")]),  # same version, conflicts
+    ]
+    with pytest.raises(EditionIndexError):
+        export_rows(docs)
 
 
 # --- against the real committed catalogue -----------------------------------
@@ -222,3 +256,7 @@ def test_real_catalogue_indexes_bibles_and_excludes_restricted():
     # NABRE (restricted) is not
     assert ("The Bible", "NABRE") not in versions
     assert "NABRE" in excluded
+    # the canonical-language guard keeps non-canonical editions OUT of the index:
+    # the English Talmud (en / canonical he) and the Papal Encyclicals (en / canonical la)
+    assert ("Talmud Bavli", "William Davidson Edition - English") not in versions
+    assert all(d.work != "Papal Encyclicals" for d in docs)

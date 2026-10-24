@@ -21,6 +21,10 @@ texts/raw/Greek Orthodox/*
 texts/standardized/
 # Assembled interchange documents are rebuilt locally from texts/standardized
 texts/interchange/
+# Edition index export (Spec 32) is rebuilt locally from texts/raw; the card reads
+# the index in-process, so the file is derived-on-demand, never committed.
+texts/edition_index.jsonl
+texts/edition_index.jsonl.manifest.json
 
 # Legacy pre-two-tier converted corpora (superseded by texts/raw + texts/standardized)
 texts/bible-nabre.json
