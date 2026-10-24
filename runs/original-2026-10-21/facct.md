@@ -12,6 +12,8 @@ The models behind the numbers, with any tools they were given — tool use is pa
 | haiku | openai | anthropic/claude-haiku-5-5 | none | openrouter.ai |
 | opus | openai | anthropic/claude-opus-5-5 | none | openrouter.ai |
 
+*Provider is the API protocol the run used, not the model's maker — an `anthropic/…` model reached over an OpenAI-compatible endpoint shows provider `openai`; read Model ID and Endpoint for the real source.*
+
 ## The tasks
 
 Each question uses one of these tasks:

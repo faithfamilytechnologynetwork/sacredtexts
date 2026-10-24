@@ -76,6 +76,20 @@ def test_md_card_is_content_scanned(tmp_path):
     assert len(v) == 1 and "restricted text" in v[0]
 
 
+def test_card_census_origin_is_audited(tmp_path):
+    # a FAccT card carries its texts under census.selected_texts (not a `source` dict); the origin
+    # layer must still catch a card built over a run that named a restricted edition.
+    sources = cat.discover_catalogue(RAW)
+    card = {"census": {"selected_texts": [
+        {"work": "The Bible", "version": "KJV", "language": "en"},       # public
+        {"work": "The Bible", "version": "NABRE", "language": "en"},     # restricted origin
+    ]}}
+    p = tmp_path / "facct.json"
+    p.write_text(json.dumps(card))
+    v = audit_paths([p], sources)
+    assert len(v) == 1 and "NABRE" in v[0]
+
+
 def test_norm_handles_nonlatin_content_layer(tmp_path):
     # the old `_norm` was ASCII-only (`[^a-z0-9]`), so Arabic/Hebrew/Greek collapsed to ''
     # and the restricted-text content layer was a silent no-op on non-Latin text. It now

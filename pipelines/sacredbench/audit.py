@@ -101,8 +101,13 @@ def restricted_keys(sources: list[cat.Source]) -> set[tuple[str, str, str]]:
 
 
 def _iter_source_dicts(path: Path):
-    """Yield the ``source`` metadata of every record in a standardized document or
-    an evidence row (questions/answers jsonl)."""
+    """Yield the ``(work, version, language)`` source metadata of every record in a standardized
+    document, an evidence row (questions/answers jsonl), or a FAccT card (``facct.json``).
+
+    The card carries its texts under ``census.selected_texts[*] = {work, version, language}`` rather
+    than a ``source`` dict, so the origin layer covers the card too — a card built over a run that
+    named a restricted edition would be flagged by origin, not left to the (body-free) content layer.
+    """
     text = path.read_text(encoding="utf-8").strip()
     if not text:
         return
@@ -119,6 +124,13 @@ def _iter_source_dicts(path: Path):
             src = q.get("source") if isinstance(q, dict) else None
         if isinstance(src, dict):
             yield src
+        # FAccT card: census.selected_texts entries are themselves {work, version, language}
+        census = d.get("census")
+        selected = census.get("selected_texts") if isinstance(census, dict) else None
+        if isinstance(selected, list):
+            for entry in selected:
+                if isinstance(entry, dict):
+                    yield entry
 
 
 def audit_paths(

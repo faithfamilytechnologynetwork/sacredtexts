@@ -360,6 +360,11 @@ CARD_PROSE = {
         "The models behind the numbers, with any tools they were given — tool use is part of a "
         "model's identity here, so the same model with search on and off are different panellists."
     ),
+    "panel_note": (
+        "Provider is the API protocol the run used, not the model's maker — an `anthropic/…` model "
+        "reached over an OpenAI-compatible endpoint shows provider `openai`; read Model ID and "
+        "Endpoint for the real source."
+    ),
     "tools_none": "none",
     "census_heading": "Who the questions represent",
     "census_intro": (
@@ -502,7 +507,7 @@ def report_markdown(report: dict) -> str:
             for model, info in panel.items()
         ]
         lines += _table(p["headers"]["panel"], panel_rows)
-        lines.append("")
+        lines += ["", f"*{p['panel_note']}*", ""]
 
     # --- tasks gloss (only the tasks actually present in the run) ---
     present_tasks = sorted({task for block in report["outcomes"].values() for task in block["by_task"]})
