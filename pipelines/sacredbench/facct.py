@@ -340,24 +340,20 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
         (t.get("work"), t.get("version"), t.get("language"))
         for t in (manifest.get("selected_texts") or [])
     }
-    # Pin the counterfactual's raw-edition CONTENT (not just edition identity) to the run: the
-    # current catalogue must be the same corpus the run was generated from, or an edit to a selected
-    # edition's wording could silently change this historic card. `generate.corpus_hash` over the
-    # full non-restricted set equals the run manifest's corpus_hash exactly when the corpus matches.
     indexed_docs, all_nonrestricted, _excluded = load_edition_documents(raw_root)
-    run_corpus_hash = manifest.get("corpus_hash")
-    edition_corpus_hash = gen.corpus_hash(all_nonrestricted)
-    if run_corpus_hash is not None and edition_corpus_hash != run_corpus_hash:
-        raise FacctError(
-            f"edition corpus_hash {edition_corpus_hash} != run manifest corpus_hash {run_corpus_hash}: "
-            "the raw editions differ from the corpus this run was generated from — restore the "
-            "editions (or regenerate the run) before building its card"
-        )
+    # `selected_corpus_hash` pins the counterfactual's raw-edition CONTENT to only the editions this
+    # run selected: it changes iff a selected edition's wording changes (the committed-card regression
+    # test then fails with a clear diff — remedy: regenerate the card), and is unaffected by unrelated
+    # catalogue additions (a new drop-in tradition leaves a historic card buildable and byte-identical).
+    # It is recorded, not enforced; the run's own `corpus_hash` stays a copy of the manifest value.
+    selected_docs = [d for d in all_nonrestricted if (d.work, d.version, d.language) in selected_keys]
+    selected_corpus_hash = gen.corpus_hash(selected_docs)
     index = index_documents(indexed_docs)
     return {
         "run": run_dir.name,
         "question_set_digest": manifest.get("question_set_digest"),
         "corpus_hash": manifest.get("corpus_hash"),
+        "selected_corpus_hash": selected_corpus_hash,
         "panel": summary.get("panel", {}),
         "evaluators": summary.get("evaluators", []),
         "census": census,

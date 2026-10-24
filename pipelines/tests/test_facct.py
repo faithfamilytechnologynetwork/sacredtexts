@@ -415,17 +415,34 @@ def test_score_row_missing_task_fails_fast(tmp_path):
         build_facct(run, raw_root=raw)
 
 
-def test_build_fails_when_raw_edition_content_drifts(tmp_path):
-    # the manifest pins edition IDENTITY; this pins edition CONTENT: editing a selected edition's
-    # wording in texts/raw after the run was generated makes the edition corpus_hash diverge from the
-    # run manifest's, and the card refuses to build rather than silently resting on different text.
+def test_selected_corpus_hash_tracks_selected_edition_content(tmp_path):
+    # selected_corpus_hash pins the CONTENT of the run's selected editions: editing a selected
+    # edition's wording changes it (so the committed-card regression test fails with a clear diff —
+    # remedy: regenerate), while the card still builds (no fail-fast on a full-corpus mismatch).
     raw = _raw_tree(tmp_path)
-    run = _make_run(tmp_path)  # manifest corpus_hash == hash of the raw tree as it is now
+    run = _make_run(tmp_path)
+    before = build_facct(run, raw_root=raw)["selected_corpus_hash"]
     mutated = dict(_KJV)
     mutated["Test 1:1"] = "a quietly changed kjv wording"
     _write(raw / "Protestant Christian" / "kjv.json", _bible_payload(mutated))
-    with pytest.raises(FacctError, match="corpus_hash"):
-        build_facct(run, raw_root=raw)
+    after = build_facct(run, raw_root=raw)  # still builds — not a FacctError
+    assert after["selected_corpus_hash"] != before
+
+
+def test_unrelated_corpus_addition_leaves_card_byte_identical(tmp_path):
+    # a drop-in tradition the run never selected must NOT change a historic card (arch invariant:
+    # adding a corpus is a no-core-change data drop) — selected_corpus_hash and the card are stable.
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    before = build_facct(run, raw_root=raw)
+    # add an unrelated public-domain work to the catalogue (not in the run's selected_texts)
+    base = ("    converter: bible_flat\n    work: Later Addition\n    language: en\n"
+            "    document_type: scripture\n    tradition: [New Tradition]\n    license: public-domain\n"
+            "    requested_as: [later]\n    canonical_language: en\n")
+    _write(raw / "Later" / "source.yaml", PROV + "targets:\n  - payload: later.json\n    version: v1\n" + base)
+    _write(raw / "Later" / "later.json", _bible_payload({"New 1:1": "brand new unrelated verse"}))
+    after = build_facct(run, raw_root=raw)
+    assert after == before  # selected_corpus_hash unchanged and the whole card byte-identical
 
 
 def test_n_questions_mismatch_fails_fast(tmp_path):

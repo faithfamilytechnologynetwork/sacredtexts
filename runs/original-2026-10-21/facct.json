@@ -2,6 +2,7 @@
  "run": "original-2026-10-21",
  "question_set_digest": "de65959a99dea9b3",
  "corpus_hash": "5ae493e7e249575c",
+ "selected_corpus_hash": "08f1bc8c010cfbe6",
  "panel": {
   "gpt-oss-20b": {
    "provider": "openai",

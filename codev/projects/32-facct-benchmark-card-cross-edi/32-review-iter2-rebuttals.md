@@ -32,8 +32,24 @@ internals, not output changes). Not merged.
 - **Review doc staleness (Deviations, AC6).** *Addressed.* Both refreshed for the `is_verse_citation`
   predicate, the alias removal, and the raw-citation key.
 
+## Architect round 3 — item (1) reworked (fail-fast was over-broad)
+
+The architect **rejected** the round-2 full-corpus fail-fast: failing `build_facct` unless the whole
+current corpus hashes to the run manifest's value makes a historic card unbuildable after **any**
+catalogue addition (arch invariant: a new tradition is a drop-in data change), breaking
+`test_committed_facct_card_matches_the_run` for a reason unrelated to the run. *Reworked as directed:*
+`build_facct` now records `selected_corpus_hash = gen.corpus_hash` over **only** the docs whose
+`(work, version, language)` is in the run's `selected_texts`, beside `corpus_hash` (still the manifest
+copy), and does **not** fail on a full-corpus mismatch. Editing a selected edition changes
+`selected_corpus_hash` (the committed-card regression test fails with a clear diff; remedy =
+regenerate), while an unrelated corpus addition leaves the card buildable and byte-identical. The
+wording-mutation test now asserts `selected_corpus_hash` changes (not a `FacctError`), and a new test
+asserts an unrelated addition leaves the whole card byte-identical. Contract documented in `facct.py`;
+committed `facct.json` gains the one key (`facct.md` unchanged). Suite 444 passed / 1 skipped.
+
 ## Net
 
-Edition identity *and* content are now pinned to the run (a drifted corpus fails fast), the in-process
-index and the exported file group identically for every work, and no dead aliases remain. No open
-disagreements.
+The counterfactual's edition *identity* is pinned via `selected_texts` and its *content* is tracked by
+`selected_corpus_hash` (recorded, not enforced), without coupling a historic card to unrelated
+catalogue growth. In-process index and exported file group identically for every work; no dead aliases
+remain.

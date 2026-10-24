@@ -161,7 +161,11 @@ corpus — #21's consumer fail-fasts unless index corpus_hash == run corpus_hash
 analysis/visualisation stage: census + the three outcomes read verbatim from `scores.jsonl` + the
 Bible-`retrieve_quote` edition counterfactual (reusing `score.bounded_contains`). The counterfactual
 considers only editions in the run manifest's `selected_texts`, scoped to the question's language, so
-a Bible edition added to the catalogue later cannot change a historic run's card. It never re-scores
+a Bible edition added to the catalogue later cannot change a historic run's card. The card records a
+`selected_corpus_hash` (generate's hash over only the run's selected editions) beside the run's
+`corpus_hash`: it changes iff a *selected* edition's wording changes (the committed-card regression
+test then fails — remedy: regenerate) and is unaffected by unrelated catalogue additions, so adding a
+drop-in tradition leaves a historic card buildable and byte-identical. It is recorded, not enforced. It never re-scores
 or calls a model, fails fast with no partial write, and writes both files atomically (the shared
 `edition_index.atomic_write_texts`). All card prose is in one editable block `facct.CARD_PROSE`
 (Jonathan Karr owns the wording for the FAccT paper); every number is interpolated from the run,

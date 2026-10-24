@@ -152,8 +152,15 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - claude extras: README de-hardcoded (points to facct.md); TLG pinned in real-catalogue test; CODE_WALKTHROUGH lists 2 new modules. arch.md note updated.
 - NOT folded (architect's): Qur'an tradition data→#27; cli.py conflict with #21→merge-order.
 
+## PR review r2 (consult re-run): codex RC + claude APPROVE → folded. Then porch surfaced the pr GATE.
+## Architect round 3 (2026-10-24): REJECTED round-2 item (1) full-corpus fail-fast as over-broad (breaks historic card on any drop-in tradition). REWORKED:
+- build_facct records selected_corpus_hash = gen.corpus_hash over ONLY docs in run selected_texts, beside corpus_hash (manifest copy). NO fail-fast on full-corpus mismatch.
+- Edit to a selected edition → selected_corpus_hash changes → committed-card regression test fails (remedy: regenerate). Unrelated addition → card byte-identical.
+- Tests: wording-mutation asserts selected_corpus_hash CHANGES (not FacctError) + still builds; unrelated-addition asserts whole card byte-identical. Items 2&3 (index all citations, dead cite_key) stand.
+- facct.json gained selected_corpus_hash (08f1bc8c010cfbe6); corpus_hash stays 5ae493e7e249575c; facct.md UNCHANGED. arch.md note updated. Suite 444 pass/1 skip; audit OK.
+
 ## Status
-- round 1/1b fixes committed+pushed (updates PR #34). Rebuttal at codev/projects/.../32-review-iter1-rebuttals.md. Refresh PR desc (corpus_hash semantics). Reply architect with tip. PR gate still HUMAN — do NOT merge; porch review-phase 2-way consult was already run (will re-run if porch asks). Wait for architect.
+- round-3 fix committed; pushing; re-surface pr gate (porch gate 32); reply architect with tip. PR gate is HUMAN — do NOT run porch approve / merge until explicit human approval. WAIT.
 - Phase_4: extend audit.py suffix set to scan .md + test_audit injection test; byte-digest integrity (sha256 3 evidence files before/after); GENERATE+COMMIT real card into runs/original-2026-10-21/facct.{json,md} + README line; real-run drift guard in test_original_run_regression.py. Author carry phases to Jonathan. THEN PR ("Part 3 of 3 of #30", closes #32, loop Jonathan on wording, NO Generated-with/Co-Authored-By). Commit untracked consult .txt files with PR.
 - Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
 - NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.
