@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core calculations are sound, but fail-fast evidence validation is incomplete.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `facct.py:140-151` validates only model/task blocks encountered in `scores.jsonl`. It never verifies `_overall` counts, extra summary models/tasks, or missing zero-count outcome fields. Because `_outcomes()` copies `_overall` directly from `summary.json`, a corrupted overall count is emitted without error, violating the scores↔summary consistency requirement. Validate the complete model/task structure and recomputed aggregate counts; add mismatch tests.
+- `facct.py:251-256` checks only score→answer existence. Unmatched answer rows and duplicate `(question_id, model_id)` keys are silently ignored/overwritten, so the required answer/score join is not one-to-one. Validate uniqueness and equality of both key sets, with tests for unmatched answers and duplicates.
+- Counterfactual entries are placed in a generic `tagged` array but do not actually carry an `other_edition` tag field. Add an explicit machine-readable classification such as `"tag": "other_edition"` so qualifying cells meet the frozen output semantics.

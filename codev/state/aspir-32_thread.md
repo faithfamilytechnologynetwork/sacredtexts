@@ -132,8 +132,16 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - audit.py docstring + runs README updated. Suite 436 pass/1 skip; dispatcher green.
 - Real card: 17 texts, 476 Q, counterfactual denom 32 / 3 other_edition. Reads clean against docs bar.
 
+## Phase_4 iter1: BOTH APPROVE. Polish folded (card census origin audited; facct.md drift guard; panel provider note). All 4 phases ✓ → REVIEW phase.
+
+## REVIEW phase (2026-10-24)
+- Review doc written: codev/reviews/32-facct-benchmark-card-cross-edi.md (all 15 ACs met; consultation feedback per phase; deviations; lessons).
+- Governance routed to COLD (HOT caps respected): arch.md gets "FAccT card + edition index" section + audit-.md note in Test gate; lessons-learned.md Process/SPIR gets the porch-chaining lesson + reuse-score-predicate lesson.
+- Consult .txt + context.md files ARE committed (repo convention: spec 1 has them). .builder-* NOT tracked → leave untracked.
+- PR: base main, "Part 3 of 3 of #30", "Closes #32", loop @JonathanKarr33 on provisional card wording. NO Generated-with/Co-Authored-By (architect + CLAUDE.md override the attribution reminder).
+
 ## Status
-- phase_4 implemented+committed (author me). NEXT: run phase_4 2-way consult (reviews committed work), fold, porch done. THEN: PR — "Part 3 of 3 of #30", closes #32, loop Jonathan on card wording, NO Generated-with/Co-Authored-By. Commit untracked consult .txt files (all phases) + .builder-prompt etc NOT (those are builder scaffolding, gitignored? check). Open PR during/after final phase.
+- review: committing review doc + governance + consult outputs, then push + create PR, porch done, signal PR_READY, notify architect. PR gate is HUMAN — stop & wait after.
 - Phase_4: extend audit.py suffix set to scan .md + test_audit injection test; byte-digest integrity (sha256 3 evidence files before/after); GENERATE+COMMIT real card into runs/original-2026-10-21/facct.{json,md} + README line; real-run drift guard in test_original_run_regression.py. Author carry phases to Jonathan. THEN PR ("Part 3 of 3 of #30", closes #32, loop Jonathan on wording, NO Generated-with/Co-Authored-By). Commit untracked consult .txt files with PR.
 - Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
 - NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.

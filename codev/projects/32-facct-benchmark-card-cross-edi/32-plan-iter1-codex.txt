@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The plan is well structured, but output safety, scoring-contract reuse, and audit coverage need explicit implementation steps.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The planned `facct --md <path>` can write outside the run directory and does not guarantee the required single command writes both `facct.json` and `facct.md` atomically. Specify default fixed paths under `run_dir`, validate any overrides remain within it, render and validate both artifacts before writing, and test that every failure leaves neither output partially updated.
+- The counterfactual says “under containment” but does not identify reuse of the canonical implementation. The current contract is implemented by `score.py`’s normalized, word-bounded `_bounded_equal`; duplicating it risks contract drift, while importing a private helper is brittle. Plan to expose a public containment predicate from `score.py` and test the counterfactual against the same boundary and normalization cases used by scoring.
+- The claimed copyright gate does not currently cover the complete deliverable: `audit.py` scans only `.json`/`.jsonl`, and `test_committed_run_evidence_is_clean` likewise excludes `.md`. Add `audit.py` and `test_audit.py` changes so `facct.md` is content-scanned, including a test proving injected restricted wording in Markdown fails.
+- Clarify deterministic EditionIndex provenance: define `corpus_hash` inputs, the SHA-256 prefix length, deterministic row ordering, and sorted/deduplicated `excluded_restricted`; test that identical inputs are byte-stable and content changes alter the hash.
+- Replace the Phase-4 `git status` integrity check with before/after byte digests for `answers.jsonl`, `scores.jsonl`, and `summary.json`; status alone is weaker and can be obscured by unrelated workspace files.

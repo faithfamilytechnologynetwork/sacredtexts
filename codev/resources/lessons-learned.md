@@ -130,6 +130,17 @@ Seeded from Spec 1 (Phase 1 benchmark).
   (3) that **force-advances** a phase that keeps drawing REQUEST_CHANGES, recording the last rebuttal
   as the disposition — fine when the residual is a documented out-of-scope item, but verify that's
   what happened rather than assuming the phase passed cleanly.
+- **Don't chain `porch next` and `porch done` across a phase boundary in one shell line.** A
+  `porch next >/dev/null; porch done` run right after a phase closed consumed (and discarded) the
+  NEXT phase's build task, then `porch done` marked that phase "build complete" on an empty
+  implementation — porch jumped straight to its 2-way consult. Recoverable (implement and commit the
+  real work before running the consult, so it reviews real code), but run porch one command at a
+  time at a boundary and read each result (Spec 32).
+- **An analysis/visualisation stage reuses the scoring contract's own predicates, never a second
+  copy.** The FAccT card's edition counterfactual calls `score.bounded_contains` + `score.normalize`
+  (the public `contains_reference` predicate, promoted from the private `_bounded_equal`) rather than
+  a fresh `in` check — one containment definition, tested to agree with the scorer, so the card can't
+  drift from the headline (Spec 32, echoing Spec 15's single-refusal-definition discipline).
 
 ## Map
 - (This cold archive pairs with `lessons-critical.md`'s hot tier; demote hot entries

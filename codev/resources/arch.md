@@ -142,9 +142,29 @@ is a static SPA host (`server/index.mjs`, hono + history fallback; no `/api` pro
 KJV/Qur'an(ar)/Talmud(he) 2×2 web-search on/off panel). The per-user
 `configs/models.yaml` is gitignored; keys come from the environment only.
 
+## FAccT card + edition index (Spec 32)
+
+`edition_index.py` is the **shared cross-edition producer** (carried from PR #30's
+`cross_translation.py`): it indexes same-canonical-language, non-restricted editions that share a
+citation. The card uses its in-process `EditionIndex`; issue #21 consumes its file export
+(`sacredbench edition-index --out <path>` → JSONL + `.manifest.json`). **The export row/manifest
+schema is frozen** (row `{work, citation, language, wordings:[{version,text}]}`, one per
+`(work,citation,language)`, wordings sorted, single-wording rows omitted, `license != restricted`;
+manifest `{corpus_hash, row_count, digest, excluded_restricted}`) — don't change it without #21.
+`facct.py` (`sacredbench facct <run_dir>` → `facct.{json,md}` beside the run) is a pure
+analysis/visualisation stage: census + the three outcomes read verbatim from `scores.jsonl` + the
+Bible-`retrieve_quote` edition counterfactual (reusing `score.bounded_contains`). It never re-scores
+or calls a model, fails fast with no partial write, and writes both files atomically. All card prose
+is in one editable block `facct.CARD_PROSE` (Jonathan Karr owns the wording for the FAccT paper);
+every number is interpolated from the run, pinned by
+`test_original_run_regression.py::test_committed_facct_card_matches_the_run`.
+
 ## Test gate
 
 Per-builder dispatcher `.codev/checks/test.sh` (global `porch.checks` is unsuitable for
 a multi-app repo): routes touched dirs → `pipelines` (`uv … pytest`) and `apps/viewer`
 (`pnpm … vitest`). It diffs `origin/main...HEAD`, so changes must be committed to be
-tested.
+tested. The pipelines pytest includes the copyright audit, which content-scans
+`.json`/`.jsonl`/**`.md`** (`audit._AUDITED_SUFFIXES`) — the `.md` inclusion (Spec 32) puts the
+FAccT card inside the gate; the origin layer stays structured-docs-only (a `.md` has no source
+dict, and also recognises a card's `census.selected_texts` origins).
