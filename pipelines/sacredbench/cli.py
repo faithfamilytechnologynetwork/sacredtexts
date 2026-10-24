@@ -31,6 +31,7 @@ from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
 from sacredbench.probes import format_probe, probe_run
 from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
+from sacredbench.jev import JevError
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -593,10 +594,8 @@ def judge(
     sources = _require_catalogue(raw_root)
     restricted = frozenset(aud.restricted_keys(sources))
 
-    try:
-        est = jev.estimate(rows, out, restricted_keys=restricted, limit=limit)
-    except jev.JevError as e:
-        raise typer.BadParameter(str(e))
+    # JevError (bad/absent manifest, build conflict, …) bubbles to main() for a clean message.
+    est = jev.estimate(rows, out, restricted_keys=restricted, limit=limit)
     typer.echo(
         f"pre-flight: {est['pending']} cell(s) to judge with {jev_model} "
         f"(~${est['estimated_usd']:.4f}); {est['already_judged']} already judged, "
@@ -610,14 +609,12 @@ def judge(
         typer.secho("PAID live pass — re-run with --yes to proceed.", fg="yellow")
         raise typer.Exit(2)
 
-    try:
-        done, failed, messages = jev.judge(
-            rows, out, model=jev_model, concurrency=concurrency, limit=limit, restricted_keys=restricted,
-        )
-    except jev.JevError as e:
-        raise typer.BadParameter(str(e))
+    done, failed, messages = jev.judge(
+        rows, out, model=jev_model, concurrency=concurrency, limit=limit, restricted_keys=restricted,
+    )
     summary = jev.summarize(out)
     typer.echo(f"judged {done} -> {out}; file has {summary['n']} row(s) {summary['kinds']}")
+    typer.echo(f"total Jev spend this file: ${summary['total_cost_usd']:.6f}")
     if summary["judge_models"]:
         typer.echo("resolved judge model(s): " + ", ".join(summary["judge_models"]))
     if failed:
@@ -644,7 +641,7 @@ def main() -> None:
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
         gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
-        FacctError,
+        FacctError, JevError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

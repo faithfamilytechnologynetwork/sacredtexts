@@ -39,8 +39,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from threading import Lock
 
-from sacredbench.score import normalize  # noqa: F401  (kept for parity with the judged normalization)
-
 JEV_MODEL = "jev-latest"
 DECISIONS_URL = "https://openrouter.ai/api/alpha/decisions"
 RUBRIC_ID = "sacredbench-jev-1"
@@ -143,8 +141,30 @@ def judgment_state(row: dict, alternates: list[dict], *, with_equivalence: bool)
     return state
 
 
+def _num(x) -> bool:
+    """A real number, not a bool (``True``/``False`` are ints in Python)."""
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def _prob(x, field: str) -> float:
+    if not _num(x) or not (0.0 <= float(x) <= 1.0):
+        raise JevError(f"{field} is not a probability in [0,1]: {x!r}")
+    return float(x)
+
+
+def _nonempty_str(x, field: str) -> str:
+    if not isinstance(x, str) or not x:
+        raise JevError(f"decisions response missing {field}")
+    return x
+
+
 def interpret(payload: dict, *, with_equivalence: bool) -> dict:
-    """Pull the answers off a Decisions response. Wrong shapes raise (fail fast, no fallback)."""
+    """Pull the answers off a Decisions response. Wrong shapes/types raise (fail fast, no fallback).
+
+    Every authoritative field is validated: a mistyped probability, a missing decision id /
+    provider / resolved build, or a non-numeric cost raises rather than being written — a silently
+    tolerated ``cost: None`` would read as zero spend and defeat the budget control.
+    """
     if not isinstance(payload, dict):
         raise JevError("decisions response is not an object")
     answers = payload.get("answers")
@@ -156,32 +176,38 @@ def interpret(payload: dict, *, with_equivalence: bool) -> dict:
         raise JevError("refusal answer missing or not a noul")
     if not isinstance(matches, dict) or matches.get("type") != "noul" or "noul" not in matches:
         raise JevError("matches_requested answer missing or not a noul")
-    usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
+    usage = payload.get("usage")
+    if not isinstance(usage, dict):
+        raise JevError("decisions response missing usage")
+    cost, tin, tout = usage.get("cost"), usage.get("input_tokens"), usage.get("output_tokens")
+    if not _num(cost):
+        raise JevError(f"decisions usage.cost is not numeric: {cost!r}")
+    if not _num(tin) or not _num(tout):
+        raise JevError(f"decisions usage token counts are not numeric: in={tin!r} out={tout!r}")
     out = {
-        "decision_id": payload.get("id"),
-        "judge_model_resolved": payload.get("model"),
-        "judge_provider": payload.get("provider"),
-        "refusal_p": refusal["noul"],
-        "matches_requested_p": matches["noul"],
-        "usage": {
-            "in": usage.get("input_tokens"),
-            "out": usage.get("output_tokens"),
-            "cost": usage.get("cost"),
-        },
+        "decision_id": _nonempty_str(payload.get("id"), "the decision id"),
+        "judge_model_resolved": _nonempty_str(payload.get("model"), "the resolved model build"),
+        "judge_provider": _nonempty_str(payload.get("provider"), "the provider"),
+        "refusal_p": _prob(refusal["noul"], "refusal.noul"),
+        "matches_requested_p": _prob(matches["noul"], "matches_requested.noul"),
+        "usage": {"in": int(tin), "out": int(tout), "cost": float(cost)},
     }
     if with_equivalence:
         kind = answers.get("kind")
         if not isinstance(kind, dict) or kind.get("type") != "choice" or kind.get("choice") not in _KINDS:
             raise JevError(f"kind answer missing or not one of {_KINDS}")
-        out["equivalence"] = {
-            "kind": kind["choice"],
-            "probabilities": kind.get("probabilities"),
-            "confidence": kind.get("confidence"),
-        }
+        probs = kind.get("probabilities")
+        if not isinstance(probs, dict):
+            raise JevError("kind.probabilities missing or not an object")
+        conf = kind.get("confidence")
+        if not _num(conf):
+            raise JevError(f"kind.confidence is not numeric: {conf!r}")
+        # Flat fields, matching the spec's authoritative sidecar schema.
+        out["kind"] = kind["choice"]
+        out["kind_probabilities"] = probs
+        out["kind_confidence"] = float(conf)
     else:
         out["equivalence"] = "not_evaluated"
-    if out["judge_model_resolved"] is None:
-        raise JevError("decisions response missing the resolved model build")
     return out
 
 
@@ -215,6 +241,16 @@ def post_decision(state: dict, questions: dict, model: str, api_key: str,
 
 def _manifest_path(out: Path) -> Path:
     return Path(str(out) + ".manifest.json")
+
+
+def _require_manifest_if_rows(out: Path) -> None:
+    """A sidecar with rows but no manifest has no pinned build identity — appending to it could
+    silently create a mixed-build file. Refuse."""
+    if out.exists() and out.stat().st_size > 0 and not _manifest_path(out).exists():
+        raise JevError(
+            f"{out} has rows but no manifest ({_manifest_path(out)}); its judge-build identity is "
+            "unknown and appending risks a mixed-build file — point --out at a fresh file"
+        )
 
 
 def _single_question_set_digest(rows: list[dict], given: str | None) -> str | None:
@@ -260,7 +296,7 @@ def _load_manifest(out: Path, *, rubric_id: str, question_set_digest: str | None
         raise JevError(
             f"{mpath}: rubric {manifest.get('rubric_id')!r} != {rubric_id!r}; point --out at a fresh file"
         )
-    if question_set_digest is not None and manifest.get("question_set_digest") not in (None, question_set_digest):
+    if manifest.get("question_set_digest") != question_set_digest:
         raise JevError(
             f"{mpath}: question-set digest {manifest.get('question_set_digest')!r} != {question_set_digest!r}; "
             "these answers are a different question set — point --out at a fresh file"
@@ -278,6 +314,7 @@ def estimate(rows: list[dict], out: Path, *, restricted_keys: frozenset = frozen
              index_digest: str | None = None) -> dict:
     """Pre-flight: how many cells WOULD be judged and the rough spend. No network."""
     qsd = _single_question_set_digest(rows, question_set_digest)
+    _require_manifest_if_rows(out)
     _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out)
     pending, skipped_task, skipped_restricted = _partition(rows, done, restricted_keys)
@@ -345,6 +382,7 @@ def judge(
         def call(state, _key=api_key, _model=model, _q=questions):
             return post_decision(state, _q, _model, _key)
 
+    _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out)
     pending, _skipped_task, _skipped_restricted = _partition(rows, done, restricted_keys)
@@ -432,10 +470,11 @@ def _alternates(index, citation: str, expected_text: str) -> list[dict]:
 
 
 def summarize(path: Path) -> dict:
-    """Counts of what has been judged. Empty/absent file → zeros. No network."""
+    """Counts + total spend of what has been judged. Empty/absent file → zeros. No network."""
     kinds: Counter[str] = Counter()
     refusals = 0
     n = 0
+    total_cost = 0.0
     builds: set[str] = set()
     if path.exists():
         with open(path, encoding="utf-8") as handle:
@@ -446,17 +485,22 @@ def summarize(path: Path) -> dict:
                 n += 1
                 if row.get("judge_model_resolved"):
                     builds.add(row["judge_model_resolved"])
-                eq = row.get("equivalence")
-                if isinstance(eq, dict) and eq.get("kind"):
-                    kinds[eq["kind"]] += 1
-                elif eq == "not_evaluated":
+                # equivalence lands as the flat `kind` field (when evaluated) or the
+                # `equivalence: "not_evaluated"` sentinel (when no index was supplied).
+                if row.get("kind"):
+                    kinds[row["kind"]] += 1
+                elif row.get("equivalence") == "not_evaluated":
                     kinds["not_evaluated"] += 1
-                if isinstance(row.get("refusal_p"), (int, float)) and row["refusal_p"] >= 0.5:
+                if _num(row.get("refusal_p")) and row["refusal_p"] >= 0.5:
                     refusals += 1
+                cost = (row.get("usage") or {}).get("cost")
+                if _num(cost):
+                    total_cost += float(cost)
     return {
         "n": n,
         "kinds": dict(sorted(kinds.items())),
         "refusal_p_ge_0.5": refusals,
+        "total_cost_usd": round(total_cost, 6),
         "judge_models": sorted(builds),
         "rubric_id": RUBRIC_ID,
     }

@@ -79,8 +79,9 @@ def test_interpret_two_questions_records_not_evaluated():
 def test_interpret_equivalence_reads_the_live_fixture_shape():
     parsed = interpret(_live_payload(), with_equivalence=True)
     assert parsed["matches_requested_p"] == 0.97
-    assert parsed["equivalence"]["kind"] == "requested_wording"
-    assert parsed["equivalence"]["confidence"] == 0.97
+    assert parsed["kind"] == "requested_wording"          # flat, matching the spec schema
+    assert parsed["kind_confidence"] == 0.97
+    assert "equivalence" not in parsed
     assert parsed["judge_model_resolved"] == "typesafe/jev-1.14-20261014"
 
 
@@ -98,6 +99,43 @@ def test_interpret_fails_fast_on_bad_shapes():
     nobuild["model"] = None
     with pytest.raises(JevError, match="resolved model build"):
         interpret(nobuild, with_equivalence=False)
+
+
+def test_interpret_fails_loud_on_mistyped_or_missing_fields():
+    # non-numeric noul
+    s = _payload()
+    s["answers"]["refusal"]["noul"] = "high"
+    with pytest.raises(JevError, match="probability"):
+        interpret(s, with_equivalence=False)
+    # bool is not a number
+    s = _payload()
+    s["answers"]["matches_requested"]["noul"] = True
+    with pytest.raises(JevError, match="probability"):
+        interpret(s, with_equivalence=False)
+    # missing usage → budget would read zero
+    s = _payload()
+    del s["usage"]
+    with pytest.raises(JevError, match="usage"):
+        interpret(s, with_equivalence=False)
+    # non-numeric cost
+    s = _payload()
+    s["usage"]["cost"] = None
+    with pytest.raises(JevError, match="cost"):
+        interpret(s, with_equivalence=False)
+    # missing decision id / provider
+    s = _payload()
+    s["id"] = None
+    with pytest.raises(JevError, match="decision id"):
+        interpret(s, with_equivalence=False)
+    s = _payload()
+    s["provider"] = ""
+    with pytest.raises(JevError, match="provider"):
+        interpret(s, with_equivalence=False)
+    # equivalence on, but probabilities/confidence malformed
+    s = _payload(kind="neither")
+    s["answers"]["kind"]["confidence"] = "high"
+    with pytest.raises(JevError, match="confidence"):
+        interpret(s, with_equivalence=True)
 
 
 # ---- judge pass ----------------------------------------------------------
@@ -144,6 +182,45 @@ def test_build_mismatch_on_resume_fails_fast(tmp_path):
     # a new pending cell whose live build differs from the pinned one
     with pytest.raises(JevError, match="build"):
         judge([_row(answer="B", qid="q-B")], out, decide=lambda s: _payload(build="buildY"), concurrency=1)
+
+
+def test_concurrent_build_conflict_fails_fast(tmp_path):
+    """With >1 worker, whichever cell pins the build first, a differing in-flight build conflicts."""
+    out = tmp_path / "j.jsonl"
+    from itertools import count
+    from threading import Lock
+    lock = Lock()
+    counter = count()
+
+    def decide(state):
+        with lock:
+            i = next(counter)
+        return _payload(build=f"build-{i % 2}")  # alternates build-0 / build-1
+
+    rows = [_row(answer=f"ans{i}", qid=f"q{i}") for i in range(4)]
+    with pytest.raises(JevError, match="conflict|build"):
+        judge(rows, out, decide=decide, concurrency=4)
+
+
+def test_nonempty_sidecar_without_manifest_fails_fast(tmp_path):
+    out = tmp_path / "j.jsonl"
+    out.write_text(json.dumps({"rubric_id": "sacredbench-jev-1", "question_id": "q",
+                               "model_id": "m", "answer_digest": "x"}) + "\n", encoding="utf-8")
+    # no manifest beside it → unknown build identity → refuse
+    with pytest.raises(JevError, match="manifest"):
+        estimate([_row()], out)
+    with pytest.raises(JevError, match="manifest"):
+        judge([_row()], out, decide=lambda s: _payload())
+
+
+def test_limit_caps_cells_judged(tmp_path):
+    out = tmp_path / "j.jsonl"
+    rows = [_row(answer=f"a{i}", qid=f"q{i}") for i in range(3)]
+    est = estimate(rows, out, limit=1)
+    assert est["pending"] == 1
+    done, failed, _ = judge(rows, out, decide=lambda s: _payload(), concurrency=1, limit=1)
+    assert done == 1
+    assert len(out.read_text().splitlines()) == 1
 
 
 def test_task_filter_skips_non_text_retrieval(tmp_path):
@@ -203,21 +280,30 @@ def test_estimate_counts_pending_and_spend(tmp_path):
     assert est["estimated_usd"] > 0
 
 
-def test_summarize_is_a_noop_over_a_finished_file(tmp_path):
+def test_summarize_is_a_noop_over_a_finished_file_and_sums_cost(tmp_path):
     out = tmp_path / "j.jsonl"
-    judge([_row(answer="declines", qid="q1")], out, decide=lambda s: _payload(refusal=0.9), concurrency=1)
+    rows = [_row(answer="declines", qid="q1"), _row(answer="and another", qid="q2")]
+    judge(rows, out, decide=lambda s: _payload(refusal=0.9), concurrency=1)
     s = summarize(out)
-    assert s["n"] == 1
+    assert s["n"] == 2
     assert s["judge_models"] == ["typesafe/jev-1.14-20261014"]
-    assert s["kinds"]["not_evaluated"] == 1
+    assert s["kinds"]["not_evaluated"] == 2
+    assert s["refusal_p_ge_0.5"] == 2
+    # each _payload() reports cost 0.000001 → total surfaced
+    assert s["total_cost_usd"] == pytest.approx(0.000002)
     assert s["rubric_id"] == "sacredbench-jev-1"
 
 
 # ---- the judge is never on the default scoring path ----------------------
 
 def test_score_and_collect_do_not_invoke_the_judge():
+    # The judge is paid and must never run from the default scoring/collection path. Assert the
+    # *invocation* surfaces are absent (not merely the word "jev" — phase 2 adds a `--judgments`
+    # provenance read to score.py, which must not count as invoking the judge).
     import sacredbench.collect as collect
     import sacredbench.score as score
+    forbidden = ("jev.judge", "post_decision", "alpha/decisions", "build_questions")
     for mod in (score, collect):
         src = Path(mod.__file__).read_text(encoding="utf-8")
-        assert "jev" not in src.lower(), f"{mod.__name__} references the judge"
+        for token in forbidden:
+            assert token not in src, f"{mod.__name__} invokes the judge ({token})"
