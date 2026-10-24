@@ -14,7 +14,7 @@ export function RootLayout() {
       <header className="shrink-0 border-b border-default-200">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="text-lg font-semibold">
-            Sacred Texts <span className="text-primary">Benchmark</span>
+            SacredBench
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             {/* The brand (left) is the leaderboard home; this links to the cross-run view. */}

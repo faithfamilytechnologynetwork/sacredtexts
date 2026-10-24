@@ -1,3 +1,4 @@
+import { FAILURE_KINDS, FAILURE_KIND_LABEL, type FailureKind } from "../lib/failureKind";
 import { type ExplorerFilters as Filters } from "../lib/explorer";
 
 // The composing filter bar for the error explorer. Presentational: it renders native
@@ -99,6 +100,27 @@ export function ExplorerFilters({
           <option value="missing">missing cell</option>
           <option value="refused">refused</option>
           <option value="wrong">wrong answer</option>
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1 text-xs text-default-500">
+        how it failed
+        <select
+          aria-label="Filter by failure kind"
+          className={selectClass}
+          value={value.kind ?? ALL}
+          onChange={(e) => {
+            const v = e.target.value;
+            onChange({
+              ...value,
+              kind: (FAILURE_KINDS as readonly string[]).includes(v) ? (v as FailureKind) : undefined,
+            });
+          }}
+        >
+          <option value={ALL}>all</option>
+          {FAILURE_KINDS.map((k) => (
+            <option key={k} value={k}>{FAILURE_KIND_LABEL[k]}</option>
+          ))}
         </select>
       </label>
     </div>

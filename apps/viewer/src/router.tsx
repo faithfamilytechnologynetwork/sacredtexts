@@ -9,13 +9,14 @@ import { LeaderboardPage } from "./routes/LeaderboardPage";
 import { ExplorerPage } from "./routes/ExplorerPage";
 import { StandingsPage } from "./routes/StandingsPage";
 import { NotFound } from "./routes/NotFound";
+import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
 
 // Code-based routing (deliberate, documented deviation from "file-based"): avoids the
 // router-plugin codegen step, keeps the route tree explicit, and is fully unit-testable
 // with a memory history. The tree is `/` (the leaderboard home, selecting a run via the
 // `?run=<id>` search param), `/run/$runId/model/$modelId` (the error explorer, with its
-// `?task=&tradition=&correct=&mode=` filter state), `/standings` (the cross-run current
+// `?task=&tradition=&correct=&mode=&kind=` filter state), `/standings` (the cross-run current
 // standings), plus a catch-all 404.
 
 const rootRoute = createRootRoute({
@@ -51,6 +52,7 @@ const explorerRoute = createRoute({
       search.mode === "missing" || search.mode === "refused" || search.mode === "wrong"
         ? search.mode
         : undefined,
+    kind: FAILURE_KINDS.includes(search.kind as FailureKind) ? (search.kind as FailureKind) : undefined,
   }),
 });
 
