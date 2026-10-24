@@ -1,0 +1,21 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Strong coverage overall, but several implementation contracts remain contradictory or underspecified.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Phase 2 does not define a viable provenance interface. `score_file()` currently accepts only evaluator names, while `resolve_evaluators(["jev"])` must fail; the CLI has no judgments-sidecar option. Define an explicit opt-in mechanism such as `--judgments`, its manifest validation and question-set binding, and the exact `summary["evaluators"]` schema. Implicitly discovering any adjacent sidecar risks changing ordinary default scoring.
+- The proposed grader metric keys, `jev_matches_requested` and `jev_refusal_p`, do not match the authoritative sidecar fields `matches_requested_p` and `refusal_p`, and omit equivalence. The registry descriptor and sidecar contract should use consistent names.
+- Index identity is not included in resume validation. If an index changes while retaining the same `corpus_hash`, existing rows could be skipped while new rows use a different index digest, producing a mixed-index sidecar. Require the sidecar manifest’s `index_digest` to match on resume, fail fast or use a fresh output, and test this case.
+- Phase 1 exposes `--equivalence-index` but leaves it unwired until Phase 3. That makes the independently committed Phase 1 silently ignore a meaningful option. Add the flag only in Phase 3 or make Phase 1 reject it explicitly.
+- The claimed byte-identical summary regression is not directly achievable because `score.py` always emits a fresh `generated_at`. Specify a deterministic test with time frozen, or compare the stable structure after excluding the timestamp; continue requiring byte identity for `scores.jsonl`.
+- The agreement report is a central deliverable but has no automated test plan. Add fixture-based tests for complete joins among answers, scores, and judgments; the `p >= 0.5` boundary; raw per-outcome distributions; and exhaustive disagreement enumeration.
+- Resolved-build handling needs a concurrency test: the first response must establish the manifest identity, and every later response—including simultaneously in-flight responses—must match it before being written. Also test missing credentials, as explicitly required by the specification.
+
+---
+
+## ⚠️ REPOSITORY MOVED during the codex review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: e4827a71425f89853f8091f6d7d122a0c5486e59 -> db0fc4415ba775eb711b9e402e78493174dc8c3a
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.
