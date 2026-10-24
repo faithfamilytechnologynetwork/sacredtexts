@@ -194,36 +194,37 @@ def _verify_against_summary(counts: dict[tuple[str, str], Counter], summary: dic
                 )
 
 
+def _rates(correct: int, incorrect: int, refused: int) -> dict:
+    """accuracy = correct/(correct+incorrect); coverage = (correct+incorrect)/n — the Spec 15
+    contract, recomputed from the verified counts so no rate is copied from summary.json."""
+    answered = correct + incorrect
+    n = answered + refused
+    return {
+        "correct": correct,
+        "incorrect": incorrect,
+        "refused": refused,
+        "n": n,
+        "accuracy": round(correct / answered, 4) if answered else 0.0,
+        "coverage": round(answered / n, 4) if n else 0.0,
+    }
+
+
 def _outcomes(counts: dict[tuple[str, str], Counter], summary: dict) -> dict:
+    # Every figure here is derived from the verified scores counts — counts AND rates — so nothing
+    # is copied from summary.json (summary was only used to cross-check the counts).
     models = summary.get("models") or {}
     out: dict[str, dict] = {}
     for model in sorted(models):
         tasks = sorted(t for (m, t) in counts if m == model)
-        by_task: dict[str, dict] = {}
-        for task in tasks:
-            c = counts[(model, task)]
-            block = models[model][task]
-            by_task[task] = {
-                "correct": c["correct"],
-                "incorrect": c["incorrect"],
-                "refused": c["refused"],
-                "n": c["correct"] + c["incorrect"] + c["refused"],
-                "accuracy": block.get("accuracy"),
-                "coverage": block.get("coverage"),
-            }
-        # overall COUNTS are summed from the verified per-task scores (not copied from summary),
-        # so the card's overall can never disagree with its own by_task; accuracy/coverage are the
-        # derived rates from the (now count-verified) summary _overall.
-        overall_summary = models[model].get("_overall") or {}
+        by_task = {
+            task: _rates(counts[(model, task)]["correct"], counts[(model, task)]["incorrect"],
+                         counts[(model, task)]["refused"])
+            for task in tasks
+        }
         agg = {o: sum(by_task[t][o] for t in by_task) for o in _OUTCOMES}
         out[model] = {
             "by_task": by_task,
-            "overall": {
-                **agg,
-                "n": sum(agg.values()),
-                "accuracy": overall_summary.get("accuracy"),
-                "coverage": overall_summary.get("coverage"),
-            },
+            "overall": _rates(agg["correct"], agg["incorrect"], agg["refused"]),
         }
     return out
 
@@ -308,6 +309,15 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
 
     counts = _outcome_counts(scores)
     _verify_against_summary(counts, summary)
+
+    manifest_n = manifest.get("n_questions")
+    if manifest_n is not None:
+        distinct_questions = len({qid for qid, _model in score_by})
+        if int(manifest_n) != distinct_questions:
+            raise FacctError(
+                f"manifest n_questions={manifest_n} but scores.jsonl has {distinct_questions} "
+                "distinct question_ids"
+            )
 
     return {
         "run": run_dir.name,

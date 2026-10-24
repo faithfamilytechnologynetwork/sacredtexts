@@ -332,6 +332,28 @@ def test_score_row_missing_task_fails_fast(tmp_path):
         build_facct(run, raw_root=raw)
 
 
+def test_n_questions_mismatch_fails_fast(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    manifest = json.loads((run / "questions.jsonl.manifest.json").read_text())
+    manifest["n_questions"] = 999  # disagrees with the distinct question_ids in scores
+    (run / "questions.jsonl.manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(FacctError, match="distinct question_ids"):
+        build_facct(run, raw_root=raw)
+
+
+def test_rates_are_recomputed_not_copied(tmp_path):
+    # corrupt the summary rates but keep counts consistent; the card must show recomputed rates
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    summary = json.loads((run / "summary.json").read_text())
+    summary["models"]["m1"]["retrieve_quote"]["accuracy"] = 0.999  # a lie the card must not echo
+    (run / "summary.json").write_text(json.dumps(summary))
+    report = build_facct(run, raw_root=raw)
+    rq = report["outcomes"]["m1"]["by_task"]["retrieve_quote"]
+    assert rq["accuracy"] == round(1 / 5, 4)  # correct 1 / (correct 1 + incorrect 4), recomputed
+
+
 def test_build_does_not_mutate_evidence(tmp_path):
     import hashlib
 
