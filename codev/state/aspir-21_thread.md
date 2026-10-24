@@ -38,3 +38,10 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - Commits: initial draft / with-review / rebuttal.
 - Pinged architect with spec summary + 2 decisions: (1) model id must be `jev-latest` not jev-1.13/jev-router; (2) Critical scope call on the passage-equivalence edition index (option (a) provisionally taken vs (b) vendor minimal index).
 - **HOLDING: do not start plan work until architect answers the scope question** (per brief: "ping me with the spec summary before the plan phase").
+
+## 2026-10-24 — Plan phase
+- Architect answered both decisions (00:00 + 00:01 addendum): jev-latest + resolved-build-as-identity (fail-fast on build-mismatch resume, no mixed-build files); equivalence OFF unless --equivalence-index, records not_evaluated; consume **#32's index schema VERBATIM** (JSONL {work,citation,language,wordings:[{version,text}]} + <path>.manifest.json {corpus_hash,row_count,digest,excluded_restricted}; fail fast on missing manifest / corpus_hash mismatch vs run manifest; record index digest per row; hand-written fixture, no #32 branch dep; drop cross_translation import). Live validation pre-flight shown to architect before the pass; refusal_p diagnostic only.
+- Folded all into spec → committed "[Spec 21] Specification with user feedback"; acked architect.
+- Karr authorship for carried code: `Jonathan Karr <jka83321@gmail.com>` (from PR #30 commits) → use `git commit --author` on the jev.py commit.
+- Wrote plan (4 phases): (1) Jev judge pass + CLI [Karr authorship], (2) grader registration + evaluator provenance + recipe, (3) equivalence-index consumer (#32 schema), (4) validation on committed tutorial run. Committed "[Spec 21] Initial implementation plan". PLAN_DRAFTED signalled; porch ran plan checks OK.
+- 2-way plan consult (codex+claude) running in background.
