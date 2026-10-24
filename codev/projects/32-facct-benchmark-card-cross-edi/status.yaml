@@ -19,6 +19,7 @@ current_plan_phase: null
 gates:
   pr:
     status: pending
+    requested_at: '2026-10-24T02:21:24.770Z'
   verify-approval:
     status: pending
 iteration: 2
@@ -96,7 +97,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-review-iter1-claude.txt
 started_at: '2026-10-23T23:35:13.884Z'
-updated_at: '2026-10-24T02:12:24.408Z'
+updated_at: '2026-10-24T02:21:24.771Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-10-24T00:31:39.828Z'
@@ -121,3 +122,4 @@ pr_history:
     pr_number: 34
     branch: builder/aspir-32
     created_at: '2026-10-24T01:51:39.789Z'
+pr_ready_for_human: true
