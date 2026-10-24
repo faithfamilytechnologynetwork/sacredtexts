@@ -18,8 +18,17 @@ import pytest
 from typer.testing import CliRunner
 
 from sacredbench import facct as facct_mod
+from sacredbench import generate as gen
 from sacredbench.cli import app
+from sacredbench.edition_index import load_edition_documents
 from sacredbench.facct import FacctError, build_facct, report_markdown, write_card
+
+
+def _corpus_hash(root: Path) -> str:
+    """generate's corpus hash over the fixture's full non-restricted set — what build_facct pins the
+    run manifest's corpus_hash against."""
+    _indexed, all_docs, _excl = load_edition_documents(root / "texts" / "raw")
+    return gen.corpus_hash(all_docs)
 
 runner = CliRunner()
 
@@ -138,7 +147,7 @@ def _make_run(root: Path, *, model: str = "m1") -> Path:
     }
     manifest = {
         "question_set_digest": "deadbeef",
-        "corpus_hash": "cafef00d",
+        "corpus_hash": _corpus_hash(root),  # must match build_facct's hash of the fixture raw tree
         "n_questions": len(_CELLS),
         "selected_texts": [
             {"work": "The Bible", "version": "KJV", "language": "en"},
@@ -239,7 +248,7 @@ def _run_with_unselected_editions(root: Path) -> tuple[Path, Path]:
                                               "accuracy": 0.0, "coverage": 1.0}}},
                "panel": {"m1": {"provider": "p", "model": "m", "tools": []}},
                "evaluators": ["strict", "containment"]}
-    manifest = {"question_set_digest": "d", "corpus_hash": "c", "n_questions": 3,
+    manifest = {"question_set_digest": "d", "corpus_hash": _corpus_hash(root), "n_questions": 3,
                 "selected_texts": [{"work": "The Bible", "version": "KJV", "language": "en"},
                                    {"work": "The Bible", "version": "ASV (1901)", "language": "en"}],
                 "excluded_texts": []}
@@ -403,6 +412,19 @@ def test_score_row_missing_task_fails_fast(tmp_path):
     with (run / "scores.jsonl").open("a") as f:
         f.write(json.dumps({"question_id": "notask", "model_id": "m1", "metrics": {"outcome": "correct"}}) + "\n")
     with pytest.raises(FacctError, match="missing 'task'"):
+        build_facct(run, raw_root=raw)
+
+
+def test_build_fails_when_raw_edition_content_drifts(tmp_path):
+    # the manifest pins edition IDENTITY; this pins edition CONTENT: editing a selected edition's
+    # wording in texts/raw after the run was generated makes the edition corpus_hash diverge from the
+    # run manifest's, and the card refuses to build rather than silently resting on different text.
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)  # manifest corpus_hash == hash of the raw tree as it is now
+    mutated = dict(_KJV)
+    mutated["Test 1:1"] = "a quietly changed kjv wording"
+    _write(raw / "Protestant Christian" / "kjv.json", _bible_payload(mutated))
+    with pytest.raises(FacctError, match="corpus_hash"):
         build_facct(run, raw_root=raw)
 
 

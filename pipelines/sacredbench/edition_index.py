@@ -64,34 +64,33 @@ LookupKey = tuple[str, str, str]  # (work, language, citation)
 class EditionIndex:
     passages: list[Passage]
     # Keyed on (work, language, citation): work + language are IN the key, so a lookup is already
-    # scoped to one work and one language — a consumer never re-filters on work (LDS scriptures also
-    # use Book-chapter:verse, and a Bible could exist in more than one language). Only Bible-style
-    # verse citations are bucketed (``cite_key is not None``), so a non-Bible citation is never a key.
+    # scoped to one work and one language. EVERY raw citation is bucketed (not only Bible-style
+    # ones), so the in-process grouping is one-for-one with ``export_rows`` for every work; the
+    # Bible-only scope of the counterfactual lives in its consumer (``facct._counterfactual``, via
+    # ``lookup_key``), not in the index.
     by_cite: dict[LookupKey, list[Passage]]
 
 
 def is_verse_citation(citation: str) -> bool:
     """True iff ``citation`` is a Bible-style ``Book chapter:verse`` — the non-Bible guard.
 
-    Arabic ``surah:ayah`` (no book token), hadith numbers, and Talmud ``daf:line`` are not, so they
-    are never bucketed and never matched to a Bible edition.
+    Arabic ``surah:ayah`` (no book token), hadith numbers, and Talmud ``daf:line`` are not, so a
+    consumer using :func:`lookup_key` never matches them to a Bible edition.
     """
     return _CITE.match(citation.strip()) is not None
 
 
-# Back-compat predicate name; returns a truthy match object or None (callers use it as a bool).
-def cite_key(citation: str):
-    """Deprecated spelling of :func:`is_verse_citation` kept as a predicate (truthy / None)."""
-    return _CITE.match(citation.strip())
-
-
 def lookup_key(work: str, language: str, citation: str) -> LookupKey | None:
-    """The ``by_cite`` key for a work's language edition of a citation, or None for a non-verse one."""
+    """The ``by_cite`` key for a work's language edition of a Bible-style citation, else None.
+
+    Returns None for non-verse citations, so the Spec 32 counterfactual (its only caller) never
+    looks a non-Bible citation up — even though such citations ARE bucketed in the index.
+    """
     return (work, language, citation) if is_verse_citation(citation) else None
 
 
 def index_documents(docs: list[Document]) -> EditionIndex:
-    """Build the in-process index: passages bucketed by (work, language, citation)."""
+    """Build the in-process index: every passage bucketed by (work, language, citation)."""
     passages: list[Passage] = []
     by_cite: dict[LookupKey, list[Passage]] = defaultdict(list)
     for doc in docs:
@@ -110,8 +109,7 @@ def index_documents(docs: list[Document]) -> EditionIndex:
                 text=entry.text,
             )
             passages.append(passage)
-            if is_verse_citation(entry.citation):
-                by_cite[(doc.work, doc.language, entry.citation)].append(passage)
+            by_cite[(doc.work, doc.language, entry.citation)].append(passage)  # every raw citation
     return EditionIndex(passages=passages, by_cite=dict(by_cite))
 
 

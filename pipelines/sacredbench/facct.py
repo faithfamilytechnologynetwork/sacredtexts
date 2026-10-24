@@ -25,8 +25,10 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from sacredbench import catalogue as cat
+from sacredbench import generate as gen
 from sacredbench import score
 from sacredbench.edition_index import (
+    EditionIndex,
     atomic_write_texts,
     index_documents,
     load_edition_documents,
@@ -235,11 +237,9 @@ def _outcomes(counts: dict[tuple[str, str], Counter], summary: dict) -> dict:
 def _counterfactual(
     scores: list[dict],
     ans_by: dict[tuple[str, str], dict],
-    raw_root: Path,
+    index: EditionIndex,
     selected_keys: set[tuple[str, str, str]],
 ) -> dict:
-    indexed, _all, _excluded = load_edition_documents(raw_root)
-    index = index_documents(indexed)
     per_model: dict[str, dict] = {}
     for model_id in {s.get("model_id") for s in scores}:
         per_model[model_id] = {"numerator": 0, "denominator": 0, "tagged": []}  # seed so 0-miss models show 0/0
@@ -340,6 +340,20 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
         (t.get("work"), t.get("version"), t.get("language"))
         for t in (manifest.get("selected_texts") or [])
     }
+    # Pin the counterfactual's raw-edition CONTENT (not just edition identity) to the run: the
+    # current catalogue must be the same corpus the run was generated from, or an edit to a selected
+    # edition's wording could silently change this historic card. `generate.corpus_hash` over the
+    # full non-restricted set equals the run manifest's corpus_hash exactly when the corpus matches.
+    indexed_docs, all_nonrestricted, _excluded = load_edition_documents(raw_root)
+    run_corpus_hash = manifest.get("corpus_hash")
+    edition_corpus_hash = gen.corpus_hash(all_nonrestricted)
+    if run_corpus_hash is not None and edition_corpus_hash != run_corpus_hash:
+        raise FacctError(
+            f"edition corpus_hash {edition_corpus_hash} != run manifest corpus_hash {run_corpus_hash}: "
+            "the raw editions differ from the corpus this run was generated from — restore the "
+            "editions (or regenerate the run) before building its card"
+        )
+    index = index_documents(indexed_docs)
     return {
         "run": run_dir.name,
         "question_set_digest": manifest.get("question_set_digest"),
@@ -351,7 +365,7 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
         "edition_counterfactual": {
             "scope": scope,
             "bible_editions": bible_editions,
-            "by_model": _counterfactual(scores, ans_by, raw_root, selected_keys),
+            "by_model": _counterfactual(scores, ans_by, index, selected_keys),
         },
     }
 

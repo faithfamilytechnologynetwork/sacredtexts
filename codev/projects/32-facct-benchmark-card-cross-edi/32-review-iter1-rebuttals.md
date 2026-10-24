@@ -57,3 +57,24 @@ language line; the edition-index export `corpus_hash` now equals the run manifes
 
 - Qur'an tradition `Sunni Islam` only — catalogue data → working-group thread (#27).
 - `cli.py` textual conflict with #21 — merge-order resolution, architect to sequence.
+
+## Review round 2 (consult re-run) — codex REQUEST_CHANGES, claude APPROVE; both folded
+
+- **Counterfactual content not pinned to the run** (codex + claude): restricting to `selected_texts`
+  pins edition *identity* but not *content* — editing a selected edition's wording could silently
+  change a historic card. *Addressed.* `build_facct` now computes `generate.corpus_hash` over the
+  full non-restricted set and **fails (`FacctError`) unless it equals the run manifest's
+  `corpus_hash`**, so the card refuses to build from a drifted corpus. Test
+  `test_build_fails_when_raw_edition_content_drifts` mutates a selected edition's wording and asserts
+  the raise; the committed card is unchanged (corpus matches).
+- **Index narrower than the export for non-Bible citations** (codex): `index_documents` bucketed only
+  Bible-style citations while `export_rows` grouped every shared citation, so the one-for-one claim
+  broke if a non-Bible work ever had sibling editions. *Addressed.* `index_documents` now buckets
+  **every** `(work, language, citation)`; the Bible scope of the counterfactual lives in its consumer
+  (`lookup_key`). The equality test now includes a non-Bible work with sibling editions.
+- **Dead `cite_key` alias + stale comment** (claude): *Addressed.* Removed the alias; the predicate is
+  `is_verse_citation`; the `EditionIndex` comment updated.
+- **Review doc staleness** (claude): *Addressed.* AC6 and Deviations refreshed for the
+  `is_verse_citation` predicate and the markdown-by-default / containment-promotion deviations.
+
+Suite 443 passed / 1 skipped; audit OK; committed card byte-identical (no change from these fixes).

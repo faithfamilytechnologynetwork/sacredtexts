@@ -110,11 +110,15 @@ def test_index_documents_buckets_by_work_language_citation():
 
 
 def test_in_process_siblings_equal_exported_rows():
-    # the two consumers of the frozen schema (card in-process, #21 via the file) group identically
+    # the two consumers of the frozen schema (card in-process, #21 via the file) group identically —
+    # for a NON-Bible work with sibling editions too (its citation isn't Bible-style), so the index
+    # is not silently narrower than the export.
     docs = [
         _doc("The Bible", "KJV", [("Genesis 1:1", "a b c d"), ("John 3:16", "e f g h")]),
         _doc("The Bible", "ASV (1901)", [("Genesis 1:1", "a b c d"), ("John 3:16", "i j k l")]),
         _doc("The Bible", "WEB", [("Genesis 1:1", "m n o p")]),  # single-wording John 3:16 omitted
+        _doc("The Qur'an", "Ed A", [("2:255", "alif lam mim")], language="ar"),
+        _doc("The Qur'an", "Ed B", [("2:255", "qaf nun sad")], language="ar"),  # non-Bible siblings
     ]
     idx = index_documents(docs)
     in_process = {

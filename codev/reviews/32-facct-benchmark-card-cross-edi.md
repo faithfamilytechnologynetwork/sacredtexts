@@ -16,7 +16,7 @@ re-scores, and derives every number from `scores.jsonl` / `summary.json`.
 - [x] AC3: No second refusal definition and no `fabrication` label; the string does not appear as a classification (Phase 2; regression test).
 - [x] AC4: Census covers all 17 selected texts by tradition/language/document_type/license, lists zero-question source languages, and the 2 excluded texts with manifest reasons (Phase 2 data, Phase 3 per-text table).
 - [x] AC5: Edition counterfactual reports numerator **and** denominator per model for incorrect Bible `retrieve_quote` cells, tags them `other_edition`, states Bible-`retrieve_quote`-only + why (Phase 2/3; 32 across the panel, 3 tagged).
-- [x] AC6: Non-Bible (Arabic/Hebrew/Aramaic) citations are never matched to a Bible edition — excluded by construction (Phase 2; `cite_key` returns None + `work == "The Bible"` filter; test).
+- [x] AC6: Non-Bible (Arabic/Hebrew/Aramaic) citations are never matched to a Bible edition — `lookup_key` returns None for a non-verse citation (via `is_verse_citation`) and the counterfactual is scoped to `selected_texts` + the question language (Phase 2 / PR review; tests).
 - [x] AC7: The edition index is `license != restricted` filtered; a restricted NABRE target present locally never enters it (Phase 1; test).
 - [x] AC8: A standalone `edition-index` CLI exports JSONL + manifest on the frozen schema for #21; restricted versions never in the file and named in `excluded_restricted` (Phase 1; test).
 - [x] AC9: The card builds its counterfactual from that same module in-process (Phase 2).
@@ -32,9 +32,15 @@ Viewer per-run card view: **out of scope** by architect decision (dropped from t
 ## Deviations from Plan
 
 - **Containment predicate promoted.** The plan said reuse `score`'s `contains_reference`; in practice
-  that meant promoting the private `_bounded_equal` to a public `bounded_contains` (alias kept). As planned in intent.
+  that meant promoting the private `_bounded_equal` to a public `bounded_contains` (the PR review
+  removed the back-compat alias, so `score.py` / `outcomes.py` now call `bounded_contains` directly).
 - **`facct.md` written by default, not opt-in.** Folded from spec review before Phase 3 — the command
   writes both files by default, matching the spec's "one command writes both".
+- **Edition-index key is the raw citation, not a normalized cite-key** (PR review, round 1b item 8):
+  `by_cite` and `export_rows` group on `(work, language, raw citation)` so the in-process and exported
+  views are identical by construction; `cite_key` became the `is_verse_citation` predicate and
+  `_BOOK_ALIAS` was dropped. The export `corpus_hash` is generate-comparable, and `build_facct` pins
+  the counterfactual's raw-edition content to the run by that hash.
 - Otherwise the plan held: Phase 1 module → Phase 2 data → Phase 3 markdown → Phase 4 generate+commit.
 
 ## Consultation Feedback
