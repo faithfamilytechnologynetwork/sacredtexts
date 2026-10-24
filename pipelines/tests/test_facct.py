@@ -439,6 +439,41 @@ def test_markdown_numbers_come_from_data_not_typed(tmp_path):
     assert "40.0%" not in md  # and was not there before
 
 
+def test_markdown_every_outcome_and_counterfactual_number_is_in_the_card(tmp_path):
+    # systematic drift guard: every count/accuracy/coverage for every model x task x overall, and
+    # every counterfactual numerator/denominator, must appear in the rendered card.
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    for model, block in report["outcomes"].items():
+        rows = list(block["by_task"].values()) + [block["overall"]]
+        for t in rows:
+            assert f"{round(t['accuracy'] * 100, 1)}%" in md
+            assert f"{round(t['coverage'] * 100, 1)}%" in md
+            for key in ("correct", "incorrect", "refused"):
+                assert str(t[key]) in md
+    for b in report["edition_counterfactual"]["by_model"].values():
+        assert str(b["numerator"]) in md and str(b["denominator"]) in md
+
+
+def test_markdown_lists_all_selected_texts_with_license(tmp_path):
+    # the human card must carry the per-text census (spec: all selected texts by tradition/
+    # language/document_type/license), not only aggregate counts.
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report)
+    for t in report["census"]["selected_texts"]:
+        assert f"{t['work']} ({t['version']})" in md
+        assert t["license"] in md
+
+
+def test_markdown_bible_count_is_derived_not_typed(tmp_path):
+    # the counterfactual prose interpolates the Bible edition count/versions from the data; the
+    # literal word "three" must not be typed (the fixture has 3 Bibles, but the prose says "3 (...)").
+    report, _run, _raw = _build(tmp_path)
+    md = report_markdown(report).lower()
+    assert "three of the texts" not in md
+    assert "the three english bibles" not in md
+
+
 def test_markdown_has_no_fabrication_and_no_verse_bodies(tmp_path):
     report, _run, _raw = _build(tmp_path)
     md = report_markdown(report)

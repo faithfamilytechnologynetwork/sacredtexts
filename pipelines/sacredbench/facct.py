@@ -30,13 +30,6 @@ from sacredbench.edition_index import cite_key, index_documents, load_edition_do
 
 _BIBLE = "The Bible"
 _OUTCOMES = ("correct", "incorrect", "refused")
-# scope note surfaced on the card so a reader knows what the counterfactual did and did not cover
-_COUNTERFACTUAL_SCOPE = (
-    "Bible retrieve_quote cells only. complete_unit is excluded (its gold is a partial unit with no "
-    "well-defined sibling-edition segment); the three English Bibles are the only sibling editions in "
-    "the pool, and non-Bible citations (Arabic surah:ayah, hadith numbers, Talmud daf:line) are never "
-    "matched to a Bible edition."
-)
 
 
 class FacctError(Exception):
@@ -277,10 +270,7 @@ def _counterfactual(scores: list[dict], ans_by: dict[tuple[str, str], dict], raw
 
     for block in per_model.values():
         block["tagged"].sort(key=lambda t: (t["citation"], t["question_id"]))
-    return {
-        "scope": _COUNTERFACTUAL_SCOPE,
-        "by_model": {m: per_model[m] for m in sorted(per_model)},
-    }
+    return {m: per_model[m] for m in sorted(per_model)}
 
 
 def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
@@ -319,15 +309,24 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
                 "distinct question_ids"
             )
 
+    census = _census(manifest, raw_root)
+    bible_editions = sorted(t["version"] for t in census["selected_texts"] if t["work"] == _BIBLE)
+    scope = CARD_PROSE["counterfactual_scope_template"].format(
+        n=len(bible_editions), versions=", ".join(bible_editions)
+    )
     return {
         "run": run_dir.name,
         "question_set_digest": manifest.get("question_set_digest"),
         "corpus_hash": manifest.get("corpus_hash"),
         "panel": summary.get("panel", {}),
         "evaluators": summary.get("evaluators", []),
-        "census": _census(manifest, raw_root),
+        "census": census,
         "outcomes": _outcomes(counts, summary),
-        "edition_counterfactual": _counterfactual(scores, ans_by, raw_root),
+        "edition_counterfactual": {
+            "scope": scope,
+            "bible_editions": bible_editions,
+            "by_model": _counterfactual(scores, ans_by, raw_root),
+        },
     }
 
 
@@ -349,17 +348,31 @@ def write_facct_json(report: dict, out_path: Path) -> None:
 # ============================================================================================
 CARD_PROSE = {
     "tagline": "What this benchmark run is allowed to mean — and what it is not.",
+    # the four task names glossed for a reader who has not read the pipeline
+    "tasks_heading": "The four tasks",
+    "tasks_intro": "Each question uses one of four tasks:",
+    "task_glosses": {
+        "retrieve_quote": "quote a named edition's exact wording of a citation",
+        "complete_unit": "continue a verse or unit from its opening words",
+        "cite_passage": "name the citation a quoted passage comes from",
+        "verify_source": "judge whether a passage really is from a claimed source",
+    },
     "census_heading": "Who the questions represent",
     "census_intro": (
         "The questions are drawn from original-language editions only: a text is asked about just "
-        "when the edition is in its own canonical language. The table below is the make-up of the "
+        "when the edition is in its own canonical language. The tables below are the make-up of the "
         "questions in this run — not a ranking of anyone's scripture, and not a measure of how well "
         "a model knows a faith."
     ),
+    "census_count_template": "This run asked **{questions} questions** across **{texts} texts**.",
+    "tradition_table_heading": "By tradition",
+    "texts_table_heading": "The texts asked about",
+    "zero_languages_label": "Languages with zero questions:",
     "zero_language_note": (
         "A language listed here is present in the catalogue but asked no questions in this run. It "
         "is a held-back or out-of-pool source, not a gap the models failed to cover."
     ),
+    "excluded_label": "Excluded from the pool.",
     "excluded_note": (
         "These texts are in the catalogue but outside this run's pool, each for the stated reason "
         "(an edition whose language is not its canonical language)."
@@ -372,22 +385,29 @@ CARD_PROSE = {
         "accuracy on low coverage is not mastery; read the two together."
     ),
     "counterfactual_heading": "Would another edition have passed?",
-    "counterfactual_intro": (
-        "Three of the texts are different English editions of the same Bible (KJV, ASV 1901, WEB). "
-        "When a model was asked for one edition's wording of a verse and missed, it sometimes "
-        "answered with a faithful wording of the *same verse from a different edition*. The count "
-        "below is how many of those misses were really another edition of the right verse."
+    "counterfactual_intro_template": (
+        "{n} of the texts are different English editions of the same Bible ({versions}). When a model "
+        "was asked for one edition's wording of a verse and missed, it sometimes answered with a "
+        "faithful wording of the *same verse from a different edition*. The count below is how many of "
+        "those misses were really another edition of the right verse."
+    ),
+    "counterfactual_scope_template": (
+        "Bible retrieve_quote cells only. complete_unit is excluded (its gold is a partial unit with "
+        "no well-defined sibling-edition segment); the {n} English Bible editions ({versions}) are the "
+        "only sibling editions in the pool, and non-Bible citations (Arabic surah:ayah, hadith "
+        "numbers, Talmud daf:line) are never matched to a Bible edition."
     ),
     "claims_heading": "What this card claims",
     "claims": [
-        "For this panel, on these original-language editions, the accuracy-with-coverage figures "
-        "above describe how often each model returned the requested wording of a citation.",
+        "For this panel, on these original-language editions, the accuracy-with-coverage figures above "
+        "are how often each model succeeded at each task — quoting the requested wording, completing a "
+        "unit, naming a citation, or judging a source — with refusals set aside.",
         "Some Bible misses are edition mismatches, not wrong verses; the edition count says how many.",
     ],
     "failure_heading": "What would make this card wrong",
     "failure": [
-        "If the scoring contract behind these outcomes changed and the card were not rebuilt from "
-        "the new scores, every number here would be stale.",
+        "If the scoring contract behind these outcomes changed and the card were not rebuilt from the "
+        "new scores, every number here would be stale.",
         "If a citation were matched to an edition it does not belong to, the edition count would be "
         "inflated; the count is computed for Bible verse citations only, for exactly this reason.",
     ],
@@ -396,7 +416,7 @@ CARD_PROSE = {
         "It does not rank traditions and does not measure knowledge of any faith.",
         "A tradition's column is the slice that was asked — which may be a hadith collection or an "
         "English-language question set — not that community's whole scripture.",
-        "The edition count is reported for the three English Bibles only; the other texts have no "
+        "The edition count is reported for the English Bible editions only; the other texts have no "
         "second indexed edition in this run, so the question does not arise for them.",
     ],
     "review_heading": "Community review",
@@ -404,6 +424,13 @@ CARD_PROSE = {
         "Scholar and community review of this card is not attached. The card reports what the run "
         "measured; it is not an adjudication by any tradition."
     ),
+    # table column headers (reader-facing labels, kept here so all wording is in one place)
+    "headers": {
+        "tradition": ["Tradition", "Texts"],
+        "texts": ["Text", "Language", "Tradition", "Type", "License"],
+        "outcomes": ["Model", "Task", "Correct", "Incorrect", "Refused", "Accuracy", "Coverage"],
+        "counterfactual": ["Model", "Another edition would have passed", "Of incorrect Bible retrieve_quote"],
+    },
 }
 
 
@@ -415,97 +442,82 @@ def _n(x) -> str:
     return "—" if x is None else f"{x:,}"
 
 
+def _table(headers: list[str], rows: list[list[str]], aligns: list[str] | None = None) -> list[str]:
+    aligns = aligns or ["---"] * len(headers)
+    out = ["| " + " | ".join(headers) + " |", "| " + " | ".join(aligns) + " |"]
+    out += ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
+    return out
+
+
 def report_markdown(report: dict) -> str:
     """Render the human-readable card from the card data. Every number comes from ``report``
-    (which is derived from ``scores.jsonl`` / ``summary.json``); the words come from
-    :data:`CARD_PROSE`. No figure is typed in here."""
+    (which is derived from ``scores.jsonl`` / ``summary.json``); all wording comes from
+    :data:`CARD_PROSE`. No figure is typed into the prose, so the card cannot drift from the run."""
     p = CARD_PROSE
     census = report["census"]
-    lines: list[str] = []
-    lines.append(f"# FAccT benchmark card — {report['run']}")
-    lines.append("")
-    lines.append(f"*{p['tagline']}*")
+    cf = report["edition_counterfactual"]
+    bibles = cf["bible_editions"]
+    lines: list[str] = [f"# FAccT benchmark card — {report['run']}", "", f"*{p['tagline']}*", ""]
+
+    # --- tasks gloss ---
+    lines += [f"## {p['tasks_heading']}", "", p["tasks_intro"], ""]
+    for task, gloss in p["task_glosses"].items():
+        lines.append(f"- **{task}** — {gloss}")
     lines.append("")
 
     # --- census ---
-    lines.append(f"## {p['census_heading']}")
+    lines += [f"## {p['census_heading']}", "", p["census_intro"], ""]
+    lines += [p["census_count_template"].format(questions=_n(census["n_questions"]),
+                                                texts=_n(census["n_texts"])), ""]
+    lines += [f"**{p['tradition_table_heading']}**", ""]
+    lines += _table(p["headers"]["tradition"],
+                    [[t, c] for t, c in census["by_tradition"].items()], ["---", "---:"])
     lines.append("")
-    lines.append(p["census_intro"])
-    lines.append("")
-    lines.append(f"This run asked **{_n(census['n_questions'])} questions** across "
-                 f"**{_n(census['n_texts'])} texts**.")
-    lines.append("")
-    lines.append("| Tradition | Texts |")
-    lines.append("| --- | ---: |")
-    for trad, count in census["by_tradition"].items():
-        lines.append(f"| {trad} | {count} |")
-    lines.append("")
-    lines.append("| Language | Texts | | Document type | Texts | | License | Texts |")
-    lines.append("| --- | ---: | --- | --- | ---: | --- | --- | ---: |")
-    langs = list(census["by_language"].items())
-    doctypes = list(census["by_document_type"].items())
-    lics = list(census["by_license"].items())
-    for i in range(max(len(langs), len(doctypes), len(lics))):
-        lg = f"{langs[i][0]} | {langs[i][1]}" if i < len(langs) else " | "
-        dt = f"{doctypes[i][0]} | {doctypes[i][1]}" if i < len(doctypes) else " | "
-        lc = f"{lics[i][0]} | {lics[i][1]}" if i < len(lics) else " | "
-        lines.append(f"| {lg} | | {dt} | | {lc} |")
+    lines += [f"**{p['texts_table_heading']}**", ""]
+    lines += _table(
+        p["headers"]["texts"],
+        [[f"{t['work']} ({t['version']})", t["language"], ", ".join(t["tradition"]),
+          t["document_type"], t["license"]] for t in census["selected_texts"]],
+    )
     lines.append("")
     if census["zero_question_languages"]:
-        lines.append(f"**Languages with zero questions:** {', '.join(census['zero_question_languages'])}. "
-                     + p["zero_language_note"])
-        lines.append("")
+        lines += [f"**{p['zero_languages_label']}** {', '.join(census['zero_question_languages'])}. "
+                  + p["zero_language_note"], ""]
     if census["excluded_texts"]:
-        lines.append(f"**Excluded from the pool.** {p['excluded_note']}")
-        lines.append("")
+        lines += [f"**{p['excluded_label']}** {p['excluded_note']}", ""]
         for e in census["excluded_texts"]:
             lines.append(f"- {e['work']} ({e['version']}, {e['language']}) — {e['reason']}")
         lines.append("")
 
     # --- outcomes ---
-    lines.append(f"## {p['outcomes_heading']}")
-    lines.append("")
-    lines.append(p["outcomes_intro"])
-    lines.append("")
-    lines.append("| Model | Task | Correct | Incorrect | Refused | Accuracy | Coverage |")
-    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: |")
-    for model in report["outcomes"]:
-        block = report["outcomes"][model]
+    lines += [f"## {p['outcomes_heading']}", "", p["outcomes_intro"], ""]
+    rows: list[list[str]] = []
+    for model, block in report["outcomes"].items():
         for task, t in block["by_task"].items():
-            lines.append(f"| {model} | {task} | {t['correct']} | {t['incorrect']} | {t['refused']} "
-                         f"| {_pct(t['accuracy'])} | {_pct(t['coverage'])} |")
+            rows.append([model, task, t["correct"], t["incorrect"], t["refused"],
+                         _pct(t["accuracy"]), _pct(t["coverage"])])
         o = block["overall"]
-        lines.append(f"| {model} | **overall** | {o['correct']} | {o['incorrect']} | {o['refused']} "
-                     f"| **{_pct(o['accuracy'])}** | **{_pct(o['coverage'])}** |")
+        rows.append([model, "**overall**", o["correct"], o["incorrect"], o["refused"],
+                     f"**{_pct(o['accuracy'])}**", f"**{_pct(o['coverage'])}**"])
+    lines += _table(p["headers"]["outcomes"], rows,
+                    ["---", "---", "---:", "---:", "---:", "---:", "---:"])
     lines.append("")
 
     # --- edition counterfactual ---
-    lines.append(f"## {p['counterfactual_heading']}")
-    lines.append("")
-    lines.append(p["counterfactual_intro"])
-    lines.append("")
-    lines.append("| Model | Another edition would have passed | Of incorrect Bible retrieve_quote |")
-    lines.append("| --- | ---: | ---: |")
-    for model, b in report["edition_counterfactual"]["by_model"].items():
-        lines.append(f"| {model} | {b['numerator']} | {b['denominator']} |")
-    lines.append("")
-    lines.append(f"*Scope: {report['edition_counterfactual']['scope']}*")
-    lines.append("")
+    lines += [f"## {p['counterfactual_heading']}", ""]
+    lines += [p["counterfactual_intro_template"].format(n=len(bibles), versions=", ".join(bibles)), ""]
+    lines += _table(p["headers"]["counterfactual"],
+                    [[m, b["numerator"], b["denominator"]] for m, b in cf["by_model"].items()],
+                    ["---", "---:", "---:"])
+    lines += ["", f"*Scope: {cf['scope']}*", ""]
 
-    # --- prose sections (claims / failure / non-conclusions / review) ---
-    for heading, items in (
-        (p["claims_heading"], p["claims"]),
-        (p["failure_heading"], p["failure"]),
-        (p["non_conclusions_heading"], p["non_conclusions"]),
-    ):
-        lines.append(f"## {heading}")
+    # --- prose sections ---
+    for heading, items in ((p["claims_heading"], p["claims"]),
+                           (p["failure_heading"], p["failure"]),
+                           (p["non_conclusions_heading"], p["non_conclusions"])):
+        lines += [f"## {heading}", ""]
+        lines += [f"- {item}" for item in items]
         lines.append("")
-        for item in items:
-            lines.append(f"- {item}")
-        lines.append("")
-    lines.append(f"## {p['review_heading']}")
-    lines.append("")
-    lines.append(p["review_note"])
-    lines.append("")
+    lines += [f"## {p['review_heading']}", "", p["review_note"], ""]
 
     return "\n".join(lines)

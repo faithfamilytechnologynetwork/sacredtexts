@@ -8,6 +8,7 @@ Run from the repo root:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -24,7 +25,7 @@ from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.config import ConfigError, load_config
 from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
-from sacredbench.facct import FacctError, build_facct, report_markdown, write_facct_json
+from sacredbench.facct import FacctError, build_facct, report_markdown
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
@@ -407,11 +408,14 @@ def edition_index_cmd(
 
 
 def _within(run_dir: Path, path: Path) -> Path:
-    """Resolve ``path`` and require it to sit inside ``run_dir`` (no writing outside the run)."""
+    """Resolve ``path`` and require it to be a file strictly inside ``run_dir``.
+
+    Resolution follows symlinks, so a symlink at the default path that points outside the run is
+    rejected too; the run directory itself is rejected (the target must be a file within it)."""
     run_dir = run_dir.resolve()
     resolved = (run_dir / path).resolve() if not path.is_absolute() else path.resolve()
-    if run_dir != resolved and run_dir not in resolved.parents:
-        raise typer.BadParameter(f"{path} resolves outside the run directory {run_dir}")
+    if resolved == run_dir or run_dir not in resolved.parents:
+        raise typer.BadParameter(f"{path} must resolve to a file inside the run directory {run_dir}")
     return resolved
 
 
@@ -427,16 +431,28 @@ def facct(
     Pure analysis: reads committed run evidence, never re-scores, never calls a model. Every
     number on the card is derived from scores.jsonl / summary.json. Both files are written into
     the run directory by default; an override path must stay within it. Fails fast (no partial
-    write) on inconsistent evidence.
+    write) on inconsistent evidence, and writes both files atomically (both-or-neither).
     """
-    json_path = _within(run_dir, json_out) if json_out is not None else run_dir / "facct.json"
-    md_path = _within(run_dir, md_out) if md_out is not None else run_dir / "facct.md"
-    # Build and render BOTH before writing EITHER, so a failure leaves neither file touched.
+    # Validate BOTH destinations (including the defaults) before doing any work.
+    json_path = _within(run_dir, json_out if json_out is not None else Path("facct.json"))
+    md_path = _within(run_dir, md_out if md_out is not None else Path("facct.md"))
+    if json_path == md_path:
+        raise typer.BadParameter("--json and --md must be different paths")
+
+    # Build and render BOTH before writing EITHER; then stage to temp files and swap both into
+    # place, so a failure anywhere leaves neither the JSON nor the Markdown touched.
     report = build_facct(run_dir, raw_root)
+    json_text = json.dumps(report, ensure_ascii=False, indent=1) + "\n"
     markdown = report_markdown(report)
-    write_facct_json(report, json_path)
+    json_path.parent.mkdir(parents=True, exist_ok=True)
     md_path.parent.mkdir(parents=True, exist_ok=True)
-    md_path.write_text(markdown, encoding="utf-8")
+    tmp_json = json_path.with_name(json_path.name + ".tmp")
+    tmp_md = md_path.with_name(md_path.name + ".tmp")
+    tmp_json.write_text(json_text, encoding="utf-8")
+    tmp_md.write_text(markdown, encoding="utf-8")
+    os.replace(tmp_json, json_path)
+    os.replace(tmp_md, md_path)
+
     cf = report["edition_counterfactual"]["by_model"]
     other_edition = sum(b["numerator"] for b in cf.values())
     typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "

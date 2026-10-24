@@ -112,7 +112,17 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - Real card rendered & eyeballed (scratch): clean one-linear-read, opus overall 68.6%/85.7%, haiku 48.6%/76.9%, counterfactual table 0/17,3/15,0/0. Matches Waleed docs bar.
 - README section 8 added. Suite 423 pass/1 skip. Commit author Jonathan.
 
+## Phase_3 impl review (2026-10-23): codex + claude both REQUEST_CHANGES — all fixed (426 pass)
+- Prose unified: removed _COUNTERFACTUAL_SCOPE constant; ALL reader-facing wording (scope template, labels, table headers, intros) now in CARD_PROSE. Renderer = structure+interpolation only.
+- No typed figures: claims[0] rephrased to cover all 4 tasks; counterfactual intro+scope are TEMPLATES interpolated with bible count/versions from census; non_conclusions no longer says "three". Test asserts "three" absent.
+- Human card: added per-text 17-row table (work/version, language, tradition, type, license); dropped confusing side-by-side table.
+- Task glosses: new "The four tasks" section.
+- Output safety: _within validates BOTH defaults+overrides (symlink escape), rejects run_dir itself, rejects json==md; atomic temp+os.replace both-or-neither.
+- Drift guard: systematic test (every model×task×overall count/accuracy/coverage + counterfactual num/denom in card).
+- Fix commit authored as me. Rebuttal committed.
+
 ## Status
-- phase_3 complete. Committing (author Jonathan) + porch done. Next phase_4: extend audit.py to scan .md + test; byte-digest integrity; generate+commit real card over runs/original-2026-10-21; real-run drift guard in test_original_run_regression.py. THEN PR (loop Jonathan on wording, "Part 3 of 3 of #30", closes #32, no Generated-with/Co-Authored-By). Commit the untracked consult .txt files with the PR.
+- phase_3 fixes done. porch iter flow (likely iter2 review → advance to phase_4).
+- Phase_4: extend audit.py suffix set to scan .md + test_audit injection test; byte-digest integrity (sha256 3 evidence files before/after); GENERATE+COMMIT real card into runs/original-2026-10-21/facct.{json,md} + README line; real-run drift guard in test_original_run_regression.py. Author carry phases to Jonathan. THEN PR ("Part 3 of 3 of #30", closes #32, loop Jonathan on wording, NO Generated-with/Co-Authored-By). Commit untracked consult .txt files with PR.
 - Phase3: facct.md, both files written atomically within run_dir by default, ONE prose block, every number from build data (anti-drift test == summary). Phase4: extend audit.py to .md + test, byte-digest integrity, generate+commit real card over runs/original-2026-10-21, real-run drift guard; author carry phases to Jonathan.
 - NOTE: context-refresh at phase_1→2 boundary did NOT run (porch handed implement task directly, no self-refresh cmd). Context intact, ~14.7M tokens. Consult .txt files for all phases still untracked — commit with PR.
