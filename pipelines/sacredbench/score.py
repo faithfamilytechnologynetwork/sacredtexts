@@ -249,13 +249,21 @@ def _citation_candidates(answer: str, expected_citation: str) -> set[str]:
     return {normalize(m.group(0)) for m in rx.finditer(answer)}
 
 
-def _bounded_equal(answer: str, expected: str) -> bool:
-    """The full normalized ``expected`` appears with word boundaries (so ``Jude 1:3`` does
-    not match ``Jude 1:30``), not mere substring containment. Despite the citation-flavoured
-    name this is word-bounded normalised CONTAINMENT, reused by ``score_answer`` to compute
-    ``contains_reference`` for the text-retrieval tasks (caller guards the empty case)."""
+def bounded_contains(answer: str, expected: str) -> bool:
+    """The full normalized ``expected`` appears in ``answer`` with word boundaries (so
+    ``Jude 1:3`` does not match ``Jude 1:30``), not mere substring containment. This is the
+    word-bounded normalised CONTAINMENT predicate that backs the ``contains_reference``
+    metric for the text-retrieval tasks (caller guards the empty case).
+
+    It is **public** so other analyses (e.g. the Spec 32 FAccT edition counterfactual) reuse
+    the exact scoring-contract containment rule — ``normalize`` + this boundary match — rather
+    than defining a second, divergent ``in`` check."""
     ne = normalize(expected)
     return re.search(r"(?<!\w)" + re.escape(ne) + r"(?!\w)", normalize(answer)) is not None
+
+
+# Private alias kept for the existing internal callers and the outcomes module.
+_bounded_equal = bounded_contains
 
 
 def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, int]:

@@ -87,5 +87,14 @@ Tests: test_facct.py — outcome fidelity, counterfactual core, complete_unit ex
 Expected real numbers: 32 incorrect Bible retrieve_quote cells across panel (21 complete_unit excluded).
 Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose block, anti-drift. Phase4: extend audit.py to .md + test, byte-digest integrity, real-run drift guard, author carry phases to Jonathan.
 
+## PHASE 2 COMPLETE ✓ (facct.json card data)
+- score.py: promoted _bounded_equal → public `bounded_contains` (kept `_bounded_equal = bounded_contains` alias for existing callers/outcomes.py). This is THE contract containment predicate; facct reuses it verbatim.
+- facct.py: build_facct(run_dir, raw_root) → dict. census (17 texts by tradition/lang/doctype/license from catalogue Target join on text_key; zero_question_languages = all target langs − pool langs; excluded_texts w/ manifest reasons); outcomes (counts from scores.jsonl metrics.outcome, verified == summary.json, FacctError on disagreement); counterfactual (incorrect Bible retrieve_quote only, work=="The Bible" filter, skip requested version, reuse score.bounded_contains, numerator+denominator per model seeded for ALL models, other_edition tags). FacctError fail-fast (missing file / non-join / unresolved target / scores↔summary mismatch) BEFORE any write. write_facct_json separate.
+- cli.py: `facct <run_dir>` writes facct.json (default <run_dir>/facct.json). FacctError wired.
+- test_facct.py: 12 tests incl real-run (census n_texts=17, zero_q=['grc'], excluded={Encyclicals,Talmud}, denom=32).
+- REAL RUN VERIFIED: 17 texts, 476 Q; counterfactual denom total=32 (gpt-oss 0/17, haiku 3/15, opus 0/0), 3 other_edition tags (haiku: Jeremiah 38:15 ASV→KJV etc). Run evidence untouched.
+- Suite 407 pass/1 skip. Commit authored Jonathan (facct.py reworked from his PR#30 facct.py).
+
 ## Status
-- phase_1 complete. porch emitted context-refresh at phase_1→phase_2 boundary; running builder-refresh. Resume phase_2 from notes above.
+- phase_2 complete. Committing (author Jonathan) + porch done. Next: phase_3 (facct.md, both files atomic within run_dir, prose block, anti-drift) then phase_4 (audit .md extension, byte-digest integrity, generate+commit real card, drift guard).
+- NOTE: context-refresh at phase_1→2 boundary did NOT run (porch moved to implement task directly; no boundary-bound self-refresh cmd surfaced). Context intact, ample budget. May run at phase_2→3 if porch emits it.
