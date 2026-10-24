@@ -18,7 +18,7 @@ import { loadRun, type QuestionResult } from "../lib/localResults";
 // text, actual answer, and per-metric scores side by side.
 //
 // Route: `/run/$runId/model/$modelId`. Filter state lives in the URL as
-// `?task=&tradition=&correct=&mode=`, validated by a plain validator on the route (zod is
+// `?task=&tradition=&correct=&mode=&kind=`, validated by a plain validator on the route (zod is
 // pruned). The run id resolves to the fetch base `/runs/${encodeURIComponent(id)}` before
 // loadRun — the same contract as the leaderboard — and a stale-request guard keeps a slow
 // earlier load from overwriting a newer one. "Back to leaderboard" targets `/?run=<runId>`.
@@ -100,6 +100,11 @@ export function ExplorerPage() {
             {stats.total} question{stats.total === 1 ? "" : "s"} · {stats.correct} correct ·{" "}
             {stats.wrong} wrong · {stats.refused} refused · {stats.missing} missing
           </p>
+          <p className="mt-1 text-sm text-default-600">
+            Of the labeled misses, <span className="font-medium">{stats.minor} minor</span> stay on
+            the passage that was asked for, and <span className="font-medium">{stats.major} major</span>{" "}
+            replace the passage, the citation, or the witness.
+          </p>
 
           <div className="mt-4">
             <ExplorerFilters
@@ -114,8 +119,13 @@ export function ExplorerPage() {
             <span className="font-medium">missing</span> = the model produced no answer for a
             roster question (a missing cell); <span className="font-medium">refused</span> = it
             answered but declined to give the text (excluded from accuracy);{" "}
-            <span className="font-medium">wrong</span> = it answered but scored incorrect. Per-metric{" "}
-            <code>n/a</code> means the task emits no such similarity score.
+            <span className="font-medium">wrong</span> = it answered but scored incorrect. On a wrong
+            answer the second badge says whether the miss is minor (still the passage that was
+            asked for: near copy, paraphrase, omission) or major (the object is replaced: wrong passage,
+            other script, wrong locus, hedge, no citation, wrong verdict).{" "}
+            <span className="font-medium">addition</span> is a correct quote that continues past the
+            reference — still counted correct. Per-metric <code>n/a</code> means the task emits no
+            such similarity score.
           </p>
 
           <p className="mt-2 text-sm text-default-500">

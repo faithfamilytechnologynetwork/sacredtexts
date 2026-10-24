@@ -27,6 +27,7 @@ from sacredbench.edition_index import EditionIndexError, load_edition_documents,
 from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
+from sacredbench.failure_kind import report_run
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -468,6 +469,33 @@ def facct(
     typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "
                f"{report['census']['n_questions']} questions, {other_edition} other_edition tag(s) "
                f"across {len(cf)} model(s)")
+
+
+@app.command()
+def failures(run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl")) -> None:
+    """Count SacredBench failure kinds for one scored run, per text.
+
+    Kinds do not change accuracy. ``minor`` stays on the passage that was asked for
+    (paraphrase, omission, addition). ``major`` replaces it (wrong passage, wrong
+    locus, wrong witness, wrong verdict, no citation, hedge). Texts are not pooled
+    into a tradition score.
+    """
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    report = report_run(run_dir)
+    overall = report["overall"]
+    typer.echo(
+        "outcomes "
+        + " ".join(f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("outcome:"))
+    )
+    typer.echo(
+        "severity "
+        + " ".join(f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("severity:"))
+    )
+    for key in sorted(overall):
+        if key.startswith("kind:"):
+            typer.echo(f"  {key.split(':', 1)[1]} {overall[key]}")
+    typer.echo(f"{len(report['by_text'])} text(s); one text = one work, version, and language")
 
 
 def main() -> None:

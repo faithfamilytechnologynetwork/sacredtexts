@@ -18,6 +18,7 @@ function q(partial: Partial<QuestionResult>): QuestionResult {
     exact: 0,
     normalized: 1,
     token_f1: 0.5,
+    failure: null,
     ...partial,
   };
 }
@@ -53,6 +54,12 @@ describe("QuestionList", () => {
     expect(screen.getByText("normalized")).toBeInTheDocument();
     expect(screen.getByText("token-F1")).toBeInTheDocument();
     expect(screen.getAllByText("n/a")).toHaveLength(3);
+  });
+
+  it("shows the failure kind beside a wrong answer", () => {
+    render(<QuestionList results={[q({ failure: "paraphrase" })]} />);
+    expect(screen.getByText("wrong")).toBeInTheDocument();
+    expect(screen.getByText("minor · paraphrase")).toBeInTheDocument();
   });
 
   it("marks a refused cell as 'refused', not 'wrong' (Spec 15 — distinct from an incorrect answer)", () => {

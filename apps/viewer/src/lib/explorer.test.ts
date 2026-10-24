@@ -38,6 +38,7 @@ function q(partial: Partial<QuestionResult>): QuestionResult {
     exact: 0,
     normalized: 0,
     token_f1: 0,
+    failure: null,
     ...partial,
   };
 }
@@ -56,7 +57,7 @@ describe("explorer — classification", () => {
 describe("explorer — filters compose", () => {
   const results: QuestionResult[] = [
     q({ question_id: "a", correct: true, task: "retrieve_quote", tradition: ["Judaism"] }),
-    q({ question_id: "b", correct: false, missing: false, task: "retrieve_quote", tradition: ["Judaism"] }),
+    q({ question_id: "b", correct: false, missing: false, task: "retrieve_quote", tradition: ["Judaism"], failure: "paraphrase" }),
     q({ question_id: "c", correct: false, missing: true, task: "cite_passage", tradition: ["Roman Catholic"] }),
     q({ question_id: "d", correct: false, missing: false, task: "cite_passage", tradition: ["Judaism", "Roman Catholic"] }),
     q({ question_id: "e", correct: false, refused: true, task: "retrieve_quote", tradition: ["Judaism"] }),
@@ -74,6 +75,11 @@ describe("explorer — filters compose", () => {
     expect(filterQuestions(results, { correct: "correct" }).map((r) => r.question_id)).toEqual(["a"]);
     // incorrect = any non-correct (wrong b/d, missing c, refused e); mode narrows further
     expect(filterQuestions(results, { correct: "incorrect" }).map((r) => r.question_id)).toEqual(["b", "c", "d", "e"]);
+  });
+
+  it("filters by failure kind without changing the four-way outcome filter", () => {
+    expect(filterQuestions(results, { kind: "paraphrase" }).map((r) => r.question_id)).toEqual(["b"]);
+    expect(filterQuestions(results, { kind: "addition" })).toHaveLength(0);
   });
 
   it("filters failures by mode — missing, refused, wrong all distinct", () => {
@@ -96,7 +102,9 @@ describe("explorer — filters compose", () => {
   });
 
   it("counts total / correct / wrong / refused / missing", () => {
-    expect(questionStats(results)).toEqual({ total: 5, correct: 1, wrong: 2, refused: 1, missing: 1 });
+    expect(questionStats(results)).toEqual({
+      total: 5, correct: 1, wrong: 2, refused: 1, missing: 1, minor: 1, major: 0,
+    });
   });
 });
 

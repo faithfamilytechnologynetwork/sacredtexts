@@ -53,3 +53,6 @@ apps/viewer/dist/
 .env
 .env.*
 !.env.example
+
+# Local FAccT manuscript and its PDF (not part of the public repo).
+.papers/

@@ -4,6 +4,7 @@
 // wires these to the URL (`?task=&tradition=&correct=&mode=`) and the presentational
 // QuestionList / ExplorerFilters components render their output.
 
+import { failureSeverity, type FailureKind } from "./failureKind";
 import type { QuestionResult } from "./localResults";
 
 /** A failure's mode (Spec 15 — four outcome categories): a missing cell (the model produced no
@@ -29,6 +30,8 @@ export interface ExplorerFilters {
   correct?: "correct" | "incorrect";
   /** Restrict failures to one mode (missing / refused / wrong); composes with the others by AND. */
   mode?: FailureMode;
+  /** Restrict to one task-specific failure kind (paraphrase, wrong passage, addition, …). */
+  kind?: FailureKind;
 }
 
 /** The results for a single model, in roster order. */
@@ -44,6 +47,7 @@ export function filterQuestions(results: QuestionResult[], f: ExplorerFilters): 
     if (f.correct === "correct" && !r.correct) return false;
     if (f.correct === "incorrect" && r.correct) return false;
     if (f.mode && failureMode(r) !== f.mode) return false;
+    if (f.kind && r.failure !== f.kind) return false;
     return true;
   });
 }
@@ -69,17 +73,26 @@ export interface QuestionStats {
   wrong: number;
   refused: number;
   missing: number;
+  /** Wrong or added cells that stay on the passage asked for. */
+  minor: number;
+  /** Wrong cells that replace the passage, the citation, or the witness. */
+  major: number;
 }
 
 /** Counts over a result set: total, correct, wrong-answer, refused, and missing-cell (the four
  * Spec 15 outcome categories; a cell is exactly one of correct/wrong/refused/missing). */
 export function questionStats(results: QuestionResult[]): QuestionStats {
-  const stats: QuestionStats = { total: results.length, correct: 0, wrong: 0, refused: 0, missing: 0 };
+  const stats: QuestionStats = {
+    total: results.length, correct: 0, wrong: 0, refused: 0, missing: 0, minor: 0, major: 0,
+  };
   for (const r of results) {
     if (r.correct) stats.correct++;
     else if (r.missing) stats.missing++;
     else if (r.refused) stats.refused++;
     else stats.wrong++;
+    const severity = failureSeverity(r.failure);
+    if (severity === "minor") stats.minor++;
+    else if (severity === "major") stats.major++;
   }
   return stats;
 }
