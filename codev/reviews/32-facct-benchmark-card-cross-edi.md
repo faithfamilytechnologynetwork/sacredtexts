@@ -59,6 +59,19 @@ Viewer per-run card view: **out of scope** by architect decision (dropped from t
 ### Phase 4 — Generate + commit (Round 1)
 - **Both APPROVE.** **claude** COMMENT → **Addressed**: `facct.md` drift guard; audit origin layer reads the card's `census.selected_texts`; docstring remedy note; panel provider note. Prose nits (Aramaic labelled `Hebrew (he)`; provider `openai` for `anthropic/…`) flagged to Jonathan — faithful to the data, his wording call.
 
+### PR Review (Round 1 / 1b)
+- **codex** REQUEST_CHANGES / **claude** APPROVE (consult), plus the **architect integration review**
+  (3 blocking + 2 non-blocking, then items 6–9) → **all Addressed** (see
+  `32-review-iter1-rebuttals.md`): export `corpus_hash` made generate-comparable (== run manifest);
+  the counterfactual bound to the run's `selected_texts` + question language; one shared atomic
+  writer (`atomic_write_texts`) for both `write_export` and `write_card`; `_bounded_equal` alias
+  removed; `by_cite` re-keyed to `(work, language, raw citation)` matching `export_rows` (with a
+  one-for-one equality test), `_BOOK_ALIAS` and `by_norm`/`Passage.norm` deleted; `_within` inverse
+  rule; zero-question languages unioned with canonical languages (Latin now shown — the only line the
+  committed card changed on); README de-hardcoded, `CODE_WALKTHROUGH.md` + `arch.md` updated.
+- **Deferred to the architect** (not this PR): Qur'an tradition data (→ working-group thread #27);
+  `cli.py` textual conflict with #21 (merge-order resolution).
+
 No `CONSULT_ERROR`s. Gemini not used — per-phase consult is `["codex","claude"]` (Gemini can't see the worktree; `.codev/config.json`).
 
 ## Lessons Learned
