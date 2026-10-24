@@ -333,13 +333,6 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
     }
 
 
-def write_facct_json(report: dict, out_path: Path) -> None:
-    """Write the card data to ``out_path`` (the build already validated everything)."""
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-
-
 # ============================================================================================
 # CARD PROSE — the one editable place.
 #
@@ -376,7 +369,12 @@ CARD_PROSE = {
         "a model knows a faith."
     ),
     "census_count_template": "This run asked **{questions} questions** across **{texts} texts**.",
+    "language_names": {"en": "English", "ar": "Arabic", "he": "Hebrew", "grc": "Greek", "la": "Latin"},
     "tradition_table_heading": "By tradition",
+    "tradition_table_note": (
+        "A text shared by more than one tradition is counted under each, so these can total more than "
+        "the number of texts."
+    ),
     "texts_table_heading": "The texts asked about",
     "zero_languages_label": "Languages with zero questions:",
     "zero_language_note": (
@@ -395,10 +393,16 @@ CARD_PROSE = {
         "only answered questions, and coverage is the share of questions that were answered. A high "
         "accuracy on low coverage is not mastery; read the two together."
     ),
-    "correctness_note_template": (
-        "An answer counts as correct when it *contains* the reference wording (graders: {evaluators}) "
-        "— not an exact string match. 'Contains' is a word-bounded, script-aware match, the same one "
-        "the edition question below uses."
+    "correctness_intro": "What counts as correct depends on the task:",
+    "correctness_by_task": {
+        "retrieve_quote": "the answer must *contain* the requested edition's wording",
+        "complete_unit": "the continuation must *contain* the reference wording",
+        "cite_passage": "the answer must name the one correct citation",
+        "verify_source": "the answer must give the correct leading Yes / No",
+    },
+    "correctness_containment_note": (
+        "For the two text-retrieval tasks, 'contain' is a word-bounded, script-aware match (graders: "
+        "{evaluators}) — not an exact string match — the same match the edition question below uses."
     ),
     "overall_label": "overall",
     "counterfactual_heading": "Would another edition have passed?",
@@ -414,6 +418,9 @@ CARD_PROSE = {
         "no well-defined sibling-edition segment); the {n} Bible editions ({versions}) are the only "
         "sibling editions in the pool, and non-Bible citations (Arabic surah:ayah, hadith numbers, "
         "Talmud daf:line) are never matched to a Bible edition."
+    ),
+    "counterfactual_zero_note": (
+        "A model shown 0 of 0 had no incorrect Bible retrieve_quote answers to reconsider."
     ),
     "claims_heading": "What this card claims",
     "claims": [
@@ -432,7 +439,7 @@ CARD_PROSE = {
     "non_conclusions_heading": "What this card does not conclude",
     "non_conclusions": [
         "It does not rank traditions and does not measure knowledge of any faith.",
-        "A tradition's column is the slice that was asked — which may be a hadith collection or an "
+        "A tradition's row is the slice that was asked — which may be a hadith collection or an "
         "English-language question set — not that community's whole scripture.",
         "The edition count is reported for the English Bible editions only; the other texts have no "
         "second indexed edition in this run, so the question does not arise for them.",
@@ -459,6 +466,12 @@ def _pct(x: float | None) -> str:
 
 def _n(x) -> str:
     return "—" if x is None else f"{x:,}"
+
+
+def _lang(code: str) -> str:
+    """Human language name with its ISO code, e.g. ``Hebrew (he)`` (code alone if unknown)."""
+    name = CARD_PROSE["language_names"].get(code)
+    return f"{name} ({code})" if name else code
 
 
 def _table(headers: list[str], rows: list[list[str]], aligns: list[str] | None = None) -> list[str]:
@@ -507,17 +520,17 @@ def report_markdown(report: dict) -> str:
     lines += [f"**{p['tradition_table_heading']}**", ""]
     lines += _table(p["headers"]["tradition"],
                     [[t, c] for t, c in census["by_tradition"].items()], ["---", "---:"])
-    lines.append("")
+    lines += ["", f"*{p['tradition_table_note']}*", ""]
     lines += [f"**{p['texts_table_heading']}**", ""]
     lines += _table(
         p["headers"]["texts"],
-        [[f"{t['work']} ({t['version']})", t["language"], ", ".join(t["tradition"]),
+        [[f"{t['work']} ({t['version']})", _lang(t["language"]), ", ".join(t["tradition"]),
           t["document_type"], t["license"]] for t in census["selected_texts"]],
     )
     lines.append("")
     if census["zero_question_languages"]:
-        lines += [f"**{p['zero_languages_label']}** {', '.join(census['zero_question_languages'])}. "
-                  + p["zero_language_note"], ""]
+        names = ", ".join(_lang(c) for c in census["zero_question_languages"])
+        lines += [f"**{p['zero_languages_label']}** {names}. " + p["zero_language_note"], ""]
     if census["excluded_texts"]:
         lines += [f"**{p['excluded_label']}** {p['excluded_note']}", ""]
         for e in census["excluded_texts"]:
@@ -526,7 +539,13 @@ def report_markdown(report: dict) -> str:
 
     # --- outcomes ---
     lines += [f"## {p['outcomes_heading']}", "", p["outcomes_intro"], ""]
-    lines += [p["correctness_note_template"].format(evaluators=", ".join(report.get("evaluators") or [])), ""]
+    lines += [p["correctness_intro"], ""]
+    for task in present_tasks:  # per-task correctness rule, only for tasks present
+        rule = p["correctness_by_task"].get(task)
+        if rule:
+            lines.append(f"- **{task}** — {rule}")
+    lines += ["", p["correctness_containment_note"].format(
+        evaluators=", ".join(report.get("evaluators") or [])), ""]
     rows: list[list[str]] = []
     for model, block in report["outcomes"].items():
         for task, t in block["by_task"].items():
@@ -545,7 +564,10 @@ def report_markdown(report: dict) -> str:
     lines += _table(p["headers"]["counterfactual"],
                     [[m, b["numerator"], b["denominator"]] for m, b in cf["by_model"].items()],
                     ["---", "---:", "---:"])
-    lines += ["", f"*{p['counterfactual_scope_label']} {cf['scope']}*", ""]
+    lines.append("")
+    if any(b["denominator"] == 0 for b in cf["by_model"].values()):
+        lines += [p["counterfactual_zero_note"], ""]
+    lines += [f"*{p['counterfactual_scope_label']} {cf['scope']}*", ""]
 
     # --- prose sections ---
     for heading, items in ((p["claims_heading"], p["claims"]),
@@ -575,6 +597,7 @@ def write_card(report: dict, json_path: Path, md_path: Path) -> None:
     staged: list[tuple[Path, Path]] = []  # (temp, final)
     try:
         for final, text in payloads:
+            final.parent.mkdir(parents=True, exist_ok=True)
             fd, tmp = tempfile.mkstemp(dir=str(final.parent), prefix=final.name + ".", suffix=".tmp")
             os.close(fd)
             Path(tmp).write_text(text, encoding="utf-8")

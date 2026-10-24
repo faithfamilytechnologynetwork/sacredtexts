@@ -19,7 +19,7 @@ from typer.testing import CliRunner
 
 from sacredbench import facct as facct_mod
 from sacredbench.cli import app
-from sacredbench.facct import FacctError, build_facct, report_markdown, write_card, write_facct_json
+from sacredbench.facct import FacctError, build_facct, report_markdown, write_card
 
 runner = CliRunner()
 
@@ -367,7 +367,7 @@ def test_build_does_not_mutate_evidence(tmp_path):
     inputs = ["scores.jsonl", "answers.jsonl", "summary.json", "questions.jsonl.manifest.json"]
     before = {f: hashlib.sha256((run / f).read_bytes()).hexdigest() for f in inputs}
     report = build_facct(run, raw_root=raw)
-    write_facct_json(report, run / "facct.json")
+    write_card(report, run / "facct.json", run / "facct.md")
     after = {f: hashlib.sha256((run / f).read_bytes()).hexdigest() for f in inputs}
     assert before == after  # the card never rewrites the run evidence it reads
 
@@ -387,7 +387,7 @@ def test_unresolved_catalogue_target_fails_fast(tmp_path):
 
 def test_no_fabrication_label_in_output(tmp_path):
     report, run, _raw = _build(tmp_path)
-    write_facct_json(report, run / "facct.json")
+    write_card(report, run / "facct.json", run / "facct.md")
     assert "fabrication" not in (run / "facct.json").read_text().lower()
 
 
@@ -517,7 +517,7 @@ def test_markdown_renders_panel_and_correctness_rule(tmp_path):
     assert "## The panel" in md
     assert "m1" in md and "| p |" in md  # provider from the fixture panel
     # the correctness rule (containment + the evaluator names) is stated on the card
-    assert "contains" in md.lower()
+    assert "contain" in md.lower()
     assert "strict, containment" in md
 
 
@@ -567,6 +567,43 @@ def test_cli_leaves_stale_card_intact_on_bad_evidence(tmp_path):
     assert (run / "facct.md").read_text() == "STALE-MD"
 
 
+def test_cli_refuses_to_overwrite_run_evidence(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    before = (run / "summary.json").read_bytes()
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw), "--json", "summary.json"])
+    assert result.exit_code != 0
+    assert (run / "summary.json").read_bytes() == before  # evidence untouched
+    assert not (run / "facct.md").exists()
+
+
+def test_cli_refuses_symlinked_default_onto_evidence(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    before = (run / "scores.jsonl").read_bytes()
+    (run / "facct.json").symlink_to(run / "scores.jsonl")  # default path aliases evidence
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw)])
+    assert result.exit_code != 0
+    assert (run / "scores.jsonl").read_bytes() == before
+
+
+def test_cli_rejects_directory_target(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    (run / "sub").mkdir()
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw), "--md", "sub"])
+    assert result.exit_code != 0
+
+
+def test_cli_creates_missing_subdirectory(tmp_path):
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    result = runner.invoke(app, ["facct", str(run), "--raw-root", str(raw),
+                                 "--json", "out/facct.json", "--md", "out/facct.md"])
+    assert result.exit_code == 0, result.output
+    assert (run / "out" / "facct.json").exists() and (run / "out" / "facct.md").exists()
+
+
 # --- real committed run ------------------------------------------------------
 
 
@@ -581,3 +618,10 @@ def test_real_run_census_and_counterfactual():
     # 32 incorrect Bible retrieve_quote cells across the panel (verified count)
     cf = report["edition_counterfactual"]["by_model"]
     assert sum(b["denominator"] for b in cf.values()) == 32
+    # the real run has all four tasks; the correctness note must describe each task's own rule,
+    # not claim containment across the whole table (cite_passage / verify_source score differently)
+    md = report_markdown(report)
+    assert "name the one correct citation" in md  # cite_passage
+    assert "leading Yes / No" in md  # verify_source
+    # containment is explicitly scoped to the two text-retrieval tasks, not asserted for all four
+    assert "For the two text-retrieval tasks" in md

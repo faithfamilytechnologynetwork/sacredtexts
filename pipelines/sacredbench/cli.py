@@ -406,15 +406,24 @@ def edition_index_cmd(
     )
 
 
-def _within(run_dir: Path, path: Path) -> Path:
-    """Resolve ``path`` and require it to be a file strictly inside ``run_dir``.
+# The run evidence a card reads — a card output path must never resolve onto one of these.
+_RUN_EVIDENCE = ("scores.jsonl", "answers.jsonl", "summary.json", "questions.jsonl.manifest.json")
 
-    Resolution follows symlinks, so a symlink at the default path that points outside the run is
-    rejected too; the run directory itself is rejected (the target must be a file within it)."""
+
+def _within(run_dir: Path, path: Path) -> Path:
+    """Resolve ``path`` and require it to be a NEW card file strictly inside ``run_dir``.
+
+    Resolution follows symlinks, so a symlink (at the default path or an override) pointing outside
+    the run, or onto a run-evidence file, is rejected; the run directory itself and existing
+    directories are rejected too (the target must be a writable file within the run)."""
     run_dir = run_dir.resolve()
     resolved = (run_dir / path).resolve() if not path.is_absolute() else path.resolve()
     if resolved == run_dir or run_dir not in resolved.parents:
         raise typer.BadParameter(f"{path} must resolve to a file inside the run directory {run_dir}")
+    if resolved.is_dir():
+        raise typer.BadParameter(f"{path} resolves to a directory, not a file")
+    if any(resolved == (run_dir / name).resolve() for name in _RUN_EVIDENCE):
+        raise typer.BadParameter(f"{path} would overwrite run evidence; choose a different card path")
     return resolved
 
 
