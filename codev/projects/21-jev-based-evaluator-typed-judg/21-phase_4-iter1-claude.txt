@@ -1,0 +1,42 @@
+I'll start by orienting myself in the worktree and reading the Phase 4 deliverables.Phase 4 work is uncommitted/untracked. Let me read the actual artifacts.Now let me verify the review's claims against the actual data.Numbers verified exactly. Now let me run the test gate and check report reproducibility.Tests pass (454/1 skip, matching the review). Report is byte-reproducible. Now let me check the audit gate actually covers the new committed artifacts.Let me scrutinize the manual-review quality on the trickiest cells (the 3 double-axis disagreements).I verified every claim independently. Here is my review.
+
+## What I verified (not just read)
+
+**Live pass integrity** — `runs/tutorial-2026-10-11/judgments.jsonl`: exactly 400 rows, 400 unique `(question_id, model_id)` keys, matching the 400 `retrieve_quote` answer rows (4 arms × 100) one-for-one. Single resolved build `typesafe/jev-1.14-20261014` across all rows and in the manifest. `equivalence: "not_evaluated"` on all 400; zero `kind`/`index_digest` keys (correct — no index supplied). Cost sum = **$0.011705**, exactly the review's figure, vs the $0.0108 pre-flight — well under the $8 cap.
+
+**Answer binding** — I recomputed `jev.answer_digest()` over the committed `answers.jsonl` for all 400 cells: **0 mismatches**. The committed sidecar is genuinely bound to the evidence it claims.
+
+**Evidence integrity** — `git diff` on `runs/` is empty; `git status` shows only new untracked files. Committed `answers.jsonl`/`scores.jsonl`/`summary.json` for tutorial *and* `original-2026-10-21` are untouched. `score`/`collect` were not re-run.
+
+**Report reproducibility** — I re-ran `judge-agreement` into `/tmp` and diffed: both `jev_agreement.json` and `.md` are **byte-identical** to the committed artifacts. The committed report is regenerable, not hand-assembled.
+
+**Gates** — `uv --project pipelines run pytest pipelines` → **454 passed, 1 skipped**, matching the review exactly. `audit_paths` over the three new artifacts returns `[]` (origin layer; content layer correctly inert with restricted payloads absent locally). The audit test globs `git ls-files runs/`, so the new artifacts come under the gate automatically once committed.
+
+**Every review number re-derived from the JSON** — 35 disagreements = 24 containment-only + 8 refusal-only + 3 both; containment axis 27, **all** judge-only (`cr==0 ∧ p≥0.5`); refusal axis 11, **all** deterministic-only, `refusal_p` 0.03–0.49, **all** on `*-search` arms (opus-search 10, haiku-search 1). Not one figure in the review is off.
+
+**Manual-review quality** — this is the deliverable that can't be faked, so I spot-checked the hardest cells myself. The 3 double-axis cells are all hedged-but-delivering search answers (`"I couldn't find the exact William Davidson Edition text… the baraita starts: תנו רבנן…"`) — the quote *is* delivered, and low `token_f1` (0.22) is dilution by surrounding English prose, exactly as the review says. The 3 lowest-`f1` containment cells (0.36–0.46) are genuine Uthmani digitization variants (`إِنِّى`/`إِنِّي`, sukūn and tanwīn code-point differences) of the right verse. The judge is correct in all six; the categorization is sound and the "no judge errors" claim holds up.
+
+## Comments (non-blocking polish)
+
+1. **`judge-agreement` is undocumented.** TUTORIAL.md covers `judge`, `judge-summary`, `--equivalence-index`, and `--judgments`, but not the command Phase 4 added, and `jev_agreement.py` isn't in CODE_WALKTHROUGH. A short recipe beside `judge-summary` would match the repo's docs bar.
+2. **No CLI-level test for `judge-agreement`**, though `judge`/`judge-summary` have `CliRunner` tests in `test_jev.py`. The module has 8 good tests and I verified the wrapper works end-to-end, so this is consistency, not risk.
+3. **`load()` doesn't cross-check `answer_digest`.** It joins whatever answers file you point at. I confirmed all 400 match for this artifact, but a 3-line check would make the paper-citable report self-verifying rather than trusting the invoker. The review lists a sibling follow-up for `score --judgments` but not for the report.
+4. **Restricted-text reachability of the report is undocumented.** `jev_agreement.json` embeds full `expected_text`/`answer`; the origin audit layer is blind to it (no `source` key) and the content layer is inert in CI. The real protection is transitive — `jev.py`'s pre-send guard means a restricted cell never gets a judgment row, and the join is judgment-driven, so it can't reach the report. That reasoning is correct but worth one sentence so nobody later assumes the audit covers it.
+5. **Docstring nit:** `join_cells` says a missing answer is "tolerated … but recorded" — nothing is recorded.
+6. **Mechanical:** the whole phase is still untracked (`jev_agreement.py`, tests, review, the four run artifacts) plus an uncommitted `cli.py` edit. Needs committing before the PR, along with the review's own noted `Co-Authored-By` trailer cleanup.
+
+I made no changes to the tree — reads only, with the reproducibility check written to `/tmp`.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 4 is complete and verifiable — every numeric claim in the review re-derived from the data, report byte-reproducible, committed evidence provably untouched, 454-test gate and audit pass; only doc/test-consistency polish remains.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- `judge-agreement` CLI command and `jev_agreement.py` are undocumented (TUTORIAL.md / CODE_WALKTHROUGH.md) despite being new user-facing surface.
+- No CLI-level test for `judge-agreement`, unlike its `judge`/`judge-summary` siblings (module itself is well covered).
+- `jev_agreement.load()` does not cross-check each row's `answer_digest` against the joined answer; verified correct for this artifact (400/400) but the report isn't self-verifying.
+- Restricted-text reachability of `jev_agreement.json` relies on an undocumented transitive guarantee (jev.py's pre-send guard + judgment-driven join); worth stating explicitly.
+- Phase 4 files are all still untracked/uncommitted, including the `cli.py` edit.

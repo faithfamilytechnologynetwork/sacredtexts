@@ -251,6 +251,54 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - phase_3 DONE. Commit phase_3 (code + 2 fixtures EXPLICITLY + review artifacts + thread), then porch
   advances to phase_4 (validation on the committed tutorial run — the PRE-APPROVED ~$0.011 live pass).
 
+## 2026-10-25 — Phase 4 implement (validation on the committed tutorial run), iter 1
+- **Context-refresh boundary**: phase_3→phase_4 "Refresh your context" task appeared then porch advanced
+  to phase_4 implement before the bound `afx self-refresh` could run (same as phase_2→3). Non-blocking;
+  continued with intact context.
+- **Built (offline first)**: `jev_agreement.py` (tested module: join answers×scores×judgments on
+  (qid,model_id); containment `matches_requested_p`≥0.5 vs `contains_reference`; refusal `refusal_p`≥0.5
+  vs `refused` outcome; raw per-class prob distribution; exhaustive disagreement enumeration) +
+  `test_jev_agreement.py` (8 tests) + a `judge-agreement` CLI subcommand (reproducible report, not a
+  one-off script).
+- **LIVE pass (pre-approved)**: pinged architect with pre-flight (400 cells, ~\$0.0108) then ran with
+  `--yes`, key loaded from `.env` (OPENROUTER_API_KEY) without echoing. **Actual spend \$0.011705**, 0
+  failures, build `typesafe/jev-1.14-20261014`, all `not_evaluated` (no index). Sidecar →
+  `runs/tutorial-2026-10-11/judgments.jsonl` (+ manifest) as NEW evidence.
+- **Evidence integrity VERIFIED**: `git diff` on committed answers/scores/summary(.json/.md) = EMPTY
+  (never re-ran score/collect). Audit gate passes (origin-only; restricted payloads absent locally).
+- **Agreement**: containment **93.25%** (373/400; both 239, judge-only 27, det-only 0, neither 134);
+  refusal **97.25%** (389/400; both 116, judge-only 0, det-only 11, neither 273). Raw dist separates
+  cleanly (cont_ref=1 mean 0.971 / =0 mean 0.180 w/ 21 near-misses in top bin; refused mean 0.900 /
+  not 0.012). Report → `runs/tutorial-2026-10-11/jev_agreement.{json,md}`.
+- **35 disagreements, ALL reviewed + categorized** in `codev/reviews/21-*.md`: (1) 27 containment
+  judge-only = orthographic/vocalization near-misses (Arabic Uthmani digitization + KJV archaic
+  spelling) — the designed diagnostic recall, **0 deterministic-only** (judge never contradicts a
+  deterministic catch); (2) 11 refusal det-only, all `*-search` arms = cue-based refusal classifier
+  false-positives on hedged-but-delivering web-search answers (judge correctly low refusal_p, some high
+  matches_p) — a genuine finding; (3) a few refusal-boundary (p 0.45–0.49) uncertainty cases.
+- **Review doc written** (`codev/reviews/21-jev-based-evaluator-typed-judg.md`) — the 3rd of the 3 docs
+  (spec/plan/review). Flagged 2 hot-tier doc candidates (arch-critical + lessons-critical) for MAINTAIN.
+- Suite **454 passed, 1 pre-existing skip**. Reported results to architect. This is the FINAL phase →
+  PR next (one PR, "Part 2 of 3 of #30", closes #21).
+
+### Phase 4 iter 1 review (codex REQUEST_CHANGES / claude APPROVE) — folded
+- Rebuttal: `21-phase_4-iter1-rebuttals.md`. **codex's ONLY blocker**: phase_4 files untracked → absent
+  from its review diff. Fixed by committing the phase (code+evidence+review `e98233e`). claude explored
+  the worktree, independently re-verified EVERYTHING (recomputed all 400 answer_digests → 0 mismatches,
+  report byte-reproducible, evidence untouched, every number exact, manual-review quality sound) → APPROVE.
+- claude polish folded: (1) documented `judge-agreement` in TUTORIAL + CODE_WALKTHROUGH; (2) added a
+  CLI test for judge-agreement; (3) `join_cells` now cross-checks each judgment's answer_digest vs the
+  joined answer (report self-verifying) + test; (4) documented restricted-text reachability (transitive
+  guard) in the module docstring + review; (5) fixed the "recorded" docstring nit. (6) commit = done.
+- Suite 454→**456**. Committed report byte-identical after the answer_digest check. This is iter 1 of max 3.
+
+### PR TODOs (do at PR time)
+- Strip `Co-Authored-By: Claude Opus 4.8` trailers from early spec/plan/thread/rebuttal commits
+  (message-only rewrite, tree unchanged, verify git log) JUST before opening the PR.
+- Rebase onto main; expect a cli.py textual conflict with #34 (whoever merges second rebases + re-runs).
+- PR body: "Part 2 of 3 of #30", closes #21. NO Co-Authored-By / Generated-with lines.
+- `porch done 21 --pr <N> --branch builder/aspir-21`, then `--merged <N>`.
+
 ### FOLLOW-UPS for a later phase / the PR (not phase-2 scope)
 - **(phase 4, from iter-3 claude #1)** With an index supplied but no index row for a citation,
   `indexed_other_wordings` is `[]` and the judge can only answer requested_wording/neither/refusal — so
