@@ -1,7 +1,7 @@
 id: '21'
 title: jev-based-evaluator-typed-judg
 protocol: aspir
-phase: implement
+phase: review
 plan_phases:
   - id: phase_1
     title: Jev judge pass and CLI
@@ -14,15 +14,15 @@ plan_phases:
     status: complete
   - id: phase_4
     title: Validation on the committed tutorial run
-    status: in_progress
-current_plan_phase: phase_4
+    status: complete
+current_plan_phase: null
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 2
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -121,7 +121,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_4-iter1-claude.txt
 started_at: '2026-10-23T23:35:10.141Z'
-updated_at: '2026-10-25T23:55:06.568Z'
+updated_at: '2026-10-25T23:59:00.782Z'
 force_advanced:
   phase: phase_1
   iteration: 3
@@ -138,3 +138,5 @@ context_refreshes:
   - boundary: plan-phase:phase_4
     at: '2026-10-25T23:37:24.207Z'
     acknowledged_at: '2026-10-25T23:38:24.871Z'
+  - boundary: enter:review
+    at: '2026-10-25T23:59:00.782Z'
