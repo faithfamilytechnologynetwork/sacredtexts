@@ -1,6 +1,22 @@
+import json
 from collections import Counter
+from pathlib import Path
+
+import pytest
 
 from sacredbench.failure_kind import classify_failure, rates, severity
+
+# The shared parity fixture: the SAME cases the viewer's vitest suite asserts against
+# (apps/viewer/src/lib/failureKind.test.ts), so classify_failure and classifyFailure cannot drift.
+FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "failure_kind_cases.json"
+_CASES = json.loads(FIXTURE.read_text(encoding="utf-8"))["cases"]
+
+
+@pytest.mark.parametrize("case", _CASES, ids=[c["name"] for c in _CASES])
+def test_shared_fixture_parity(case):
+    """Every shared case classifies to its ``expected_kind`` (None = unlabeled)."""
+    kwargs = {k: v for k, v in case.items() if k not in ("name", "expected_kind")}
+    assert classify_failure(**kwargs) == case["expected_kind"]
 
 
 def test_refused_and_exact_correct_are_unlabeled():
