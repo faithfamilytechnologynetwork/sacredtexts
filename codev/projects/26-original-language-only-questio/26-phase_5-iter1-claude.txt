@@ -1,0 +1,63 @@
+I'll review Phase 5 (docs polish). Let me start by locating the worktree and reading the relevant docs.I've read all four Phase-5 docs, verified each prose claim against the implementation, re-ran the suites, and checked the walkthrough's pointers against the merge-base.
+
+## What's solid
+
+- **arch-critical.md** — both edited lines are accurate. I verified the #23 description against `score.py:150–190`: leading-token-of-window, `_LABEL_PREFIX` strip of bare `Answer:`/`Verdict:`/`Response:`, window taken pre-`normalize()`, `refused ⟺ parsed is None`. The line says exactly that.
+- **pipelines/README.md** — the Source-catalogue bullets, the generate block (four templates, `--per-text 28`, equality rule, manifest exclusions, no `--include-translations`, cross-family/same-language negatives) and the scoring contract all check out: `DEFAULT_PER_TEXT` is the Typer default (`cli.py:197`), `by_text` exists in both `summary.json` (`score.py:520`) and `summary_markdown` (`score.py:720–737`), and `_SUBMETRICS` really is `{}` (`score.py:125`).
+- **CODE_WALKTHROUGH** — the two new field bullets are correct, and the retired "answer must be a label" rule is gone.
+- Pipeline suite 362 passed; pointer-guard 77 passed; `identify_version`/`identify_source` are absent from the live docs.
+
+## Issues
+
+**1. `codev/resources/arch.md` is now stale and directly contradicts arch-critical.md (blocking).** The plan's Documentation Updates says "no cold-tier change anticipated… *reassess at review*" — this is that reassessment, and the reassessment fails:
+
+- `arch.md:47-48` — "**six** working-group templates; version-gated with overlap exclusions; tradition-balanced (`_balanced_sample` …)". All three retired by this PR.
+- `arch.md:69` — "`identify_version` → label exact/normalized"; `verify_source` → "yes/no".
+- `arch.md:74` — "**(verify_source commitment-parsing hardening is deferred — issue #23.)**" while `arch-critical.md:8` now says the gate is **closed**. A future agent reading the cold tier would conclude no `verify_source` number may be reported — right before Phase 6 reports one. ~3 line edits.
+
+**2. The TUTORIAL "original languages" framing was not fixed (blocking).** Plan Phase 5 lists it verbatim: *"fix the 'original languages' framing (KJV is a translation)"*, and the spec's Current State names it as a defect (*"TUTORIAL even miscalls KJV an 'original language'"*). `TUTORIAL.md:31` is unchanged — "It runs **three scriptures in their original languages**" with KJV listed first, and the two siblings reinforce it ("the vocalised Arabic original", "the Aramaic original, *not* the English translation"), so the KJV is implicitly claimed as an original too. One or two sentences: the three are the benchmark's *canonical-language* pool, and the KJV is in because the project treats the English Bible editions as English-canonical (#27 Q1) — not because it is composed in English. Nothing in the thread records a decision to skip this.
+
+**3. CODE_WALKTHROUGH `file:line` pointers drifted — 17 of them, all moved by this PR.** At the merge-base (`1324755`) every one I checked was *exact*, so the project does maintain them; the guard passes only because it checks `line ≤ EOF` by design ("a drifted line is a convenience to fix"). Mechanical fix:
+
+| prose claim | doc says | actual |
+|---|---|---|
+| `source.yaml` parsed by `catalogue.py` (`load_source`) | `catalogue.py:155` | 185 |
+| `LICENSES` | `catalogue.py:46` | 59 |
+| `Target` dataclass | `catalogue.py:102` | 125 |
+| `select_targets()` | `catalogue.py:259` | 381 |
+| `Target.standardized_dir` | `catalogue.py:122` | 152 |
+| `TASKS` | `generate.py:48` | 71 |
+| `Question` | `generate.py:80` | 86 |
+| `_qid()` | `generate.py:118` | 124 |
+| `_build_texts` | `generate.py:153` | 178 |
+| per-text/per-task loop | `generate.py:205` | 241 (`def generate`) / 277 (task loop) |
+| `_append_verify_source` | `generate.py:316` | 354 |
+| `question_set_digest()` | `generate.py:380` | 420 |
+| `build_manifest()` | `generate.py:402` | 442 |
+| `_SUBMETRICS` | `score.py:128` | 125 (:128 is `def normalize(`) |
+| `_single_citation_correct` | `score.py:207` | 257 |
+| `score_answer()` | `score.py:225` | 275 |
+| `_with_outcome` | `score.py:288` | 319 |
+
+(The `generate.py`/`score.py` ones were authored in Phases 2–3, but Phase 5 is the doc-sync phase and its acceptance criterion names this guard.)
+
+## Comments (non-blocking)
+
+- **The 15–30 `--per-text` range is documented nowhere.** Plan Phase 2 deliberately kept it out of Typer (`min=1`) *"because it is a README/TUTORIAL note"* — and neither doc carries it. TUTORIAL also never states the default is 28 (plan: "the generate command shows `--per-text` (default 28)"). Two one-liners.
+- **`runs/original-<date>/` (TUTORIAL:130) is asserted as a shipped example run but links to `runs/` and doesn't exist yet.** Fine as a Phase-6 handoff, but the spec explicitly contemplates the live run being deferred if `ANTHROPIC_API_KEY` is absent — in which case this ships as a false claim. Make it a Phase-6 must-fix, or phrase it conditionally now.
+- **`runs/tutorial-2026-10-11/README.md:112`** still says "Follow `TUTORIAL.md` (same `--seed 20261011`, `--per-task 100` …)" — now impossible; TUTORIAL:132 says the opposite. One clause ("generated before Spec 26 reshaped the generator; not reproducible with today's CLI") removes the contradiction. (Its `identify_source` mention at :82 is a historical write-up — out of scope per the spec's own enumeration.)
+- `--per-task` at TUTORIAL:132 trips the plan's literal "no doc references `--per-task`" criterion, but it is the honest historical explanation and reads well. Keep it — noting so it isn't re-flagged.
+- TUTORIAL step 6 still quotes the old run's "4.24M input … across 400 question-and-model combinations" right after a command that now yields 60 questions / 240 cells. A half-clause would keep the cost signal honest for a non-engineer reader.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The four named docs are accurate and verified against the code, but cold-tier arch.md now contradicts arch-critical on the #23 gate, the plan's "KJV is a translation" fix was skipped, and 17 walkthrough line pointers drifted — all small, bounded edits.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `codev/resources/arch.md` stale: "six templates", `_balanced_sample`, `identify_version`, and "#23 deferred" — the last directly contradicts the arch-critical line this phase just wrote (plan said "reassess at review").
+- `TUTORIAL.md:31` still frames the KJV as one of "three scriptures in their original languages" — an explicit Phase-5 plan deliverable and a defect the spec's Current State names, silently skipped.
+- 17 `file:line` pointers in CODE_WALKTHROUGH.md now land on unrelated lines (all exact at the merge-base, all moved by this PR); the guard passes only because it checks line-in-range, not identity. Correction table above.
+- The 15–30 `--per-text` range (and the default of 28) is documented in neither README nor TUTORIAL, though the plan deliberately relied on a doc note instead of a Typer clamp.
+- `runs/original-<date>/` is asserted in TUTORIAL as a shipped example run that does not exist yet; and `runs/tutorial-2026-10-11/README.md` still promises reproduction via `TUTORIAL.md` + `--per-task 100`, which the new CLI rejects.

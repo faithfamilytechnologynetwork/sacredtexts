@@ -1,0 +1,63 @@
+I'll start by reading the implementation files.I've read the implementation, tests, catalogue data, and the downstream consumers. Here's my assessment.
+
+## What's solid
+
+**`catalogue.py`** — the two fields are wired correctly and minimally:
+- `requested_as` added to `_TARGET_REQUIRED` with a dedicated non-empty-list-of-non-empty-strings validator (lines 223–231); `canonical_language` added to both `_TARGET_REQUIRED` and `_TARGET_STR_FIELDS` so it reuses the existing non-empty-string loop. That's exactly the split the plan called for.
+- `Target.text_key` is a clean addition and is the same tuple `text_metadata()` keys on — no drift between the two.
+- `TextMeta` / `text_metadata()` / `metadata_for_text()` give generation a real named channel rather than the path-filter dead end, and `metadata_for_text` fails closed with a message that names the tuple.
+- Slug-agreement extended to carry `(license, requested_as, canonical_language)` — the existing `test_same_slug_license_disagreement_fails` still matches on `"disagree on license"`, so no silent regression.
+
+**Catalogue data** — I counted: Protestant 3 + Sunni 10 + Judaism 2 + RC 2 + Greek Orthodox 1 + LDS 3 = **21 targets**; default pool (`language == canonical_language`, non-restricted) = 3 + 10 + 1 (Talmud Aramaic) + 3 = **17**. Matches the spec table. Both LDS KJV targets are gone, with an honest in-file comment that the payloads stay on disk uncatalogued. `license_for_raw_path` is only used by tests, so the orphaned payloads break nothing, and `audit.py` keys off `restricted_keys()` only — unaffected.
+
+**Tests** — `test_real_catalogue_default_pool_is_seventeen` pins 21/17 and the absent LDS-KJV version against the *real* catalogue, which is the right non-vacuous anchor. Every `cat.Target(...)` construction site (test_catalogue, test_schema_convert) was updated for the new required args. The removed `test_real_lds_kjv_ot_nt_merge` is honestly documented rather than quietly dropped.
+
+## Blocking finding: the metadata channel cannot key the encyclicals
+
+`convert_encyclicals` (convert.py:229–239) emits one `Document` per file with `work=title` and `version=f"Vatican English text ({pope}, {date})"` — **not** the target's nominal `("Papal Encyclicals", "Vatican English", "en")`. The RC `source.yaml` says so itself at lines 6–8. So:
+
+- `text_metadata()` produces a key for `("Papal Encyclicals", "Vatican English", "en")` that matches **zero** standardized documents.
+- Every one of the ~201 encyclical documents has a tuple absent from the map → `metadata_for_text()` raises `CatalogueError` by design.
+
+This is not only the `--include-translations` path. Phase 2's selection predicate needs `canonical_language` to *decide* inclusion, so the lookup must happen before the encyclicals can be excluded. The normal invocation generates over the whole standardized tree (the committed first-run manifest's `inputs` literally lists `texts/standardized/Roman Catholic/papal-encyclicals-vatican-english-en`), so **the default path hits the fail-closed raise too**. Separately, under one-text-per-`(work, version, language)` grouping the encyclicals become ~201 "texts" of a few paragraphs each, which can't fill a 28-question quota regardless.
+
+I'm not asking you to implement the Phase-2 selection fix here. I am asking that the Phase-1 contract not ship asserting a guarantee it can't deliver: either the map needs a second keying route for converters that re-stamp work/version, or the encyclicals need an explicit, tested exclusion — and that's an architect decision (it changes what `--include-translations` means in the spec). Worth a `afx send architect` now rather than discovering it mid-Phase-2.
+
+## Secondary: `text_metadata()` is fail-open across source files
+
+```python
+for t in all_targets(sources):
+    meta[t.text_key] = TextMeta(...)   # last writer wins, silently
+```
+
+The docstring claims "Targets that share this tuple have already been forced to agree on both fields by `load_source`'s slug-agreement check." That's true *within one `source.yaml`* only — `load_source` runs per file, and `discover_catalogue` never cross-checks. Two files declaring the same `(work, version, language)` with different `requested_as` would silently resolve by glob order. No collision exists in today's catalogue, so impact is zero now — but it's a fail-open in a channel whose whole design point is fail-closed, and it's a ~5-line fix (raise on a conflicting duplicate in `text_metadata`, plus a test). The docstring claim should be corrected either way.
+
+## Note for Phase 2 (not a change request)
+
+`test_first_run_question_set_digest_regenerates` is already broken by *this* phase, not by Phase 2's signature change. Removing the LDS-KJV targets orphans `texts/standardized/The Church of Jesus Christ of Latter-Day Saints/the-bible-kjv-lds-2013-edition-en/`, which is in the manifest's `inputs` — `filter_standardized_paths` will raise `CatalogueError` (fail-closed) rather than skip. It's green here only because `texts/standardized/` doesn't exist in this worktree. The plan retires the test in Phase 2, which is fine, but the retirement rationale should say "the targets it generated from were removed in Phase 1," not just "the generator interface changed." This will bite for real at Phase 6 when you rebuild the corpus.
+
+## Minor
+
+- The slug-agreement error always reads `disagree on license / requested_as / canonical_language` even when only one field differs. Cheap to narrow to the actual differing field(s).
+- Talmud English and Talmud Aramaic carry identical `requested_as` lists (`["Talmud", "Babylonian Talmud", ...]`). Under `--include-translations` both texts render the same `<edition>` string, making their prompts indistinguishable. The #27 table is authoritative so this may be intended — just flagging it as something to confirm, since it interacts with `verify_source` ground truth.
+- `requested_as: ["papal encyclicals", "the encyclicals"]` is lowercase and renders as *"What is the text of papal encyclicals …?"* — moot if the encyclicals are excluded, but awkward if not.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Clean, well-tested catalogue work that hits every stated Phase-1 criterion, but the `(work, version, language)` metadata channel cannot key the encyclicals corpus — `convert_encyclicals` re-stamps work/version, so the fail-closed lookup will raise on the default generate path in Phase 2.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `text_metadata()` keys on the target's `(work, version, language)`, but `convert_encyclicals` (convert.py:229–239) emits documents with `work=<encyclical title>` and `version="Vatican English text (pope, date)"`. No encyclical document maps to the `("Papal Encyclicals", "Vatican English", "en")` key, so `metadata_for_text()` raises `CatalogueError` for all ~201 of them — on the default generate path, since the `canonical_language` lookup must precede exclusion. Needs an architect decision (second keying route vs. explicit tested exclusion) before Phase 2.
+- `text_metadata()` silently last-wins on duplicate `(work, version, language)` keys across different `source.yaml` files; the docstring's claim that `load_source`'s slug-agreement check prevents this is only true within a single file. Zero impact today, but it's a fail-open in a fail-closed channel. Fix the check or fix the claim.
+- `test_first_run_question_set_digest_regenerates` was broken by *this* phase (orphaned LDS-KJV standardized dir → `filter_standardized_paths` fail-closed raise, not a skip), masked only because `texts/standardized/` is absent locally. Phase 2's planned retirement is the right call; correct the rationale and confirm before Phase 6 rebuilds the corpus.
+- Minor: slug-agreement error message names all three fields regardless of which differed; Talmud en/he share identical `requested_as`, making the two editions indistinguishable in prompts under `--include-translations`.
+
+---
+
+## ⚠️ REPOSITORY MOVED during the claude review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: 50cdbfefd9a9320d3310ab9ca9ed4facbd4b8e22 -> 181d8abb56ca707a036b0f5a712f88a85513d3be
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.

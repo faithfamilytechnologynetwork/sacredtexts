@@ -1,0 +1,69 @@
+I'll review phase_3 (scoring) by reading the actual implementation files.I've read the Phase-3 implementation, its tests, the Spec-15 outcome layer it builds on, and probed the actual scoring behavior. Full suite is green (356 passed).
+
+## What's solid
+
+- **`parse_yes_no` rewrite** (`score.py:150-171`) reads the leading token off the **raw** answer before `normalize()` — the ordering requirement the spec called out is honored, and the four pinned adversarial cases plus three extras (`"**Yes**"`, `"yesterday it rained"`, `"I think yes."`) are tested. `test_verify_source_negation_evasion_not_gamed_into_correct` pins the #23 case at the `score_answer` level, not just the parser.
+- **Retirement is complete in scoring**: both branches and their `_SUBMETRICS` entries are gone, `score_answer` now raises `ScoreError("unknown task")` for them (`test_retired_tasks_are_unknown`), and the retired-task tests were removed rather than left dangling. Pointer-guard updated in the same commit (`_SUBMETRICS = {` → `_SUBMETRICS:`) as the plan required; `test_code_walkthrough.py` is green.
+- **`by_text`** mirrors `by_tradition` structurally, keyed model→text→task with `_overall`, uses the `(work, version, language)` tuple from Phase 2's `source`, and the test proves a `verify_source` negative aggregates under the **asked** edition and not the passage's true source — the subtle part, and it's right.
+- Committed first-run re-score stays byte-for-byte; the Spec-15 rebaseline oracle is unaffected (retrieve_quote-only runs).
+
+## Blocking issue: a committed verdict plus a caveat is scored `refused` (and zeroed)
+
+`_with_outcome` (`score.py:305`) applies verify_source refusal **ungated**:
+
+```python
+refused = classify_refusal(...) and (task == "verify_source" or not metrics["correct"])
+```
+
+That ungating was correct under Spec 15, whose rationale is stated inline: *"so an incidental Yes/No token in the decline cannot score correct"* — because the old parser matched yes/no **anywhere**. Phase 3 removes that premise. A parse result is now, by construction, a *leading* verdict. The ungating therefore now discards real verdicts. Verified against the actual code:
+
+```
+'No, I cannot verify that this is from the King James Version.'
+  → {'parsed': 'no', 'expected': 'no', 'correct': 0, 'outcome': 'refused'}
+```
+
+The model gave the exactly-right false-premise answer; it is zeroed and dropped from the accuracy denominator. This is not hypothetical phrasing — "No, I can't confirm this appears in…" is a very plausible shape for the search-on arms, and verify_source is the benchmark's false-premise instrument.
+
+It also contradicts the codebase's own two statements of intent:
+- `outcomes.classify_refusal` docstring (`outcomes.py:107`): *"verify_source : leading decline cue **AND no Yes/No was committed**"* — which the code does not implement.
+- `test_outcomes.py:70-71`: *"a leading decline that still commits a Yes/No is an answer, not a refusal."* That test passes **vacuously** — `"I can't be fully sure, but yes."` contains no cue from `_DECLINE_CUES_RAW` (it's a hedge), so `leading_decline` is `False` for reasons unrelated to the committed verdict. Substitute a real cue (`"I can't verify that, but no."`) and it fails.
+
+Requested change (small, and it must land before Phase 6 — fixing it after the run is committed becomes a sanctioned rebaseline):
+
+```python
+if task == "verify_source":
+    refused = classify_refusal(answer, task, expected) and metrics["parsed"] is None
+else:
+    refused = classify_refusal(answer, task, expected) and not metrics["correct"]
+```
+
+plus tests pinning `"No, I cannot verify that this is from X."` → `correct=1 / outcome=correct` and `"I can't verify this."` → `refused`, and de-vacuuming `test_outcomes.py:71`.
+
+## Non-blocking, but needs architect visibility
+
+1. **Strict leading-token is narrower than the spec's "first sentence / first 60 chars."** I think the tightening is defensible — a window search would match the incidental `no` in *"There is no way to verify this"* (that phrase is **not** in `_DECLINE_CUES_RAW`, which is first-person only, so the decline layer would not have saved it), and false-*correct* on an evasion is strictly worse than false-incorrect. But the cost is real and measured:
+
+   ```
+   'Based on my search, yes - this is Sahih al-Bukhari 1.' → None → incorrect
+   'Answer: Yes'                                           → None → incorrect
+   ```
+   A committed verdict in a non-leading form is scored **wrong**, not excluded. The spec's own risk row says "use first-sentence/first-60-chars as specified," so this is a deliberate deviation that should be surfaced, and Phase 6 should include a pre-commit diagnostic: count verify_source rows with `parsed is None` and no decline cue, and eyeball them **before** committing the run.
+
+2. **Plan's "stable-key collision test" is missing.** The `by_text` test asserts the key format but nothing pins the acceptance criterion "no key collision across the selected texts" (the `" | "` join is only ambiguous if a field contains the separator — cheap to assert uniqueness over the real catalogue's 17 texts).
+
+3. **`CODE_WALKTHROUGH.md` prose is now stale** (Phase-5 scope per the plan, so not a blocker, but log it): line 212 says "the other tasks' fixed sub-metrics live in `_SUBMETRICS`" (now empty), line 216 "others require the answer to *be* a specific label" (that was `identify_version`), and the §4 heading names `_SUBMETRICS` as the matching backbone. Several pointers have drifted ~20 lines (`score.py:225` → 245 for `score_answer`, `:128` → 125 for `_SUBMETRICS`); the guard only checks ranges so it stays green.
+
+4. Minor: keeping `_SUBMETRICS` as an empty dict "for the doc pointer-guard" inverts the dependency (guard shaping code). It's harmless and honestly commented — just worth collapsing when the walkthrough §4 is rewritten in Phase 5.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Leading-stance parser, task retirement and the per-text summary are well-built and well-tested, but the inherited ungated verify_source refusal now mislabels committed verdicts ("No, I cannot verify…") as refused and zeroes them, contradicting `classify_refusal`'s own documented contract.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `_with_outcome` (score.py:305) applies verify_source refusal ungated; with leading-stance parsing a declined-but-committed verdict ("No, I cannot verify that this is from X.") returns `parsed='no'`, `correct=0`, `outcome='refused'`. Gate it on `metrics["parsed"] is None` to match `outcomes.classify_refusal`'s docstring and fix before Phase 6 commits evidence.
+- `test_outcomes.py:71` passes vacuously — its "leading decline" string contains no cue from `_DECLINE_CUES_RAW`, so it does not pin the decline-plus-committed-verdict contract it claims to.
+- Strict leading-token parsing is narrower than the spec's "first sentence / 60 chars": "Based on my search, yes" and "Answer: Yes" score `incorrect`. Defensible tightening, but surface it to the architect and add a pre-commit diagnostic in Phase 6 over `parsed is None` rows.
+- Plan's "stable-key collision test" for the `by_text` key is not implemented.
+- CODE_WALKTHROUGH §3/§4 prose about `_SUBMETRICS` and "answer must *be* a label" is now stale (Phase-5 scope; pointer-guard still green, several line pointers drifted).

@@ -1,0 +1,50 @@
+I'll start by locating the worktree and reading the Phase 5 docs.Now let me read the other three docs and the pointer guard test.Now let me verify every `file:line` pointer actually lands on the claimed symbol (read-only, script in /tmp).I verified everything independently rather than trusting the rebuttal. Here's what I found.
+
+## What I checked and confirmed
+
+**CODE_WALKTHROUGH pointers (the iter-2 blocker) — genuinely fixed.** I extracted all 50 `file:line` pointers and printed the actual target line for each. Every one lands on its claimed symbol:
+
+- `catalogue.py:59` → `LICENSES = (...)`, `:125` → `class Target:`, `:152` → `def standardized_dir(`, `:185` → `def load_source(`, `:381` → `def select_targets(`
+- `generate.py:71` → `TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")`, `:86` → `class Question:`, `:124` → `def _qid(`, `:178` → `def _build_texts(`, `:241` → `def generate(`, `:354` → `def _append_verify_source(`, `:420` → `def question_set_digest(`, `:442` → `def build_manifest(`
+- `score.py:101/125/128/139/257/275/319/383/676` → `strip_script_marks` / `_SUBMETRICS` / `normalize` / `token_f1` / `_single_citation_correct` / `score_answer` / `_with_outcome` / `score_file` / `summary_markdown`; `:629` → `summary["panel"] = {}` (the panel snapshot)
+- graders/collect/config/audit/schema/explorer.ts pointers all resolve correctly
+
+Pointer-guard suite: 77 passed.
+
+**Cold-tier consistency — fixed.** `arch.md` now says `verify_source` → leading-stance, "#23 PAPER GATE closed, Spec 26", four templates, retired sampler/tasks — consistent with `arch-critical.md`. I verified the arch-critical claim about stripping a bare `Answer:`/`Verdict:`/`Response:` label against `_LABEL_PREFIX` / `_leading_window` in score.py:158-170, and `refused ⟺ parsed is None` against `_with_outcome` (score.py:329-336). Accurate.
+
+**Doc claims against code.** `DEFAULT_PER_TEXT = 28` ✓; `--per-text/--tasks/--seed/--out/--scores-out/--summary-out/--summary-md/--questions/--config/--evaluator` all exist as documented ✓; no `--include-translations` ✓; default graders = `strict` + `containment` ✓; `by_text[model][text]` + per-text markdown table exist ✓; "per-text, per-task loop in `generate()`" matches the real `for t in texts: for task in active:` ✓.
+
+**Catalogue reality check.** Loaded the real catalogue: 21 targets, exactly 17 with `language == canonical_language` and non-restricted. The three paths in TUTORIAL step 3 match the computed `standardized_dir()` slugs byte-for-byte. KJV framing (English edition kept by the canonical-language rule) is now correct.
+
+**Cost numbers.** `runs/tutorial-2026-10-11/summary.json` totals: 400 calls, 4,243,173 in / 248,525 out — TUTORIAL's "4.24M / 249K / 400 combinations" checks out.
+
+## Residual nits (not blocking)
+
+1. `runs/tutorial-2026-10-11/README.md:82` still reads "`cite_passage`/`identify_source` have an anti-hedge rule" — a task that no longer exists, in a file this PR touched. Twice dispositioned as a historical write-up, and I agree it's out of the spec's enumerated doc list; but it's a two-word edit that would make the literal criterion clean.
+2. `test_first_run_regression.py:32` is cited for `test_rescoring_committed_run_reproduces_scores`, which is at line 30 — the pointer lands two lines inside the function body. Harmless; symbol anchor is correct.
+
+## Phase 6 handoff (so a plan item doesn't get silently dropped)
+
+The plan assigned Phase 5 "repoint the tutorial's reference run + digest claim to the fresh `runs/original-<date>/`". That's impossible until the run exists, so the builder correctly softened it to conditional text (TUTORIAL:139-140). Phase 6 must close it: wire the concrete `runs/original-<date>/` path + question-set digest into TUTORIAL, and update `CODE_WALKTHROUGH.md:53` ("The **two** dated folders are shipped reference evidence") to three.
+
+---
+VERDICT: APPROVE
+SUMMARY: All four Phase-5 docs verified accurate against the code; the iter-2 pointer drift is genuinely fixed (50/50 pointers land on their symbols, guard green) and the cold-tier arch.md contradiction is resolved.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- Nit: `runs/tutorial-2026-10-11/README.md:82` still names the retired `identify_source` (historical write-up; dispositioned twice).
+- Nit: `test_first_run_regression.py:32` points 2 lines inside the cited test function (def at :30).
+- Phase 6 handoff: TUTORIAL's reference-run/digest repoint and `CODE_WALKTHROUGH.md:53` "two dated folders" must be finished once `runs/original-<date>/` exists, or the plan's Phase-5 repoint item ends up skipped.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 1 path changed while this lane was running:
+  - pipelines/README.md
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

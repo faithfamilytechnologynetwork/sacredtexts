@@ -1,0 +1,25 @@
+---
+VERDICT: APPROVE
+SUMMARY: The implementation is complete, well-tested, aligned with Spec 26, and ready for integration.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- None
+
+PR_SUMMARY: |
+  ## Summary
+  Reshapes SacredBench around 17 canonical-language texts, four question templates, and deterministic per-text quotas. It also hardens `verify_source` scoring, adds per-text reporting, updates the viewer and documentation, and commits a reproducible three-model reference run.
+
+  ## Key Changes
+  - Added validated `requested_as` and `canonical_language` catalogue metadata.
+  - Replaced tradition-balanced generation with canonical-language selection and per-text quotas.
+  - Retired `identify_version` and `identify_source`.
+  - Added leading-stance Yes/No parsing and per-text score summaries.
+  - Added comprehensive unit, integration, viewer, and committed-run regression coverage.
+
+  ## Test Plan
+  - Run the pipeline test suite and confirm all 364 tests pass.
+  - Run the viewer Vitest suite and confirm all 158 tests pass.
+  - Re-score the committed reference answers and verify byte-for-byte score reproduction.
+  - Regenerate from the rebuilt standardized corpus and verify digest `ca5b5d5372f81603`.
+  - Run the copyright audit and confirm the committed run is origin-clean.

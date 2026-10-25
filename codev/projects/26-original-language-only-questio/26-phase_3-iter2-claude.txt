@@ -1,0 +1,35 @@
+I'll start by reading the key implementation files for phase 3.I've read the phase-3 implementation, the tests, and verified behavior by running the suite and probing the parser directly. Here's my assessment.
+
+## What I verified
+
+**Leading-stance `parse_yes_no` (closes #23)** — `score.py:150–190`. The window is taken from the raw answer before `normalize()` (`_leading_window`), strips wrapping markup/quotes/bullets, then a bare `Answer:`/`Verdict:`/`Response:` label, then cuts at first sentence or 60 chars. All four spec-mandated adversarial cases behave correctly; I probed 17 realistic answer shapes myself and the behavior matches the documented contract exactly (`**No.**` → no, `> No` → no, `- Yes` → yes, `There is no way to verify this... Yes` → None).
+
+**Iter-1 findings are genuinely fixed in code, not just in the rebuttal:**
+- verify_source refusal is now `parsed is None` (`_with_outcome`, `score.py:329–337`) — `classify_refusal` has exactly one production caller and verify_source never reaches it. claude's "committed-but-hedged verdict mislabeled refused" case is now graded (`test_verify_source_committed_verdict_with_trailing_decline_is_graded`); codex's "no way to verify… Yes" case is refused, never scored correct.
+- `by_text` key is the NUL-joined `(work, version, language)` tuple with a real collision test (`("A | B","C","D")` vs `("A","B | C","D")` stay two buckets).
+- The vacuous `test_outcomes` assertion was replaced with a parsed-based behavior test through `score_answer`.
+
+**Retirement + regression** — `identify_version`/`identify_source` are gone from `score_answer` and `_SUBMETRICS`; `score_answer` raises `ScoreError` for them. Remaining repo references are only in `apps/viewer` (Phase 4), `pipelines/README.md` (Phase 5), and the historical tutorial README — correctly out of phase scope. The `_SUBMETRICS` pointer-guard was updated in the phase commit. I confirmed both committed runs are `retrieve_quote`-only (400 cells each), so no committed number can move; the byte-for-byte re-score guard passes. Full suite: **362 passed**.
+
+## Comments (non-blocking)
+
+1. **Leniency cost is larger than the 10-sample diagnostic may reveal.** My probe shows `"It is not from this edition."`, `"This passage is not from the Qur'an."`, `"Based on my search, no."`, `"Nope."`, `"Correct."`, `"1. Yes"` all → `refused`. These are substantive verdicts leaving the accuracy denominator. The architect accepted this and coverage sits beside accuracy, so the honesty mechanism exists — but for Phase 6 I'd make the README diagnostic report **shape frequencies** (how many `parsed is None` cells open with a prose negation vs. a genuine decline), not just 10 samples. If prose-negation is a large share, verify_source accuracy is partly measuring format compliance.
+
+2. **`classify_refusal` contract trap** (`outcomes.py:105–130`). Its docstring says verify_source is "not classified here," but passing `task="verify_source"` falls through to the final `return True` and behaves like `cite_passage`. Nothing does today, but by the project's fail-fast rule a one-line raise would make the docstring enforceable.
+
+3. **Doc nit**: `score.py:20–23` still attributes `outcome` to `outcomes.classify_refusal` with no verify_source carve-out; lines 37–40 and `_with_outcome` get it right.
+
+4. **`_text_key(source)` returning `None` silently drops a row from `by_text`** while it still counts in `models`/`by_tradition`, so `by_text` n need not sum to the model n with no signal. Unreachable from `generate` (`_source_dict` always emits all three), so low risk — but it's a silent fallback, and no test pins it.
+
+5. **Phase-5 follow-through**: `_SUBMETRICS` is now an empty dict kept only for dispatch + pointer-guard, and CODE_WALKTHROUGH §3/§4 prose ("the other tasks' fixed sub-metrics live in `_SUBMETRICS`", "others require the answer to *be* a specific label") is stale. Correctly deferred per the plan's split — consider deleting `_SUBMETRICS` outright in Phase 5. Likewise #23 is still OPEN on GitHub and arch-critical still carries the PAPER GATE line; Phase 5 lands before Phase 6 publishes any verify_source number, so the sequencing is right — just don't publish before that line moves.
+
+I was asked to review implementation only and made no changes to the tree.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 3 meets every acceptance criterion — leading-stance parser with pre-normalize window, parsed-based verify_source refusal, collision-proof per-text summary, retired tasks gone, 362 tests green and committed run re-scores byte-for-byte.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Watch items: (a) prose-negation answers ("It is not from this edition") become `refused` — Phase-6 diagnostic should report shape frequencies, not just samples; (b) `classify_refusal` would silently mis-handle `task="verify_source"` contrary to its own docstring (one-line raise would enforce it); (c) `_text_key` → `None` silently drops a row from `by_text` (unreachable today, untested); (d) stale CODE_WALKTHROUGH `_SUBMETRICS` prose and the still-open #23 / arch-critical PAPER-GATE line are correctly deferred to Phase 5 — must land before Phase 6 reports a verify_source number.

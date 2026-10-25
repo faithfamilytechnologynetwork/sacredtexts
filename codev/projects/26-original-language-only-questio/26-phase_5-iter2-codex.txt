@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 5 is substantially improved, but inaccurate walkthrough pointers and a remaining KJV misclassification keep the documentation from meeting its accuracy criteria.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `CODE_WALKTHROUGH.md` still has numerous incorrect line pointers despite the rebuttal claiming they were fixed. Examples: `catalogue.py:46` claims to point to `LICENSES` (actually line 59), `catalogue.py:102` to `Target` (line 125), `catalogue.py:259` to `select_targets` (line 381), `generate.py:153` to `_build_texts` (line 178), and `score.py:225` to `score_answer` (line 275). The pointer test passes because it only checks that lines are in range and symbols exist somewhere, not that each pointer identifies its claimed symbol.
+- `runs/tutorial-2026-10-11/README.md` still describes its KJV-inclusive corpus as “original-language corpora only” in the introduction and copyright section. The KJV is an English translation treated as English-canonical by benchmark policy, as the corrected `TUTORIAL.md` now accurately explains.

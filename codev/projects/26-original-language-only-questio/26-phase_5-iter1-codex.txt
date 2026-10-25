@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 5 documentation remains internally inconsistent and does not satisfy several explicit plan acceptance criteria.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `TUTORIAL.md:31-36` still describes all three tutorial texts as being “in their original languages,” including the KJV. The Phase 5 plan explicitly requires correcting this framing because KJV is a translation.
+- `TUTORIAL.md:38-40` lists `cite_passage` but omits the required by-example citation-form behavior.
+- `TUTORIAL.md:51-53` claims the historical tutorial run is “exactly this run,” while the documented command now generates 60 questions using `--per-text`; the committed historical manifest contains 100 questions generated with `per_task=100`. Meanwhile, `TUTORIAL.md:129` links a nonexistent placeholder `runs/original-<date>/` to the generic `runs/` directory rather than a reproducible reference run and digest.
+- `TUTORIAL.md:132` retains a `--per-task` reference, directly failing Phase 5’s “no doc references … `--per-task`” acceptance criterion.
+- `pipelines/README.md:25-27` says all restricted targets are “copyrighted translations,” but the restricted TLG Greek target is an original-language edition. This contradicts the documented catalogue and selection model.

@@ -1,0 +1,40 @@
+I'll start by reading the key implementation files.Let me verify the key iteration-1 finding (vacuous containment test) by reading-plus-in-memory reasoning — no writes to the tree.I've verified the implementation by reading the files and by running the real generator in memory (no writes to the worktree — I did not edit, create, or revert anything; my probes monkeypatched in a separate process and wrote only to `/tmp`).
+
+## Iteration-1 findings: all genuinely fixed, verified on the real corpus
+
+I converted the real catalogue in memory and ran `generate(per_text=28, seed=20261010)`:
+
+- **476 questions / 17 texts / 119 per template** — exactly the spec's criterion; the 17-text membership is right (9 hadith + Qur'an + Talmud Aramaic + 3 LDS + KJV/ASV/WEB).
+- **`excluded_texts` is now 2 rows, not 202** — `Papal Encyclicals / Vatican English / en` (la) and `Talmud Bavli / Davidson English / en` (he). The `TextMeta.target_key` carry-through does collapse the re-stamped encyclicals, and `test_excluded_aggregates_to_catalogue_target` exercises that case directly.
+- **`cite_passage` now requires `max(quota, 2)`** (generate.py:308), with the exact-quota/`<2` cases tested.
+- **Negative quality is transformed**: 48/51 negatives are now same-language (was 3/51). Measured `(asked lang, passage script)`: `ar/arabic: 30, en/latin: 18, he/latin: 3`. The only cross-language text is Talmud Aramaic, and `manifest.verify_source_cross_language_negatives` records exactly `[{Talmud Bavli … count: 3}]`. The architect's family rule is implemented as described.
+- **Performance**: 113 s → **20.4 s** on the real corpus.
+- **Containment test is no longer vacuous** — and I checked it is actually load-bearing rather than just non-tautological: with the `if ne in asked.all_norm: continue` filter removed in memory, the test's fixture at `seed=1` leaks the shared passage into a negative (1 of 4), so the test fails. Credit where due.
+- `display_citation` holds on real data: **0** `retrieve_quote` prompts repeat the work name; `"What is the text of D&C 134:12?"`, `"…Quran 7:12?"`, `"…Talmud Sanhedrin 17b:2?"`, `"…Sahih al-Bukhari 1606?"`. Prompts are byte-exact to the spec table.
+- Retired tasks gone; pointer-guard updated in-commit; first-run generation-invariance guard retired with the documented two-part rationale while the re-score half stays and passes; `text_metadata(sources)` is called at CLI start so the cross-source guard is live. **344 tests pass** via `.codev/checks/test.sh`.
+
+## Remaining observations (none blocking)
+
+**1. A `verify_source` negative's `source.citation` is the passage's citation in its *true* source, under the *asked* edition's work.** Real example from the default run:
+
+```
+source:   {work: 'Sunan Abi Dawud', version: 'sunnah.com Arabic', citation: '17:79', requested_as: 'Abu Dawud', …}
+expected: {answer: 'no', true_work: "The Qur'an", true_version: 'Uthmani (QUL)', true_language: 'ar'}
+```
+
+`'17:79'` is a Qur'an reference sitting in a record whose `work` is Sunan Abi Dawud, so `source.work + source.citation` reads as a hadith citation that does not exist. Nothing consumes it today (`score.py` doesn't; the viewer reads `expected.citation`), and the spec doesn't specify the field for negatives — so this isn't a contract violation. But it is committed evidence a human will audit, and `question_set_digest` binds it: changing it after Phase 6 means regenerating the run. Cheapest fix now: move it to `expected.true_citation` (which also makes a "no" ground truth auditable) and leave `source.citation` out for negatives, or document the semantics in the `Question` docstring. **Worth a decision before Phase 6, not after.**
+
+**2. The containment guard passes by seed luck, not by construction.** It catches the deleted filter at `seed=1`, but across seeds 1–50 only 5 would — the fixture draws 4 negatives from 31 candidates of which 1 is the shared passage. Any future change to the fixture size, quota, or seed silently disarms it. The structural version (make *all but one* cross-family candidate contained in the asked edition) would fail 100% of the time with the filter gone. Cheap hardening; not required now.
+
+**3. Negative candidates are pooled and shuffled uniformly over *entries*, so negative sources are weighted by corpus size, not uniformly over texts.** On the real corpus this is benign (each Arabic hadith's only same-language cross-family partner is the Qur'an anyway), but it's an implicit distributional choice — worth one line in the Phase-6 run README alongside the near-verbatim-shared-passage residual the architect already asked for.
+
+---
+VERDICT: APPROVE
+SUMMARY: Every iteration-1 finding is genuinely fixed and I verified the headline claims on the real corpus (476 questions / 17 texts / 2 excluded rows / 48-of-51 same-language negatives / 20 s); only non-blocking polish remains.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Non-blocking: a negative's `source.citation` holds the passage's citation from its true source under the asked edition's `work` (e.g. `Sunan Abi Dawud` + `17:79`) — incoherent in committed evidence; decide (move to `expected.true_citation`, or document) before Phase 6 bakes the digest.
+- Non-blocking: the containment-exclusion test catches a deleted filter only because of the pinned seed (5 of 50 seeds would); make the fixture structural so all-but-one candidate is contained.
+- Non-blocking: negative candidates are weighted by entry count rather than uniform over texts — note it in the Phase-6 run README.

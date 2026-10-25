@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 1 code and tests are sound, but governing spec and plan text still contradict the corrected path-based metadata design.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `codev/specs/26-original-language-only-questio.md:104-109` and `:378-380` still require tuple-keyed, fail-closed `text_metadata()` resolution, which cannot handle re-stamped encyclical documents. Update these sections to specify `metadata_for_standardized_path()` as the generation channel and `text_metadata()` as the conflict-detecting nominal view.
+- `codev/plans/26-original-language-only-questio.md:15-16` likewise still says metadata reaches generation through a tuple-keyed map and explicitly rejects the path channel, contradicting the Phase 1 section, implementation, and accepted prior-review resolution.

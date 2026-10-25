@@ -1,0 +1,40 @@
+I'll start by reading the implementation files.I've read the implementation, the tests, all six `source.yaml` files, the audit/regression code, and verified the values against issue #27. I ran the suite (336 passed, 1 skipped).
+
+## What's correct
+
+**Validation (`catalogue.py`)** — `requested_as` and `canonical_language` are in `_TARGET_REQUIRED`; `canonical_language` rides `_TARGET_STR_FIELDS`; `requested_as` has a dedicated non-empty-list-of-non-empty-strings validator with elements stripped on store. Errors name file + `targets[i]`. The slug-agreement check now covers both fields and names only the differing ones.
+
+**Both iteration-1 blockers are genuinely closed.** `metadata_for_standardized_path` mirrors `license_for_standardized_path` (deepest-containing target dir wins, `None` for a stray, raise on an equal-depth metadata disagreement) — which is the right channel, since `convert_encyclicals` re-stamps `work`/`version` per document and a tuple key cannot resolve them. `text_metadata()` is now explicitly the nominal view and raises `CatalogueError` on a cross-source duplicate tuple that disagrees. The module docstring and the `Target` docstrings now describe exactly this split; no stale tuple-channel prose remains.
+
+**Data** — 21 targets (Sunni 10, Judaism 2, Protestant 3, Catholic 2, Greek 1, LDS 3); every `requested_as` list and `canonical_language` value matches the #27 table verbatim, including `la` for the encyclicals and `he` for Talmud English. Default pool `language == canonical_language && not restricted` = exactly the 17 in the spec table, and `test_real_catalogue_default_pool_is_seventeen` now pins the membership set, not just the count, and invokes the conflict guard against real data.
+
+**Tests are non-vacuous** — I traced each `.replace()` in the parametrized validation test against `_TARGET`; every case genuinely mutates the fixture and hits the intended branch (`requested_as: ['  ']` fails on the `x.strip()` term, `canonical_language: '  '` on the str-fields loop). `test_metadata_for_standardized_path_resolves_by_path` uses a doc with `work="Humanae Vitae"` under the encyclicals target dir — the exact re-stamp case.
+
+**Collateral checked** — no other `Target(...)` construction sites exist beyond the two test files that were updated; `audit.py` keys only on restricted targets, so removing the LDS KJV targets can't affect the copyright gate.
+
+## Non-blocking notes
+
+**1. The plan's stated failure mechanism for `test_first_run_question_set_digest_regenerates` is imprecise.** The rebuttal says removing the LDS KJV targets "orphaned a `texts/standardized/...` dir that is in the committed first-run manifest's `inputs`, so `filter_standardized_paths` now fail-closes on regenerate." The manifest's `inputs` are source-level dirs (`texts/standardized/The Church of Jesus Christ of Latter-Day Saints`, etc.), not slug dirs — so on a *clean* rebuild that dir still exists, the `all(p.exists())` skip-guard passes, no orphan is produced, and the test fails on the **digest assertion** (the committed set contains `KJV (LDS 2013 edition)` questions that the new pool can no longer produce). Fail-closed only happens if a *stale* slug dir from an earlier `convert` lingers. The conclusion — retire the generation-invariance half in Phase 2 — is unchanged, but Phase 2 should expect a digest mismatch, not a `CatalogueError`.
+
+**2. Two committed raw payloads are now outside the license index.** `old-testament-reference-KJV-ben-crowder.json` and `new-testament-reference-KJV-ben-crowder.json` are git-tracked but no longer claimed by any target, so `license_for_raw_path` returns `None` for them. Nothing enforces raw-file coverage today, and they're public-domain KJV duplicates, so impact is near-zero — and the `source.yaml` header comment documents the intent clearly. Flagging only so the choice is deliberate.
+
+**3. Nit:** `canonical_language: no` (Norwegian) would be parsed as boolean `False` by PyYAML and rejected with "must be a non-empty string". Unreachable with the current corpus and it fails fast, but the message would mislead. Same latent gotcha already exists on `language`.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 1 is complete and correct — validation, path-based metadata channel, cross-source conflict detection, all 21 targets matching #27 verbatim, 17-member pool pinned by membership, suite green at 336 passed.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Three notes: (a) the plan/rebuttal mis-states how `test_first_run_question_set_digest_regenerates` breaks — it is a digest mismatch on clean rebuild, not a `filter_standardized_paths` fail-close; fix the wording so Phase 2 chases the right symptom. (b) The two now-uncatalogued but still git-tracked LDS KJV raw payloads fall outside `license_for_raw_path`; harmless (public domain) but worth being a deliberate choice. (c) Nit: a `canonical_language` of `no` would be YAML-parsed as boolean and rejected with a misleading message.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 2 paths changed while this lane was running:
+  - codev/plans/26-original-language-only-questio.md
+  - codev/specs/26-original-language-only-questio.md
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

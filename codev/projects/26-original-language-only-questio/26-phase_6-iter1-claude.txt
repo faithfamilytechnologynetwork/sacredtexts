@@ -1,0 +1,55 @@
+I'll review phase_6 — the live run and committed evidence. Let me start by reading the run artifacts.Now let me check the builder's thread log for the architect sign-off evidence, and verify the run artifacts.Let me verify the README's byte-for-byte re-score claim myself, writing only outside the tree.Tree unmodified by my review (only pre-existing untracked consult artifacts remain). Here is my review of **phase_6**.
+
+## What I verified independently (not just read)
+
+| Check | Result |
+|---|---|
+| Re-score `answers.jsonl` → `scores.jsonl` byte-for-byte | ✅ **True** (275,364 bytes identical, via `score_file` to `/tmp`) |
+| Regenerate the question set (`--per-text 28 --seed 20261010`) | ✅ **`questions.jsonl` byte-identical**, digest `ca5b5d5372f81603`, corpus `5ae493e7e249575c`, manifest identical modulo `generated_at` |
+| Shape | ✅ 476 questions, 17 texts × 28, **exactly 7 per text per task** |
+| Copyright audit | ✅ `copyright audit OK — origin only` |
+| Pipeline suite | ✅ `362 passed` |
+| `summary.json` | ✅ `by_text` keyed model→17 texts; `evaluators: [strict, containment]` |
+| No duplicated edition name | ✅ `D&C 134:12`, `Sahih al-Bukhari 1606`, `Quran 7:12` all render the edition once |
+| `requested_as` recorded, raw `version` not leaked | ✅ (the 22 "leaks" are `KJV`/`WEB`, which are legitimately in `requested_as`) |
+
+The OpenRouter substitution is **properly authorized** — the builder hit the blocker, stopped, reported, and Waleed directed the switch (thread L278–302, README L30–39, panel YAML header). Budget discipline was followed: smoke → extrapolate ($6.4) → pre-authorized ≤$40 ceiling → actual ≈$12.9. The README is unusually honest (missing cell vs. refused, unpriced, negative-sampling skew, containment caveats).
+
+## Issues
+
+**1. The promised generation-invariance anchor does not exist — and a committed docstring claims it does.** (main)
+
+Plan Phase 2 retired the first-run generation guard on an explicit promise: *"A new generation-invariance anchor is re-established on the fresh Phase-6 run (digest-pinned there)."* `pipelines/tests/test_first_run_regression.py:14` states this as fact:
+
+> The new generation-invariance anchor is the fresh Spec-26 run (`runs/original-<date>/`, digest-pinned there).
+
+It isn't. Grepping `question_set_digest`/`corpus_hash` across `pipelines/tests/` finds only unit-level digest tests — nothing pins `ca5b5d5372f81603`. The repo currently has **zero** generation-invariance coverage, and a future contributor reading that docstring will believe otherwise. This is the last phase; nothing downstream catches it.
+
+The fix is cheap and I confirmed it passes: `texts/standardized/` is present locally, regeneration is byte-identical, so a skip-if-absent test mirroring `test_rescoring_committed_run_reproduces_scores` works — generate from the manifest's `inputs`/`seed`/`per_text`/`negatives_share` into `tmp_path` and assert the digest.
+
+**2. No re-score guard on the new run either.** The existing guard covers only `first-run-2026-10-11` — 100 `retrieve_quote`-only *English* answers. The new run is the only committed evidence exercising Arabic/Aramaic `normalize()`, the leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit` scoring across 1,427 real answers — precisely the surface Spec 26 moved. Given arch-critical's sanctioned-rebaseline discipline, this run is the natural oracle. Same file, same pattern, ~10 lines.
+
+**3. `TUTORIAL.md`: the "four contestants" narrative no longer matches the repointed reference run.** The Phase 6 commit repointed the reference run but left the surrounding framing:
+- L50–54: *"Four 'contestants' answer every question — two models…, each tried two ways: with web search switched on, and with it off"* — immediately followed at L57 by a **three-model, search-off** reference run.
+- L258: *"The leaderboard (`/`) ranks the four contestants…"* and *"a 'Search on vs off' comparison"* — while L255 tells the reader to open `?run=original-2026-10-21`.
+- L270–272: *"the four tutorial entries stay as four separate rows."*
+
+A non-engineer following step 8 is told to expect four contestants and a search comparison, opens the shipped run, and sees three rows and no comparison. L232 hedges once, so the builder was aware — but §2 and §8 weren't reconciled. Either scope the four-contestant language explicitly to *your own* run from `configs/models.example.yaml` (step 5), or flag up front that the shipped reference run is three models, search-off.
+
+**4. Minor.** `runs/original-2026-10-21/README.md:175` quotes `copyright audit OK — 2 path(s), origin only`; auditing this run today reports `1 path(s)`. Cosmetic, but it's presented as this run's audit output.
+
+## Note (no action)
+
+`verify_source` refused = **0/357**, so the #23 leading-stance hardening is never exercised by a real refusal in this run. The README says so plainly and shows the cases it *does* exercise (`**Yes.**`, trailing explanation) — correctly handled. Worth carrying into the review doc as a known evidence gap, not a defect.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Run evidence is sound and independently verified (digest + re-score both byte-identical, audit clean, 362 tests green), but the generation-invariance anchor the plan promised for this phase is missing while a committed docstring asserts it exists, and the TUTORIAL repoint left a contradictory "four contestants" narrative.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `test_first_run_regression.py:14` claims the Spec-26 run is a digest-pinned generation-invariance anchor; no such test exists, leaving zero generation-invariance coverage after Phase 2 retired the old guard. Verified the replacement would pass (regeneration is byte-identical).
+- No re-score guard on `runs/original-2026-10-21` — the only committed evidence covering Arabic/Aramaic normalize, leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit`; the existing guard is English `retrieve_quote`-only.
+- `TUTORIAL.md` L50–54 / L258 / L270–272 still describe four contestants with search on-vs-off while pointing readers at the three-model, search-off reference run.
+- `runs/original-2026-10-21/README.md:175` quotes a `2 path(s)` audit line; auditing this run reports `1 path(s)`.

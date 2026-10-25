@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core generation works and produces 476 default questions, but two Phase 2 contracts are not met.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `cite_passage` incorrectly requires `quota + 1` entries (`generate.py:281`). The exemplar may be another target entry, so only `max(quota, 2)` entries are required. A text with exactly `quota >= 2` valid entries can fill its share but currently fails. Update the test at `test_generate.py:204` to cover exact-quota success and single-entry failure.
+- The manifest reports excluded document-derived text groups rather than excluded catalogue targets. A real default in-memory generation produced 202 exclusions—201 re-stamped encyclical documents plus Talmud English—rather than the two excluded targets required by the plan. Preserve/aggregate originating target identity when constructing the manifest.

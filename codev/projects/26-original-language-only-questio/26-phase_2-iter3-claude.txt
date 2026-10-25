@@ -1,0 +1,37 @@
+I'll review Phase 2 of Spec 26. Let me start by reading the key implementation files.I've completed a thorough review including independent verification against the real corpus. Let me do one final check on the test-coverage gaps I noticed.## Review: Spec 26 Phase 2 (iteration 3)
+
+I read `generate.py`, `cli.py`, `catalogue.py`, `test_generate.py`, `test_catalogue.py`, `test_first_run_regression.py`, `test_code_walkthrough.py`, and the CODE_WALKTHROUGH diff from disk, then verified the headline claims independently by converting the real corpus to a scratch root **outside** the worktree (`/tmp/sb26rev`) and generating from it. I did not modify anything in the tree.
+
+### Iteration-2 findings: all three genuinely fixed, and load-bearing
+
+| codex finding | status |
+|---|---|
+| `cite_passage` guard didn't pin `max(quota, 2)` | **Fixed.** `test_cite_passage_exact_quota_succeeds_with_two_entries` (2 entries / quota 2) fails if reverted to `quota + 1`; `test_cite_passage_single_entry_fails_fast` (1 entry / quota 1) fails if reverted to bare `quota`. Both boundaries are now pinned from opposite sides — this is a real fix, not a cosmetic one. |
+| No byte-exact prompt test | **Fixed.** `test_prompt_strings_are_byte_exact` (generate.py tests:200–228) pins all four rendered strings with `==` on a controlled two-entry text with a single `requested_as` name. Any punctuation/wording drift that would move the digest now fails. |
+| Stale `generate.py` docstring ("never same `document_type`") | **Fixed.** Lines 40–48 now state the hadith-collection-else-`work` family rule, the same-language preference, and the cross-language fallback. |
+
+### What I verified on the real corpus (21.5 s, 476 questions)
+
+- **476 questions = 17 texts × 28**, exactly 119 per template. Manifest `selected_texts` is the exact 17 from the spec census; `excluded_texts` is **2 rows** (Papal Encyclicals / Talmud English), each with its reason — the encyclicals re-stamp collapse holds on real data.
+- **Negatives:** 51 (= 17 × `int(7×0.5)`), **48/51 same-language**; cross-language limited to Talmud Bavli ×3 and flagged in `verify_source_cross_language_negatives`. Family rule holds: no hadith↔hadith pair, no KJV/ASV/WEB↔Bible-edition pair.
+- **`display_citation`:** inspected one `retrieve_quote` prompt per text — zero duplicated edition names, including the ten work-prefixed cases (`"…text of Musnad Ahmad ibn Hanbal 1176?"`, `"…of D&C 134:12?"`, `"…of al-Muwatta 1673?"`), and bare citations render unchanged.
+- **`cite_passage`:** 0 of 119 questions show an exemplar equal to the target's own citation; exemplar shape matches the scored shape in every text.
+- **Containment filter, stronger than asserted:** I checked whether any of the 51 negative passages appears even as a *substring* of any entry in the asked edition (my worry: a Qur'anic ayah quoted inside a hadith, which full-entry equality wouldn't catch). **0 of 51.** The equality-over-all-entries filter is empirically sufficient on this corpus, so there is no wrong-"no" ground truth in the current set.
+- **Suite:** 348 passed in 2.6 s. `test_rescoring_committed_run_reproduces_scores` actually **runs** (not skipped) and is byte-for-byte. Pointer-guard green with `_balanced_sample` → `_build_texts`. No duplicate ids or prompts.
+
+### Non-blocking notes
+
+1. **CODE_WALKTHROUGH `generate.py` line pointers drifted in the final commit.** The +40-line docstring expansion in `073f7b6` left every pointer stale: `_build_texts` cited at `:153` (actually 178), the per-task loop at `:205` (actually 277), `_qid()` at `:118` (124), `_append_verify_source` at `:316` (354), `question_set_digest()` at `:380` (420), `build_manifest()` at `:402` (442). The guard only checks in-range, so the suite stays green — but `:153` now lands inside `_family`. Worth a refresh in Phase 5.
+2. **`question.source.requested_as` is a string while the catalogue field of the same name is a list.** Architect-directed ("record the chosen name"), and nothing downstream reads it yet, but a consumer could reasonably expect a list. A one-line note in the Phase-6 README (or naming it `edition`) would remove the trap.
+3. **`source.citation` is `""` for verify_source positives too**, where the passage *does* have a citation in the asked edition (it lives in `expected.true_citation`). Safe — I confirmed only `expected["citation"]` is read in `score.py:271/275` and `localResults.ts:194`, never `source.citation` — but it's a shape change in the committed evidence worth a README line.
+4. **No test for a 2-task `--tasks` subset.** Remainder allocation under a subset must follow canonical `TASKS` order, not the user's `--tasks` order; the code does this correctly (`active` is built by filtering `TASKS`), but only 1-task and 4-task subsets are tested.
+5. Negative-candidate weighting by entry count is already recorded as a Phase-6 README limitation — agreed, not worth code churn.
+
+---
+VERDICT: APPROVE
+SUMMARY: Iteration-2 test-strength findings are genuinely fixed with load-bearing tests, and I independently reproduced 476 questions / 17 texts / 2 excluded rows / 48-of-51 same-language negatives on the real corpus — plus confirmed zero substring-contained negatives, so the containment filter is sound.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Polish only: CODE_WALKTHROUGH generate.py line pointers drifted 25–70 lines in the final commit (guard permits it; fix in Phase 5); `source.requested_as` is a string vs the catalogue's list; `source.citation` now empty for verify_source positives (note in Phase-6 README); no 2-task `--tasks` subset test.

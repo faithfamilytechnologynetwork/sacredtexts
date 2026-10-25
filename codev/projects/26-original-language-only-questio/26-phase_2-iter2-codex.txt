@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Implementation behavior appears correct, but Phase 2’s required edge cases and authoritative prompt bytes remain insufficiently tested.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `test_cite_passage_fails_fast_when_too_few_entries` does not test the promised `<2 entries` guard or exact-quota success. It uses 3 entries against quota 12, so reverting `max(quota, 2)` to either `quota` or `quota + 1` would leave the suite green. Add exact-quota success and single-entry failure tests.
+- No test pins the four authoritative prompt strings byte-for-byte. Existing assertions only check fragments, so punctuation or wording changes that alter the question-set digest would pass. Add exact prompt assertions for all four templates.
+- `generate.py`’s module docstring still says cross-family means “never … same `document_type`,” contradicting the implemented and architect-approved rule: hadith collections share one family; otherwise family is `work`.

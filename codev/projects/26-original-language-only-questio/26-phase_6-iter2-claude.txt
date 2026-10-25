@@ -1,0 +1,39 @@
+I'll review Phase 6 (live run + committed evidence) by reading the actual artifacts.Let me verify the claims against the actual artifacts.Now let me independently verify the regression guards actually pass and the audit claim.All claims verified empirically. Here is my review.
+
+## Verification performed (not taken on trust)
+
+| Claim in the iter-2 rebuttal | How I checked | Result |
+|---|---|---|
+| New generation-invariance anchor passes | Ran `test_original_run_regression.py` | **2 passed** — and `texts/standardized/` *is* present here, so the digest guard genuinely ran rather than skipping. Digest `ca5b5d5372f81603` + corpus hash both re-derived through the real `cli.generate` path. |
+| Re-score byte-for-byte | Same run (always-on guard) | Passes over all 1,427 real answers |
+| Audit quote `1 path(s)` | `audit runs/original-2026-10-21` | `copyright audit OK — 1 path(s), origin only` — matches README verbatim |
+| 364 tests green | `.codev/checks/test.sh` | **364 passed**, exit 0 |
+| Viewer unaffected | `pnpm vitest run` in `apps/viewer` | 158 passed / 18 files |
+| Retired tasks gone | grep across viewer src, `sacredbench`, three docs | zero hits |
+| Roster accounting | parsed answers/questions in Python | exactly one missing cell, `gpt-oss-20b × cite_passage-c928714ccf35`; **0 blank answers written** — the "stays pending, not a blank" claim is literally true |
+| `by_text` present | read `summary.json` | 17 texts × 3 models, keyed model→text, with n/accuracy/coverage/refused |
+
+**Corrected claims now check out.** opus English range is 86–100% (D&C 86%, BoM/WEB 93%, PoGP/ASV/KJV 100%); KJV is 100% for opus *and* haiku with `gpt-oss-20b` at 16%; `verify_source` refused = 0 across all 357 cells (3×119). Every headline number in the run README reconciles against `summary.md`.
+
+**Panel deviation is properly authorized.** The plan specified Anthropic haiku+opus × search on/off; the shipped run is three OpenRouter models, search-off. The thread shows the builder *first blocked* on the absent `ANTHROPIC_API_KEY` and reported it (exactly as the spec constraint demands — "do not substitute OpenRouter"), then proceeded only on Waleed's explicit 2026-10-21 decision with a hard ≤$40 rule, after two scratchpad smokes. The README's §"Why no search arms" documents the resulting loss of the search-on/off contrast honestly rather than papering over it. That is the right handling of this constraint.
+
+## Minor findings (non-blocking)
+
+1. **`CODE_WALKTHROUGH.md:285-290` omits the new run from the "Must NOT touch" list.** It still reads *"Never re-run `generate`/`collect`/`score` over `runs/tutorial-2026-10-11/` or `runs/first-run-2026-10-11/`"* — the run this phase just committed, now the largest and most expensive piece of evidence in the repo, is missing. Line 53 was correctly updated to "three dated folders" and `TUTORIAL.md:186` does name all three, so the contract is stated right elsewhere; this is a one-line edit. Line 290 likewise names only `test_first_run_regression.py` as "the regression guard" when `test_original_run_regression.py` is now the stronger one. Worth folding in given the standing scar about re-running over committed evidence.
+
+2. **Cost extrapolation was 2× low** — smokes projected ≈$6.4, actual ≈$12.9 (README reports the real figure, good). Well inside the $40 ceiling, so no process violation, but `gpt-oss-20b`'s long reasoning output plus retry passes are what broke the linear extrapolation; a half-sentence to that effect would help anyone reusing the method.
+
+3. **`verify_source` refused = 0/357** is a genuine evidence gap, correctly scoped: the hardening is unit-tested in `test_score.py`, and the README is upfront that no live cell triggered the refusal path while naming what the real answers *do* exercise (markdown-bold verdicts, trailing explanations). Carrying it to the review doc as a known gap is the right disposition — not something to manufacture evidence for.
+
+I was not asked to edit anything and did not; all checks above were read-only (pytest/vitest write only to tmp and scratch, `audit` is read-only).
+
+---
+VERDICT: APPROVE
+SUMMARY: Both iter-1 findings genuinely fixed and independently verified by execution — digest guard actually runs and passes, audit quote matches, all headline numbers reconcile, 364+158 tests green; only a stale "Must NOT touch" doc list remains.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `CODE_WALKTHROUGH.md:285-290` "Must NOT touch" list omits `runs/original-2026-10-21/` (and names only the old regression guard) — one-line doc fix, contract correctly stated in TUTORIAL.md:186
+- Smoke-based cost extrapolation was 2× low (≈$6.4 projected vs ≈$12.9 actual); inside the authorized ceiling, worth a note on why (gpt-oss-20b reasoning output + retries)
+- `verify_source` refused = 0/357: no live cell exercises the #23 refusal path; documented and unit-test-covered, correctly carried as a known evidence gap

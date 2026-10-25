@@ -1,0 +1,7 @@
+---
+VERDICT: APPROVE
+SUMMARY: Phase 4 cleanly removes both retired tasks from the viewer, updates relevant tests, and preserves task-agnostic rendering for all four retained templates.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- None

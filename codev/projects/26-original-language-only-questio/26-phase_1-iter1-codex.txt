@@ -1,0 +1,16 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Field validation and catalogue updates are solid, but the metadata channel is not valid for all real documents and can silently overwrite cross-source conflicts.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `text_metadata()` cannot resolve the real Papal Encyclical documents. The catalogue key is `("Papal Encyclicals", "Vatican English", "en")`, while `convert_encyclicals()` emits each title and a dynamically composed Vatican version. Every such document will fail `metadata_for_text()`, breaking the planned `--include-translations` path. Add a real converted-document resolution test and establish a metadata key/channel that covers these emitted tuples.
+- Slug/metadata agreement is checked only within one `source.yaml`, but `text_metadata()` combines all sources and silently overwrites duplicate tuple keys. Its claim that all shared tuples were already validated is therefore false. Detect conflicting metadata globally and add the planned shared-tuple fixture across separate sources.
+
+---
+
+## ⚠️ REPOSITORY MOVED during the codex review (#1649).
+A consultant reviews the commit in front of it; it must never commit, or switch refs.
+  - HEAD: 50cdbfefd9a9320d3310ab9ca9ed4facbd4b8e22 -> 181d8abb56ca707a036b0f5a712f88a85513d3be
+The files on disk may look untouched and still not be the ones this review describes.
+Check `git reflog` and `git status` before trusting this review or shipping the branch.

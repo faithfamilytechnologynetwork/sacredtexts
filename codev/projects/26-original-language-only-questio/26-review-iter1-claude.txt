@@ -1,0 +1,70 @@
+I'll start by understanding the repo layout and reading the key artifacts.The diff is mostly run evidence. Let me read the spec, plan, and review from disk.Now the implementation. Let me read the core source files and review doc.Now the scoring hardening (#23 gate) and catalogue changes.Let me examine the outcome classification and the `_with_outcome` path closely.Branch is current with `origin/main`. Let me verify the green-suite claims myself.While tests run, let me check the new regression guard and catalogue metadata channel.364 passed (matching the claim, with the digest test actually running since the corpus is present). Now let me probe two things empirically: the negative-exclusion contract and `parse_yes_no` robustness.Let me verify the reported headline numbers and the retirement/cleanliness claims.Two last checks: the spec's Arabic-digit test scenario, and whether TUTORIAL's documented reproduce command actually matches the committed run.One validity check worth doing: are low Arabic `cite_passage` scores genuine model failure, or a scorer-extraction artifact?I have everything I need. Here is my review.
+
+## What I verified independently (not just trusted)
+
+**Suites & gates** — I ran them myself rather than taking the claims: pipelines **364 passed**, viewer **158 passed**, copyright audit **OK, origin-only**. Notably the generation-invariance test is *not* skipping here — `texts/standardized/` is present in this worktree, so the pinned digest `ca5b5d5372f81603` was genuinely re-derived.
+
+**Branch & commits** — 0 behind `origin/main` (which already carries the Spec 15 merge the spec depends on), 87 ahead, every non-porch commit in `[Spec 26][Phase: implement]` form. Review doc present and comprehensive.
+
+**Evidence claims** — recomputed from `scores.jsonl` rather than reading `summary.md`: opus 68.5% acc / 85.3% cov, haiku 49.4% / 76.1%, gpt-oss-20b 22.1% / 64.8%, 1427/1428 cells. Matches the PR body and README exactly. I also spot-checked the README's specific per-text claims against `by_text` — KJV 100% for both frontier models, gpt-oss 16% there, opus 86–100% on every English text, opus Qur'an 86% / Talmud 32%, haiku Talmud 29%. All correct. Manifest: 476 questions, 17 texts, 119/task, 2 excluded targets with reasons, Talmud cross-language ×3 flagged.
+
+**The #23 gate actually closes.** I probed `parse_yes_no` directly: the adversarial `"There is no way to verify this... Yes"` → `None`, while `"**No** - Sahih Muslim"` → no, `"Answer: Yes"` → yes, `"Yes, although I cannot fully verify."` → yes. The leading-token-not-window-search choice is the right one and is what makes the evasion resistant.
+
+**Security** — no secrets in the diff, `.env` ignored, 0 standardized texts tracked, panel config references `api_key_env` only.
+
+The OpenRouter substitution is correctly handled: the builder *blocked* on the absent `ANTHROPIC_API_KEY` as the spec demanded, reported, and proceeded only on Waleed's explicit 2026-10-21 direction under a ≤$40 gate (actual $12.9). Thread evidence at `codev/state/aspir-26_thread.md:278-302`. That's fail-fast done right, not a silent fallback.
+
+## Three findings worth folding in (none blocking)
+
+**1. The Arabic-Indic digit open question is actually resolved — but recorded as unresolved.** The spec listed this as an "Important" open question with a required test scenario; the review demotes it to a follow-up. I measured it: **0 of 1,427 answers contain any Arabic-Indic digit**, and **0 incorrect non-English `cite_passage` cells contain the correct citation verbatim**. So the by-example exemplar steer worked, and the low Arabic numbers (opus 18%, haiku 14%) are genuine model failure, not a scorer artifact. That's a real validity result for a Phase-1 paper claim — put it in the run README and close the follow-up, and pin the digit case in a cheap unit test (the spec's Test Scenarios asked for exactly that assertion).
+
+**2. `parse_yes_no` conflates format-noncompliance with refusal.** Clear, committed negative verdicts phrased in prose are bucketed `refused` and excluded from accuracy entirely: `"Not from this edition."`, `"The answer is no."`, `"That is incorrect."`, `"This text is not from the KJV; it is from the Book of Mormon."` all parse to `None`. Because `verify_source` is the false-premise instrument and the negatives carry the signal, a future model that rejects in prose would have its *correct* rejections dropped from the denominator — inflating its reported accuracy. Zero impact on this run (0/357 refused; every answer led with Yes/No), and it is the contract both consult reviewers converged on, so I'm not asking you to change it. But the review's follow-up should say "prose verdicts are excluded, a measurement risk for future panels," not merely "the refusal path is unexercised."
+
+**3. A docstring overstates the negative-exclusion rule.** `generate.py` (line ~45) and the spec both say negatives exclude passages present in the asked edition by "**containment** over all entries," naming BoM-quoting-KJV-Isaiah as the case it catches. The implementation is `ne in asked.all_norm` — membership in a frozenset of *whole* normalized entry texts, i.e. equality, not substring containment. A passage quoted verbatim inside a longer unit would not be excluded. I tested the committed run under the stronger substring rule: **0 negatives leak**, so no evidence is affected. Fix the wording (cheaper and probably correct for entry-granular sampling) rather than the code.
+
+One non-issue for the record: the shared RNG means a text's sampled items depend on preceding texts and on the active task set, so `--tasks` subsets yield different per-text questions. Deterministic and digest-pinned — worth knowing, not worth changing. And the remaining `identify_version`/`identify_source` strings are only in explanatory comments and absence-asserting tests, which is correct.
+
+I did not modify anything in the worktree; all probes were read-only or wrote to tmp.
+
+---
+VERDICT: APPROVE
+SUMMARY: All 10 acceptance criteria verified against the artifacts, suites green on independent re-run, #23 gate genuinely closes, and every headline evidence claim checks out — three documentation/follow-up precision items, none blocking.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Arabic-Indic digit open question is empirically resolved (0/1427 answers carry Arabic-Indic digits; 0 scorer-extraction misses) but recorded as an unresolved follow-up and not pinned by a test — fold the measurement into the README/review and add the digit regression test the spec's Test Scenarios asked for.
+- `parse_yes_no` buckets prose negative verdicts ("Not from this edition.", "The answer is no.") as `refused` rather than graded, excluding correct rejections from accuracy. Zero impact on this run (0/357 refused) and it is the sanctioned contract, but it belongs in the follow-up list as a measurement risk for future panels.
+- `generate.py` docstring and the spec describe the verify_source negative exclusion as "containment over all entries"; the implementation is exact normalized-entry equality (`ne in asked.all_norm`). No negatives leak in the committed run — correct the wording.
+
+PR_SUMMARY: |
+  ## Summary
+  Reshapes the sacredbench question generator to original-language editions only — a text is in the pool iff `language == canonical_language` — over four working-group templates (`retrieve_quote` / `complete_unit` / `cite_passage` / `verify_source`) at a per-text quota (default 28 → 17 texts × 28 = 476 questions). Adds two required catalogue fields (`requested_as`, `canonical_language`) that reach generation by path, retires `identify_version` / `identify_source`, and closes the #23 PAPER GATE by hardening `verify_source` to a leading-stance Yes/No verdict. Ships a fresh committed live reference run.
+
+  ## Key Changes
+  - **Catalogue**: `requested_as` (≥1 names) + `canonical_language` per target, validated fail-fast with file + target index; path-based metadata channel mirroring the license gate (needed because the encyclicals converter re-stamps `work`); the two `KJV (LDS 2013 edition)` targets removed (21 targets).
+  - **Generation**: four natural-language templates, `--per-text` with deterministic remainder split, `<edition>` as a seeded `requested_as` choice, `display_citation` so the edition is never named twice, `cite_passage` showing the citation form by example, cross-family / same-language-preferred `verify_source` negatives, manifest-recorded exclusions.
+  - **Scoring**: leading-stance `parse_yes_no` read from the raw answer before `normalize()` (refused ⟺ `parsed is None`), retired-task branches removed, per-model per-text summary table.
+  - **Viewer**: retired-task cleanup, 158 vitest green.
+  - **Evidence**: `runs/original-2026-10-21/` — three-model OpenRouter panel, search-off (human-authorized substitution after `ANTHROPIC_API_KEY` was absent; UNPRICED), 1427/1428 cells, opus 68% / haiku 49% / gpt-oss-20b 22% accuracy with coverage reported beside each.
+  - **Regression**: `test_original_run_regression.py` pins both the byte-for-byte re-score and the regeneration digest `ca5b5d5372f81603`.
+
+  ## Test Plan
+  - `uv --project pipelines run pytest pipelines` → 364 passed (digest guard runs, not skipped, when `texts/standardized/` is present).
+  - `pnpm -C apps/viewer test` → 158 passed.
+  - `uv --project pipelines run python -m sacredbench.cli audit runs/original-2026-10-21` → origin-clean.
+  - Re-score the committed answers to a scratch path and diff against `scores.jsonl` (byte-for-byte).
+  - Recompute headline accuracy/coverage from `scores.jsonl` and check against `summary.md` and the run README.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 6 paths changed while this lane was running:
+  - texts/raw/Greek Orthodox/source.yaml
+  - texts/raw/Judaism/source.yaml
+  - texts/raw/Protestant Christian/source.yaml
+  - texts/raw/Roman Catholic/source.yaml
+  - texts/raw/Sunni Islam/source.yaml
+  - texts/raw/The Church of Jesus Christ of Latter-Day Saints/source.yaml
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

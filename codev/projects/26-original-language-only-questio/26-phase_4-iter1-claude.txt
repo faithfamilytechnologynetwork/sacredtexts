@@ -1,0 +1,53 @@
+I'll review Phase 4 — the viewer retirement of `identify_version` / `identify_source`.# Phase 4 Review — Viewer: retire `identify_version` / `identify_source`
+
+## Verification performed
+
+- Read `localResults.ts`, `explorer.ts`, `explorer.test.ts`, `QuestionList.test.tsx`, `localResults.test.ts`, `apps/viewer/README.md`, and the Phase-4 commit (`b394fa3`).
+- Grepped all of `apps/viewer` for `identify_version|identify_source|identifyVersion|identifySource` → **no matches**. AC met.
+- Ran `pnpm -C apps/viewer test` → **18 files / 157 tests passed**; `npx tsc --noEmit` → **exit 0**. AC met.
+- Cross-checked the new `expectedText` key list against Phase 2's actual `expected` dicts in `generate.py` and against `_SUBMETRICS` / `_task_submetrics` in `score.py`.
+- Confirmed no tracked file was modified by this review (`git status --porcelain -uno` empty).
+
+## What's correct
+
+The only production change is `expectedText`, and it is right for all four kept tasks. I traced each against `generate.py`:
+
+| task | `expected` keys emitted | key list hit |
+|---|---|---|
+| `retrieve_quote` | `{text}` | `text` ✓ |
+| `complete_unit` | `{text, full_text}` | `text` (the remainder) ✓ |
+| `cite_passage` | `{citation}` | `citation` ✓ |
+| `verify_source` | `{answer, true_work, true_version, true_language, true_citation}` | `answer` ✓ |
+
+The `verify_source` case is a near-miss worth noting as *correct*: the list checks `citation` before `answer`, and the expected dict carries `true_citation` — not `citation` — so `answer` wins and the explorer shows yes/no, exactly as the new comment claims. Dropping `version`/`work` from the list is safe: no kept task emits those keys.
+
+Scope discipline is good — `parseSummary`'s return literal still only carries `models/by_tradition/usage/panel`, so `by_text` is ignored rather than half-rendered, per the plan's explicit "retirement only" boundary. `explorer.ts` and `leaderboard.ts` are fully data-driven (no hardcoded task list), so nothing else needed touching. Historical evidence is unaffected: both committed runs (`first-run-2026-10-11`, `tutorial-2026-10-11`) are `retrieve_quote`-only (verified by reading their `questions.jsonl`), so no committed run loses rendering fidelity from the dropped `identify_source` branch. The `_SUBMETRICS` comment edit matches `score.py` after Phase 3.
+
+## Two issues — both test-strength, neither functional
+
+**1. The `explorerTasks` sort assertion went vacuous.** `explorer.test.ts:94` was `["identify_version", "retrieve_quote"]` — insertion order was `retrieve_quote, identify_version`, so `.sort()` had to fire for the assertion to pass. The substitution to `verify_source` makes insertion order (`retrieve_quote`, `verify_source`) *identical* to sorted order, so deleting `.sort()` from `explorerTasks` would now break nothing. I settled this by reading rather than mutating: rows `a,b,e` are `retrieve_quote`, rows `c,d` are `verify_source`, and `Set` preserves insertion order.
+
+Fix is one word: use `cite_passage` for rows `c`/`d` instead of `verify_source` (`'c' < 'r'`, so the sort regains its bite, and it's a kept task so the grep stays clean). The same test's tradition assertion was already vacuous before this phase — not your regression, but worth the same one-line treatment while you're there.
+
+**2. `expectedText` — the only production line changed — has no test pinning the three non-`text` paths.** Only the `text` branch is covered (`localResults.test.ts:50`, "twelve trees"). The `verify_source` test at line ~169 asserts the metrics are null but never asserts `rows[0].expected === "yes"`, and no test exercises `cite_passage` or `complete_unit` through `expectedText`. So the key list could lose `answer`, or `generate.py` could rename `true_citation` → `citation`, and the explorer would silently display raw JSON (or the passage's *real* citation) as ground truth for 25% of the benchmark, with a green suite.
+
+A small table-driven test over the four kept tasks' real `expected` shapes closes this *and* discharges the plan's still-unmet deliverable "Viewer renders a run containing only the four kept tasks" — currently the suite's fixtures reach only 2 of the 4, and the thread records no manual four-task render.
+
+## Nit
+
+`expectedText(_task, …)` no longer uses its first argument. Keeping it preserves both call sites and leaves room for future task-specific rendering, which is defensible — just flagging it as now-dead so it's a deliberate choice rather than a leftover.
+
+## Suggestion for Phase 6
+
+The plan's Phase-6 acceptance includes a viewer smoke on the fresh run. That will be the first time the viewer renders a genuine four-task run — make it an explicit check (all four tasks appear in the task filter; the expected column is sensible for each), since it's the real coverage for deliverable #2.
+
+---
+VERDICT: COMMENT
+SUMMARY: Retirement is complete and correct (grep clean, 157 vitest green, tsc clean, expectedText verified against all four kept tasks' real expected dicts); two cheap test-strength gaps — a now-vacuous sort assertion and no test pinning the cite_passage/verify_source/complete_unit expectedText paths.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `explorer.test.ts:94` "derives sorted distinct task options" lost its bite: swapping `identify_version` → `verify_source` made insertion order equal sorted order, so deleting `.sort()` from `explorerTasks` would break nothing. Use `cite_passage` for rows `c`/`d` to restore it.
+- `expectedText` (the phase's only production change) is untested for `citation` and `answer`: no assertion would catch the key list losing `answer`, or `generate.py` renaming `true_citation` → `citation`, either of which makes the explorer show wrong ground truth for `verify_source`/`cite_passage`. Add a four-task table test — it also discharges the unmet deliverable "Viewer renders a run containing only the four kept tasks" (fixtures currently cover 2 of 4, and no manual four-task render is recorded).
+- Nit: `expectedText(_task, …)` first parameter is now unused.

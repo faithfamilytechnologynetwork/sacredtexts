@@ -1,0 +1,68 @@
+I'll start by reading the implementation files from disk.Now let me read the source.yaml files and the other changed test files.## Review — Spec 26, Phase 1 (catalogue metadata)
+
+**Note on method:** I read every file in the scope list from disk. I did not run the pipeline suite — that writes `__pycache__`/`.pytest_cache` into the builder's live worktree, and I don't mutate the tree under review. Everything below is from reading the code; where that limits me I say so.
+
+### Both iteration-1 blocking findings are genuinely fixed in code
+
+**Blocking 1 (encyclicals can't be keyed) — fixed correctly.** `metadata_for_standardized_path` (catalogue.py:338–371) recovers `TextMeta` by path with the deepest-containing-target rule, mirroring `license_for_standardized_path` exactly. That is the right shape: the encyclicals' re-stamped `work`/`version` are irrelevant because every emitted file still lives under the one encyclicals target dir. `test_metadata_for_standardized_path_resolves_by_path` (test_catalogue.py:492–507) is the correct non-vacuous test — it writes a doc with `work="Humanae Vitae"` under the encyclicals dir and asserts it resolves to `canonical_language="la"`, i.e. it exercises precisely the re-stamp case that would have broken the old tuple lookup, plus the `None` path. `metadata_for_text` is gone from the codebase (only review artifacts mention it).
+
+**Blocking 2 (fail-open last-wins) — fixed.** `text_metadata` (311–335) now raises `CatalogueError("ambiguous metadata")` on a cross-source tuple conflict, with a two-file fixture test (477–489). The function docstring no longer overclaims slug-agreement's reach.
+
+**Minors** — slug-agreement now computes and names only the differing field(s) (264–274) with `test_slug_agreement_covers_canonical_language` asserting the narrowed message. Plan line 183 now names the Phase-1 target removal as the first cause of the broken first-run digest test.
+
+### Data and validation verified independently
+
+I counted the committed catalogue myself: Protestant 3 + Sunni 10 + Judaism 2 + Roman Catholic 2 + Greek Orthodox 1 + LDS 3 = **21 targets**. Default pool (`language == canonical_language`, non-restricted) = 3 + 10 + 1 (Talmud Aramaic) + 3 = **17**. Talmud English (en≠he), encyclicals (en≠la), NABRE and TLG (restricted) are out. Matches the spec table. Both LDS KJV targets are removed with an honest in-file comment that the payloads stay on disk uncatalogued — nothing depends on them (`license_for_raw_path` is test-only; `audit.py` keys off restricted-ness).
+
+Validation split is exactly as planned: `canonical_language` rides `_TARGET_STR_FIELDS` (line 80), `requested_as` gets a dedicated list validator (223–231) and is correctly *excluded* from the string loop so it can't produce a misleading "must be a non-empty string" error. All six parametrized rejection cases map to real code paths. All `cat.Target(...)` construction sites (test_catalogue ×4, test_schema_convert) are updated.
+
+---
+
+### Blocking: two authoritative artifacts still assert the superseded channel
+
+This is prose only — no functional defect — but it re-asserts the exact design iteration 1 rejected, in the two places a Phase-2 implementer will read first.
+
+**1. `catalogue.py` module docstring, lines 29–31:**
+
+> Both are catalogue facts, not `Document` facts, and reach `generate` through `text_metadata` (a `(work, version, language)`-keyed map), since a standardized `Document` carries neither.
+
+That is false as of this commit, and your own function docstring at 320–323 says so explicitly ("It is **not** the channel generation uses… use `metadata_for_standardized_path` for that"). You fixed the function docstring's overclaim in response to blocking 2 and left the module header making the *other* wrong claim. The standardized-path-convention paragraph (38–42) also still mentions only license recovery, though it is now the metadata channel too.
+
+**2. `codev/plans/26-...md` Phase 1 — four stale spots.** You updated "Files to Create / Modify" (lines 79–85) but not the surrounding contract:
+
+- line 66 (Objective): "available to generation through a `(work, version, language)`-keyed map"
+- line 96 (Deliverable): "`text_metadata()` … fail-closed on an unmapped tuple"
+- **line 108 (Acceptance Criteria): "`text_metadata()` raises `CatalogueError` for a `(work, version, language)` not in the catalogue"**
+- lines 114–115 (Test Plan): "`text_metadata()` fail-closed on an unmapped tuple"
+
+Line 108 is the one that matters: it is **not met and should not be**. `text_metadata` returns a plain dict — an unmapped tuple raises `KeyError`, not `CatalogueError`; the only `CatalogueError` it raises is on *conflict*. A review phase auditing these boxes either ticks it falsely or files a spurious change request later. Rewrite 66/96/108/114 to describe what shipped: path-based resolution returning `None` (caller fail-closes) plus a conflict-detecting nominal view.
+
+---
+
+### Carry-forward to Phase 2 (not a Phase-1 blocker)
+
+**`text_metadata()`'s conflict guard has no production caller.** Nothing in `pipelines/sacredbench/` invokes it — it is tested but inert. Under path-based resolution a cross-source duplicate tuple resolves *correctly per document*, so the guard only matters at the point Phase 2 groups documents into texts by `(work, version, language)` and takes "the shared resolution of its documents" (plan line 86). Phase 2 must actually call `text_metadata()` (or equivalent) at grouping time, or blocking-finding-2's fix never fires on a real catalogue. Worth a line in the Phase-2 notes so it doesn't get lost.
+
+### Comments (non-blocking)
+
+- **The equal-depth-disagreement raise (366–370) is unreachable via `discover_catalogue`, and untested.** `source_id` derives from `yaml_path.parent`, and two distinct `source.yaml` paths cannot share a parent — so distinct sources always yield distinct `standardized_dir`s, and two *different* dirs can never both contain the same path. An equal-depth collision therefore requires same `source_id` + same slug ⇒ same file ⇒ `load_source`'s slug-agreement already raised. Fine as defence-in-depth (it fires for hand-built `Source` objects), but don't count it as coverage.
+- **`test_real_catalogue_default_pool_is_seventeen` pins the pool *count*, not its membership.** Two compensating `canonical_language` errors would pass. Asserting the sorted set of 17 `text_key`s would make the anchor exact, and would double as the readable statement of what the corpus is. Cheap and worth it, since this is the one test standing between a typo and a silently different benchmark.
+- **No vocabulary check on `canonical_language`.** `canonical_language: ara` against `language: ar` silently *shrinks* the pool rather than failing — the one place in this phase where a mistake is quiet instead of loud. Mitigated by the count assertion above and by Phase 2's manifest exclusion reasons, so I'm not asking for a change; just noting it's the residual soft spot in an otherwise fail-fast contract.
+- **`requested_as` elements are neither stripped nor deduped.** `"  KJV "` passes `x.strip()` truthiness but is stored unstripped and would render into a prompt verbatim; a duplicate entry would skew Phase 2's seeded *uniform* choice. Consistent with how the existing string fields behave, and no committed value is affected, so optional — but Phase 2 is where it would surface.
+- **Lost real-data coverage in `test_export.py`.** Removing the two LDS KJV targets killed `test_real_lds_kjv_ot_nt_merge`, which was the only test exercising `convert_target` + `assemble` over a real multi-target work. The removal is honestly documented, and I verified the synthetic tests (`test_merge_collision_union_and_order`, `test_identical_citation_shards_order_deterministic`, `test_roundtrip_ok_*`, with a non-vacuous lossy-assembler check) do cover the merge *logic*. The real-data integration anchor is simply gone. The Talmud Aramaic target emits many documents sharing one `(work, version, language)` and is a larger real multi-shard case — if you want that anchor back, it's the natural replacement, but it's out of this phase's scope.
+
+### Bottom line
+
+The code for this phase is complete, correct, and tested, and the two prior blocking findings were fixed with the right single change rather than patched around. What's left is that the module docstring and four spots in the plan still describe the design you replaced — including an acceptance criterion that can't be satisfied. That's a ~10-minute prose fix, and it should land before Phase 2 reads it.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Both iteration-1 blockers are genuinely fixed with correct, well-tested code; the catalogue.py module docstring and four spots in the plan (incl. an unsatisfiable acceptance criterion) still assert the superseded tuple-keyed channel.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `catalogue.py` module docstring lines 29–31 state that `requested_as`/`canonical_language` "reach `generate` through `text_metadata` (a `(work, version, language)`-keyed map)" — directly contradicted by the function's own docstring at 320–323 and by this commit's design. Point it at `metadata_for_standardized_path`; also extend the standardized-path-convention paragraph (38–42) to cover metadata, not just license.
+- Plan Phase 1 acceptance criterion (line 108) "`text_metadata()` raises `CatalogueError` for a `(work, version, language)` not in the catalogue" is not met and should not be — `text_metadata` returns a plain dict (`KeyError` on a miss) and raises only on conflict. Same stale contract at plan lines 66, 96, 114–115. Rewrite to the shipped design.
+- Carry to Phase 2: `text_metadata()` has no production caller, so its cross-source conflict guard is currently inert. Phase 2 must invoke it when grouping documents by `(work, version, language)`, or the fix for iteration-1 blocking #2 never fires on a real catalogue.
+- Non-blocking: the equal-depth-disagreement raise in `metadata_for_standardized_path` (366–370) is unreachable via `discover_catalogue` and untested; `test_real_catalogue_default_pool_is_seventeen` pins the pool count but not its membership; no vocabulary check on `canonical_language` (a typo silently shrinks the pool); `requested_as` values are neither stripped nor deduped; removing the LDS KJV targets left no real-data `convert_target`+`assemble` multi-shard test.

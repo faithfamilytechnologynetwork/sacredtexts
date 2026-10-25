@@ -1,0 +1,55 @@
+I'll review the Phase 5 documentation work. Let me start by reading the key files.I've verified the Phase 5 docs against the actual code. Here's my review.
+
+## What I verified as correct
+
+**`arch-critical.md` / cold-tier `arch.md` (the load-bearing iter-1 fix)** — resolved and accurate. The new arch-critical scoring bullet matches `score.py` exactly: `_LABEL_PREFIX` does strip a bare `answer|verdict|response` label (score.py:158), `_leading_window` takes first-sentence-or-60-chars from the raw string before `normalize()` (score.py:161-170), and `parse_yes_no` requires the **leading token** rather than searching the window (score.py:189) — which is the reason the `"no way"` evasion returns `None`. `arch.md`'s generate.py and score.py bullets no longer contradict it (`#23 PAPER GATE closed` in both tiers). Good catch, correctly discharged before Phase 6.
+
+**`pipelines/README.md`** — the Source-catalogue block, the generate block, and the scoring contract all check out against `catalogue.py` (`requested_as: tuple[str,...]`, `canonical_language`, path-based recovery), `cli.py` (`--per-text` default `gen.DEFAULT_PER_TEXT` = 28, `--tasks`, `--evaluator`), and `score.py` (per model × task × tradition **and** per model × text). The restricted-targets correction (NABRE a translation, TLG an original-language edition) is now right.
+
+**`TUTORIAL.md`** — the three slugs in the step-3 command all resolve from the real `source.yaml`s (`the-bible-kjv-en`, `the-qur-an-uthmani-qul-ar`, `talmud-bavli-william-davidson-edition-aramaic-he`); `--tasks retrieve_quote --per-text 20` genuinely yields 20/text = 60 (single active task ⇒ `N // 1`); the default-28 / 15–30 note, the recomputed 240-combination cost line, and the two-grader description match `graders.py`'s `DEFAULT_EVALUATORS`. The KJV reframing is honest and correct.
+
+**Retired-token sweep** — clean in all four named docs. The two residual `identify_source` mentions (`runs/tutorial-2026-10-11/README.md:82`, `lessons-learned.md:38`) are historical results prose; I agree with the builder's disposition.
+
+## Two findings
+
+**1. ~20 `file:line` pointers in `CODE_WALKTHROUGH.md` are wrong — and this PR introduced the regression.** At the base commit (`1324755`) every pointer was *exact* (`TASKS`=48, `_SUBMETRICS`=128, `normalize`=133, `score_answer`=225, `score_file`=344, `summary_markdown`=606 — all byte-correct then). The split now is crisp: every pointer into a file this PR didn't touch is still exact (`convert.py`, `schema.py`, `audit.py`, `collect.py`, `explorer.ts` — I checked `explorerTasks`=52, `filterQuestions`=40 ✓), and **every** pointer into the three rewritten files is stale:
+
+| doc says | actual | lands on |
+|---|---|---|
+| `catalogue.py:155` (source.yaml parsing) | `load_source` 185 | `payload_paths` |
+| `catalogue.py:259` (`select_targets()`) | 381 | inside `load_source` |
+| `catalogue.py:102` (`Target`) / `:46` (`LICENSES`) / `:122` (`standardized_dir`) | 125 / 59 / 152 | `_slugify` / docstring / `Provenance` |
+| `generate.py:48` (`TASKS`) | 71 | module docstring |
+| `generate.py:205` (`generate()`) | 241 | inside `_build_texts` |
+| `generate.py:153` (`_build_texts`) / `:316` / `:380` / `:402` | 178 / 354 / 420 / 442 | `_family` / inside `generate` / inside `_append_verify_source` |
+| `score.py:225` (`score_answer`) / `:288` / `:207` / `:344` / `:606` / `:430` | 275 / 319 / 257 / 383 / 676 / 629 | wrong symbol in each case |
+| `score.py:128` (`_SUBMETRICS`) | 125 | `def normalize` |
+
+Note the seven generate.py pointers *were* edited in this phase (143→153, 102→205, …) — to values that were already wrong when written (`generate.py` hasn't changed since `073f7b6`, before the Phase 5 commit). So these weren't verified against the file. The guard can't catch it: `test_code_walkthrough.py` checks range-and-symbol-exists only, and I confirmed all 51 pointers pass (none out of range, floor of 20 met) — so "pointer-guard green" is satisfied and the suite stays green either way.
+
+I'm calibrating this against the project's own stance — the guard's docstring says "a drifted line is a convenience to fix" — so this is a convenience, not a correctness break. But the doc's own prose promises "the line numbers are correct as of writing," this is the doc-accuracy phase whose test plan says "read each doc for accuracy against the shipped code," and claude raised it in iteration 1 where it then disappeared from the rebuttal without being accepted or disputed. Twenty numbers, each findable by grepping the symbol.
+
+**2. `TUTORIAL.md:139` states something that isn't true yet.** "The full four-template, all-17-texts Spec-26 run is committed under `runs/` as well." `ls runs/` shows only `first-run-2026-10-11` and `tutorial-2026-10-11`. This is the iteration-1 "broken `runs/original-<date>/` placeholder" finding restated as prose instead of a link — the link went away, the claim didn't. It matters because the plan's own Phase 6 acceptance criteria include the branch where `ANTHROPIC_API_KEY` is absent: *"stop at the live-run step, commit everything else, and report to the architect."* Down that branch the tutorial ships a false statement pointing a non-engineer at a folder that doesn't exist. Either soften it now (e.g. "the full Spec-26 run is added under `runs/` when the benchmark run lands") and wire the real path/digest in Phase 6, or drop the sentence and add it in Phase 6.
+
+Both are small and bounded; nothing about the substance of this phase is wrong.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The four docs are substantively accurate and the cold-tier arch.md #23 contradiction is correctly fixed, but ~20 CODE_WALKTHROUGH line pointers regressed from exact to stale within this PR (seven re-written in this phase to already-wrong values), and TUTORIAL.md:139 asserts a Spec-26 run is committed under runs/ when none exists.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `CODE_WALKTHROUGH.md`: ~20 `file:line` pointers into `catalogue.py` / `generate.py` / `score.py` are stale (all were exact at base `1324755`); several land inside an unrelated function — `select_targets()` cited at `catalogue.py:259` (actual 381, inside `load_source`), `summary_markdown` at `score.py:606` (actual 676), the panel snapshot at `score.py:430` (actual 629), `TASKS` at `generate.py:48` (actual 71). Pointers into untouched files are all still correct, so the fix is a mechanical pass over those three files. The guard can't catch this (range-only by design) and stays green regardless.
+- `TUTORIAL.md:139`: "The full four-template, all-17-texts Spec-26 run is committed under `runs/` as well" is false at this commit (`runs/` holds only the two pre-Spec-26 runs), and the plan's Phase 6 explicitly allows a no-key path where it stays false. Soften now and wire the real path in Phase 6.
+- Not an issue, recorded: the two residual `identify_source` mentions in `runs/tutorial-2026-10-11/README.md:82` and `lessons-learned.md:38` are historical results/lessons prose — the builder's disposition is sound.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 2 paths changed while this lane was running:
+  - CODE_WALKTHROUGH.md
+  - runs/tutorial-2026-10-11/README.md
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

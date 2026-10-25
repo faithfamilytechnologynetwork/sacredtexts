@@ -1,0 +1,45 @@
+I'll start by reading the key implementation files for phase_2.Let me verify the real behavior end-to-end in memory (read-only, no writes):I verified the implementation by reading the files and by running the real generator in memory (no writes, no tree modifications — I did not edit, revert, or create anything in the worktree).
+
+## What I checked and confirmed working
+
+**Phase 2 deliverables all land, and I verified them against the real corpus** (converted in memory, `generate(..., per_text=28)`):
+
+- **476 questions, 17 texts × 28, 119 per template** — exactly the spec's success criterion. Selection is canonical-language-only; the 9 hadith + Qur'an + Talmud Aramaic + 3 LDS + KJV/ASV/WEB are in, Talmud English and the encyclicals are out.
+- **Prompt strings are byte-exact** to the spec's authoritative table for all four templates.
+- **`display_citation` works on real data**: `"What is the text of D&C 42:42?"`, `"…Sahih al-Bukhari 3351?"`, `"…Quran 4:139?"`, `"…Gemara Pesachim 21b:3?"` — no duplicated edition name, bare citations untouched.
+- **`verify_source` identity flip is correct**: 68 positives / 51 negatives (`int(7×0.5)=3`/text, the existing deterministic formula), `source` = asked edition, `expected.true_work`/`true_version` = passage's real source; family exclusion by `document_type` holds.
+- Retired tasks gone from `TASKS`/builders; `_balanced_sample` and `per_task`/`quotas` deleted; pointer-guard updated in the same commit; `--per-text` has `min=1` (no 15–30 clamp, as the plan directed); `text_metadata(sources)` is called so the cross-source guard is live; **340 tests pass**.
+
+## Findings
+
+**1. (For the architect, not the builder) The false-premise negatives are empirically degenerate — 48 of 51 are script-mismatched.** Measured distribution of (asked language, passage script) over the default run:
+
+```
+ar/arabic: 3   |  ar/hebrew: 14, ar/latin: 13, en/hebrew: 12, en/arabic: 6, he/latin: 2, he/arabic: 1
+```
+
+Only 3 of 51 negatives present a passage in the asked edition's own script. Real examples: `Is the following text from D&C? "אמר רב יהודה…"`, `Is the following text from Sahih al-Bukhari? "And she arose at midnight…"`. ~10% of the benchmark (48/476) is answerable by script detection alone, which hollows out the "no" half of the instrument #23 exists to protect. Cause: `document_type` families are `scripture` / `hadith_collection` / `talmud`, so the 6 English scripture texts have **no** cross-family same-language partner at all — and the most informative negatives (a Book of Mormon verse attributed to the KJV) are excluded as "same family" even though the spec's stated rationale for family exclusion is shared hadith narration wording. The implementation follows the spec's letter; the fix is a spec decision (e.g. apply family exclusion only within `hadith_collection`, or prefer same-language candidates), so this should go to the architect **before Phase 6 commits evidence**, not be changed unilaterally.
+
+**2. `excluded_texts` carries 202 rows instead of 2.** The encyclicals converter re-stamps `work`/`version` per document, so every encyclical becomes its own excluded "text": the committed manifest will list `Acerba Animi`, `Acerbo Nimis`, … 201 times plus Talmud English. The spec says the manifest records the excluded **targets** with their reason (its census expects two: Talmud English, Papal Encyclicals). Dedupe/group before emitting (e.g. by the resolving target, with a count).
+
+**3. The containment-exclusion test is vacuous.** `test_verify_source_negative_excludes_contained_passage` line 255 is `assert … == -1 or True` — always true. The only real assertion (`shared.text not in q.prompt`) would pass with ~90% probability even if the `normalize(e.text) in asked_norm` filter were deleted (3 negatives drawn from ~31 candidates). Reading the code, nothing else in the suite pins that filter, so it is effectively untested. Suggest a fixture where *every* cross-family candidate but one is contained in the asked text, so deleting the filter fails.
+
+**4. `asked_norm` is built from the filtered entry pool, not all entries.** `text_norm` comes from `_Text.entries` (≥12 words, canonical citations only), so a passage present in the asked edition under a non-canonical citation can still be chosen as a "no" negative. Narrow, but the pre-Spec-26 code built `work_texts` from *all* entries — a small robustness regression.
+
+**5. `generate` takes 113 s on the real corpus** (205,760 eligible entries). The negative-candidate loop re-`normalize()`s every cross-family entry once per asked text — ~2.5M calls for ~206k distinct strings. Hoisting a per-entry normalized value next to the existing `text_norm` precompute removes 17× redundant work. Also note the candidate pool is pooled across texts and shuffled uniformly, so negatives are weighted by corpus size (the Talmud is 31% of all entries) rather than uniform over texts — worth a deliberate choice.
+
+**6. Minor:** `target_keys` (generate.py:287) is dead. The plan's "keep the full `requested_as` list available in `question.source` too" is not implemented (only the chosen name is stored) — fine if intentional, but it's a plan item; confirm nothing in Phase 3/4 wants the list. `test_cli_generate_tasks_and_per_text`'s docstring says "the encyclicals-style case" but the fixture resolves the Protestant KJV target (the work still differs from the doc's, so the path-resolution point does hold).
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 2 hits every deliverable and I verified 476 questions / 17 texts / byte-exact prompts on the real corpus, but the manifest emits 202 excluded rows instead of 2, the containment-exclusion test is vacuous, and the false-premise negatives are 94% script-mismatched (spec-driven — needs an architect decision before Phase 6).
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Only 3 of 51 `verify_source` negatives share the asked edition's script (48 trivially rejectable, ~10% of the benchmark); `document_type` family exclusion leaves the 6 English texts with no same-language cross-family partner — surface to the architect before Phase 6 bakes evidence.
+- `excluded_texts` in the manifest lists 202 re-stamped encyclical documents instead of the 2 excluded targets the spec's criterion describes.
+- `test_verify_source_negative_excludes_contained_passage` contains an always-true assertion (`== -1 or True`) and its remaining check passes probabilistically; the containment filter is effectively untested.
+- `asked_norm` is built only from the ≥12-word/canonical entry pool, so a passage present in the asked edition under a non-canonical citation can still be used as a "no" negative (pre-Spec-26 code used all entries).
+- `generate` takes 113 s on the real corpus: cross-family candidates are re-normalized once per asked text (~2.5M `normalize()` calls); precompute per-entry normalized text.
+- Minor: dead `target_keys` variable; the plan's "keep the full `requested_as` list in `question.source`" was not implemented; one test docstring misdescribes its fixture.

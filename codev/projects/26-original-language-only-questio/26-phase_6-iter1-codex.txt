@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Artifacts are internally consistent, but the committed evidence contains false headline claims and lacks the promised regression guard.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `runs/original-2026-10-21/README.md` falsely states that KJV scores 100% for all three models and that opus scores 93–100% on every English text. The per-text table shows `gpt-oss-20b` at 16% accuracy/89% coverage on KJV and opus at 86% on Doctrine and Covenants. `TUTORIAL.md` repeats the false all-model KJV claim. Correct these evidence summaries.
+- Phase 6 promised a byte-for-byte re-score regression and a digest-pinned fresh-run anchor. No test references `runs/original-2026-10-21`; `test_first_run_regression.py` still checks only the old first run despite claiming the new anchor exists, and the new README incorrectly says a regression guard pins its re-score. Add coverage that re-scores this run and validates its committed question digest.

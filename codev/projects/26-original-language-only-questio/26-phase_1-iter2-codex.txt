@@ -1,0 +1,8 @@
+---
+VERDICT: COMMENT
+SUMMARY: Phase 1 implementation is functionally complete; only documentation and plan wording remain inconsistent with the corrected path-based metadata design.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `catalogue.py`’s module docstring still says metadata reaches generation through `text_metadata`, while the corrected implementation and function documentation establish `metadata_for_standardized_path` as the generation channel.
+- Phase 1’s objective, deliverable, acceptance criterion, and test plan still describe `text_metadata()` as fail-closed for unmapped tuples. It is now intentionally a nominal dictionary view; path lookup returns `None` for generation to reject in Phase 2. Update these stale plan statements rather than changing the sound implementation.

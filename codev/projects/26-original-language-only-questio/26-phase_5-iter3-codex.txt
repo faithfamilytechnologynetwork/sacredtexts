@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 5 is nearly complete, but pipelines/README.md still contains two inaccurate corpus descriptions.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `pipelines/README.md:77-78` still cites “LDS KJV OT+NT” as an export shard-merging example, although Phase 1 deliberately removed those two catalogue targets. Replace it with a currently catalogued multi-shard example or remove the example.
+- `pipelines/README.md:31-34` defines `canonical_language` strictly as the language of composition and implies translations are excluded, without documenting the baked English-Bible exception. KJV, ASV, and WEB are translations but have `canonical_language: en` and remain included; mirror the accurate qualification already added to `TUTORIAL.md`.

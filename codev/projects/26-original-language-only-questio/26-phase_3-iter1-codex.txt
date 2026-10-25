@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Leading-stance scoring and the per-text summary do not fully satisfy Phase 3’s specified contracts.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `parse_yes_no()` does not implement the required raw first-sentence/60-character window; it only accepts Yes/No as the first token (`score.py:150-171`). More importantly, `"There is no way to verify this... Yes"` receives `outcome="incorrect"` rather than `refused`, because that specified decline cue is absent from `outcomes.py:53-80`. The test at `test_score.py:56-59` checks only `parsed` and `correct`, missing the required refused outcome.
+- `_text_label()` joins tuple fields with `" | "` (`score.py:178-185`), which is not an unambiguous encoding: different `(work, version, language)` tuples can produce the same key. The plan explicitly requires a stable, unambiguous tuple-derived key and a collision test; the current test only checks ordinary labels.
+- The Markdown output uses a combined model/text × task matrix (`score.py:682-695`) rather than the specified per-model table with explicit `text`, `n`, `accuracy`, `coverage`, and `refused` columns. The current test only checks that the heading and one label exist, so it does not enforce the required table schema.
