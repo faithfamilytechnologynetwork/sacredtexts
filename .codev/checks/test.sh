@@ -35,6 +35,14 @@ touched=$(printf '%s\n' "$changed" \
   | grep -oE '^(apps/[^/]+|pipelines|runs|texts|configs|CODE_WALKTHROUGH\.md)' \
   | sed -E 's#^(runs|texts|configs|CODE_WALKTHROUGH\.md)$#pipelines#' | sort -u)
 
+# fixtures/ holds cross-language shared fixtures (e.g. the failure-kind parity cases) asserted by
+# BOTH the pipelines pytest and the apps/viewer vitest suites. It matches no prefix above, so a
+# fixture-only edit would otherwise run ZERO tests and let the two implementations drift unchecked.
+# Map it to both lanes.
+if printf '%s\n' "$changed" | grep -qE '^fixtures/'; then
+  touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
 if [ -z "${touched//[$'\n']/}" ]; then
   echo "test-dispatcher: no app/pipeline changed vs ${base} — nothing to test."
   exit 0
