@@ -1,0 +1,39 @@
+I'll start by reading the key implementation files.Now let me read the CLI and the tests.I read the full `jev.py`, `cli.py`, the phase-3 test additions, the fixtures, and ran the gate myself (`bash .codev/checks/test.sh` → **443 passed, 1 skipped**, matching the builder's claim). I verified each iteration-1 finding in the actual code rather than taking the rebuttal at face value.
+
+## Iteration-1 findings — all genuinely fixed
+
+| Finding | Verified at | Test |
+|---|---|---|
+| claude #1 restricted text reaching the judge via index wordings | `jev.py:665-674` — every wording's `(work, version, language)` checked against `restricted_keys`, raises; CLI passes `aud.restricted_keys(sources)` (`cli.py:459,477`) | `test_load_equivalence_index_restricted_wording_fails_fast` |
+| codex #1 / claude #4 `index_digest` independently settable | `jev.py:469-477` — derived from `index.digest`; disagreeing explicit digest raises; orphan digest without an index raises | 2 tests, plus the mixed-index test rewritten to use two real indexes |
+| codex #2 per-row `index_digest` unvalidated on resume | `_UNCHECKED` sentinel (`jev.py:290`) + row check (`346-351`); `judge`/`estimate` both pass it; `load_provenance` correctly leaves it unchecked | `test_judge_resume_rejects_row_with_conflicting_index_digest` |
+| claude #2 exact-text wording exclusion | `wordings()` now excludes by `version`, exact text kept as backstop (`613-614`); `version` threaded from `source.version` through `_alternates` | `test_wordings_excludes_by_version_not_exact_text` |
+| claude #3 `--questions` unbound to this run | `_run_corpus_hash` now also checks `question_set_digest` (`cli.py:69-74`) | `test_judge_cli_mispointed_questions_fails_fast` |
+
+The `_UNCHECKED`-vs-`None` distinction is the right call — a no-index sidecar legitimately pins `None`, and conflating the two would have made the guard vacuous on exactly the default path.
+
+I also verified the key data-shape assumption against real evidence: `runs/tutorial-2026-10-11/answers.jsonl` rows carry `question.source.{work,version,language,citation}`, so the `(work, citation, language)` index key and the version-based exclusion both bind to fields that actually exist — the equivalence path won't silently no-op. `grep -rn cross_translation pipelines/` is empty. `judge-summary`, the Phase-1 `not_evaluated` path, and the grader registration are all unchanged by this phase's diff.
+
+## Non-blocking observations
+
+1. **`_run_corpus_hash` binding is skipped for a digest-less answers file.** `cli.py:473-474`: `ans_digests = {None}` → `len == 1` → `answers_digest = None` → the `question_set_digest` check at `cli.py:70` short-circuits, so an arbitrary `--questions` can supply the `corpus_hash`. Narrow (pre-Spec-3 answers only; both committed runs carry the digest), and `score.py` already fails loud on such files elsewhere. Cheap tightening: raise when `answers_digest is None` under `--equivalence-index`.
+
+2. **`estimate(..., index_digest=…)` has no test.** The CLI calls `estimate` *before* `judge` (`cli.py:483`), so the user-visible mixed-index error actually surfaces from `estimate`, while `test_judge_mixed_index_resume_fails_fast` exercises `judge()` directly. Reading both call sites, they pass identical args to `_load_manifest`/`_load_existing`, so the behavior is correct — but the path a human hits first is untested. One `estimate` assertion would close it.
+
+3. **`_STATE_CHAR_LIMIT` + a large index row is permanently un-judgeable.** With equivalence on, a citation with many/long wordings can push `judgment_state` over 100k chars; that cell raises, stays pending, and the run exits 1 — on every retry, with no way out except dropping the index. Consistent with fail-fast, but a cap on the number of alternates sent would make it recoverable. Not reachable with the fixture or #32's current shape as far as I can tell.
+
+4. **Housekeeping (already acknowledged):** the phase is uncommitted and `equivalence_index.sample.jsonl{,.manifest.json}` are untracked. They must be explicitly `git add`-ed or the committed suite will fail to find `INDEX_FIXTURE`.
+
+I made no changes to the tree.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 3's equivalence-index consumer is complete and correct; all five iteration-1 findings verified fixed in code with tests, suite green at 443 passed.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- None blocking.
+- Minor: `--questions` corpus_hash binding silently skipped when answers carry no `question_set_digest` (`cli.py:473-474`) — consider failing fast instead.
+- Minor: `estimate(..., index_digest=…)` untested, though it is the path the CLI hits before `judge`.
+- Minor: a very large index row can push `judgment_state` past `_STATE_CHAR_LIMIT`, making that cell fail on every retry; consider capping alternates.
+- Housekeeping: phase uncommitted; the two `equivalence_index.sample.jsonl*` fixtures are untracked and must be explicitly added.

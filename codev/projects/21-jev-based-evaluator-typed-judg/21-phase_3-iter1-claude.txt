@@ -1,0 +1,42 @@
+Read the phase-3 implementation from disk (`jev.py`, `cli.py`, `test_jev.py`, the two fixture files, `TUTORIAL.md`), ran the suite (`437 passed, 1 skipped`), and verified `grep -rn cross_translation pipelines/` is empty.
+
+## What's solid
+
+- `load_equivalence_index` consumes #32's schema verbatim and fails fast on: missing manifest, missing index file, `corpus_hash` mismatch, malformed rows, malformed wordings, duplicate `(work, citation, language)`, and `row_count` disagreement. That's a superset of the plan's required fail-fasts, and each is tested.
+- Equivalence stays genuinely off-by-default: `with_equivalence = index is not None` gates both `build_questions` and `interpret`, so no index ⇒ no `kind` question asked ⇒ `equivalence: "not_evaluated"` (tested in `test_judge_without_index_records_not_evaluated`). No silent negative anywhere.
+- `index_digest` lands per row (conditionally, absent when unused — matches the spec's "else absent") **and** in the sidecar manifest; `_load_manifest` makes it part of resume identity, and `test_judge_mixed_index_resume_fails_fast` proves the same-`corpus_hash`/different-`digest` case is refused. This was the plan's subtlest requirement and it's correct.
+- `--questions` is a real explicit option, not co-location guessing; `_run_corpus_hash` fails loudly on a missing/invalid/field-less manifest, and the pairing rules (`--equivalence-index` without `--questions`, and the converse) are both rejected and tested through `CliRunner`.
+- Phase 1/2 sidecars remain readable: `_write_manifest` already emitted `index_digest` in Phase 1, so `None == None` on resume — no backward-compat break.
+- Fixture is hand-written in #32's schema with no dependency on that branch, as required.
+
+## Issues
+
+**1. Restricted text can reach the judge through index wordings (baked constraint, High impact).**
+`_partition` guards the *cell's* `(work, version, language)` against `aud.restricted_keys`, but Phase 3 opens a second channel to the API: `state["indexed_other_wordings"]` carries full `text` from arbitrary index rows, and `load_equivalence_index` applies no restricted check at all. The spec's baked constraint is "the pass must **guard** against sending any `restricted`-target source, **independent of the commit-time audit gate**" — relying on #32's producer to have filtered is exactly the dependence that phrasing rejects, and #32 isn't merged, so today the only indexes in existence are hand-written (your own fixture is). The manifest's `excluded_restricted` field is never even read.
+
+The fix is small and the data is already in hand: `cli.py:449` computes `restricted = frozenset(aud.restricted_keys(sources))`, index rows carry `work`/`language`, and each wording carries `version` — the key is exactly constructible. Pass `restricted_keys` into `load_equivalence_index` and raise `JevError` naming the offending `(work, version, language)` if any wording matches (fail-fast is right here: a producer that claims `excluded_restricted` yet emits a restricted wording is a broken index, not a cell to skip). A test with a fixture index containing a restricted-target version would pin it.
+
+**2. The requested wording is excluded from alternates by exact string equality — brittle precisely where it matters.**
+`EquivalenceIndex.wordings()` (jev.py:577) drops wordings via `w.get("text") != expected_text`. The tutorial corpus is KJV English, Uthmani Arabic, and Hebrew Talmud; a one-diacritic or one-space difference between the index's wording for the question's own version and `question.expected.text` leaves the *requested* wording in `indexed_other_wordings`. The judge can then return `other_indexed_wording` for an answer that actually contains the requested text — a false equivalence verdict in the exact orthographic-variance regime this spec was written to diagnose. `row["question"]["source"]["version"]` is available at the `_alternates` call site (`run_cell` already reads `source`); excluding by `version == source["version"]` (optionally plus the text compare) makes it robust. Worth a test with a wording whose text differs from `expected.text` only in punctuation.
+
+**3. `--questions` supplies `corpus_hash` but its question-set binding is unverified.**
+`runs/*/questions.jsonl.manifest.json` carries both `corpus_hash` *and* `question_set_digest` (verified against `runs/tutorial-2026-10-11/questions.jsonl.manifest.json`). `_run_corpus_hash` reads only the former, so pointing `--questions` at a different run's questions file silently binds the wrong `corpus_hash` — and the index check then passes or fails against an unrelated run. Comparing the manifest's `question_set_digest` to the answers' digest (`_single_question_set_digest` already computes it) closes the loop in ~4 lines and makes "the run manifest" actually mean this run. Your own `test_judge_cli_corpus_hash_mismatch_fails_fast` fixture writes `question_set_digest: "d"` into the manifest but nothing reads it.
+
+**4. Minor: `index` and `index_digest` are independently settable on `judge()`.** Passing an index with `index_digest=None` would evaluate equivalence while recording manifest `index_digest: null`, which then resume-matches a no-index pass — a mixed evaluated/not-evaluated sidecar. Unreachable via the CLI (always paired), but `index_digest = index_digest or index.digest` (or an explicit raise) removes the footgun without breaking the existing tests, which pass a digest explicitly.
+
+**5. Housekeeping:** the whole phase is uncommitted and `pipelines/tests/testdata/equivalence_index.sample.jsonl{,.manifest.json}` are untracked — remember to `git add` both explicitly (per project rules, no `git add -A`), or the committed suite will fail on the fixture import.
+
+Issue 1 is the one I'd call blocking; 2 and 3 are cheap and in-phase.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Equivalence consumer is well-built and well-tested (off-by-default, manifest/corpus_hash/digest fail-fasts, mixed-index resume all correct), but index wordings open an unguarded restricted-text path to the third-party judge, and the requested-wording exclusion is exact-string fragile.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `load_equivalence_index` applies no restricted-target guard, so index `wordings[].text` can be transmitted to the Decisions API — violates the baked "guard independent of the commit-time audit gate" constraint; `restricted_keys` is already computed in `cli.py` and the `(work, version, language)` key is constructible from index rows.
+- `EquivalenceIndex.wordings()` excludes the requested wording by exact text equality; for Arabic/Hebrew (and any punctuation drift) the question's own version leaks into `indexed_other_wordings`, enabling a false `other_indexed_wording` verdict. Exclude by `version` from `question.source.version`.
+- `_run_corpus_hash` reads only `corpus_hash` from the `--questions` manifest; the sibling `question_set_digest` is ignored, so a mis-pointed `--questions` silently binds another run's corpus hash.
+- `judge(index=…, index_digest=None)` is permitted, allowing a manifest with `index_digest: null` on an equivalence-evaluated sidecar (mixed-state footgun; CLI-unreachable).
+- Phase-3 changes uncommitted; the two equivalence fixture files are untracked and must be added explicitly.

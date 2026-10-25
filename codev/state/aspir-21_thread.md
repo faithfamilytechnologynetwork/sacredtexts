@@ -173,7 +173,94 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
   (the one cheap actionable suggestion). Suite still **427 passed, 1 skip** after the comment-only edit.
 - phase_2 DONE. porch advances to phase_3 (equivalence-index consumer).
 
+## 2026-10-25 — Phase 3 implement (equivalence-index consumer), iter 1
+- **Context**: phase-1 had ALREADY wired most of the index plumbing (`judge(index=,index_digest=)`,
+  `with_equivalence=index is not None`, `KIND_Q`, `judgment_state` sets `indexed_other_wordings`,
+  sidecar manifest + per-row `index_digest`, `_load_manifest` resume fail-fast on `index_digest`).
+  phase-3 added the CONSUMER + CLI + keying + tests.
+- **jev.py**: new `EquivalenceIndex` class (lookup keyed `(work,citation,language)`; `.wordings(work,
+  citation,language,expected_text)` returns OTHER wordings, excluding the requested by exact text) +
+  `load_equivalence_index(path, *, run_corpus_hash)` consuming #32's schema VERBATIM (JSONL
+  `{work,citation,language,wordings:[{version,text}]}` + `<path>.manifest.json`
+  `{corpus_hash,row_count,digest,excluded_restricted}`). Fail-fast: missing manifest / missing file /
+  `corpus_hash` mismatch vs run / malformed row / dup `(work,citation,language)` / `row_count`
+  disagreement. `_alternates` + `run_cell` now key on work+language (were citation-only). Module
+  docstring updated ("consuming #32's schema", not "wired in a later phase").
+- **cli.py**: `judge` gains `--equivalence-index <path>` + `--questions <path>` (the corpus_hash source
+  — answers carry NO corpus_hash; it lives only in `questions.jsonl.manifest.json`, located by the
+  explicit option, never co-location-guessed). New `_run_corpus_hash(questions)` helper. `index`/
+  `index_digest` threaded into both `estimate` and `judge`. `--equivalence-index` without `--questions`
+  (and vice-versa) → `BadParameter`.
+- **Resume identity**: `index_digest` is already in the sidecar manifest + `_load_manifest` check from
+  phase-1, so a changed index on resume fails fast even if `corpus_hash` is unchanged — exercised by a
+  new test (`test_judge_mixed_index_resume_fails_fast`).
+- **Fixture + tests**: `testdata/equivalence_index.sample.jsonl` + `.manifest.json` (hand-written, #32
+  schema, NO #32-branch dep). +10 tests (loader happy/corpus-mismatch/missing-manifest/row-count/
+  malformed; judge-with-index asks equivalence + records digest; no-index not_evaluated; mixed-index
+  resume; CLI requires-questions; CLI corpus_hash mismatch). CLI JevError surfaces as `r.exception`
+  under CliRunner (main() formats it in a real run) — asserted accordingly.
+- **TUTORIAL.md**: `--equivalence-index`/`--questions` usage + the resume/score-provenance note.
+- **Verified**: full suite via `.codev/checks/test.sh` → **437 passed, 1 pre-existing skip** (was 427).
+  Real-CLI dry-run (no `--yes`, no spend): loaded fixture index, bound corpus_hash from the questions
+  manifest, ran pre-flight (1 cell), stopped at the gate. No live Decisions calls (unit tests inject a
+  fake decider). Signalling phase complete next; expect 2-way codex+claude consult.
+
+### Phase 3 iter 1 review (codex REQUEST_CHANGES / claude REQUEST_CHANGES) — folded
+- Both blocking + convergent. Rebuttal: `21-phase_3-iter1-rebuttals.md`. Suite 437→**443 passed**.
+- **claude #1 (blocking, BAKED)**: index `wordings[].text` reached the Decisions API with NO restricted
+  guard → `load_equivalence_index(restricted_keys=)` checks each wording's `(work,version,language)`,
+  fails fast ("RESTRICTED target … broken index"); CLI passes `aud.restricted_keys(sources)`.
+- **codex #1 / claude #4**: `judge` now DERIVES `index_digest` from `index.digest` (rejects a
+  disagreeing explicit digest; an index_digest w/o an index raises). Mixed-index test rewritten to use
+  two real different indexes.
+- **codex #2 / claude resume**: `_load_existing` gains `pinned_index_digest` (`_UNCHECKED` sentinel vs
+  real None); judge/estimate bind every existing row's index_digest. provenance path leaves it unchecked.
+- **claude #2**: `.wordings()` now excludes the requested edition by `version` (threaded from
+  `source.version`), not brittle exact-text — the orthographic-variance regime this diagnoses.
+- **claude #3**: `_run_corpus_hash` now also verifies the questions manifest's `question_set_digest`
+  == the answers' digest (a mis-pointed --questions is refused).
+- **claude #5 housekeeping**: commit phase-3 + `git add` the 2 fixture files EXPLICITLY at the boundary.
+- Real-CLI dry-run (no spend) re-smoked green. Signalling done next; this is iter 1 of max 3.
+
+### Phase 3 iter 2 review (codex REQUEST_CHANGES / claude APPROVE) — folded
+- Rebuttal: `21-phase_3-iter2-rebuttals.md`. claude verified ALL 5 iter-1 findings fixed. Suite 443→**446**.
+- **codex (blocking) + claude #1 (same gap, 2 sides)**: the `--questions`↔answers digest binding was
+  silently skippable — a manifest with corpus_hash but no question_set_digest (codex), or answers with
+  no/mixed digest (claude #1), bypassed the check. Fixed: under `--equivalence-index`, answers must
+  have exactly one non-empty qsd (else BadParameter), and `_run_corpus_hash` requires the manifest qsd
+  present AND equal. +2 CLI tests.
+- **claude #2**: `estimate(index_digest=)` untested though the CLI hits it before judge → +1 test
+  (`test_estimate_mixed_index_fails_fast`).
+- **claude #3 (declined, follow-up)**: a huge index row can exceed `_STATE_CHAR_LIMIT` → that cell
+  fails every retry. No safety issue (judgment_state fails fast, never sends oversized); recoverability
+  only; not reachable with fixture/#32 shape; capping alternates would truncate evidence (semantic
+  change). See FOLLOW-UPS.
+- **claude #4 housekeeping**: commit + explicit `git add` of fixtures at the boundary.
+- This is iter 2 of max 3.
+
+### Phase 3 iter 3 (final) review — CLEAN PASS (codex APPROVE / claude APPROVE)
+- Both APPROVE, HIGH, **zero blocking** — a genuine clean pass, NOT a force-advance. claude verified
+  both iter-2 binding fixes in code (answers-side + manifest-side), the restricted guard covers all 3
+  state fields that leave the process (requested_text cell-level, indexed_other_wordings per-wording;
+  model_answer out of scope), the mixed-index guard covers index→other/→none/none→index, and committed
+  run evidence is untouched. Suite **446 passed, 1 skip**.
+- Non-blocking, NOT patched (kept the clean pass clean): (1) `neither` can't be distinguished from
+  "no index row for citation" → FOLLOW-UP for Phase 4 (add `n_indexed_other_wordings`); (2)
+  `restricted_keys` defaults to empty (sole caller passes it — declined); (3) `row_count` check skipped
+  when absent (digest is the required identity — declined); (4) housekeeping commit + git add fixtures.
+- phase_3 DONE. Commit phase_3 (code + 2 fixtures EXPLICITLY + review artifacts + thread), then porch
+  advances to phase_4 (validation on the committed tutorial run — the PRE-APPROVED ~$0.011 live pass).
+
 ### FOLLOW-UPS for a later phase / the PR (not phase-2 scope)
+- **(phase 4, from iter-3 claude #1)** With an index supplied but no index row for a citation,
+  `indexed_other_wordings` is `[]` and the judge can only answer requested_wording/neither/refusal — so
+  `neither` conflates "alternates existed, none matched" with "no index row for this citation". Record
+  `n_indexed_other_wordings` (count of alternates sent) per row so Phase 4's agreement report / the paper
+  can separate those cases. Add in Phase 4 (writes a fresh sidecar anyway), with a test.
+- **(phase 3, from iter-2 claude #3)** A very large equivalence-index row (many/long wordings) can push
+  `judgment_state` past `_STATE_CHAR_LIMIT`; that cell fails fast and stays pending on every retry.
+  Consider capping the number of alternates sent (recoverable) vs. the current fail-fast. Not reachable
+  with the hand fixture or #32's current shape.
 - Row-level `answer_digest` cross-check: `score --judgments` binds on question-set digest, so a sidecar
   from a DIFFERENT collect run over the SAME question set validates (claude iter-1 #4). Phase 1 records
   answer_digest per row → a real cross-check vs the answers being scored is feasible later.

@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Equivalence lookup works, but index identity is not reliably bound to the loaded index or validated per sidecar row.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `judge()` accepts `index` and `index_digest` independently (`jev.py:424-434`). Callers can supply an index while omitting or falsifying its digest; the existing mixed-index test does exactly this by loading the fixture index but recording `"idx-A"`. Derive the digest from `index.digest`, or fail when the supplied value differs.
+- Resume validation checks only the manifest’s `index_digest` (`jev.py:370-374`). `_load_existing()` does not verify each row’s digest, so rows with missing or conflicting digests can be accepted under a matching manifest. Validate every row against the pinned digest and add tests for altered/missing row digests.

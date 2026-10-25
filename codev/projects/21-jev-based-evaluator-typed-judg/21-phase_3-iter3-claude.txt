@@ -1,0 +1,38 @@
+I'll start by reading the key implementation files.I've read the full `jev.py`, the `judge` CLI path, all equivalence tests, the fixture, and run the suite. Let me verify the two iteration-2 blocking items are genuinely closed.## Review — Phase 3: Equivalence-index consumer (iteration 3)
+
+### Verification of iteration-2 findings
+
+**codex (BLOCKING) — `--questions`↔answers binding permitted an unverifiable manifest.** Verified fixed on both sides, in code:
+
+- `cli.py:483-489` — under `--equivalence-index`, the answers must carry **exactly one non-empty** `question_set_digest` (`len(ans_digests) != 1 or not next(iter(ans_digests))`). `{None}`, `{"d", None}`, and `{"d","e"}` all raise `BadParameter`. Tested: `test_judge_cli_answers_without_digest_fails_fast`.
+- `cli.py:70-82` — given an `answers_digest`, `_run_corpus_hash` now **requires** the manifest to carry a `question_set_digest` (missing ⇒ "cannot confirm --questions describes these answers") and to equal it. Tested: `test_judge_cli_questions_manifest_without_digest_fails_fast`, `test_judge_cli_mispointed_questions_fails_fast`.
+
+I probed for a residual hole and found none: the binding is unconditional under `--equivalence-index` (no short-circuit path left), the digest set is computed over *all* answer rows (stricter than just judged tasks), and `--questions` without `--equivalence-index` is itself rejected (`cli.py:494`).
+
+**claude #2 (minor) — `estimate(index_digest=…)` untested.** Fixed: `test_estimate_mixed_index_fails_fast` asserts the error surfaces from `estimate()`, which is the path the CLI hits first (`cli.py:498`).
+
+**claude #3 (`_STATE_CHAR_LIMIT`) — declined with reasoning.** I accept the disposition. `judgment_state` fails fast before any send, so it is a recoverability concern, not a safety one, and capping alternates would silently truncate equivalence evidence. Follow-up is the right home.
+
+### Independent checks this iteration
+
+- **Lookup key is real against actual data.** I checked `runs/tutorial-2026-10-11/answers.jsonl`: `question.source` carries `work`, `version`, `language`, and `citation` on retrieve_quote rows, so `(work, citation, language)` resolves against a real #32-schema index rather than silently keying on `None` and returning `[]` forever.
+- **Restricted guard is complete for what this phase sends.** The three state fields that leave the process are `requested_text` (guarded cell-level in `_partition`, key order matches `audit.restricted_keys` → `(work, version, language)`), `model_answer` (not guardable, out of scope), and `indexed_other_wordings` (guarded per-wording in `load_equivalence_index:665-674`, fail-fast as a broken index).
+- **Mixed-index guard covers both directions.** `_load_manifest:386` rejects index→different-index *and* index→no-index *and* no-index→index, since `None` is compared as a real pinned value. Row-level `pinned_index_digest` with the `_UNCHECKED` sentinel correctly distinguishes "no-index sidecar legitimately pins `None`" from "don't check" — and `load_provenance` leaves it unchecked, which is right.
+- **No committed evidence touched.** `git status runs/` is clean; this phase writes no run artifacts.
+- **Suite green**: `bash .codev/checks/test.sh` → **446 passed, 1 skipped**, matching the builder's claim. The 19 equivalence-specific tests pass in isolation too.
+
+### Minor, non-blocking
+
+1. **`neither` is ambiguous in the sidecar.** With an index supplied but no index row for the citation, `indexed_other_wordings` is `[]` and the judge can only answer `requested_wording`/`neither`/`refusal`. A downstream reader (notably phase 4's agreement report) cannot distinguish "the index had alternates and none matched" from "the index had no row for this citation" — both land as `neither`. The spec's authoritative row schema doesn't include an alternates count, so this isn't a deviation, but recording `n_indexed_other_wordings` (or similar) would make the Phase 4 / paper analysis separable. Worth considering when Phase 4 designs the report.
+2. **`load_equivalence_index(restricted_keys=frozenset())` defaults to no guard.** Only one caller exists and it passes the set, so there's no live gap; a required keyword-only arg would make the baked constraint un-forgettable for a future caller. Low priority — the default exists to keep the many non-restricted tests readable.
+3. **`row_count` is optional.** `load_equivalence_index:680-684` skips the count cross-check when the manifest omits `row_count`, even though #32's pinned schema includes it. Since `digest` is the identity and is required, this is lenient-but-safe; just noting the asymmetry.
+4. **Housekeeping (third mention, carried).** Phase-3 code is still uncommitted and `pipelines/tests/testdata/equivalence_index.sample.jsonl{,.manifest.json}` are untracked. `INDEX_FIXTURE` is load-time-referenced by 6 tests, so a commit that misses them breaks the committed suite. The builder's stated plan (explicit `git add` of both at the phase boundary, never `git add -A`) is correct — this is a reminder, not a finding.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 3 is complete and correct; the iteration-2 blocking binding gap is closed on both the manifest and answers sides, verified in code and tests, suite green at 446 passed.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None (blocking). Minor/non-blocking: `neither` cannot be distinguished from "citation absent from index" in the sidecar (consider an alternates count for Phase 4's report); `restricted_keys` defaults to an empty frozenset rather than being required; manifest `row_count` check is skipped when the field is absent; the two index fixture files must be explicitly `git add`-ed with the phase commit or the committed suite will fail at import.
