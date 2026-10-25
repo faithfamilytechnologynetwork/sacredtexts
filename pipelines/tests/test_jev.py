@@ -202,6 +202,57 @@ def test_concurrent_build_conflict_fails_fast(tmp_path):
         judge(rows, out, decide=decide, concurrency=4)
 
 
+def test_existing_row_build_mismatch_on_resume_fails_fast(tmp_path):
+    """A manifest pinned to build X beside a row from build Y (a hand-edited or half-written
+    file) is a mixed-build file; resume must refuse it, not trust the row and extend it."""
+    out = tmp_path / "j.jsonl"
+    # Write one clean row + manifest pinned to buildX.
+    judge([_row(answer="A", qid="q-A")], out, decide=lambda s: _payload(build="buildX"), concurrency=1)
+    # Corrupt the file: append a row that claims a different build.
+    rogue = json.loads(out.read_text().splitlines()[0])
+    rogue["question_id"] = "q-B"
+    rogue["judge_model_resolved"] = "buildY"
+    with out.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rogue) + "\n")
+    # Any resume (even just estimating) now fails fast on the build disagreement.
+    with pytest.raises(JevError, match="build"):
+        estimate([_row(qid="q-C")], out)
+    with pytest.raises(JevError, match="build"):
+        judge([_row(qid="q-C")], out, decide=lambda s: _payload(build="buildX"), concurrency=1)
+
+
+def test_existing_row_without_build_on_resume_fails_fast(tmp_path):
+    out = tmp_path / "j.jsonl"
+    judge([_row(answer="A", qid="q-A")], out, decide=lambda s: _payload(build="buildX"), concurrency=1)
+    row = json.loads(out.read_text().splitlines()[0])
+    del row["judge_model_resolved"]
+    row["question_id"] = "q-B"
+    with out.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row) + "\n")
+    with pytest.raises(JevError, match="judge_model_resolved"):
+        estimate([_row(qid="q-C")], out)
+
+
+def test_manifest_without_build_fails_fast(tmp_path):
+    """A hand-edited manifest missing the resolved build would let the next response re-pin it —
+    the same mixed-build hole closed for the no-manifest case. Refuse up front."""
+    out = tmp_path / "j.jsonl"
+    judge([_row(answer="A", qid="q-A")], out, decide=lambda s: _payload(build="buildX"), concurrency=1)
+    mpath = tmp_path / "j.jsonl.manifest.json"
+    manifest = json.loads(mpath.read_text())
+    del manifest["judge_model_resolved"]
+    mpath.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(JevError, match="judge_model_resolved"):
+        estimate([_row(qid="q-B")], out)
+
+
+def test_mixed_question_set_digest_presence_fails_fast(tmp_path):
+    out = tmp_path / "j.jsonl"
+    rows = [_row(qid="q1", qsd="deadbeef"), _row(qid="q2")]  # one with a digest, one without
+    with pytest.raises(JevError, match="question_set_digest"):
+        estimate(rows, out)
+
+
 def test_nonempty_sidecar_without_manifest_fails_fast(tmp_path):
     out = tmp_path / "j.jsonl"
     out.write_text(json.dumps({"rubric_id": "sacredbench-jev-1", "question_id": "q",
@@ -292,6 +343,66 @@ def test_summarize_is_a_noop_over_a_finished_file_and_sums_cost(tmp_path):
     # each _payload() reports cost 0.000001 → total surfaced
     assert s["total_cost_usd"] == pytest.approx(0.000002)
     assert s["rubric_id"] == "sacredbench-jev-1"
+
+
+# ---- the judge is never on the default scoring path ----------------------
+
+# ---- CLI: the --yes budget gate and missing-path guards ------------------
+
+def _answers_file(tmp_path):
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps(_row(qid="q1")) + "\n", encoding="utf-8")
+    return answers
+
+
+def test_cli_judge_without_yes_refuses_to_spend(tmp_path, monkeypatch):
+    """The --yes gate is the single enforcement point for 'no unseen live pass' and the $8 cap:
+    without it, the paid pass never starts."""
+    from typer.testing import CliRunner
+
+    import sacredbench.cli as climod
+    from sacredbench import jev as jevmod
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    monkeypatch.setattr(climod.aud, "restricted_keys", lambda sources: set())
+    called = {"judge": False}
+
+    def _boom(*a, **k):
+        called["judge"] = True
+        raise AssertionError("jev.judge must not run without --yes")
+
+    monkeypatch.setattr(jevmod, "judge", _boom)
+
+    answers = _answers_file(tmp_path)
+    out = tmp_path / "j.jsonl"
+    r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(out)])
+    assert r.exit_code == 2
+    assert "re-run with --yes" in r.output
+    assert called["judge"] is False
+    assert not out.exists()  # nothing paid, nothing written
+
+
+def test_cli_judge_missing_answers_file_is_a_clean_error(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+
+    import sacredbench.cli as climod
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    r = CliRunner().invoke(app, ["judge", str(tmp_path / "nope.jsonl"), "--out", str(tmp_path / "j.jsonl")])
+    assert r.exit_code != 0
+    assert "input path not found" in r.output
+
+
+def test_cli_judge_summary_missing_sidecar_is_a_clean_error(tmp_path):
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
+    r = CliRunner().invoke(app, ["judge-summary", str(tmp_path / "nope.jsonl")])
+    assert r.exit_code != 0
+    assert "sidecar not found" in r.output
 
 
 # ---- the judge is never on the default scoring path ----------------------

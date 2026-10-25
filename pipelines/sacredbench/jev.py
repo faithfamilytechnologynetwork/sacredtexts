@@ -260,11 +260,19 @@ def _single_question_set_digest(rows: list[dict], given: str | None) -> str | No
     digests = {r.get("question_set_digest") for r in rows if r.get("question_set_digest")}
     if len(digests) > 1:
         raise JevError(f"answers mix question-set digests {sorted(digests)}; judge one set at a time")
+    if digests and any(not r.get("question_set_digest") for r in rows):
+        raise JevError(
+            "answers mix rows with and without a question_set_digest; they are not one coherent "
+            "question set — regenerate/collect, or judge a single set at a time"
+        )
     return next(iter(digests)) if digests else None
 
 
-def _load_existing(path: Path) -> set[tuple]:
-    """Resume keys already judged: (question_id, model_id, answer_digest). Guards the rubric."""
+def _load_existing(path: Path, *, pinned_build: str | None = None) -> set[tuple]:
+    """Resume keys already judged: (question_id, model_id, answer_digest). Guards the rubric and,
+    given the manifest's ``pinned_build``, every existing row's resolved build — so a hand-edited or
+    half-written file whose rows disagree with the pinned identity is refused, not silently extended
+    (no mixed-build files)."""
     keys: set[tuple] = set()
     if not path.exists():
         return keys
@@ -281,6 +289,17 @@ def _load_existing(path: Path) -> set[tuple]:
                     f"{path}: rubric {row.get('rubric_id')!r} is not {RUBRIC_ID}; "
                     "refusing to append — point --out at a fresh file"
                 )
+            row_build = row.get("judge_model_resolved")
+            if not row_build:
+                raise JevError(
+                    f"{path}:{line_no}: row has no judge_model_resolved; its build identity is "
+                    "unknown — point --out at a fresh file (no mixed-build files)"
+                )
+            if pinned_build is not None and row_build != pinned_build:
+                raise JevError(
+                    f"{path}:{line_no}: row build {row_build!r} differs from the sidecar's pinned "
+                    f"build {pinned_build!r}; no mixed-build files — point --out at a fresh file"
+                )
             keys.add((row.get("question_id"), row.get("model_id"), row.get("answer_digest")))
     return keys
 
@@ -295,6 +314,11 @@ def _load_manifest(out: Path, *, rubric_id: str, question_set_digest: str | None
     if manifest.get("rubric_id") != rubric_id:
         raise JevError(
             f"{mpath}: rubric {manifest.get('rubric_id')!r} != {rubric_id!r}; point --out at a fresh file"
+        )
+    if not manifest.get("judge_model_resolved"):
+        raise JevError(
+            f"{mpath}: manifest has no judge_model_resolved; the sidecar's build identity is "
+            "unknown and the next response would re-pin it — point --out at a fresh file"
         )
     if manifest.get("question_set_digest") != question_set_digest:
         raise JevError(
@@ -315,8 +339,8 @@ def estimate(rows: list[dict], out: Path, *, restricted_keys: frozenset = frozen
     """Pre-flight: how many cells WOULD be judged and the rough spend. No network."""
     qsd = _single_question_set_digest(rows, question_set_digest)
     _require_manifest_if_rows(out)
-    _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
-    done = _load_existing(out)
+    manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
+    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None)
     pending, skipped_task, skipped_restricted = _partition(rows, done, restricted_keys)
     n = len(pending if limit is None else pending[:limit])
     return {
@@ -384,7 +408,7 @@ def judge(
 
     _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
-    done = _load_existing(out)
+    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None)
     pending, _skipped_task, _skipped_restricted = _partition(rows, done, restricted_keys)
     if limit is not None:
         pending = pending[:limit]

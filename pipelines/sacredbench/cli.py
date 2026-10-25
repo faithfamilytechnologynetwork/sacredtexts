@@ -590,6 +590,8 @@ def judge(
     from sacredbench import jev
 
     jev_model = model or jev.JEV_MODEL
+    if not answers.exists():
+        raise typer.BadParameter(f"input path not found: {answers} — run `collect` first")
     rows = [json.loads(line) for line in answers.read_text(encoding="utf-8").splitlines() if line.strip()]
     sources = _require_catalogue(raw_root)
     restricted = frozenset(aud.restricted_keys(sources))
@@ -631,6 +633,8 @@ def judge_summary(
     """Counts + resolved build(s) over a finished sidecar. No network, no calls."""
     from sacredbench import jev
 
+    if not out.exists():
+        raise typer.BadParameter(f"sidecar not found: {out} — run `judge` first")
     s = jev.summarize(out)
     typer.echo(json.dumps(s, ensure_ascii=False, indent=1))
 

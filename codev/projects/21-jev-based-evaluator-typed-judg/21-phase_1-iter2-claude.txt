@@ -1,0 +1,49 @@
+I'll start by reading the implementation files from disk.Now let me run the test suite to verify the claims.I read all the Phase 1 implementation files from disk, ran the test suite and the project checks gate, and exercised the real CLI path. I changed nothing in the tree.
+
+## Verification of iteration-1 fixes
+
+All six of my iter-1 issues and codex's five are genuinely closed in code, not just in the rebuttal:
+
+| Issue | Status |
+|---|---|
+| Total spend never surfaced | ✅ `summarize()` sums `total_cost_usd` (jev.py:496-503); CLI prints it (cli.py:430); asserted in `test_summarize_..._and_sums_cost` |
+| Manifest-less sidecar → mixed build | ✅ `_require_manifest_if_rows` (jev.py:246) called at the top of both `estimate` and `judge`; `test_nonempty_sidecar_without_manifest_fails_fast` covers both entry points |
+| Row schema deviated from spec | ✅ flat `kind`/`kind_probabilities`/`kind_confidence`, `equivalence:"not_evaluated"` sentinel otherwise (jev.py:206-210); `summarize` reads the flat field; test asserts `"equivalence" not in parsed` |
+| `interpret` fail-open | ✅ `_num`/`_prob`/`_nonempty_str`; `usage` must be a dict with numeric cost + tokens; bools rejected as non-numbers; `kind.probabilities`/`confidence` validated |
+| Live smoke not run | ✅ Corroborated independently — the builder reported the first tutorial cell judged as a refusal (`refusal_p=0.97`), and `runs/tutorial-2026-10-11/answers.jsonl` row 1 *is* a refusal ("I can't reliably reproduce that line verbatim…"). The reported build and $0.000027 match the verified fixture. |
+| Test gaps | ✅ `--limit`, concurrent build conflict (`concurrency=4`, alternating builds — deterministic, not flaky), missing-manifest resume, cost-sum all added |
+
+Codex's question-set binding point is now exact equality including None-vs-present (jev.py:299).
+
+## Independently verified
+
+- **Suite**: 403 passed, 1 pre-existing skip. `.codev/checks/test.sh` passes.
+- **Real user path**: `judge runs/tutorial-2026-10-11/answers.jsonl` → `pre-flight: 400 cell(s) … (~$0.0108); 0 already judged` then `PAID live pass — re-run with --yes to proceed.` Matches the plan's estimate exactly and refuses to spend.
+- **Karr authorship** on both Phase-1 commits (`fe1e929`, `a7d33b2`).
+- **`grep cross_translation pipelines/`** → empty (plan acceptance criterion).
+- **`git diff HEAD -- runs/`** → empty; committed evidence untouched.
+- **Fixture** contains only probabilities/usage — no scripture text, no key material.
+- `post_decision`'s retry condition is correct under Python's `and`/`or` precedence (429 + 5xx retry; other 4xx and 401/403 raise immediately).
+- Row and manifest field sets both match the spec's authoritative schema in full.
+
+## Minor items (non-blocking)
+
+1. **`judge-summary` on a typo'd path silently reports zeros.** Verified live: `judge-summary /tmp/does-not-exist.jsonl` prints `"n": 0, "total_cost_usd": 0.0` and exits 0. A user concludes "nothing judged, $0 spent" instead of getting an error. `summarize`'s absent-file-is-zero behaviour is needed by `judge` itself, so the fix belongs in the `judge-summary` command, not the library.
+2. **`judge` on a missing answers file raises a raw `FileNotFoundError` traceback** (cli.py:406). Every other command here guards this — `generate`/`export` use `typer.BadParameter(f"input path not found: {p}")`. One-line consistency fix.
+3. **The `--yes` gate has no automated test.** It is the single enforcement point for "no unseen live pass" and the $8 cap, and Phase 4 runs a live pass through it. `--limit` is unit-tested at the library level but the CLI gate isn't. There's `CliRunner` precedent in `test_catalogue.py` and `test_phase2_tools.py`, so this is cheap. I'd want it before Phase 4.
+4. **`_load_manifest` doesn't validate `judge_model_resolved` is non-empty.** A manifest missing that field leaves `established[0] is None`, so the next response re-pins and overwrites the manifest — the same mixed-build hole just closed for the no-manifest case. Only reachable via a hand-edited manifest (`_write_manifest` always writes a validated build), so latent, but it's a one-line sibling hardening.
+5. **`_single_question_set_digest` still tolerates a mix** of rows with and without a digest, silently adopting the one found. Not reachable from `collect` output (I confirmed tutorial rows carry `question_set_digest`), so latent only.
+6. **Process**: `codev/state/aspir-21_thread.md` is in the changed-file list but was never updated for iteration 2 — it still says "399 passed" and records only the zero-call pre-flight, not the live smoke. The thread is the durable post-merge discovery surface, and Phase 4 will want to cite those smoke numbers.
+
+---
+VERDICT: APPROVE
+SUMMARY: All iteration-1 findings from both reviewers are genuinely fixed and verified; Phase 1 meets its spec/plan deliverables with 403 passing tests, a working CLI path, Karr authorship intact, and committed evidence untouched.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Non-blocking: `judge-summary` on a missing/typo'd path reports zeros and exits 0 (verified live) — fail-open against the project's fail-fast principle; fix in the CLI command, not `summarize`.
+- Non-blocking: `judge` with a missing answers file raises a raw `FileNotFoundError` instead of the `typer.BadParameter("input path not found")` pattern every other command in cli.py uses.
+- Non-blocking, do before Phase 4: the `--yes` budget gate — the enforcement point for the $8 cap — has no automated test, though `CliRunner` precedent exists in `test_catalogue.py`/`test_phase2_tools.py`.
+- Non-blocking: `_load_manifest` doesn't require a non-empty `judge_model_resolved`, leaving a hand-edited manifest able to re-pin the build (sibling of the no-manifest hole just closed).
+- Non-blocking: `codev/state/aspir-21_thread.md` was not updated for iteration 2 — still reports 399 tests and no live smoke, which Phase 4 will want to cite.

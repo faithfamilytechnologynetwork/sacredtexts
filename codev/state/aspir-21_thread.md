@@ -58,3 +58,17 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - Pre-flight dry run on committed tutorial answers = 400 cells ~$0.0108 (matches plan). Refuses to spend without --yes.
 - Committed authored by **Jonathan Karr <jka83321@gmail.com>** (carries his code) — `[Spec 21][Phase 1]`.
 - **TODO before PR**: strip `Co-Authored-By: Claude Opus 4.8` trailers from my earlier spec/plan/thread/rebuttal commits — global CLAUDE.md + architect brief both say NO Co-Authored-By. I wrongly added them during spec/plan; stopped as of Phase 1. Clean the branch history (message-only rewrite, tree unchanged) just before opening the PR, verify with git log.
+
+## 2026-10-25 — Phase 1 verify loop (iter 1 + iter 2)
+- **iter 1** (review): codex REQUEST_CHANGES + claude REQUEST_CHANGES, both code-grounded. Folded all (total spend surfaced; manifest-less sidecar fail-fast; flat `kind` schema; strict fail-loud `interpret`; `--limit`/concurrency/missing-manifest/cost-sum tests; exact qsd equality). Rebuttal written; Phase-1 commit (Karr authorship) amended → `a7d33b2`. Suite 403 passed.
+- **Phase-1 single-cell live smoke RAN** (the required real-path check): `judge runs/tutorial-2026-10-11/answers.jsonl --limit 1 --yes` → scratch sidecar, committed evidence untouched. Tutorial's first cell (a refusal) judged `refusal_p=0.97 / matches_requested_p=0.03 / equivalence not_evaluated`; resolved build `typesafe/jev-1.14-20261014`, manifest written, spend **$0.000027**. Total project live spend ≈ **$0.00008**, far under the $8 cap. Pre-flight on full committed tutorial answers = 400 cells ≈ **$0.0108** (matches plan).
+- **Git divergence resolved**: I had `--amend`ed `fe1e929` after porch pushed it, so the branch diverged from origin. Human (Waleed, relayed by architect main) APPROVED `git push --force-with-lease origin builder/aspir-21` for this branch only — ran it, lease held (`2d41f03...29a11e1`), branch reconciled. Lesson: never amend a commit porch has already pushed.
+- **iter 2** (re-verify): codex REQUEST_CHANGES (1 blocking) + claude APPROVE (5 non-blocking). Both converged on the mixed-build invariant. Folded all:
+  - codex (blocking): `_load_existing` now validates every existing row's `judge_model_resolved` against the manifest's pinned build (and rejects a row missing it) — a hand-edited/half-written mixed-build file is refused on resume, not trusted + extended.
+  - claude #4: `_load_manifest` now requires a non-empty `judge_model_resolved` (a manifest lacking it could let the next response re-pin — same hole, manifest side).
+  - claude #1: `judge-summary` on a missing sidecar → clean `BadParameter` (was zeros + exit 0).
+  - claude #2: `judge` on a missing answers file → `input path not found` (was raw `FileNotFoundError`).
+  - claude #3: `--yes` budget gate now has a CLI test (`CliRunner`) — no `--yes` ⇒ exit 2, `jev.judge` never called, nothing written.
+  - claude #5: `_single_question_set_digest` now fails on a present/absent digest mix (all-or-none).
+- New tests (7): existing-row build mismatch / missing-build / manifest-without-build / mixed-digest-presence; CLI `--yes` gate / missing-answers / missing-sidecar. **Suite now 410 passed, 1 pre-existing skip.**
+- **TODO before PR** (unchanged): strip `Co-Authored-By: Claude Opus 4.8` trailers from earlier spec/plan/thread/rebuttal commits (message-only rewrite, tree unchanged); expect cli.py textual conflict with #34 on next rebase onto main (whoever merges second rebases).

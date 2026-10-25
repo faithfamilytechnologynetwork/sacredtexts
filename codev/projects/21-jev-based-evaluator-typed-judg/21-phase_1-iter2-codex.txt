@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Prior findings are addressed, but resume still accepts malformed or mixed-build sidecar rows, violating the no-mixed-build invariant.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `pipelines/sacredbench/jev.py::_load_existing()` validates only `rubric_id`; it never verifies each existing row’s `judge_model_resolved` against the manifest. A sidecar manifest pinned to build X can contain a row from build Y, and resume will accept that row as completed and append further build-X rows, preserving a mixed-build file. It likewise accepts a completed row missing its required resolved-build field. Validate existing row identity against the manifest and add a row/manifest build-mismatch test.
