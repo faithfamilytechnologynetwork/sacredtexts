@@ -199,7 +199,7 @@ function expectedText(expected: Record<string, unknown>): string {
   for (const k of ["text", "citation", "answer"]) {
     if (typeof expected[k] === "string") return expected[k] as string;
   }
-  return JSON.stringify(expected);
+  return ""; // aligns with the pipeline's expected_text(): no text/citation/answer -> "".
 }
 
 function metricOrNull(metrics: ScoreMetrics | undefined, key: "exact" | "normalized" | "token_f1"): number | null {
@@ -330,18 +330,10 @@ export function joinResults(
         exact: metricOrNull(s.metrics, "exact"),
         normalized: metricOrNull(s.metrics, "normalized"),
         token_f1: metricOrNull(s.metrics, "token_f1"),
-        failure: classifyFailure({
-          task: s.task,
-          correct: s.metrics.correct === 1,
-          refused: s.metrics.outcome === "refused",
-          missing: false,
-          answer: "",
-          expected: "",
-          tokenF1: metricOrNull(s.metrics, "token_f1"),
-          normalized: metricOrNull(s.metrics, "normalized"),
-          containsReference: numOrNull(s.metrics, "contains_reference"),
-          nCandidates: numOrNull(s.metrics, "n_candidates"),
-        }),
+        // No roster means no answer/expected text on this back-compat path, so the script- and
+        // span-based kinds (other_script, omission) are unreachable and a cell could flip
+        // minor<->major vs the pipeline. Leave it unlabeled rather than classify from "".
+        failure: null,
       });
     }
   }
