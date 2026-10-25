@@ -174,6 +174,106 @@ def _text_key(source: dict) -> str:
     return f"{work} · {version} · {language}"
 
 
+# How the catalogue names a text, and the plain label used in a breakdown.
+# An encyclical is teaching, not scripture. Hadith is not the Qur'an.
+DOC_LABEL = {
+    "scripture": "scripture",
+    "hadith_collection": "hadith",
+    "talmud": "talmud",
+    "encyclical": "papal encyclical",
+}
+
+
+def _iter_scored(run_dir: Path):
+    """Yield (task, outcome, kind, source) for each joined score."""
+    answers: dict[tuple[str, str], dict] = {}
+    for line in (run_dir / "answers.jsonl").read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        answers[(row["question_id"], row["model_id"])] = row
+    for line in (run_dir / "scores.jsonl").read_text().splitlines():
+        if not line.strip():
+            continue
+        score = json.loads(line)
+        metrics = score.get("metrics") or {}
+        answer_row = answers.get((score["question_id"], score["model_id"]))
+        if answer_row is None:
+            continue
+        question = answer_row.get("question") or {}
+        source = question.get("source") or {}
+        expected = _expected_text(question.get("expected") or {})
+        outcome = metrics.get("outcome")
+        if outcome not in ("correct", "incorrect", "refused"):
+            outcome = "correct" if metrics.get("correct") == 1 else "incorrect"
+        kind = classify_failure(
+            task=score["task"],
+            correct=metrics.get("correct") == 1,
+            refused=outcome == "refused",
+            answer=answer_row.get("answer") or "",
+            expected=expected,
+            token_f1=metrics.get("token_f1"),
+            normalized=metrics.get("normalized"),
+            contains_reference=metrics.get("contains_reference"),
+            n_candidates=metrics.get("n_candidates"),
+        )
+        yield score["task"], outcome, kind, source
+
+
+def rates(counts: Counter) -> tuple[float | None, float | None]:
+    """Accuracy C/(C+I) and refusal R/N. Accuracy is None when nothing was graded."""
+    c = counts["correct"]
+    i = counts["incorrect"]
+    r = counts["refused"]
+    n = c + i + r
+    accuracy = c / (c + i) if c + i else None
+    refusal = r / n if n else None
+    return accuracy, refusal
+
+
+def breakdown_run(run_dir: Path) -> dict:
+    """Outcome counts by document type, by tradition, and by task.
+
+    Papal encyclicals are their own type. A run that did not ask them reports
+    that type at zero rather than folding it into scripture.
+    """
+    by_doc: dict[str, Counter] = {label: Counter() for label in DOC_LABEL.values()}
+    by_trad: dict[str, Counter] = {}
+    by_pair: dict[str, Counter] = {}
+    by_task: dict[str, Counter] = {}
+    for task, outcome, kind, source in _iter_scored(run_dir):
+        raw = source.get("document_type") or "unknown"
+        doc = DOC_LABEL.get(raw, raw)
+        trads = source.get("tradition") or ["unknown"]
+        if isinstance(trads, str):
+            trads = [trads]
+        trad = trads[0] if trads else "unknown"
+        for bucket, key in (
+            (by_doc, doc),
+            (by_trad, trad),
+            (by_pair, f"{trad} · {doc}"),
+            (by_task, task),
+        ):
+            bucket.setdefault(key, Counter())
+            bucket[key][outcome] += 1
+            if kind:
+                bucket[key][f"kind:{kind}"] += 1
+    return {"document_type": by_doc, "tradition": by_trad, "tradition_and_type": by_pair, "task": by_task}
+
+
+def format_breakdown(groups: dict[str, Counter]) -> str:
+    """One row per group: n, accuracy, refusal rate."""
+    lines = [f"{'group':<42} {'n':>5} {'acc':>6} {'ref':>6}"]
+    for key in sorted(groups):
+        counts = groups[key]
+        n = counts["correct"] + counts["incorrect"] + counts["refused"]
+        accuracy, refusal = rates(counts)
+        acc_s = "  —  " if accuracy is None else f"{accuracy:6.3f}"
+        ref_s = "  —  " if refusal is None else f"{refusal:6.3f}"
+        lines.append(f"{key:<42} {n:5d} {acc_s} {ref_s}")
+    return "\n".join(lines)
+
+
 def report_run(run_dir: Path) -> dict:
     """Count outcomes and failure kinds for one run, per text.
 
