@@ -2,25 +2,51 @@
 
 This is the portability check in the manuscript: KJV, ASV, and WEB, one verse
 at a time. It does not score a model.
+
+Editions come from the Spec 32 edition index (``edition_index.load_edition_documents``),
+never from ``texts/raw/*.json`` payloads directly: that routes every wording through the
+same converter the audit uses and the same licence gate, so a restricted English Bible
+(e.g. NABRE) is filtered before it can be compared here.
 """
 
 from __future__ import annotations
 
-import json
+from collections import defaultdict
 from pathlib import Path
 
+from sacredbench import catalogue as cat
+from sacredbench.edition_index import load_edition_documents
 from sacredbench.score import normalize
 
-
-def _index(path: Path) -> dict[tuple, str]:
-    rows = json.loads(path.read_text())
-    return {
-        (row["book"], int(row["chapter"]), int(row["verse"])): normalize(row["text"])
-        for row in rows
-    }
+# The manuscript's portability check is the English Bible: one work, one language, several
+# public-domain wordings. These select which indexed editions enter the agreement table.
+BIBLE_WORK = "The Bible"
+BIBLE_LANGUAGE = "en"
 
 
-def agreement(indexes: dict[str, dict[tuple, str]]) -> dict:
+def edition_indexes(
+    raw_root: Path = cat.RAW_ROOT,
+    *,
+    work: str = BIBLE_WORK,
+    language: str = BIBLE_LANGUAGE,
+) -> dict[str, dict[str, str]]:
+    """Per-version ``{citation: folded text}`` for one work+language, from the edition index.
+
+    Reads the non-restricted corpus through the converter (:func:`load_edition_documents`),
+    never raw payload files. The index is the same-canonical-language pool, so a work has one
+    indexed wording per (version, citation); versions are the catalogue's version strings
+    (e.g. ``KJV``, ``ASV (1901)``, ``WEB``)."""
+    indexed, _all_docs, _excluded = load_edition_documents(raw_root)
+    editions: dict[str, dict[str, str]] = defaultdict(dict)
+    for doc in indexed:
+        if doc.work != work or doc.language != language:
+            continue
+        for entry in doc.entries:
+            editions[doc.version][entry.citation] = normalize(entry.text)
+    return dict(editions)
+
+
+def agreement(indexes: dict[str, dict[str, str]]) -> dict:
     """Count verses present in every edition whose folded text matches."""
     names = list(indexes)
     if len(names) < 2:
@@ -39,8 +65,8 @@ def agreement(indexes: dict[str, dict[tuple, str]]) -> dict:
     return {"shared": len(shared), "all": all_match, "pairs": pairs}
 
 
-def edition_run(paths: dict[str, Path]) -> dict:
-    return agreement({name: _index(path) for name, path in paths.items()})
+def edition_run(raw_root: Path = cat.RAW_ROOT) -> dict:
+    return agreement(edition_indexes(raw_root))
 
 
 def format_editions(report: dict) -> str:

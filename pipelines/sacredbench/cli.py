@@ -556,15 +556,14 @@ def splits(
 
 @app.command()
 def editions(
-    kjv: Path = typer.Option(Path("texts/raw/Protestant Christian/kjv.json")),
-    asv: Path = typer.Option(Path("texts/raw/Protestant Christian/asv.json")),
-    web: Path = typer.Option(Path("texts/raw/Protestant Christian/web.json")),
+    raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root (catalogue + edition index)"),
 ) -> None:
-    """Folded agreement of KJV, ASV, and WEB. Does not score a model."""
-    for path in (kjv, asv, web):
-        if not path.is_file():
-            raise ScoreError(f"missing Bible JSON: {path}")
-    typer.echo(format_editions(edition_run({"KJV": kjv, "ASV": asv, "WEB": web})))
+    """Folded agreement of the public-domain English Bibles. Does not score a model.
+
+    Builds the per-edition verse index from the Spec 32 edition index (the converter + the
+    licence gate), so restricted editions are never read. Makes no network call."""
+    _require_catalogue(raw_root)
+    typer.echo(format_editions(edition_run(raw_root)))
 
 
 def main() -> None:
