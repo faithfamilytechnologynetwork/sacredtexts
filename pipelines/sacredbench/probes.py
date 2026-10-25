@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from sacredbench.failure_kind import classify_failure, _expected_text
-from sacredbench.score import _bounded_equal, normalize  # noqa: F401 — _bounded_equal used below
+from sacredbench.score import bounded_contains, normalize  # noqa: F401 — bounded_contains used below
 
 # Letter forms normalize() does not decompose. Applied after normalize().
 _LETTER_FOLD = str.maketrans({
@@ -195,7 +195,7 @@ def kjv_substitution(rows: list[dict], kjv: dict[str, str]) -> dict:
         if not gold:
             continue
         checked += 1
-        if _bounded_equal(row["answer"], gold):
+        if bounded_contains(row["answer"], gold):
             hit += 1
     return {"asv_web_incorrect_with_kjv_verse": checked, "answer_contains_kjv": hit}
 
