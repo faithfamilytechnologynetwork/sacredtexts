@@ -1,0 +1,14 @@
+id: '36'
+title: integrate-pr-35-failure-kinds-
+protocol: air
+phase: implement
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-25T22:35:24.407Z'
+updated_at: '2026-10-25T22:35:24.408Z'
