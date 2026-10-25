@@ -11,18 +11,18 @@ plan_phases:
     status: complete
   - id: phase_3
     title: Equivalence-index consumer
-    status: in_progress
+    status: complete
   - id: phase_4
     title: Validation on the committed tutorial run
-    status: pending
-current_plan_phase: phase_3
+    status: in_progress
+current_plan_phase: phase_4
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -109,7 +109,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter2-claude.txt
 started_at: '2026-10-23T23:35:10.141Z'
-updated_at: '2026-10-25T23:34:02.215Z'
+updated_at: '2026-10-25T23:37:24.207Z'
 force_advanced:
   phase: phase_1
   iteration: 3
@@ -123,3 +123,5 @@ context_refreshes:
   - boundary: plan-phase:phase_3
     at: '2026-10-25T23:09:10.137Z'
     acknowledged_at: '2026-10-25T23:11:47.070Z'
+  - boundary: plan-phase:phase_4
+    at: '2026-10-25T23:37:24.207Z'
