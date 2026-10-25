@@ -1,7 +1,7 @@
 id: '36'
 title: integrate-pr-35-failure-kinds-
 protocol: air
-phase: implement
+phase: pr
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-10-25T22:35:24.407Z'
-updated_at: '2026-10-25T22:35:24.408Z'
+updated_at: '2026-10-25T22:52:07.302Z'
