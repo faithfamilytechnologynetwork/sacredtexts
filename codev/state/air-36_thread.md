@@ -53,6 +53,28 @@ main and fix the five review items from the PR comment. AIR protocol, strict mod
   runs/ (runs/ stays clean). Full dispatcher green: pipelines 483 passed/1 skipped, viewer 185
   passed, tsc clean.
 
-## Next
-- Open PR ("Supersedes #35" / "Closes #36", no Co-Authored-By/Generated-with), record with
-  `porch done --pr`, ping architect. pr gate is human-approved — do NOT merge.
+## PR #44 opened; porch at pr gate (human-approved). Round-1 review folded (2026-10-25)
+Architect r1: both consult lanes REQUEST_CHANGES — 7 blocking, item 8 decided, cleanups, gate
+item 10, 2 follow-ups. All folded (commits 0324204 → bae23df):
+- B1 tradition: breakdown_run counts a shared text once per LISTED tradition (not tradition[0]);
+  multi-tradition regression test.
+- B2 parity gaps: Python `_normalize` strips `_` to match TS; Greek added to `_script` +
+  primaryScript (grc); severity added to the fixture + asserted in BOTH suites; +2 fixture cases.
+- B3: fixtures/ now gated on BOTH test lanes in .codev/checks/test.sh (was zero-tested).
+- B4: viewer no-roster join emits failure:null (was classifying from ""); expectedText fallback
+  "" to match Python.
+- B5: format_splits prints "—" for an all-refused model (was TypeError); regression test.
+- B6: replaced the vacuous cite_passage assertion with `not in tests`.
+- B7: probes/splits payload loaders fail loud on a missing passed/defaulted path (+ CLI validates).
+- Item 8: finished SacredBench rename (README/TUTORIAL/viewer README/index.html/pyproject);
+  RootLayout already had it. LeaderboardTable copy rewrite + rename declared in PR body.
+- Item 9 cleanups: paraphrase_f1 param so splits._quote_kind delegates the cascade; promoted
+  expected_text/tokens/load_rows; dropped unused Counter import + stale noqa; outcomes docstring
+  indentation; CODE_WALKTHROUGH module tree + &kind= in viewer README.
+- **Item 10 GATE**: re-ran failures/breakdown/probes/splits/editions over runs/original-2026-10-21;
+  ALL FIVE byte-identical pre vs post-fix. No manuscript number moved (no underscores/Greek in this
+  run flip a class; every text single-tradition; _quote_kind refactor behavior-preserving). Reported
+  to architect.
+- Follow-ups filed: #45 (route remaining raw reads via edition_index, unify the join, --json),
+  #46 (localResults no-roster sample-path honesty).
+Gate state: pr (human-approved). Do NOT merge; waiting on architect approval.
