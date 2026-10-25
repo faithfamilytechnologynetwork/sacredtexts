@@ -21,8 +21,8 @@ gates:
     status: pending
   verify-approval:
     status: pending
-iteration: 1
-build_complete: true
+iteration: 2
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -108,8 +108,20 @@ history:
         verdict: APPROVE
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter2-claude.txt
+  - iteration: 1
+    plan_phase: phase_4
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_4-iter1-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_4-iter1-claude.txt
 started_at: '2026-10-23T23:35:10.141Z'
-updated_at: '2026-10-25T23:47:25.133Z'
+updated_at: '2026-10-25T23:54:54.969Z'
 force_advanced:
   phase: phase_1
   iteration: 3
