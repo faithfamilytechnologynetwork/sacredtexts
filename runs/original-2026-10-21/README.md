@@ -175,6 +175,12 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
 - **Containment has no anti-hedge rule for text-retrieval.** A `retrieve_quote`/`complete_unit`
   answer that *wraps* the exact reference in a citation or caveat still counts as correct;
   `cite_passage` and `verify_source` do enforce a single-verdict / leading-stance rule.
+- **The refusal classifier's decline cues are English (`outcomes.py`).** A cell is scored
+  `refused` on a leading English decline phrase; a decline written in Greek, Hebrew, or Arabic that
+  does not use one of those phrases is *not* classified as refused. So refusal rates — and the
+  coverage figures beside each accuracy — are **not comparable across scripts**, and an other-script
+  decline can land as `incorrect` rather than `refused`. Adjudicating these by an independent rater
+  (rather than extending the cue list with untested non-English phrases) is a tracked follow-up.
 
 ## Copyright / licensing
 
