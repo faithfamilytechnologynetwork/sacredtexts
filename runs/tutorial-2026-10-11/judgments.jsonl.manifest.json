@@ -1,0 +1,7 @@
+{
+ "rubric_id": "sacredbench-jev-1",
+ "judge_model": "jev-latest",
+ "judge_model_resolved": "typesafe/jev-1.14-20261014",
+ "question_set_digest": "37eb58400fdf4ea9",
+ "index_digest": null
+}

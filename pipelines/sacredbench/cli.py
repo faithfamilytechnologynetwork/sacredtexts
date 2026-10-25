@@ -32,6 +32,7 @@ from sacredbench.probes import format_probe, probe_run
 from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
 from sacredbench.jev import JevError
+from sacredbench.jev_agreement import AgreementError
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -725,13 +726,39 @@ def judge_summary(
     typer.echo(json.dumps(s, ensure_ascii=False, indent=1))
 
 
+@app.command("judge-agreement")
+def judge_agreement(
+    answers: Path = typer.Argument(help="answers.jsonl from `collect`"),
+    scores: Path = typer.Argument(help="scores.jsonl from `score`"),
+    judgments: Path = typer.Argument(help="judgments sidecar from `judge`"),
+    json_out: Path = typer.Option(None, help="write the JSON report here"),
+    md_out: Path = typer.Option(None, help="write the markdown report here"),
+) -> None:
+    """Agreement report: Jev verdicts vs the deterministic tiers (containment / refusal). Read-only —
+    never re-scores or mutates the run. Prints the markdown; also writes JSON/markdown when asked."""
+    from sacredbench import jev_agreement as agr
+
+    for p in (answers, scores, judgments):
+        if not p.exists():
+            raise typer.BadParameter(f"input path not found: {p}")
+    report = agr.agreement(agr.load(answers, scores, judgments))
+    md = agr.render_markdown(report)
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    if md_out is not None:
+        md_out.parent.mkdir(parents=True, exist_ok=True)
+        md_out.write_text(md, encoding="utf-8")
+    typer.echo(md)
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
         gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
-        FacctError, JevError,
+        FacctError, JevError, AgreementError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

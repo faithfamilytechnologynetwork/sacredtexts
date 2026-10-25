@@ -230,6 +230,17 @@ mixed-index file). To record which judge build produced the verdicts in a run's 
 sidecar to `score --judgments runs/my-run/judgments.jsonl` (an explicit opt-in; the headline stays
 deterministic).
 
+To see how the judge's verdicts **agree** with the deterministic tiers — containment
+(`matches_requested_p` vs `contains_reference`) and refusal (`refusal_p` vs the `refused` outcome) —
+with the raw per-class probability distribution and the exhaustive disagreement list, run the
+read-only agreement report:
+
+```bash
+uv --project pipelines run python -m sacredbench judge-agreement \
+  runs/my-run/answers.jsonl runs/my-run/scores.jsonl runs/my-run/judgments.jsonl \
+  --json-out runs/my-run/jev_agreement.json --md-out runs/my-run/jev_agreement.md
+```
+
 Then audit the whole finished run one more time, now that it holds answers and scores:
 
 ```bash

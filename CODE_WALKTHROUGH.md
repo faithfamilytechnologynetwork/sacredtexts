@@ -268,7 +268,13 @@ run's verdicts, `score --judgments <sidecar>` is an **explicit opt-in**: it vali
 manifest **and its rows** bind to these answers (same rubric, resolved build, and question-set digest,
 with at least one recorded verdict) and stamps `summary["judge"] = {"model_resolved": …, "rubric_id": …}`
 beside `summary["evaluators"]` (default `score` never reads an adjacent sidecar, so a re-score stays
-reproducible; no cost/usage field enters the summary). See the Jev plan/spec (`codev/plans/21-*.md`)
+reproducible; no cost/usage field enters the summary).
+
+To quantify how the judge agrees with the deterministic tiers, `pipelines/sacredbench/jev_agreement.py`
+(the `judge-agreement` CLI command) joins answers × scores × judgments on `(question_id, model_id)` —
+self-verifying via each row's `answer_digest` — and reports containment/refusal confusion at p ≥ 0.5,
+the raw per-deterministic-class probability distribution, and the exhaustive disagreement set. It is
+read-only (never re-scores); its `jev_agreement.{json,md}` output is new sidecar evidence. See the Jev plan/spec (`codev/plans/21-*.md`)
 for the full contract.
 
 ### 4. Know the matching backbone — `_SUBMETRICS` / `normalize`
