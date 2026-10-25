@@ -1,10 +1,11 @@
-from sacredbench.editions import agreement
 from sacredbench.splits import (
     citation_distance,
     fisher_exact,
+    format_splits,
     near_copy_by_language,
     other_script_uncertainty,
     quran_bukhari_gap,
+    split_run,
 )
 
 
@@ -30,7 +31,7 @@ def test_gap_skips_refusals_and_the_citation_task():
     assert both["quran_correct"] == 1
     assert both["quran_incorrect"] == 0
     assert both["bukhari_incorrect"] == 1
-    assert tests["cite_passage"]["quran_incorrect"] == 0 if "cite_passage" in tests else True
+    assert "cite_passage" not in tests  # the gap test skips the citation task entirely
 
 
 def test_near_copy_is_counted_by_language():
@@ -64,16 +65,6 @@ def test_uncertain_other_script_is_counted_without_rescoring():
     assert report["uncertain"] == 1
 
 
-def test_edition_agreement_counts_shared_verses_only():
-    report = agreement({
-        "KJV": {("Genesis", 1, 1): "a", ("Genesis", 1, 2): "b"},
-        "WEB": {("Genesis", 1, 1): "a", ("Genesis", 1, 2): "c"},
-    })
-    assert report["shared"] == 2
-    assert report["all"] == 1
-    assert report["pairs"]["KJV and WEB"] == 1
-
-
 def test_citation_distance_marks_another_book():
     rows = [{
         "task": "cite_passage",
@@ -85,6 +76,31 @@ def test_citation_distance_marks_another_book():
     bible = {("2 kings", 10, 8), ("2 chronicles", 13, 4)}
     counts = citation_distance(rows, set(), bible)
     assert counts[("The Bible", "other book")] == 1
+
+
+def test_format_splits_handles_a_model_that_refused_everything(tmp_path):
+    # A model that refused every item has graded=0 -> accuracy None. format_splits must print
+    # "—", not crash on a None passed to a float format (the "accuracy if refusals count as
+    # incorrect" row).
+    import json
+
+    (tmp_path / "answers.jsonl").write_text(
+        json.dumps({
+            "question_id": "q1", "model_id": "m/all-refused", "answer": "I cannot help with that",
+            "question": {"expected": {}, "source": {"work": "W", "version": "V", "language": "en"}},
+        }) + "\n"
+    )
+    (tmp_path / "scores.jsonl").write_text(
+        json.dumps({
+            "question_id": "q1", "model_id": "m/all-refused", "task": "retrieve_quote",
+            "metrics": {"outcome": "refused", "correct": 0},
+        }) + "\n"
+    )
+    report = split_run(tmp_path)
+    assert report["sensitivity"]["models"][0]["accuracy"] is None
+    out = format_splits(report)  # must not raise on the None accuracy
+    # graded accuracy is "—"; counting the refusal as incorrect gives 0/1 = 0.000.
+    assert "all-refused: — -> 0.000" in out
 
 
 def _row(pool: str, task: str, outcome: str, model: str) -> dict:

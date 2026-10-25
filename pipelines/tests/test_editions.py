@@ -18,10 +18,25 @@ def test_agreement_needs_at_least_two_editions():
     assert agreement({"only": {"1:1": "x"}}) == {"shared": 0, "all": 0, "pairs": {}}
 
 
+def test_agreement_counts_shared_verses_only():
+    # Moved here from test_splits.py: agreement lives in editions.py. Tuple keys work too — the
+    # agreement logic is key-agnostic (edition_indexes keys on the citation string).
+    report = agreement({
+        "KJV": {("Genesis", 1, 1): "a", ("Genesis", 1, 2): "b"},
+        "WEB": {("Genesis", 1, 1): "a", ("Genesis", 1, 2): "c"},
+    })
+    assert report["shared"] == 2
+    assert report["all"] == 1
+    assert report["pairs"]["KJV and WEB"] == 1
+
+
 def test_edition_indexes_are_the_public_domain_english_bibles_via_the_converter():
     editions = edition_indexes()
     # Exactly the three public-domain wordings, by their catalogue version strings — a restricted
     # English Bible (NABRE) would add a fourth version, so this also guards the licence gate.
+    # NOTE: the catalogue filters `restricted` by license regardless of payload presence, so this
+    # stays a real gate even when NABRE is not checked out locally; with the NABRE payload present
+    # it additionally proves the converted restricted edition is not leaking in.
     assert set(editions) == {"KJV", "ASV (1901)", "WEB"}
     # Each wording is the whole Bible read through the converter, not a stub.
     assert all(len(verses) > 1000 for verses in editions.values())

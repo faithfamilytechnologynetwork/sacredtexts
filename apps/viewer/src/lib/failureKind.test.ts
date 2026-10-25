@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it, expect } from "vitest";
-import { classifyFailure, type FailureInput, type FailureKind } from "./failureKind";
+import { classifyFailure, failureSeverity, type FailureInput, type FailureKind } from "./failureKind";
 
 // The shared parity fixture: the SAME cases pytest asserts against
 // (pipelines/tests/test_failure_kind.py), so classifyFailure and classify_failure cannot drift.
@@ -17,6 +17,7 @@ interface SharedCase {
   contains_reference: number | null;
   n_candidates: number | null;
   expected_kind: FailureKind | null;
+  expected_severity: "minor" | "major" | null;
 }
 
 // vitest runs with cwd = apps/viewer (see deploy.test.ts reading "package.json"); the shared
@@ -41,7 +42,9 @@ function fromSharedCase(c: SharedCase): FailureInput {
 
 describe("classifyFailure shared fixture parity", () => {
   it.each(sharedCases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
-    expect(classifyFailure(fromSharedCase(c))).toBe(c.expected_kind);
+    const kind = classifyFailure(fromSharedCase(c));
+    expect(kind).toBe(c.expected_kind);
+    expect(failureSeverity(kind)).toBe(c.expected_severity);
   });
 });
 

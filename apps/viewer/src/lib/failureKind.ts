@@ -100,11 +100,12 @@ function tokenList(s: string): string[] {
   return n ? n.split(" ") : [];
 }
 
-type Script = "hebrew" | "arabic" | "latin";
+type Script = "hebrew" | "arabic" | "greek" | "latin";
 
 function primaryScript(s: string): Script | null {
   let hebrew = 0;
   let arabic = 0;
+  let greek = 0;
   let latin = 0;
   for (const ch of s) {
     const c = ch.codePointAt(0)!;
@@ -117,12 +118,16 @@ function primaryScript(s: string): Script | null {
       (c >= 0xfe70 && c <= 0xfeff)
     )
       arabic++;
+    // Greek and Coptic + Greek Extended. grc is a supported canonical language, so a Greek
+    // prompt answered in English must read as other_script, not wrong_passage.
+    else if ((c >= 0x0370 && c <= 0x03ff) || (c >= 0x1f00 && c <= 0x1fff)) greek++;
     else if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) latin++;
   }
-  const best = Math.max(hebrew, arabic, latin);
+  const best = Math.max(hebrew, arabic, greek, latin);
   if (best < 4) return null;
   if (hebrew === best) return "hebrew";
   if (arabic === best) return "arabic";
+  if (greek === best) return "greek";
   return "latin";
 }
 

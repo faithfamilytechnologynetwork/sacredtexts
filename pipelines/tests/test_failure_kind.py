@@ -4,19 +4,52 @@ from pathlib import Path
 
 import pytest
 
-from sacredbench.failure_kind import classify_failure, rates, severity
+from sacredbench.failure_kind import breakdown_run, classify_failure, rates, severity
 
 # The shared parity fixture: the SAME cases the viewer's vitest suite asserts against
-# (apps/viewer/src/lib/failureKind.test.ts), so classify_failure and classifyFailure cannot drift.
+# (apps/viewer/src/lib/failureKind.test.ts), so classify_failure/classifyFailure AND
+# severity/failureSeverity cannot drift.
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "failure_kind_cases.json"
 _CASES = json.loads(FIXTURE.read_text(encoding="utf-8"))["cases"]
+_FIELDS = ("name", "expected_kind", "expected_severity")
 
 
 @pytest.mark.parametrize("case", _CASES, ids=[c["name"] for c in _CASES])
 def test_shared_fixture_parity(case):
-    """Every shared case classifies to its ``expected_kind`` (None = unlabeled)."""
-    kwargs = {k: v for k, v in case.items() if k not in ("name", "expected_kind")}
-    assert classify_failure(**kwargs) == case["expected_kind"]
+    """Each shared case classifies to its ``expected_kind`` and ``expected_severity``."""
+    kwargs = {k: v for k, v in case.items() if k not in _FIELDS}
+    kind = classify_failure(**kwargs)
+    assert kind == case["expected_kind"]
+    assert severity(kind) == case["expected_severity"]
+
+
+def test_breakdown_counts_a_shared_text_under_each_listed_tradition(tmp_path):
+    # tradition is a LIST and a shared text is counted once per listed tradition (like score.py):
+    # a doc with two traditions must appear in BOTH by_tradition rows and BOTH tradition×type rows,
+    # while by_document_type and by_task count it only once.
+    (tmp_path / "answers.jsonl").write_text(json.dumps({
+        "question_id": "q1", "model_id": "m", "answer": "the verse",
+        "question": {
+            "expected": {"text": "the verse"},
+            "source": {
+                "document_type": "scripture", "work": "W", "version": "V", "language": "en",
+                "tradition": ["Roman Catholic", "Greek Orthodox"],
+            },
+        },
+    }) + "\n")
+    (tmp_path / "scores.jsonl").write_text(json.dumps({
+        "question_id": "q1", "model_id": "m", "task": "retrieve_quote",
+        "metrics": {"outcome": "correct", "correct": 1},
+    }) + "\n")
+
+    groups = breakdown_run(tmp_path)
+    assert groups["tradition"]["Roman Catholic"]["correct"] == 1
+    assert groups["tradition"]["Greek Orthodox"]["correct"] == 1
+    assert groups["tradition_and_type"]["Roman Catholic · scripture"]["correct"] == 1
+    assert groups["tradition_and_type"]["Greek Orthodox · scripture"]["correct"] == 1
+    # counted once, not once per tradition, for document type and task
+    assert groups["document_type"]["scripture"]["correct"] == 1
+    assert groups["task"]["retrieve_quote"]["correct"] == 1
 
 
 def test_refused_and_exact_correct_are_unlabeled():

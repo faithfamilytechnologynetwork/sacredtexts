@@ -1,5 +1,5 @@
 {
-  "comment": "Shared parity fixture for the failure-kind taxonomy. The SAME cases are asserted by pipelines/tests/test_failure_kind.py (classify_failure) and apps/viewer/src/lib/failureKind.test.ts (classifyFailure), so the Python and TypeScript classifiers cannot drift. Each case's fields are the classifier inputs (Python kwargs verbatim; the viewer test maps token_f1->tokenF1, contains_reference->containsReference, n_candidates->nCandidates and sets missing:false); expected_kind is the required return (null = unlabeled). No restricted-corpus text appears here — strings are synthetic. Covers every branch of the classifier; add a case when a branch is added.",
+  "comment": "Shared parity fixture for the failure-kind taxonomy. The SAME cases are asserted by pipelines/tests/test_failure_kind.py (classify_failure) and apps/viewer/src/lib/failureKind.test.ts (classifyFailure), so the Python and TypeScript classifiers cannot drift. Each case's fields are the classifier inputs (Python kwargs verbatim; the viewer test maps token_f1->tokenF1, contains_reference->containsReference, n_candidates->nCandidates and sets missing:false); expected_kind is the required return (null = unlabeled) and expected_severity is severity(expected_kind) (minor/major/null) — BOTH classifier and severity are asserted in both suites, since severity() / failureSeverity() is a second dual implementation. No restricted-corpus text appears here — strings are synthetic. Covers every branch of the classifier; add a case (with both expected fields) when a branch is added.",
   "cases": [
     {
       "name": "refused cell is unlabeled",
@@ -12,7 +12,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
     },
     {
       "name": "exact correct retrieval is unlabeled",
@@ -25,7 +26,8 @@
       "normalized": 1,
       "contains_reference": 1,
       "n_candidates": null,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
     },
     {
       "name": "correct but not contained is unlabeled",
@@ -38,7 +40,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
     },
     {
       "name": "correct contained quote near the reference length is unlabeled",
@@ -51,7 +54,8 @@
       "normalized": 0,
       "contains_reference": 1,
       "n_candidates": null,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
     },
     {
       "name": "correct contained quote that runs well past the reference is an addition",
@@ -64,7 +68,8 @@
       "normalized": 0,
       "contains_reference": 1,
       "n_candidates": null,
-      "expected_kind": "addition"
+      "expected_kind": "addition",
+      "expected_severity": "minor"
     },
     {
       "name": "complete_unit addition is labeled like retrieve_quote",
@@ -77,7 +82,8 @@
       "normalized": 0,
       "contains_reference": 1,
       "n_candidates": null,
-      "expected_kind": "addition"
+      "expected_kind": "addition",
+      "expected_severity": "minor"
     },
     {
       "name": "answer in another script than the reference is other_script",
@@ -90,7 +96,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "other_script"
+      "expected_kind": "other_script",
+      "expected_severity": "major"
     },
     {
       "name": "a shorter word-bounded span of the reference is an omission",
@@ -103,7 +110,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "omission"
+      "expected_kind": "omission",
+      "expected_severity": "minor"
     },
     {
       "name": "high token overlap the scorer did not fold is a near_copy",
@@ -116,7 +124,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "near_copy"
+      "expected_kind": "near_copy",
+      "expected_severity": "minor"
     },
     {
       "name": "mid token overlap is a paraphrase",
@@ -129,7 +138,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "paraphrase"
+      "expected_kind": "paraphrase",
+      "expected_severity": "minor"
     },
     {
       "name": "complete_unit mid overlap is a paraphrase",
@@ -142,7 +152,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "paraphrase"
+      "expected_kind": "paraphrase",
+      "expected_severity": "minor"
     },
     {
       "name": "low token overlap is a wrong_passage",
@@ -155,7 +166,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "wrong_passage"
+      "expected_kind": "wrong_passage",
+      "expected_severity": "major"
     },
     {
       "name": "missing token_f1 falls back to wrong_passage",
@@ -168,7 +180,8 @@
       "normalized": 0,
       "contains_reference": 0,
       "n_candidates": null,
-      "expected_kind": "wrong_passage"
+      "expected_kind": "wrong_passage",
+      "expected_severity": "major"
     },
     {
       "name": "more than one distinct citation is a hedge",
@@ -181,7 +194,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": 2,
-      "expected_kind": "hedge"
+      "expected_kind": "hedge",
+      "expected_severity": "major"
     },
     {
       "name": "three distinct citations is still a hedge",
@@ -194,7 +208,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": 3,
-      "expected_kind": "hedge"
+      "expected_kind": "hedge",
+      "expected_severity": "major"
     },
     {
       "name": "exactly one citation that is not the reference is a wrong_locus",
@@ -207,7 +222,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": 1,
-      "expected_kind": "wrong_locus"
+      "expected_kind": "wrong_locus",
+      "expected_severity": "major"
     },
     {
       "name": "zero citations is no_citation",
@@ -220,7 +236,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": 0,
-      "expected_kind": "no_citation"
+      "expected_kind": "no_citation",
+      "expected_severity": "major"
     },
     {
       "name": "missing candidate count is no_citation",
@@ -233,7 +250,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": null,
-      "expected_kind": "no_citation"
+      "expected_kind": "no_citation",
+      "expected_severity": "major"
     },
     {
       "name": "correct citation is unlabeled",
@@ -246,7 +264,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": 1,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
     },
     {
       "name": "committed but wrong yes/no is a wrong_verdict",
@@ -259,7 +278,8 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": null,
-      "expected_kind": "wrong_verdict"
+      "expected_kind": "wrong_verdict",
+      "expected_severity": "major"
     },
     {
       "name": "correct verdict is unlabeled",
@@ -272,7 +292,36 @@
       "normalized": null,
       "contains_reference": null,
       "n_candidates": null,
-      "expected_kind": null
+      "expected_kind": null,
+      "expected_severity": null
+    },
+    {
+      "name": "markdown underscores fold away so a contained span is an omission",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "_quoted words_",
+      "expected": "quoted words in the full reference text here",
+      "token_f1": 0.3,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "omission",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "english answer to a greek reference is other_script",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "In the beginning was the Word",
+      "expected": "Ἐν ἀρχῇ ἦν ὁ λόγος",
+      "token_f1": 0,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "other_script",
+      "expected_severity": "major"
     }
   ]
 }
