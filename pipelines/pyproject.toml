@@ -1,7 +1,7 @@
 [project]
 name = "sacredbench"
 version = "0.1.0"
-description = "CEFE-AI Sacred Texts Benchmark — Phase 1 pipeline (convert, generate, collect, score)"
+description = "CEFE-AI SacredBench (the Sacred Texts Benchmark) — Phase 1 pipeline (convert, generate, collect, score)"
 requires-python = ">=3.11"
 dependencies = [
     "typer>=0.12",

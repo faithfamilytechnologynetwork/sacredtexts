@@ -1,4 +1,4 @@
-# Sacred Texts Benchmark viewer
+# SacredBench viewer
 
 A local-only single-page app for exploring benchmark runs: a leaderboard of which models
 were tested and how they scored per task and per tradition, a drill-in error explorer for
@@ -44,9 +44,10 @@ pnpm -C apps/viewer dev          # then open the printed URL
   (`/run/$runId/model/$modelId`): every question for that model with its outcome — correct /
   incorrect / **refused** / missing — and for each one the prompt, the expected text, the
   model's answer, and the per-metric scores (exact / normalized / token-F1) side by side.
-  Filter by task, tradition, correctness, and failure mode (missing cell / **refused** / wrong
-  answer); the filters live in the URL (`?task=&tradition=&correct=&mode=`, where `mode` is
-  `missing` / `refused` / `wrong`).
+  Filter by task, tradition, correctness, failure mode (missing cell / **refused** / wrong
+  answer), and failure kind; the filters live in the URL
+  (`?task=&tradition=&correct=&kind=&mode=`, where `mode` is `missing` / `refused` / `wrong` and
+  `kind` is a failure kind such as `near_copy` / `other_script` / `wrong_verdict`).
 - **Standings** (`/standings`, linked in the header) is the cross-run view: one row per
   model showing its **most recent** result across all runs, keyed on the run panel's
   `(provider, model, tools)` identity (a missing `tools` ⇒ `[]`), so search-on/off stay

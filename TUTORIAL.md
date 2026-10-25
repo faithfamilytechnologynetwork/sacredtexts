@@ -1,4 +1,4 @@
-# Sacred Texts Benchmark — end-to-end tutorial
+# SacredBench — end-to-end tutorial
 
 This benchmark measures how accurately AI models can quote scripture from memory. This
 tutorial walks the whole process once, from a fresh copy of the code to a results page in

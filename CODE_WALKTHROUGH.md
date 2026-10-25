@@ -44,11 +44,16 @@ sacredtexts/
 │       ├── config.py          Parses the model list (configs/models.yaml), including each model's tools. Open when touching model/tool config.
 │       ├── providers.py       Talks to Anthropic / OpenAI-compatible / Gemini APIs. Open when adding a provider.
 │       ├── score.py           Grades answers (exact / normalized / word-overlap). Open when adding a task (RECIPE B).
+│       ├── outcomes.py        Refusal detection (Spec 15): the outcome layer that marks a declined cell `refused` so it leaves accuracy. Open when touching refusal classification.
 │       ├── audit.py           Copyright gate: fails if any artifact derives from a restricted source. Open to understand the licence enforcement.
 │       ├── export.py          Assembles the shared "interchange" JSON and checks the merge is lossless.
 │       ├── edition_index.py   Shared cross-edition index: editions that share a citation (Spec 32). `edition-index` exports JSONL+manifest (frozen for #21); the FAccT card reads it in-process.
 │       ├── facct.py           The FAccT benchmark card (Spec 32): census + outcomes (from scores.jsonl) + the Bible edition counterfactual → facct.{json,md}. A pure analysis stage; never re-scores.
-│       └── cli.py             The command-line entry points (convert, generate, collect, score, edition-index, facct, …). Open to see how a stage is wired.
+│       ├── failure_kind.py    Finer-than-outcome labels for a scored cell (near_copy / paraphrase / other_script / …) and the per-type/tradition/task breakdown. Mirrored by apps/viewer/src/lib/failureKind.ts (shared fixture: fixtures/failure_kind_cases.json).
+│       ├── editions.py        Folded agreement of the public-domain English Bibles, read from the edition index. Read-only analysis.
+│       ├── probes.py          Stored-run checks (letter fold, clustered intervals, refusal notes, KJV substitution). Prints only; never writes a run.
+│       ├── splits.py          Manuscript breakdown tables (per-model-per-text, refusals by text, Fisher gap test, citation distance, cutoff sensitivity). Prints only.
+│       └── cli.py             The command-line entry points (convert, generate, collect, score, edition-index, facct, failures, breakdown, probes, splits, editions, …). Open to see how a stage is wired.
 ├── texts/
 │   ├── raw/<tradition>/        Source scripture as obtained, one folder per tradition, each with a source.yaml catalogue. Add a text's data here (RECIPE A).
 │   └── standardized/           Converted texts in the standard format. Rebuilt by `convert`; never committed.
