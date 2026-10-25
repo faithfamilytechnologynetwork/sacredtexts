@@ -253,6 +253,49 @@ def test_mixed_question_set_digest_presence_fails_fast(tmp_path):
         estimate(rows, out)
 
 
+def test_existing_row_question_set_digest_mismatch_fails_fast(tmp_path):
+    """A row with the same question/model/answer but a different question-set digest must NOT be
+    treated as a completed cell of the current set (the resume key omits the digest)."""
+    out = tmp_path / "j.jsonl"
+    judge([_row(answer="A", qid="q-A", qsd="digestA")], out,
+          decide=lambda s: _payload(), concurrency=1, question_set_digest="digestA")
+    # Corrupt: append a row that claims a different question set.
+    rogue = json.loads(out.read_text().splitlines()[0])
+    rogue["question_id"] = "q-B"
+    rogue["question_set_digest"] = "digestB"
+    with out.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rogue) + "\n")
+    with pytest.raises(JevError, match="question-set digest"):
+        estimate([_row(qid="q-C", qsd="digestA")], out, question_set_digest="digestA")
+
+
+def test_negative_limit_fails_fast_before_any_call(tmp_path):
+    """A negative cap would judge all-but-|limit| cells — the opposite of a budget guard."""
+    out = tmp_path / "j.jsonl"
+    rows = [_row(answer=f"a{i}", qid=f"q{i}") for i in range(3)]
+    with pytest.raises(JevError, match="limit"):
+        estimate(rows, out, limit=-1)
+    calls = {"n": 0}
+
+    def decide(state):
+        calls["n"] += 1
+        return _payload()
+
+    with pytest.raises(JevError, match="limit"):
+        judge(rows, out, decide=decide, concurrency=1, limit=-1)
+    assert calls["n"] == 0  # rejected before any decision call
+    assert not out.exists() or out.read_text() == ""
+
+
+def test_summarize_on_truncated_file_fails_fast(tmp_path):
+    out = tmp_path / "j.jsonl"
+    judge([_row(answer="A", qid="q-A")], out, decide=lambda s: _payload(), concurrency=1)
+    with out.open("a", encoding="utf-8") as fh:
+        fh.write('{"truncated": ')  # a half-written final line (the interrupt case)
+    with pytest.raises(JevError, match="not JSON"):
+        summarize(out)
+
+
 def test_nonempty_sidecar_without_manifest_fails_fast(tmp_path):
     out = tmp_path / "j.jsonl"
     out.write_text(json.dumps({"rubric_id": "sacredbench-jev-1", "question_id": "q",
@@ -403,6 +446,20 @@ def test_cli_judge_summary_missing_sidecar_is_a_clean_error(tmp_path):
     r = CliRunner().invoke(app, ["judge-summary", str(tmp_path / "nope.jsonl")])
     assert r.exit_code != 0
     assert "sidecar not found" in r.output
+
+
+def test_cli_judge_corrupt_answers_is_a_clean_error(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+
+    import sacredbench.cli as climod
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text("{not json\n", encoding="utf-8")
+    r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl")])
+    assert r.exit_code != 0
+    assert "not valid JSONL" in r.output
 
 
 # ---- the judge is never on the default scoring path ----------------------

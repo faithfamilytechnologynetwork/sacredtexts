@@ -592,7 +592,10 @@ def judge(
     jev_model = model or jev.JEV_MODEL
     if not answers.exists():
         raise typer.BadParameter(f"input path not found: {answers} — run `collect` first")
-    rows = [json.loads(line) for line in answers.read_text(encoding="utf-8").splitlines() if line.strip()]
+    try:
+        rows = [json.loads(line) for line in answers.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(f"{answers} is not valid JSONL ({exc}) — regenerate with `collect`")
     sources = _require_catalogue(raw_root)
     restricted = frozenset(aud.restricted_keys(sources))
 

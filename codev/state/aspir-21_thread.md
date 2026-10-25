@@ -72,3 +72,13 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
   - claude #5: `_single_question_set_digest` now fails on a present/absent digest mix (all-or-none).
 - New tests (7): existing-row build mismatch / missing-build / manifest-without-build / mixed-digest-presence; CLI `--yes` gate / missing-answers / missing-sidecar. **Suite now 410 passed, 1 pre-existing skip.**
 - **TODO before PR** (unchanged): strip `Co-Authored-By: Claude Opus 4.8` trailers from earlier spec/plan/thread/rebuttal commits (message-only rewrite, tree unchanged); expect cli.py textual conflict with #34 on next rebase onto main (whoever merges second rebases).
+
+## 2026-10-25 — Phase 1 verify loop iter 3 (max_iterations)
+- **iter 3** (re-verify): codex REQUEST_CHANGES (2 findings) + claude APPROVE (confirmed iter-2 mixed-build blocker fixed; 5 non-blocking). Folded the real ones:
+  - codex #1: `_load_existing` now validates each existing row's `question_set_digest` against the set being judged (`pinned_qsd`) — a corrupted row with matching qid/model/answer but a different question-set digest no longer resume-skips as "done".
+  - codex #2: negative `--limit` now fails fast (`_check_limit`, both `estimate`+`judge`) — `pending[:-1]` would have judged all-but-one, uncapping the budget guard.
+  - claude #1: `summarize()` wraps a truncated-line `json.JSONDecodeError` in `JevError` (the spec's interrupt case) — clean error, not a traceback.
+  - claude #2: `judge` CLI wraps corrupt-answers parse in `BadParameter`.
+  - **Declined w/ evidence**: claude #4 (up-front `judge_model` requested-id equality) would break the legitimate "pin to the exact resolved build" resume (jev-latest manifest vs pinned-build arg → requested ids differ but resolved builds match); resolved build is the identity per spec. claude #3 (cosmetic already_judged count). claude #5 (trailers — tracked pre-PR).
+- New tests (4): row qsd mismatch; negative-limit zero-call; summarize-truncated; CLI corrupt-answers. **Suite now 414 passed, 1 pre-existing skip.**
+- This is porch's max_iterations=3 cycle — after `porch done`/`porch next` the implement loop force-advances. codex's iter-3 findings are genuinely fixed in-commit, so the force-advance does not mask an unaddressed blocker (verified per the force-advance lesson).

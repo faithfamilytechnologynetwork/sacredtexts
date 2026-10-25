@@ -268,11 +268,15 @@ def _single_question_set_digest(rows: list[dict], given: str | None) -> str | No
     return next(iter(digests)) if digests else None
 
 
-def _load_existing(path: Path, *, pinned_build: str | None = None) -> set[tuple]:
+def _load_existing(path: Path, *, pinned_build: str | None = None,
+                   pinned_qsd: str | None = None) -> set[tuple]:
     """Resume keys already judged: (question_id, model_id, answer_digest). Guards the rubric and,
-    given the manifest's ``pinned_build``, every existing row's resolved build — so a hand-edited or
-    half-written file whose rows disagree with the pinned identity is refused, not silently extended
-    (no mixed-build files)."""
+    given the manifest's ``pinned_build`` / ``pinned_qsd``, every existing row's resolved build AND
+    question-set digest — so a hand-edited or half-written file whose rows disagree with the pinned
+    identity is refused, not silently extended. The resume key omits the question-set digest, so a
+    row carrying a *different* one (but the same question/model/answer) would otherwise be mistaken
+    for a completed cell of the current set; the row-level check closes that (no mixed-set resume,
+    no mixed-build files)."""
     keys: set[tuple] = set()
     if not path.exists():
         return keys
@@ -299,6 +303,12 @@ def _load_existing(path: Path, *, pinned_build: str | None = None) -> set[tuple]
                 raise JevError(
                     f"{path}:{line_no}: row build {row_build!r} differs from the sidecar's pinned "
                     f"build {pinned_build!r}; no mixed-build files — point --out at a fresh file"
+                )
+            if row.get("question_set_digest") != pinned_qsd:
+                raise JevError(
+                    f"{path}:{line_no}: row question-set digest {row.get('question_set_digest')!r} "
+                    f"differs from the sidecar's {pinned_qsd!r}; these answers are a different "
+                    "question set — point --out at a fresh file"
                 )
             keys.add((row.get("question_id"), row.get("model_id"), row.get("answer_digest")))
     return keys
@@ -333,14 +343,23 @@ def _load_manifest(out: Path, *, rubric_id: str, question_set_digest: str | None
     return manifest
 
 
+def _check_limit(limit: int | None) -> None:
+    """A negative cap would slice `pending[:limit]` to all-but-|limit| cells — the opposite of a
+    budget guard. Reject it up front (0 means judge nothing, which is allowed)."""
+    if limit is not None and limit < 0:
+        raise JevError(f"--limit must be >= 0 (got {limit}); it caps cells judged, never uncaps them")
+
+
 def estimate(rows: list[dict], out: Path, *, restricted_keys: frozenset = frozenset(),
              limit: int | None = None, question_set_digest: str | None = None,
              index_digest: str | None = None) -> dict:
     """Pre-flight: how many cells WOULD be judged and the rough spend. No network."""
+    _check_limit(limit)
     qsd = _single_question_set_digest(rows, question_set_digest)
     _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
-    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None)
+    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
+                          pinned_qsd=qsd)
     pending, skipped_task, skipped_restricted = _partition(rows, done, restricted_keys)
     n = len(pending if limit is None else pending[:limit])
     return {
@@ -393,6 +412,7 @@ def judge(
     """
     if concurrency < 1:
         raise JevError("concurrency must be >= 1")
+    _check_limit(limit)
     with_equivalence = index is not None
     questions = build_questions(with_equivalence=with_equivalence)
     qsd = _single_question_set_digest(rows, question_set_digest)
@@ -408,7 +428,8 @@ def judge(
 
     _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
-    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None)
+    done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
+                          pinned_qsd=qsd)
     pending, _skipped_task, _skipped_restricted = _partition(rows, done, restricted_keys)
     if limit is not None:
         pending = pending[:limit]
@@ -502,10 +523,15 @@ def summarize(path: Path) -> dict:
     builds: set[str] = set()
     if path.exists():
         with open(path, encoding="utf-8") as handle:
-            for line in handle:
+            for line_no, line in enumerate(handle, start=1):
                 if not line.strip():
                     continue
-                row = json.loads(line)
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    # A truncated last line is the realistic interrupt case the spec names;
+                    # surface it on the clean error path, not as a raw traceback.
+                    raise JevError(f"{path}:{line_no}: not JSON ({exc})") from exc
                 n += 1
                 if row.get("judge_model_resolved"):
                     builds.add(row["judge_model_resolved"])
