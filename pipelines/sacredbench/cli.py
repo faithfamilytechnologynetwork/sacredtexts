@@ -29,6 +29,8 @@ from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
 from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
 from sacredbench.probes import format_probe, probe_run
+from sacredbench.editions import edition_run, format_editions
+from sacredbench.splits import format_splits, split_run
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -530,6 +532,39 @@ def probes(
     if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
         raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
     typer.echo(format_probe(probe_run(run_dir, kjv)))
+
+
+@app.command()
+def splits(
+    run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl"),
+    quran: Path = typer.Option(
+        Path("texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json"),
+        help="Uthmani Qur'an JSON, keys like 1:1, for citation distance",
+    ),
+    bible: Path = typer.Option(
+        Path("texts/raw/Protestant Christian/kjv.json"),
+        help="KJV JSON for whether a cited Bible verse exists",
+    ),
+) -> None:
+    """Tables behind the manuscript: per model, refusals, gap test, distance, cutoffs.
+
+    Does not call a model and does not change a score."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    typer.echo(format_splits(split_run(run_dir, quran, bible)))
+
+
+@app.command()
+def editions(
+    kjv: Path = typer.Option(Path("texts/raw/Protestant Christian/kjv.json")),
+    asv: Path = typer.Option(Path("texts/raw/Protestant Christian/asv.json")),
+    web: Path = typer.Option(Path("texts/raw/Protestant Christian/web.json")),
+) -> None:
+    """Folded agreement of KJV, ASV, and WEB. Does not score a model."""
+    for path in (kjv, asv, web):
+        if not path.is_file():
+            raise ScoreError(f"missing Bible JSON: {path}")
+    typer.echo(format_editions(edition_run({"KJV": kjv, "ASV": asv, "WEB": web})))
 
 
 def main() -> None:
