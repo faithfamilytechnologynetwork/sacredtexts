@@ -15,13 +15,12 @@ from math import comb
 from pathlib import Path
 
 from sacredbench.failure_kind import (
-    NEAR_COPY_F1,
     PARAPHRASE_F1,
-    _expected_text,
-    _tokens,
     classify_failure,
+    expected_text,
+    tokens,
 )
-from sacredbench.probes import _load_rows
+from sacredbench.probes import load_rows
 
 # Broader than the narrow hedge phrase in probes. Counts English uncertainty
 # that the leading-cue refusal rule still scores incorrect.
@@ -153,7 +152,7 @@ def near_copy_by_language(rows: list[dict]) -> Counter:
             correct=False,
             refused=False,
             answer=row["answer"],
-            expected=_expected_text(row["expected"]),
+            expected=expected_text(row["expected"]),
             token_f1=metrics.get("token_f1"),
             normalized=metrics.get("normalized"),
             contains_reference=metrics.get("contains_reference"),
@@ -210,7 +209,7 @@ def other_script_uncertainty(rows: list[dict]) -> dict:
             correct=False,
             refused=False,
             answer=row["answer"],
-            expected=_expected_text(row["expected"]),
+            expected=expected_text(row["expected"]),
             token_f1=metrics.get("token_f1"),
             normalized=metrics.get("normalized"),
             contains_reference=metrics.get("contains_reference"),
@@ -225,28 +224,23 @@ def other_script_uncertainty(rows: list[dict]) -> dict:
 
 
 def _quote_kind(row: dict, floor: float) -> str | None:
+    """The retrieval failure kind at a given paraphrase floor. Delegates to the one taxonomy
+    cascade (``classify_failure(paraphrase_f1=floor)``) rather than re-deriving it here."""
     if row["outcome"] != "incorrect" or row["task"] not in _QUOTE_TASKS:
         return None
     metrics = row["metrics"]
-    kind = classify_failure(
+    return classify_failure(
         task=row["task"],
         correct=False,
         refused=False,
         answer=row["answer"],
-        expected=_expected_text(row["expected"]),
+        expected=expected_text(row["expected"]),
         token_f1=metrics.get("token_f1"),
         normalized=metrics.get("normalized"),
         contains_reference=metrics.get("contains_reference"),
         n_candidates=metrics.get("n_candidates"),
+        paraphrase_f1=floor,
     )
-    if kind in ("other_script", "omission"):
-        return kind
-    f1 = metrics.get("token_f1") or 0
-    if f1 >= NEAR_COPY_F1:
-        return "near_copy"
-    if f1 >= floor:
-        return "paraphrase"
-    return "wrong_passage"
 
 
 def sensitivity(rows: list[dict]) -> dict:
@@ -266,7 +260,7 @@ def sensitivity(rows: list[dict]) -> dict:
         metrics = row["metrics"]
         if metrics.get("contains_reference") != 1 or metrics.get("normalized") == 1:
             continue
-        extra = len(_tokens(row["answer"])) - len(_tokens(_expected_text(row["expected"])))
+        extra = len(tokens(row["answer"])) - len(tokens(expected_text(row["expected"])))
         for bar in addition:
             if extra >= bar:
                 addition[bar] += 1
@@ -337,15 +331,17 @@ def citation_distance(rows: list[dict], quran: set[str], bible: set[tuple[str, i
 
 
 def _load_quran(path: Path) -> set[str]:
+    # Fail loud: a passed-or-defaulted path that does not exist is a usage error, not a reason
+    # to silently report an empty citation-distance table from the wrong working directory.
     if not path.is_file():
-        return set()
+        raise FileNotFoundError(f"Qur'an payload not found: {path}")
     data = json.loads(path.read_text())
     return set(data) if isinstance(data, dict) else set()
 
 
 def _load_bible(path: Path) -> set[tuple[str, int, int]]:
     if not path.is_file():
-        return set()
+        raise FileNotFoundError(f"Bible payload not found: {path}")
     rows = json.loads(path.read_text())
     return {(row["book"].lower(), int(row["chapter"]), int(row["verse"])) for row in rows}
 
@@ -355,7 +351,7 @@ def split_run(
     quran_path: Path | None = None,
     bible_path: Path | None = None,
 ) -> dict:
-    rows = _load_rows(run_dir)
+    rows = load_rows(run_dir)
     return {
         "per_model": per_model_by_text(rows),
         "refusals": refusals_by_text(rows),
@@ -365,8 +361,8 @@ def split_run(
         "sensitivity": sensitivity(rows),
         "citation_distance": citation_distance(
             rows,
-            _load_quran(quran_path) if quran_path else set(),
-            _load_bible(bible_path) if bible_path else set(),
+            _load_quran(quran_path) if quran_path is not None else set(),
+            _load_bible(bible_path) if bible_path is not None else set(),
         ),
     }
 
@@ -435,9 +431,10 @@ def format_splits(report: dict) -> str:
     )
     lines.append("accuracy if refusals count as incorrect")
     for row in sens["models"]:
-        lines.append(
-            f"  {row['model']}: {row['accuracy']:.3f} -> {row['refusals_as_incorrect']:.3f}"
-        )
+        # A model that refused every item has no graded accuracy — show "—", never crash on None.
+        acc = "—" if row["accuracy"] is None else f"{row['accuracy']:.3f}"
+        with_ref = "—" if row["refusals_as_incorrect"] is None else f"{row['refusals_as_incorrect']:.3f}"
+        lines.append(f"  {row['model']}: {acc} -> {with_ref}")
     lines.append("wrong citation distance, one candidate, Bible and Qur'an")
     distance = report["citation_distance"]
     if not distance:

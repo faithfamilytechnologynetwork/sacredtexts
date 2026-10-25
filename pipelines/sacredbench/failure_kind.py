@@ -30,7 +30,11 @@ PARAPHRASE_F1 = 0.4
 NEAR_COPY_F1 = 0.85
 ADDITION_EXTRA_TOKENS = 8
 
-_PUNCT_RE = re.compile(r"[^\w\s]", re.UNICODE)
+# Everything that is not a Unicode letter/number/space folds to a space. Underscore is NOT a
+# letter or number, so it folds too — this matches the viewer's `/[^\p{L}\p{N}\s]/u` exactly
+# (Python's `\w` would keep `_`, so a Markdown `_quoted_` would tokenise differently; see the
+# shared parity fixture). Keep the two normalizers byte-for-byte aligned.
+_PUNCT_RE = re.compile(r"[^\w\s]|_", re.UNICODE)
 _WS_RE = re.compile(r"\s+")
 
 # A minor kind stays on the passage that was asked for. A major kind replaces it:
@@ -73,13 +77,13 @@ def _normalize(text: str) -> str:
     return _WS_RE.sub(" ", _PUNCT_RE.sub(" ", text.lower())).strip()
 
 
-def _tokens(text: str) -> list[str]:
+def tokens(text: str) -> list[str]:
     n = _normalize(text)
     return n.split(" ") if n else []
 
 
 def _script(text: str) -> str | None:
-    hebrew = arabic = latin = 0
+    hebrew = arabic = greek = latin = 0
     for ch in text:
         o = ord(ch)
         if 0x0590 <= o <= 0x05FF:
@@ -92,15 +96,21 @@ def _script(text: str) -> str | None:
             or 0xFE70 <= o <= 0xFEFF
         ):
             arabic += 1
+        elif (0x0370 <= o <= 0x03FF) or (0x1F00 <= o <= 0x1FFF):
+            # Greek and Coptic + Greek Extended. grc is a supported canonical language, so a
+            # Greek prompt answered in English must read as other_script, not wrong_passage.
+            greek += 1
         elif ("A" <= ch <= "Z") or ("a" <= ch <= "z"):
             latin += 1
-    best = max(hebrew, arabic, latin)
+    best = max(hebrew, arabic, greek, latin)
     if best < 4:
         return None
     if hebrew == best:
         return "hebrew"
     if arabic == best:
         return "arabic"
+    if greek == best:
+        return "greek"
     return "latin"
 
 
@@ -127,15 +137,20 @@ def classify_failure(
     normalized: float | None,
     contains_reference: float | None,
     n_candidates: float | None,
+    paraphrase_f1: float = PARAPHRASE_F1,
 ) -> str | None:
-    """Return a failure kind, or None when the outcome is the whole story."""
+    """Return a failure kind, or None when the outcome is the whole story.
+
+    ``paraphrase_f1`` is the floor above which a miss is a paraphrase rather than a wrong
+    passage; it defaults to the taxonomy's :data:`PARAPHRASE_F1` and is only moved by the
+    floor-sensitivity sweep in ``splits`` (so that sweep does not re-implement this cascade)."""
     if refused:
         return None
     if task in ("retrieve_quote", "complete_unit"):
         if correct:
             if contains_reference != 1 or normalized == 1:
                 return None
-            extra = len(_tokens(answer)) - len(_tokens(expected))
+            extra = len(tokens(answer)) - len(tokens(expected))
             return "addition" if extra >= ADDITION_EXTRA_TOKENS else None
         if _script(expected) and _script(answer) and _script(expected) != _script(answer):
             return "other_script"
@@ -144,7 +159,7 @@ def classify_failure(
         f1 = token_f1 or 0
         if f1 >= NEAR_COPY_F1:
             return "near_copy"
-        if f1 >= PARAPHRASE_F1:
+        if f1 >= paraphrase_f1:
             return "paraphrase"
         return "wrong_passage"
     if not correct and task == "cite_passage":
@@ -159,7 +174,7 @@ def classify_failure(
     return None
 
 
-def _expected_text(expected: dict) -> str:
+def expected_text(expected: dict) -> str:
     for key in ("text", "citation", "answer"):
         value = expected.get(key)
         if isinstance(value, str):
@@ -202,7 +217,7 @@ def _iter_scored(run_dir: Path):
             continue
         question = answer_row.get("question") or {}
         source = question.get("source") or {}
-        expected = _expected_text(question.get("expected") or {})
+        expected = expected_text(question.get("expected") or {})
         outcome = metrics.get("outcome")
         if outcome not in ("correct", "incorrect", "refused"):
             outcome = "correct" if metrics.get("correct") == 1 else "incorrect"
@@ -247,13 +262,16 @@ def breakdown_run(run_dir: Path) -> dict:
         trads = source.get("tradition") or ["unknown"]
         if isinstance(trads, str):
             trads = [trads]
-        trad = trads[0] if trads else "unknown"
-        for bucket, key in (
-            (by_doc, doc),
-            (by_trad, trad),
-            (by_pair, f"{trad} · {doc}"),
-            (by_task, task),
-        ):
+        trads = trads or ["unknown"]
+        # `tradition` is a LIST (an invariant: traditions share texts). A cell is counted once
+        # by document type and by task, but ONCE PER LISTED TRADITION for the tradition and
+        # tradition×type rows — the same way score.py counts a shared text under each tradition,
+        # so a two-tradition doc appears in both tradition rows.
+        buckets = [(by_doc, doc), (by_task, task)]
+        for trad in trads:
+            buckets.append((by_trad, trad))
+            buckets.append((by_pair, f"{trad} · {doc}"))
+        for bucket, key in buckets:
             bucket.setdefault(key, Counter())
             bucket[key][outcome] += 1
             if kind:
@@ -299,7 +317,7 @@ def report_run(run_dir: Path) -> dict:
             continue
         question = answer_row.get("question") or {}
         source = question.get("source") or {}
-        expected = _expected_text(question.get("expected") or {})
+        expected = expected_text(question.get("expected") or {})
         outcome = metrics.get("outcome")
         if outcome not in ("correct", "incorrect", "refused"):
             outcome = "correct" if metrics.get("correct") == 1 else "incorrect"

@@ -9,11 +9,11 @@ from __future__ import annotations
 import json
 import random
 import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
-from sacredbench.failure_kind import classify_failure, _expected_text
-from sacredbench.score import bounded_contains, normalize  # noqa: F401 — bounded_contains used below
+from sacredbench.failure_kind import classify_failure, expected_text
+from sacredbench.score import bounded_contains, normalize
 
 # Letter forms normalize() does not decompose. Applied after normalize().
 _LETTER_FOLD = str.maketrans({
@@ -40,7 +40,7 @@ def fold_arabic_letters(text: str) -> str:
     return normalize(text).translate(_LETTER_FOLD)
 
 
-def _load_rows(run_dir: Path) -> list[dict]:
+def load_rows(run_dir: Path) -> list[dict]:
     answers = {}
     for line in (run_dir / "answers.jsonl").read_text().splitlines():
         if line.strip():
@@ -74,7 +74,12 @@ def _load_rows(run_dir: Path) -> list[dict]:
 
 
 def _verse_index(path: Path) -> dict[str, str]:
-    """Map ``Book chapter:verse`` to text for a raw Bible JSON list."""
+    """Map ``Book chapter:verse`` to text for a raw Bible JSON list.
+
+    Fail loud: a path that was passed (or defaulted) but does not exist is a usage error — the
+    wrong working directory, a renamed payload — not a reason to silently report "0 of 0"."""
+    if not path.is_file():
+        raise FileNotFoundError(f"edition payload not found: {path}")
     rows = json.loads(path.read_text())
     out = {}
     for row in rows:
@@ -93,7 +98,7 @@ def arabic_letter_fold(rows: list[dict]) -> dict:
             continue
         if row["outcome"] != "incorrect":
             continue
-        expected = _expected_text(row["expected"])
+        expected = expected_text(row["expected"])
         checked += 1
         a = fold_arabic_letters(row["answer"])
         e = fold_arabic_letters(expected)
@@ -158,7 +163,7 @@ def refusal_notes(rows: list[dict]) -> dict:
             continue
         if row["task"] not in ("retrieve_quote", "complete_unit"):
             continue
-        expected = _expected_text(row["expected"])
+        expected = expected_text(row["expected"])
         kind = classify_failure(
             task=row["task"], correct=False, refused=False,
             answer=row["answer"], expected=expected,
@@ -206,7 +211,7 @@ def answer_length(rows: list[dict]) -> dict:
     for row in rows:
         if row["outcome"] != "correct" or row["task"] not in ("retrieve_quote", "complete_unit"):
             continue
-        expected = _expected_text(row["expected"])
+        expected = expected_text(row["expected"])
         extra = len(normalize(row["answer"]).split()) - len(normalize(expected).split())
         extras.append(extra)
     extras.sort()
@@ -234,8 +239,8 @@ def panel_note(run_dir: Path) -> dict:
 
 
 def probe_run(run_dir: Path, kjv_path: Path | None = None) -> dict:
-    rows = _load_rows(run_dir)
-    kjv = _verse_index(kjv_path) if kjv_path and kjv_path.is_file() else {}
+    rows = load_rows(run_dir)
+    kjv = _verse_index(kjv_path) if kjv_path is not None else {}
     return {
         "panel": panel_note(run_dir),
         "arabic_letter_fold": arabic_letter_fold(rows),

@@ -531,6 +531,8 @@ def probes(
     Does not call a model and does not change a score."""
     if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
         raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    if not kjv.is_file():
+        raise ScoreError(f"missing edition JSON: {kjv}")
     typer.echo(format_probe(probe_run(run_dir, kjv)))
 
 
@@ -551,6 +553,9 @@ def splits(
     Does not call a model and does not change a score."""
     if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
         raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    for label, path in (("Qur'an", quran), ("Bible", bible)):
+        if not path.is_file():
+            raise ScoreError(f"missing {label} JSON: {path}")
     typer.echo(format_splits(split_run(run_dir, quran, bible)))
 
 
