@@ -1,0 +1,33 @@
+I'll review the Phase 1 implementation. Let me start by reading the actual files.I read all the Phase 1 files, verified the two iteration-1 blockers against the actual tree, and exercised the module against the real catalogue.
+
+## Verification performed
+
+**Iteration-1 issue 1 — canonical-language guard untested: fixed.** `test_edition_index.py:192-208` adds a non-canonical fixture edition (`Talmud Bavli / Davidson English`, `en` vs canonical `he`) **with its payload present**, and `:219,223` assert it is absent from both the docs and the serialized rows. `:261-262` adds the real-catalogue assertions (English Davidson Talmud, Papal Encyclicals). Deleting the `t.language != t.canonical_language` continue at `edition_index.py:135` now fails in CI even without the real `texts/` tree. Genuinely covered.
+
+**Iteration-1 issue 2 — export path not gitignored: fixed.** `git check-ignore -v` confirms both `texts/edition_index.jsonl` and `.manifest.json` resolve to `.gitignore:26-27`.
+
+**Real-corpus behavior (the thing the iter-2 fail-fast could have broken).** The `EditionIndexError` on conflicting `(work, citation, version)` wordings was added *after* the builder's last real export. I re-ran the export in memory over `texts/raw`: it does **not** trip — 17 docs, 31,102 rows (all `work == "The Bible"`, i.e. the three English Bibles are correctly the only sibling set), 18 MB body, manifest `{corpus_hash: 08f1bc8c010cfbe6, row_count: 31102, digest: 328cb5e056d7cd95, excluded_restricted: ['NABRE', 'TLG']}`. Both restricted targets are named. Full suite: **394 passed, 1 skipped**, matching the rebuttal.
+
+**Schema/determinism against the frozen spec**: row shape, `(work, citation, language)` sort, version-sorted `wordings`, single-wording omission, `corpus_hash = generate.corpus_hash` over pre-omission docs, `digest = sha256[:16]` of file bytes — all match the spec's frozen contract and are each tested. `convert_target` fails fast on an absent payload (`convert.py:430`), so a half-populated raw tree errors rather than silently shrinking the index.
+
+## Remaining observations (none blocking)
+
+1. **`excluded_restricted` is narrower than the plan pinned it.** The plan froze it as "version ids of targets dropped by the `license != restricted` filter"; `edition_index.py:138-144` additionally requires `t.language == t.canonical_language`. On the real catalogue the result is identical (`['NABRE','TLG']`), and the narrowing is defensible ("would otherwise be an eligible sibling") and docstring'd — but this is a frozen field #21 consumes, so the narrowing deserves to be stated in the spec/plan text, not only in the docstring.
+2. **`write_export` is not both-or-neither.** JSONL is written at `:203`, manifest at `:205`; a failure between them leaves a JSONL with a stale manifest beside it. Phase 3 mandates atomicity for `facct.{json,md}`; the plan doesn't require it here, but the same discipline would cost two lines.
+3. **No CLI-level test for `edition-index`.** The project already uses `CliRunner` (`test_catalogue.py`, `test_phase2_tools.py`). The deliverable "the subcommand writes both files" is currently only exercised through `write_export`; a smoke test would cover the default `--out`, the echo, and the `EditionIndexError` wiring in `main()`.
+4. **`Passage.tradition = doc.tradition[0]` (`:98`) silently collapses the tradition list** — and "tradition is a LIST" is an always-on arch invariant here. The builder's rebuttal says Phase 2 will source tradition from the catalogue, but unlike the `by_cite` caveat that reasoning lives only in the rebuttal. A one-line NOTE at `:98` would keep the next reader (or #21) from trusting the field.
+
+Phase 1 is complete and correct against its acceptance criteria; the items above are polish and belong to the PR-level pass, not a re-iteration.
+
+---
+VERDICT: APPROVE
+SUMMARY: Both iteration-1 blockers are genuinely fixed with revert-detecting tests; schema, determinism, restricted filter and canonical-language guard all verified against the real catalogue (31,102 rows, excluded_restricted ['NABRE','TLG'], 394 tests green).
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- (Minor) `excluded_restricted` adds an unstated `language == canonical_language` narrowing to a field frozen for issue #21 — record it in the spec/plan, not just the docstring.
+- (Minor) `write_export` writes JSONL then manifest non-atomically; a mid-failure leaves a stale manifest beside a new index.
+- (Minor) The `edition-index` CLI command has no CliRunner smoke test despite the project convention; only `write_export` is exercised.
+- (Minor) `Passage.tradition = doc.tradition[0]` collapses the tradition list with no in-code note — Phase 2 and #21 must not read tradition from `Passage`.

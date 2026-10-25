@@ -1,0 +1,35 @@
+I'll start by reading the key implementation files.# Phase 2 Review — FAccT card data (`facct.json`)
+
+I read `facct.py`, `test_facct.py`, `edition_index.py`, and the `score.py`/`cli.py` diffs from disk, then verified behavior against the real committed run. I did not modify the worktree; my only writes were to `/tmp` (a copy of the run, since removed) — `git status` on `runs/`, `pipelines/`, `texts/` is clean.
+
+## Iteration-1 must-fixes: genuinely closed, non-vacuously
+
+- **Bidirectional scores↔summary check.** `_verify_against_summary` now requires set equality of `(model, task)` keys, per-outcome count equality, and recomputes `_overall` from the summed task counts. `_outcomes` derives the overall counts rather than copying them. Three revert-detecting tests (`test_empty_scores_fails_fast`, `test_dropped_task_scores_fails_fast`, `test_corrupted_overall_fails_fast`) each target a distinct branch; the empty-scores case correctly empties *both* files so the join stays vacuously valid and the summary-set check is the thing under test.
+- **One-to-one join.** `_index_unique` + the set-equality check in `build_facct` cover missing key, duplicate key, orphan score, orphan answer — all four tested.
+- **Requested-edition exclusion is no longer vacuous.** I checked this by reading the fixture rather than mutating: Test 6:6 is KJV-requested with answer `"kjv six six alpha"`, while the ASV/WEB wordings (`asv six six beta` / `web six six gamma`) are not contained in it. Delete the `passage.version == requested_version` guard and the KJV passage matches → the cell is tagged, breaking both `test_requested_edition_only_answer_not_tagged` and the `numerator == 1` assertion. Revert-detecting.
+
+## Independent verification on the real run
+
+I recomputed the counterfactual denominator straight from `answers.jsonl` + `scores.jsonl`: 17 (gpt-oss-20b) + 15 (haiku) + 0 (opus) = **32** incorrect Bible `retrieve_quote` cells — matches the card. opus's 0 is genuine (its 128 misses are Qur'an/hadith/PoGP, no Bible). The 3 haiku tags are real: e.g. ASV-requested `Jeremiah 38:15` answered with the KJV wording (`…thou wilt not hearken…` vs the ASV gold). Census: 17 texts, `by_license {open: 4, public-domain: 13}`, excluded = Papal Encyclicals + Talmud Bavli, `zero_question_languages == ["grc"]`. Full suite: **415 passed, 1 skipped**. CLI smoke-tested both with `--out` and on the default path (on a `/tmp` copy) — both work, and the run evidence is byte-unchanged.
+
+## Minor comments (non-blocking)
+
+1. **`accuracy`/`coverage` are the last copied values.** Counts are now verified in both directions and overall counts are derived, but the two rates are still read verbatim from `summary.json` (`_outcomes`, lines 211–212, 224–225). Phase 3's drift guard ("card figures equal `summary.json`") is then satisfied by equality-by-copy. One cheap line closes it: recompute `correct/(correct+incorrect)` and `(correct+incorrect)/n` from the verified counts, round to 4, and raise `FacctError` on disagreement. I checked it would hold today (gpt-oss 64/320 = 0.2; haiku 178/366 → 0.4863; coverage 320/476 → 0.6723).
+2. **`census.n_questions` is copied from the manifest and never cross-checked** against the run (per-model `_overall.n` is 476 on the real run). A manifest from a different question set sitting beside a run would yield a wrong census headline with no error. Same one-line family as (1).
+3. **`if passage.work != _BIBLE: continue` (facct.py:257) is vacuously covered.** The fixture indexes only Bible editions, so deleting that line breaks no test. I confirmed it's defensive-only today — `index_documents` over the real catalogue has **0 cross-work `cite_key` collisions** (LDS book names don't collide with Bible ones) — so the risk is low, but a fixture LDS-style text carrying `Test 1:1` would make the guard revert-detecting and lock in the documented "`by_cite` is work-blind" contract.
+4. **`_bounded_equal = bounded_contains` alias** leaves two names for one predicate (`score.py:284,313`, `outcomes.py:124`). Defensible as a minimal-risk touch of the scoring module, but updating the three call sites and dropping the alias would read better.
+5. No CLI-level test for `facct` — fine to fold into Phase 3, which rewrites that command to emit both artifacts.
+
+Spec-adherence items for this phase all check out: outcomes come only from `metrics.outcome`, no second refusal rule or `fabrication` string, the counterfactual reuses `score.bounded_contains` + `score.normalize` (asserted by `test_module_defines_no_private_containment_or_normalizer`), `complete_unit` and non-Bible citations are excluded with tests, the `other_edition` tag is in the JSON, and `build_facct` raises before any write so there is no partial file. Path-containment validation and the markdown card are correctly deferred to Phase 3.
+
+---
+VERDICT: APPROVE
+SUMMARY: Both iteration-1 integrity gaps are genuinely closed with revert-detecting tests, and the card's census, outcomes and 32-cell counterfactual reproduce exactly when recomputed independently from the real run.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- Minor: `accuracy`/`coverage` are still copied from `summary.json` rather than recomputed from the now-verified counts — recompute-and-compare would close the last copy path before Phase 3's drift guard.
+- Minor: `census.n_questions` comes from the manifest with no cross-check against the run's cell count.
+- Minor: the `passage.work != _BIBLE` filter is vacuously covered (fixture is Bible-only); verified harmless today — 0 cross-work cite_key collisions in the real catalogue.

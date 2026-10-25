@@ -1,0 +1,43 @@
+I'll review the plan against the spec and verify the referenced files actually exist in the codebase.I read the plan, the spec, and the actual codebase/run data in the builder worktree. Everything is read-only — I made no changes.
+
+## What checks out
+
+Verified against the real tree, not just the prose:
+
+- **Join keys are real.** `scores.jsonl` rows are `{question_id, model_id, task, metrics}`; `answers.jsonl` carries `question.source`. I joined all 1,428 cells on `(question_id, model_id)` — zero misses. The plan's join design is correct and the fail-fast on non-joining rows is implementable.
+- **The ≈32 figure verifies exactly.** Incorrect Bible `retrieve_quote` cells across the panel = **32** (correct 27, refused 4). Phase 4's acceptance criterion is accurate.
+- **Census inputs exist.** `questions.jsonl.manifest.json` has `selected_texts` (17 — confirmed 17 distinct `(work,version)` in `answers.jsonl`), `excluded_texts` with reason strings, `corpus_hash`. `summary.json` carries per-model/per-task `correct/incorrect/refused/accuracy/coverage` plus `by_tradition`/`by_text`.
+- **The edition index is feasible from committed data.** `texts/raw/Protestant Christian/{kjv,asv,web}.json` are committed with `converter: bible_flat`, and run citations are uniform `Book chapter:verse` across all three editions. `catalogue.select_targets(include_restricted=False)` exists with exactly the signature the plan cites.
+- **Phase ordering is right** — Phase 1 is genuinely the blocker, and Phases 1–3 are each independently committable.
+
+## Issues
+
+**1. The counterfactual's "containment" is not pinned to the scoring contract's implementation.** The spec's whole thesis is "no second definition." The plan says the counterfactual matches "under containment" but never says *which* containment. The contract's is `score._contains(answer, needle)` = `normalize(needle) in normalize(answer)`, where `score.normalize` is the script-aware function (Arabic/Hebrew marks stripped *before* the punctuation pass — order explicitly load-bearing per arch-critical). A hand-rolled `in` check in `facct.py` would be a second, divergent containment rule — the exact failure mode the spec forbids for refusals. `_contains` is private; the plan should say "promote `score._contains` to public (or import it) and reuse it + `score.normalize` verbatim," with a test asserting the card does not define its own matcher.
+
+**2. The "frozen" manifest schema has two undefined fields.** `#21` consumes this unchanged, so `corpus_hash` and `digest` need pinning now:
+   - `corpus_hash` — over *what*? The repo already has `generate.corpus_hash(docs)` (sha256, `[:16]`). Say whether it's that function, and over all indexed docs or only the ≥2-wording rows.
+   - `digest` — "sha256 prefix" with no length. The sibling convention (`question_set_digest`) is `hexdigest()[:16]`. Phase 1's acceptance ("digest matches the file bytes") can't be tested without the length.
+
+**3. Phase 4's audit acceptance criterion is vacuously true for `facct.md`.** `audit.audit_paths` hard-filters `if f.suffix not in (".json", ".jsonl"): continue`, and `test_audit.py` feeds it `git ls-files runs/`. So `facct.md` is **never scanned** — neither origin nor content layer. "`audit.py` reports no restricted-origin or restricted-content artifact for the committed card" is only true of `facct.json`. Real risk is low (the three Bibles are public domain), but the criterion as written proves nothing about the markdown. Either state that `facct.md` embeds no passage text beyond citations, or extend the audit suffix set to `.md`.
+
+**4. Phase 1 doesn't say where the text comes from.** `texts/standardized/` is gitignored and absent in CI (`test_original_run_regression.py` already skips its generation-invariance half for that reason). The index must read `texts/raw/**` through `convert.convert_target`, the way `audit.restricted_text_fingerprints` does. `--raw-root` hints at this, but "`load_scripture_documents`" is ambiguous enough that a builder could read standardized docs and ship something that fails in CI and in Phase 4.
+
+**5. Spec criterion #1 says one command writes both files; the plan makes the markdown opt-in.** Phase 2 writes `facct.json`; Phase 3 adds `--md <path>` to "also write" markdown. The end state should be `sacredbench facct <run_dir>` writing both into the run dir by default — otherwise the fail-fast criterion ("neither `facct.json` nor `facct.md` partially written") has no default path where both exist.
+
+**6. Smaller:** the spec's Nice-to-know (three-edition agreement table) gets no include/exclude decision anywhere in the plan — decide it explicitly. And Phase 4's drift guard rests only on fixture tests; a two-line assertion in `test_original_run_regression.py` tying the committed `facct.json` to the committed `summary.json` would stop the card drifting on a future sanctioned rebaseline, which is precisely the scenario the lessons file warns about.
+
+All six are plan-text fixes, not a redesign — the approach, decomposition, and sequencing are sound.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Sound approach and ordering with verified numbers, but the containment rule isn't pinned to the scoring contract, two "frozen" manifest fields are undefined, and the Phase-4 audit criterion doesn't actually cover facct.md.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Counterfactual containment is not bound to `score.normalize` / `score._contains`, risking a second divergent matcher — the exact failure the spec forbids for refusals.
+- Frozen export manifest leaves `corpus_hash` (over what? reuse `generate.corpus_hash`?) and `digest` (prefix length — repo convention is `[:16]`) undefined, though #21 consumes it unchanged.
+- Phase 4 acceptance claims `audit.py` covers the committed card, but `audit_paths` skips non-`.json/.jsonl` files, so `facct.md` is never scanned.
+- Phase 1 doesn't state that the index reads `texts/raw/**` via `convert.convert_target`; `texts/standardized/` is gitignored and absent in CI.
+- Spec requires one command to write both `facct.json` and `facct.md`; the plan makes markdown an opt-in `--md` flag.
+- Three-edition agreement table (spec's Nice-to-know) left undecided; no drift guard tying the committed card to the real run's `summary.json`.

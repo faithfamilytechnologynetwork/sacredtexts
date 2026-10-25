@@ -1,0 +1,41 @@
+I'll start by reading the implementation files for phase_1.## Review — Spec 32, Phase 1 (Shared EditionIndex module and export CLI)
+
+I read `edition_index.py`, `test_edition_index.py`, the `cli.py`/`README.md` diffs, and the supporting modules (`catalogue.py`, `convert.py`, `generate.corpus_hash`, `score.normalize`). I also ran the phase's tests, the full pipelines suite, and the new CLI against the real committed catalogue (output written to `/tmp`, nothing in the worktree touched).
+
+### What's verified good
+
+- **Plan alignment is exact.** Module at the planned path, loader reads `texts/raw/**` via `convert.convert_target` (not the gitignored `texts/standardized/`), restricted filter via `select_targets(include_restricted=False)`, CLI subcommand wired with `EditionIndexError` in the top-level handler, README line added.
+- **Frozen schema matches the spec letter-for-letter.** Row `{work, citation, language, wordings:[{version,text}]}`, wordings sorted by version, single-wording rows omitted, rows sorted by `(work, citation, language)`; manifest exactly the four pinned keys with `corpus_hash = generate.corpus_hash(docs)` over all indexed docs *before* omission and `digest = sha256[:16]` of the written bytes.
+- **Real-corpus behaviour is coherent** (I ran it): 31,102 rows, all `work: The Bible`; 31,095 with 3 wordings and 7 with 2 — those 7 are Acts 8:37 / 15:34 / 24:7, Luke 17:36, Romans 16:25 etc., i.e. exactly the verses WEB omits on textual-criticism grounds. `excluded_restricted == ['NABRE','TLG']`. Both restricted targets are correctly caught; the English Talmud (`en`/canonical `he`) and Papal Encyclicals (`en`/canonical `la`) are correctly kept out.
+- **Tests pass**: 7/7 for this file, 393 passed / 1 skipped for the whole suite. Determinism and hash-sensitivity are genuinely covered (byte-equality plus a mutated wording moving both hashes).
+- **Authorship preserved** — `5a4c64b` is authored `Jonathan Karr <jka83321@gmail.com>`, no `Co-Authored-By`/`Generated with` lines.
+
+### Issues to fix before Phase 2
+
+**1. The `language == canonical_language` guard is untested — deleting it breaks no test.** This is a named acceptance criterion ("Only editions whose `language == canonical_language` are indexed"). I settled this by reading, not by mutating: every target in `_fixture_raw_with_present_restricted` has `language: en, canonical_language: en`, and `test_real_catalogue_indexes_bibles_and_excludes_restricted` asserts only that the three Bibles are present and NABRE absent. No assertion anywhere involves a non-canonical-language edition, so removing `edition_index.py:131-132` leaves the suite green while letting the English Talmud and the Papal Encyclicals into the in-process index that Phase 2's card consumes (and silently moving `corpus_hash`). Cheapest fix: add two lines to the real-catalogue test —
+```python
+assert ("Talmud Bavli", "William Davidson Edition - English") not in versions
+assert all(d.work != "Papal Encyclicals" for d in docs)
+```
+— or add a `language: en / canonical_language: he` target to the tmp fixture, which also covers the CI-without-`texts/` case where that test skips.
+
+**2. The default `--out texts/edition_index.jsonl` lands a 17 MB derived artifact at a path that is not gitignored.** I confirmed with `git check-ignore`: NOT IGNORED. Every other derived corpus artifact in this repo is explicitly ignored (`texts/standardized/`, `texts/interchange/`, `runs/*` with allow-list exceptions), and the README recipe tells a reader to run exactly that default. The content is public-domain-only so this is not a copyright problem, but a 17 MB generated blob sitting untracked in `texts/` is one careless `git add texts/` from being committed. Add `texts/edition_index.jsonl*` to `.gitignore` (the `*` covers the sibling manifest), or default the out path somewhere already ignored.
+
+### Minor notes (no action required)
+
+- `EditionIndexError` is defined and wired but never raised anywhere. Real failures surface as `ConvertError`/`CatalogueError` (both already in the CLI handler), so behaviour is fine — but the class is currently decorative. Note (3) below would give it a use.
+- `export_rows` uses `setdefault` for a `(work, citation, version)` collision, so a second, *differing* wording for the same version is silently dropped and which one wins depends on doc order. I checked the real corpus: zero duplicates today. Still, silent first-wins sits awkwardly against this project's fail-fast rule, in a producer whose output #21 consumes; raising `EditionIndexError` on a conflicting duplicate would be strictly better than a silent drop.
+- Two grouping keys coexist: the export groups on the **raw citation string**, the in-process index on the **normalized `cite_key`**. Empirically they agree (all 31,102 citations align across the three editions, so nothing is lost), but a future edition that renamed a book would show up as a sibling to the card and as two single-wording omissions to #21.
+- `_BOOK_ALIAS` ("solomon s song") is carried over from PR #30 and gets **zero hits** against the real corpus (I counted: 104,195 Bible-style citations parsed, 0 alias hits). Harmless, just vestigial.
+- `by_cite` is keyed `(book, chapter, verse)` with no `work` component. I checked: 10,893 buckets contain a non-Bible passage (LDS scriptures use Book-chapter:verse too) and **zero** buckets span more than one work today — so no collision exists, but Phase 2's counterfactual must filter on `work == "The Bible"` rather than trusting the key alone. Worth a line of comment at the `by_cite` definition so Phase 2 doesn't rely on the accident.
+- `index_documents` collapses `doc.tradition` to `tradition[0]`, which loses the list semantics the architecture notes call out. Doesn't matter for this phase (the census reads the catalogue, not `Passage`), but don't let Phase 2 source tradition from here.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Schema, determinism, restricted filter and real-corpus output are all correct and verified, but the canonical-language guard has no covering test and the default export path drops a 17 MB derived file into a non-gitignored repo location.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The `language == canonical_language` filter (`edition_index.py:131-132`) is a stated acceptance criterion with no test that fails if it is removed; add an assertion that the English Talmud / Papal Encyclicals never enter the index.
+- Default `--out texts/edition_index.jsonl` (also the README recipe) writes a 17 MB derived artifact to a path `git check-ignore` confirms is not ignored, against the repo's convention for every other derived corpus artifact.
+- Minor: `EditionIndexError` is never raised; `export_rows` silently first-wins on a duplicate `(work, citation, version)`; export groups on raw citation strings while the in-process index groups on normalized `cite_key`; `by_cite` omits `work`, so Phase 2 must filter Bible-only explicitly.

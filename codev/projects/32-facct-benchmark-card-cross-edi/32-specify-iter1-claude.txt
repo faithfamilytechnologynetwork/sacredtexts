@@ -1,0 +1,105 @@
+I'll verify the spec's factual claims against the actual repository before judging it.Let me verify the spec's factual claims against the real data and the template.I verified every major factual claim in this spec against the actual run data, catalogue, `outcomes.py`, and PR #30. The spec is well-grounded — most claims check out exactly. Two concrete defects would cost the builder real time.
+
+## What I verified as correct
+
+- `runs/original-2026-10-21/` holds all claimed files; 476 q × 3 models = 1428 rows in both `answers.jsonl` and `scores.jsonl` ✓
+- `metrics.outcome ∈ {correct, incorrect, refused}` ✓ (522 / 572 / 334)
+- Manifest has `selected_texts` (17) and `excluded_texts` (2) with the claimed `reason` strings ✓ (verbatim: `"language 'en' != canonical_language 'la'"`)
+- All three English Bibles (KJV, ASV 1901, WEB) are in the 17 ✓ — I checked this specifically, since a canonical-language rule could plausibly have excluded them
+- Catalogue targets carry `license` + `canonical_language`; join on `(work, version, language)` is unique ✓
+- `outcomes.py` is genuinely the single refusal definition ✓
+- PR #30 really contains `cite_key`, `EditionIndex`, `index_documents`, `bible_agreement`, plus the `_REFUSAL` regex and `fabrication` label the spec proposes deleting ✓
+- Heading structure matches specs 15 and 26 exactly ✓ — no template departure
+- Typer CLI with `@app.command()`; adding a `facct` subcommand is trivial ✓
+- Issue #32's "keep" and "change" lists are all represented ✓
+
+## Defect 1 — the `expected` schema in Assumptions is wrong
+
+The spec states `expected` "holds the **citation**; the gold text for a citation is resolved from the raw editions index, not from the answer row." Neither half holds. `expected` is **task-dependent**:
+
+| task | `expected` keys |
+|---|---|
+| `cite_passage` | `citation` |
+| `retrieve_quote` | `text` |
+| `complete_unit` | `text`, `full_text` |
+| `verify_source` | `answer`, `true_work`, `true_version`, `true_language`, `true_citation` |
+
+On exactly the cells the counterfactual targets (`retrieve_quote` / `complete_unit`), `expected` carries **no citation at all** — the citation is in `question.source.citation`. And the gold wording *is* in the answer row (`expected.text`). A builder following Assumptions would key the `EditionIndex` off a nonexistent field. Fix: state that `source.citation` is the citation key (empty string on `verify_source`), `expected.text` is the gold wording, and the raw index is needed only for **sibling** editions' wording.
+
+## Defect 2 — `complete_unit` in the counterfactual is undefined
+
+Criterion 5 says "incorrect **text-retrieval** cells," and `outcomes.py::_TEXT_RETRIEVAL` = `("retrieve_quote", "complete_unit")`. But `complete_unit`'s gold is a *partial* unit (`expected.text` is the continuation; `full_text` is the whole verse). "The sibling edition's wording of the same citation" has no well-defined meaning for a partial unit — you'd need to reproduce the same split point in differently-worded text. Scope it to `retrieve_quote` only and say so, or specify the segment derivation. The split is material: of the 53 incorrect Bible text-retrieval cells, **32 are `retrieve_quote` and 21 are `complete_unit`**.
+
+## Comments
+
+- **Report the denominator.** The counterfactual universe is 53 cells across 3 models (~18/model), or 32 retrieve_quote-only. A bare numerator invites over-reading — exactly the harm this card exists to prevent. Require numerator *and* denominator per model/task, and have the non-conclusions prose name the n.
+- **Restricted-index guard: right mitigation, wrong reason.** The spec credits "restricted texts are already excluded from the pool" — a different gate. The real guard is `catalogue.select_targets(include_restricted=False)`, which Jonathan's `load_scripture_documents` already uses. Note NABRE is `work: The Bible`, `canonical_language: en` — a **fourth** English Bible that becomes an indexable sibling on any machine holding the local payload (absent here). State the `license != restricted` filter explicitly and test that a restricted target never enters the index even when present.
+- **Join mechanics worth stating.** `selected_texts` entries carry only `{work, version, language}` — tradition/document_type/license come from the catalogue or `question.source`. And `scores.jsonl` rows carry no text identity, so any per-text breakdown requires joining to `answers.jsonl` on `(question_id, model_id)`.
+- **Sub-metrics claim is task-scoped.** `exact/normalized/token_f1/contains_reference` exist only on text-retrieval rows; `cite_passage` has `{correct, n_candidates, outcome}` and `verify_source` has `{parsed, expected, correct, outcome}`. Card code must not assume them.
+- **Open Question 2 can be narrowed now.** The encyclicals target's work/version are explicitly nominal per `source.yaml`, but the manifest's `excluded_texts` entry uses those *nominal* names — so the license join for the excluded list works off the catalogue target directly, no fallback needed. The ambiguity only bites if the card joins a *standardized* encyclical doc back to a target.
+- **Resolve Open Question 1 in the spec.** Containment-vs-exact changes the headline number; the spec's own recommendation (containment, matching Spec 15) is right — bake it rather than leaving it open.
+
+I did not modify anything in the worktree; all checks were read-only.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Well-grounded spec with accurate contract framing, but the `expected` schema in Assumptions is factually wrong and the counterfactual's treatment of `complete_unit` is undefined.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Assumptions misstates the `expected` schema: it is task-dependent, and `retrieve_quote`/`complete_unit` cells carry no citation in `expected` (it is in `source.citation`); the gold text is in `expected.text`, not only in the raw index.
+- The edition counterfactual is undefined for `complete_unit`, whose gold is a partial unit with no well-defined sibling-edition segment; scope to `retrieve_quote` or specify the derivation (32 vs 21 of the 53 incorrect cells).
+- Counterfactual results should require a denominator (n≈53, or 32 retrieve_quote-only) to prevent over-reading a small count.
+- Restricted-edition exclusion is justified by the wrong gate; require an explicit `license != restricted` filter on the EditionIndex plus a test, since NABRE is a fourth English Bible edition of the same `work`.
+- Open Question 1 (containment vs exact) should be resolved in the spec, as it determines the headline counterfactual number.The find completed and located the actual template. Let me verify structure conformance against the authoritative source rather than my earlier inference from sibling specs.Confirmed against the authoritative template at `/Users/mwk/Development/cluesmith/codev/codev-skeleton/protocols/spir/templates/spec.md` (the source repo, not just a scratch copy).
+
+The spec matches the delivered template **exactly**: all eleven `##` headings present, in the template's order, with `### Approach 1` / `### Approach 2` correctly nested under Solution Approaches. No heading is missing, renamed, or reordered, and no section is stubbed to a filler "N/A". My earlier structure assessment was inferred from sibling specs 15 and 26; it is now verified against the template itself.
+
+This does not change the verdict. The two substantive defects stand unchanged — the task-dependent `expected` schema misstated in Assumptions, and the undefined `complete_unit` handling in the edition counterfactual. Both are content defects in an otherwise well-structured, well-grounded spec, and both are fixable in a few lines without touching the spec's shape.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Structure now verified conformant against the delivered template; the two content defects (wrong `expected` schema, undefined `complete_unit` counterfactual) remain and still require fixes.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Assumptions misstates the `expected` schema: it is task-dependent, and `retrieve_quote`/`complete_unit` cells carry no citation in `expected` (it is in `source.citation`); the gold text is in `expected.text`, not only in the raw index.
+- The edition counterfactual is undefined for `complete_unit`, whose gold is a partial unit with no well-defined sibling-edition segment; scope to `retrieve_quote` or specify the derivation (32 vs 21 of the 53 incorrect cells).
+- Counterfactual results should require a denominator (n≈53, or 32 retrieve_quote-only) to prevent over-reading a small count.
+- Restricted-edition exclusion is justified by the wrong gate; require an explicit `license != restricted` filter on the EditionIndex plus a test, since NABRE is a fourth English Bible edition of the same `work`.
+- Open Question 1 (containment vs exact) should be resolved in the spec, as it determines the headline counterfactual number.
+- Spec structure: verified conformant to `protocols/spir/templates/spec.md` — not an issue.This last background task was redundant — it returned the same template paths that `bdgsx7vps` already surfaced, plus the spec 26 headings I had already grepped directly. No new information, and the review is unchanged.
+
+All checks are now complete. The review stands as delivered: the spec's factual grounding is strong (run data, manifest, catalogue, `outcomes.py`, PR #30, and template structure all verified directly), with two content defects to fix.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Well-grounded, structurally conformant spec; two content defects remain — the misstated task-dependent `expected` schema and the undefined `complete_unit` edition counterfactual.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Assumptions misstates the `expected` schema: it is task-dependent, and `retrieve_quote`/`complete_unit` cells carry no citation in `expected` (it is in `source.citation`); the gold text is in `expected.text`, not only in the raw index.
+- The edition counterfactual is undefined for `complete_unit`, whose gold is a partial unit with no well-defined sibling-edition segment; scope to `retrieve_quote` or specify the derivation (32 vs 21 of the 53 incorrect cells).
+- Counterfactual results should require a denominator (n≈53, or 32 retrieve_quote-only) to prevent over-reading a small count.
+- Restricted-edition exclusion is justified by the wrong gate; require an explicit `license != restricted` filter on the EditionIndex plus a test, since NABRE is a fourth English Bible edition of the same `work`.
+- Open Question 1 (containment vs exact) should be resolved in the spec, as it determines the headline counterfactual number.
+- Spec structure: verified conformant to `protocols/spir/templates/spec.md` — not an issue.All three background searches have now drained, and the last one returned only additional copies of the same template I already verified against the source repo. Nothing new; no revision to the review.
+
+**Review complete.** Verification covered the run data (`scores.jsonl`, `answers.jsonl`, manifest), the catalogue (`source.yaml` per tradition), `outcomes.py`, `catalogue.py`'s restricted gate, PR #30's actual code, and the authoritative spec template. I made no changes to the worktree — all checks were read-only.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Well-grounded, structurally conformant spec; two content defects remain — the misstated task-dependent `expected` schema and the undefined `complete_unit` edition counterfactual.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Assumptions misstates the `expected` schema: it is task-dependent, and `retrieve_quote`/`complete_unit` cells carry no citation in `expected` (it is in `source.citation`); the gold text is in `expected.text`, not only in the raw index.
+- The edition counterfactual is undefined for `complete_unit`, whose gold is a partial unit with no well-defined sibling-edition segment; scope to `retrieve_quote` or specify the derivation (32 vs 21 of the 53 incorrect cells).
+- Counterfactual results should require a denominator (n≈53, or 32 retrieve_quote-only) to prevent over-reading a small count.
+- Restricted-edition exclusion is justified by the wrong gate; require an explicit `license != restricted` filter on the EditionIndex plus a test, since NABRE is a fourth English Bible edition of the same `work`.
+- Open Question 1 (containment vs exact) should be resolved in the spec, as it determines the headline counterfactual number.
+- Spec structure: verified conformant to `protocols/spir/templates/spec.md` — not an issue.

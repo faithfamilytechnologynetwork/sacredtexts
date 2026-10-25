@@ -1,0 +1,126 @@
+id: '32'
+title: facct-benchmark-card-cross-edi
+protocol: aspir
+phase: review
+plan_phases:
+  - id: phase_1
+    title: Shared EditionIndex module and export CLI
+    status: complete
+  - id: phase_2
+    title: 'FAccT card data: census, outcomes, edition counterfactual (facct.json)'
+    status: complete
+  - id: phase_3
+    title: FAccT markdown card with single prose block (facct.md)
+    status: complete
+  - id: phase_4
+    title: Generate and commit the card for runs/original-2026-10-21
+    status: complete
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-10-24T02:21:24.770Z'
+    approved_at: '2026-10-25T22:28:13.258Z'
+  verify-approval:
+    status: pending
+iteration: 2
+build_complete: true
+history:
+  - iteration: 1
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_1-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_1-iter1-claude.txt
+  - iteration: 1
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_2-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_2-iter1-claude.txt
+  - iteration: 1
+    plan_phase: phase_3
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_3
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter2-codex.txt
+      - model: claude
+        verdict: COMMENT
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter2-claude.txt
+  - iteration: 3
+    plan_phase: phase_3
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter3-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-phase_3-iter3-claude.txt
+  - iteration: 1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-review-iter1-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-32/codev/projects/32-facct-benchmark-card-cross-edi/32-review-iter1-claude.txt
+started_at: '2026-10-23T23:35:13.884Z'
+updated_at: '2026-10-25T22:28:13.258Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-10-24T00:31:39.828Z'
+    acknowledged_at: '2026-10-24T00:32:27.566Z'
+  - boundary: plan-phase:phase_3
+    at: '2026-10-24T00:59:56.246Z'
+    acknowledged_at: '2026-10-24T01:00:09.990Z'
+  - boundary: plan-phase:phase_4
+    at: '2026-10-24T01:33:42.895Z'
+    acknowledged_at: '2026-10-24T01:34:07.285Z'
+  - boundary: enter:review
+    at: '2026-10-24T01:46:55.426Z'
+    acknowledged_at: '2026-10-24T01:47:05.704Z'
+force_advanced:
+  phase: phase_3
+  iteration: 3
+  max_iterations: 3
+  rebuttal_file: 32-phase_3-iter3-rebuttals.md
+  at: '2026-10-24T01:33:41.106Z'
+pr_history:
+  - phase: review
+    pr_number: 34
+    branch: builder/aspir-32
+    created_at: '2026-10-24T01:51:39.789Z'
+pr_ready_for_human: false

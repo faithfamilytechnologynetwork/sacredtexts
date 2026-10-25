@@ -1,0 +1,31 @@
+I'll start by reading the implementation files for phase 2.Verified end-to-end against the real run and probed the fail-fast behavior (all probe writes under `/tmp`; I did not modify the tree under review).
+
+**What works.** `build_facct` on the committed `runs/original-2026-10-21` produces a coherent card: 17 texts, 476 questions, `by_tradition`/`by_license`/`by_language`/`by_document_type` all resolved from the catalogue, the 2 excluded texts with manifest reasons, `zero_question_languages == ["grc"]`, and the counterfactual reports 0/17, 3/15, 0/0 — denominator sums to **32**, matching the spec's ≈32, with the three haiku tags being ASV-requested verses answered in KJV wording. That's the feature actually working, not just compiling. Containment is `score.bounded_contains` reused verbatim (promoted cleanly from `_bounded_equal`, alias retained for existing callers), the empty-`norm` case is guarded, `complete_unit` and non-Bible exclusions are real (deleting either guard breaks a test), and `by_cite`'s work-blindness is correctly re-filtered on `work == "The Bible"`. 21 tests pass.
+
+**Finding 1 (must fix): `scores.jsonl` ↔ `summary.json` verification is one-directional, so the card can publish numbers that exist in no score row.** `_verify_against_summary` iterates only `counts` (the scores side, facct.py:140-151), and `_outcomes` derives `by_task` from `counts` while copying `overall` straight out of `summary["models"][m]["_overall"]` (facct.py:154-182). Probed in `/tmp`:
+
+- Dropped every `complete_unit` score row (summary unchanged): **no error**. The card silently omits the task, and its `overall` reads `1/4/1` while its own `by_task` sums to `1/3/1` — a card internally inconsistent with itself.
+- Truncated `scores.jsonl` to **empty**: still **no error**, and the card reports `overall 1/4/1, accuracy 0.2` — every headline figure sourced from `summary.json` with zero score rows behind it.
+
+That contradicts two success criteria of this phase ("every outcome count equals the corresponding count in `scores.jsonl`"; fail fast on "a `scores.jsonl` count that disagrees with `summary.json`"). Fix is small: also walk each summary `models[m]` task block (keys other than `_overall`) and require a matching `counts` entry, and derive `overall` by summing the verified per-task scores counts rather than copying `_overall` (or compare the two and raise on mismatch). Add the mirror-direction test — a dropped task and an empty `scores.jsonl` must both raise `FacctError`.
+
+**Finding 2 (must fix, cheap): the requested-edition exclusion is untested — the test is vacuous.** `if passage.version == requested_version: continue` (facct.py:214) is the guard that keeps a correctly-quoted requested edition from being tagged `other_edition`. Neither incorrect Bible `retrieve_quote` fixture cell contains any wording of its own requested edition — cell 1's answer holds only the WEB wording (`iota kappa lambda mu`), ASV's `epsilon zeta eta theta` is absent; cell 2's `Test 2:2` exists only in KJV and its answer matches nothing. So deleting that line leaves all tests green. The plan's test plan and the spec scenario both name "an answer that contains only the *requested* edition's wording is not tagged." The `Test 5:5` fixture already has per-version distinct wordings — one extra incorrect cell whose answer carries the requested version's wording covers it. This guard also silently protects against question-vs-catalogue version-string drift, which would inflate the numerator, so it deserves a test.
+
+**Comments (non-blocking).**
+- `_outcome_counts` indexes `s["task"]` directly (facct.py:136) — a score row missing `task` raises `KeyError`, not `FacctError`. The join check already catches a missing `question_id`/`model_id`; `task` is the one hole.
+- Phase 2's plan acceptance lists "generating the card does not modify `scores.jsonl`/`answers.jsonl`/`summary.json`"; no test asserts it here (Phase 4 does). A sha256-around-`write_facct_json` assertion is three lines.
+- The counterfactual block records `tagged[].other_editions` but never emits the literal label `other_edition` the spec names. Consider `"tag": "other_edition"` on each tagged cell so the machine-readable card carries the classification Phase 3 will print.
+- `zero_question_languages` includes languages reachable only through restricted targets (`grc`/TLG). Defensible, but Phase 3's prose should say *why* it's zero, or a reader will read it as a coverage gap rather than a held-back source.
+- `per_model[model_id]` as a bare expression to seed the `defaultdict` (facct.py:190) works but reads as a no-op; `per_model.setdefault(...)` or an explicit dict-literal assignment states the intent.
+- `_counterfactual` converts the whole raw corpus on every build even when there are no incorrect Bible `retrieve_quote` cells. Fine at this scale; worth a lazy build if the corpus grows.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Census, outcomes and the edition counterfactual all work correctly on the real run (denominator 32, 3 genuine other_edition tags), but the scores↔summary check runs in only one direction — an empty scores.jsonl still yields a full card — and the requested-edition exclusion has no non-vacuous test.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- One-directional `_verify_against_summary` + `overall` copied from `summary.json`: dropping a task's score rows, or emptying `scores.jsonl` entirely, produces a card with no error whose figures come from no score row (probed). Violates the outcome-fidelity and fail-fast criteria; also makes the card's `overall` inconsistent with its own `by_task`.
+- The `passage.version == requested_version` guard (facct.py:214) is untested: no fixture answer contains its requested edition's wording, so deleting the guard breaks nothing. Spec and plan both name this scenario.
+- Minor: `s["task"]` can raise `KeyError` instead of `FacctError`; no evidence-immutability test in this phase; `other_edition` label not emitted in the JSON; `per_model[model_id]` no-op seeding.

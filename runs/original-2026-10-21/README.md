@@ -129,6 +129,19 @@ be mis-scored. Measured on this run: **0 of 1428 answers contain any Arabic-Indi
 `cite_passage` numbers are genuine model failure, not a scorer-extraction artifact. The open
 question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the scorer unit tests.
 
+## FAccT card (`facct.json` / `facct.md`)
+
+- **The benchmark card (Spec 32)** is generated from this run's committed evidence —
+  `uv --project pipelines run python -m sacredbench facct runs/original-2026-10-21` — and committed
+  beside it. It carries the run census (who the questions represent, by tradition / language /
+  document type / license), the three outcomes taken verbatim from `scores.jsonl`, and the Bible
+  `retrieve_quote` edition counterfactual (how many Bible retrieve_quote misses actually quoted a
+  different edition of the same verse — see `facct.md` for the per-model counts). It never re-scores
+  and never calls a model;
+  every number is derived from `scores.jsonl` / `summary.json`, pinned by
+  `test_original_run_regression.py::test_committed_facct_card_matches_the_run`. The card wording is
+  provisional pending Jonathan Karr's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).
+
 ## Reproducing / re-scoring
 
 - **Scoring is free and deterministic.** Re-scoring the committed `answers.jsonl` reproduces

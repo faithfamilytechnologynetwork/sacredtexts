@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Markdown content is substantially improved, but output handling still violates the phase’s safety guarantees and some prose remains outside the designated block.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The two-file write is not both-or-neither. If the second `os.replace` fails, the JSON has already been replaced while Markdown remains stale. The current test only exercises bad evidence before writing and cannot detect this failure.
+- Predictable `.tmp` paths introduce correctness and containment bugs. For example, `--json a.tmp --md a` makes `tmp_md` equal `json_path`; a successful run leaves `a` containing JSON and removes `a.tmp`. An existing `.tmp` symlink can also make `write_text` modify a file outside the run directory. Use collision-safe temporary files inside validated directories, cleanup/rollback on failure, and tests that inject second-stage failure and exercise colliding override names.
+- The “one editable prose block” requirement is not fully met: `report_markdown()` still hard-codes reader-facing text including `FAccT benchmark card`, `overall`, and `Scope:` outside `CARD_PROSE`. Move these labels into the prose block and add a guard covering them.

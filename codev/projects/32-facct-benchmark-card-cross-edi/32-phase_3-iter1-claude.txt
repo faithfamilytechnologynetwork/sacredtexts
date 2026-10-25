@@ -1,0 +1,45 @@
+I'll start by reading the implementation files to review phase_3.## Review — Spec 32, Phase 3 (`facct.md` markdown card + single prose block)
+
+**How I verified:** read `facct.py`, `cli.py`, `test_facct.py`, `edition_index.py`, the phase-3 commit (`3b0149e`, authored `Jonathan Karr` ✓) and the README line; ran `uv --project pipelines run pytest pipelines` (423 passed, 1 skipped — the skip is the pre-existing `test_original_run_regression` corpus skip, not a facct test); and rendered the real card **in memory to stdout** (`build_facct` + `report_markdown`, no write) so I could read it against the docs bar without touching `runs/original-2026-10-21/`. I made no edits to the tree.
+
+### What's solid
+
+- `report_markdown` renders purely from the `build_facct` structure; every headline figure is an f-string interpolation — no run figure is typed. The drift-guard test genuinely moves (`20.0%` → `40.0%`) when the fixture scores/summary are mutated.
+- The CLI writes **both** files by default, builds *and* renders before either write, rejects override paths outside the run dir (`_within`), and the three CLI tests (both-files, escape-rejected, both-or-neither-on-bad-evidence) are non-vacuous.
+- No `fabrication`, no second refusal rule; `test_markdown_has_no_fabrication_and_no_verse_bodies` also pins that no edition wording leaks into the card — important ahead of Phase 4's `.md` audit extension.
+- The Phase-2 carry-over promise is honoured: the `grc` zero-question language is explained as held-back, not a coverage gap.
+- Accuracy is rendered beside coverage everywhere, and the counterfactual shows numerator **and** denominator per model (17/15/0 → 32 total, matching the spec's ≈32).
+
+### Issues
+
+**1. Card prose lives in two places, not one (phase deliverable).** `_COUNTERFACTUAL_SCOPE` (facct.py:34) is card prose — it is rendered verbatim onto `facct.md` as `*Scope: …*` — but it sits at the top of the module next to the counting logic, not in `CARD_PROSE`. The phase's stated deliverable is "All prose lives in one constants block". Jonathan revising the card's wording would have to find this sentence in the analysis section. Move it into `CARD_PROSE` and have `_counterfactual` read it from there (the JSON `scope` field can keep pointing at the same constant).
+
+**2. Typed numbers inside the prose block.** `counterfactual_intro` says "**Three** of the texts are different English editions of the same Bible (KJV, ASV 1901, WEB)", `non_conclusions` repeats "the **three** English Bibles", and `_COUNTERFACTUAL_SCOPE` says "the three English Bibles are the only sibling editions in the pool". The spec is absolute here: "no figure is ever typed into the prose, so the card cannot drift from the run." These are correct today but are exactly the drift surface the spec names — add a fourth public-domain English Bible to the catalogue and the counterfactual changes while the prose keeps saying "three". `census["selected_texts"]` already carries the Bible versions in the pool; interpolating the count and version list is a couple of lines and closes the gap.
+
+**3. The human card never names the 17 texts.** `facct.md` shows only aggregate counts (`open 4 / public-domain 13`), so a reader cannot answer the question the spec's problem statement opens with — "which license governs each slice". The spec criterion reads "The census table covers all 17 selected texts by tradition, language, document type, and license"; `facct.json` satisfies it, `facct.md` does not. The data is already in `census["selected_texts"]` — a 17-row table (work/version, language, tradition, type, license) is a direct render.
+
+**4. The composite census table is a readability hazard.** The three-breakdowns-side-by-side layout with spacer columns renders rows like `| ar | 10 | | hadith_collection | 9 | | open | 4 |`, which invites a non-engineer to read "Arabic = 10 texts, of which 9 are hadith collections, 4 open" — a relationship that does not exist. Three small separate tables cost nothing and remove the misreading.
+
+**5. The four task names are never glossed.** `retrieve_quote` / `complete_unit` / `cite_passage` / `verify_source` appear as table rows, and the counterfactual column header reads "Of incorrect Bible retrieve_quote", with no explanation anywhere on the card. For a FAccT reviewer who has not read the pipeline, this is jargon. One prose line per task in `CARD_PROSE` fixes it and is squarely within "non-engineer readable".
+
+### Minor (optional)
+
+- `cli.facct` writes `facct.json`, then `facct.md`, non-atomically. A failure between the two leaves a fresh JSON beside a stale MD — the exact hazard `edition_index.write_export` already guards with a tmp+`os.replace` swap. Consider the same staging for consistency.
+- `_within` accepts the run directory itself (`run_dir != resolved` is false ⇒ no raise), so `--md .` passes validation and then dies with an `IsADirectoryError` traceback instead of a `BadParameter`. One-line guard.
+- The drift-guard test asserts one figure (retrieve_quote accuracy). The rendered census counts and counterfactual numerator/denominator are not tied back to the data by any test. A stronger guard — assert each number appearing in the rendered tables is present in the report structure — would cover the whole card rather than one cell.
+
+None of these are counting bugs; the numbers are right and the integrity checks behind them are good. I'm asking for changes because Phase 4 commits this Markdown into the repo as the paper-facing artifact, so items 1–3 are much cheaper to fix now than after the card is generated and reviewed by Jonathan.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Renderer, CLI and tests are sound and the numbers are genuinely derived, but card prose is split across two places, carries typed counts the spec forbids, and the human card omits the per-text census it is supposed to carry.
+CONFIDENCE: MEDIUM
+---
+
+KEY_ISSUES:
+- `_COUNTERFACTUAL_SCOPE` is card prose rendered onto `facct.md` but lives outside `CARD_PROSE`, next to the counting logic — the phase's "one editable place" deliverable is not met.
+- Typed figures in the prose block ("Three of the texts…", "the three English Bibles" ×2) violate the spec's "no figure is ever typed into the prose"; derive them from `census["selected_texts"]`.
+- `facct.md` shows only aggregate census counts, never the 17 texts, so a reader cannot see which license governs which slice (spec criterion is satisfied only by `facct.json`).
+- The side-by-side language/document-type/license table implies a per-row relationship that does not exist — against the one-linear-read docs bar.
+- The four task names are rendered unexplained, so the card is not yet non-engineer readable.
+- Minor: non-atomic json-then-md write (stale-MD risk, unlike `edition_index.write_export`); `_within` accepts the run dir itself; the md drift guard covers only one figure.

@@ -54,6 +54,22 @@ def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
     assert out.read_text(encoding="utf-8") == committed.read_text(encoding="utf-8")
 
 
+def test_committed_facct_card_matches_the_run():
+    # the committed FAccT card (Spec 32) must equal a fresh build from the committed evidence, so a
+    # sanctioned rebaseline that moved scores.jsonl / summary.json — or a CARD_PROSE edit — without
+    # regenerating the card is caught here rather than shipping a card that contradicts its own run.
+    # REMEDY when this fails: regenerate the card
+    #   (`python -m sacredbench facct runs/original-2026-10-21`), do NOT loosen the assertion.
+    facct_json = RUN / "facct.json"
+    if not facct_json.exists() or not (REPO_ROOT / "texts" / "raw").exists():
+        pytest.skip("committed facct card or raw tree not present")
+    from sacredbench.facct import build_facct, report_markdown
+
+    rebuilt = build_facct(RUN)
+    assert json.loads(facct_json.read_text(encoding="utf-8")) == rebuilt  # facct.json
+    assert (RUN / "facct.md").read_text(encoding="utf-8") == report_markdown(rebuilt)  # facct.md
+
+
 def test_cite_passage_decline_survey_is_pinned():
     """The hand-surveyed zero-citation-candidate cite_passage set is fixed (count + SHA)."""
     answers = RUN / "answers.jsonl"
