@@ -475,3 +475,57 @@ def test_score_and_collect_do_not_invoke_the_judge():
         src = Path(mod.__file__).read_text(encoding="utf-8")
         for token in forbidden:
             assert token not in src, f"{mod.__name__} invokes the judge ({token})"
+
+
+# ---- `score` CLI: the grader seam + the --judgments provenance opt-in -----
+
+def _score_answers(tmp_path):
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps({
+        "question_id": "retrieve_quote-0", "model_id": "m1", "task": "retrieve_quote",
+        "answer": "x", "question_set_digest": "d",
+        "question": {"expected": {"text": "x"}, "source": {"tradition": ["A"]}},
+    }) + "\n", encoding="utf-8")
+    return answers
+
+
+def test_score_cli_rejects_jev_as_inline_evaluator(tmp_path):
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+
+    r = CliRunner().invoke(app, ["score", str(_score_answers(tmp_path)),
+                                 "--scores-out", str(tmp_path / "s.jsonl"),
+                                 "--summary-out", str(tmp_path / "sum.json"),
+                                 "--evaluator", "jev"])
+    assert r.exit_code != 0
+    assert "separate-pass" in r.output
+
+
+def test_score_cli_judgments_records_provenance(tmp_path):
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+    from sacredbench.jev import RUBRIC_ID
+
+    sidecar = tmp_path / "judgments.jsonl"
+    sidecar.write_text(json.dumps({
+        "question_id": "retrieve_quote-0", "model_id": "m1", "rubric_id": RUBRIC_ID,
+        "judge_model": "jev-latest", "judge_model_resolved": "typesafe/jev-1.14-20261014",
+        "question_set_digest": "d", "answer_digest": "a0",
+        "refusal_p": 0.1, "matches_requested_p": 0.9, "equivalence": "not_evaluated",
+    }) + "\n", encoding="utf-8")
+    (tmp_path / "judgments.jsonl.manifest.json").write_text(json.dumps({
+        "rubric_id": RUBRIC_ID, "judge_model": "jev-latest",
+        "judge_model_resolved": "typesafe/jev-1.14-20261014",
+        "question_set_digest": "d", "index_digest": None,
+    }), encoding="utf-8")
+
+    summary_out = tmp_path / "sum.json"
+    r = CliRunner().invoke(app, ["score", str(_score_answers(tmp_path)),
+                                 "--scores-out", str(tmp_path / "s.jsonl"),
+                                 "--summary-out", str(summary_out),
+                                 "--judgments", str(sidecar)])
+    assert r.exit_code == 0, r.output
+    summary = json.loads(summary_out.read_text(encoding="utf-8"))
+    assert summary["judge"] == {"model_resolved": "typesafe/jev-1.14-20261014", "rubric_id": RUBRIC_ID}
+    assert isinstance(summary["evaluators"], list)
+    assert "cost" not in json.dumps(summary).lower()

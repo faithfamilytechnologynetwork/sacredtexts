@@ -313,6 +313,12 @@ def score(
              "(default: the deterministic set strict,containment; unknown names fail fast; "
              "paid/separate-pass graders are never default and cannot run here).",
     ),
+    judgments: Path = typer.Option(
+        None, "--judgments",
+        help="a Jev judgments sidecar (from `judge`) whose resolved build is recorded in the summary's "
+             "`judge` provenance key (explicit opt-in; the headline stays deterministic and this never "
+             "reads an adjacent sidecar on its own). Its manifest must bind to these answers.",
+    ),
 ) -> None:
     """Score all answers and write the per-model summary. Graders are selectable via --evaluator."""
     from .graders import GraderError, resolve_evaluators
@@ -376,9 +382,9 @@ def score(
                            "price_in": m.price_in, "price_out": m.price_out}
         summary = score_file(answers, scores_out, expected, expected_tradition, panel,
                              expected_digest=gen.question_set_digest(qs), evaluators=evaluator or None,
-                             expected_text=expected_text)
+                             expected_text=expected_text, judgments=judgments)
     else:
-        summary = score_file(answers, scores_out, evaluators=evaluator or None)
+        summary = score_file(answers, scores_out, evaluators=evaluator or None, judgments=judgments)
     summary_out.parent.mkdir(parents=True, exist_ok=True)
     with open(summary_out, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=1)

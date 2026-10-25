@@ -268,15 +268,38 @@ def _single_question_set_digest(rows: list[dict], given: str | None) -> str | No
     return next(iter(digests)) if digests else None
 
 
+def _validate_verdict_row(row: dict, path: Path, line_no: int) -> None:
+    """A sidecar row must carry a real typed verdict, not just an identity header. Guards the
+    ``load_provenance`` path (``require_verdict``): a *skeletal* row that matches only rubric / build /
+    question-set digest would otherwise key as present and let ``score --judgments`` stamp a judge
+    build for a sidecar with no actual judgment. Require the resume identity AND the verdict fields:
+    ``question_id`` / ``model_id`` / ``answer_digest``, numeric ``refusal_p`` / ``matches_requested_p``
+    in [0,1], and either a ``kind`` label or the ``equivalence: "not_evaluated"`` sentinel."""
+    for field in ("question_id", "model_id", "answer_digest"):
+        if not row.get(field):
+            raise JevError(f"{path}:{line_no}: row missing {field}; not a complete judgment")
+    _prob(row.get("refusal_p"), f"{path}:{line_no}: refusal_p")
+    _prob(row.get("matches_requested_p"), f"{path}:{line_no}: matches_requested_p")
+    if not row.get("kind") and row.get("equivalence") != "not_evaluated":
+        raise JevError(
+            f"{path}:{line_no}: row has neither a `kind` verdict nor `equivalence: not_evaluated`; "
+            "not a complete judgment"
+        )
+
+
 def _load_existing(path: Path, *, pinned_build: str | None = None,
-                   pinned_qsd: str | None = None) -> set[tuple]:
+                   pinned_qsd: str | None = None, require_verdict: bool = False) -> set[tuple]:
     """Resume keys already judged: (question_id, model_id, answer_digest). Guards the rubric and,
     given the manifest's ``pinned_build`` / ``pinned_qsd``, every existing row's resolved build AND
     question-set digest — so a hand-edited or half-written file whose rows disagree with the pinned
     identity is refused, not silently extended. The resume key omits the question-set digest, so a
     row carrying a *different* one (but the same question/model/answer) would otherwise be mistaken
     for a completed cell of the current set; the row-level check closes that (no mixed-set resume,
-    no mixed-build files)."""
+    no mixed-build files).
+
+    ``require_verdict`` (the ``load_provenance`` path) additionally demands each row carry a complete
+    typed verdict (``_validate_verdict_row``), so a skeletal identity-only row cannot pass as a
+    judgment. The resume path leaves it ``False`` — its own writes are always complete."""
     keys: set[tuple] = set()
     if not path.exists():
         return keys
@@ -310,17 +333,26 @@ def _load_existing(path: Path, *, pinned_build: str | None = None,
                     f"differs from the sidecar's {pinned_qsd!r}; these answers are a different "
                     "question set — point --out at a fresh file"
                 )
+            if require_verdict:
+                _validate_verdict_row(row, path, line_no)
             keys.add((row.get("question_id"), row.get("model_id"), row.get("answer_digest")))
     return keys
 
 
 def _load_manifest(out: Path, *, rubric_id: str, question_set_digest: str | None,
                    index_digest: str | None) -> dict | None:
-    """Load + validate the sidecar manifest on resume; fail fast on an identity mismatch."""
+    """Load + validate the sidecar manifest on resume; fail fast on an identity mismatch.
+
+    Parallels ``load_provenance``'s manifest checks deliberately: this resume-path validator binds
+    ``index_digest`` (a mixed-index guard), which provenance must NOT constrain once Phase 3 lands —
+    keep the two in sync when either manifest field set changes."""
     mpath = _manifest_path(out)
     if not mpath.exists():
         return None
-    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    try:
+        manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise JevError(f"{mpath}: not JSON ({exc})") from exc
     if manifest.get("rubric_id") != rubric_id:
         raise JevError(
             f"{mpath}: rubric {manifest.get('rubric_id')!r} != {rubric_id!r}; point --out at a fresh file"
@@ -554,3 +586,60 @@ def summarize(path: Path) -> dict:
         "judge_models": sorted(builds),
         "rubric_id": RUBRIC_ID,
     }
+
+
+def load_provenance(judgments: Path, *, question_set_digest: str | None) -> dict:
+    """Validate that a judgments sidecar binds to the answers being scored and return the
+    resolved-build provenance to stamp into a run's summary (``score --judgments``). No network.
+
+    Both the manifest **and the rows** are validated, so provenance can never be stamped for a pass
+    that produced nothing (or a mismatched pass):
+
+    - the sibling ``.manifest.json`` must exist, name this rubric, carry a non-empty resolved build,
+      and record the question-set digest of the answers being scored;
+    - the sidecar file must exist and hold **at least one** judgment, and every row must agree with
+      the manifest's resolved build and question-set digest (via ``_load_existing``, the same row
+      guard the resume path uses — a build- or set-mismatched / build-less row fails fast).
+
+    A missing manifest, wrong rubric, absent build, question-set mismatch, missing/empty sidecar, or a
+    row that disagrees with the pinned identity **fails fast**. This is an explicit opt-in: default
+    ``score`` never reads an adjacent sidecar.
+
+    NB: the manifest checks below parallel ``_load_manifest`` (the resume-path validator) on purpose —
+    they are kept separate so provenance does not bind ``index_digest`` (see ``_load_manifest``).
+    """
+    mpath = _manifest_path(judgments)
+    if not mpath.exists():
+        raise JevError(
+            f"{judgments}: no manifest ({mpath}); a judgments sidecar carries its build identity in a "
+            "sibling .manifest.json — run `judge` to produce one"
+        )
+    try:
+        manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise JevError(f"{mpath}: not JSON ({exc})") from exc
+    if manifest.get("rubric_id") != RUBRIC_ID:
+        raise JevError(f"{mpath}: rubric {manifest.get('rubric_id')!r} != {RUBRIC_ID!r}")
+    resolved = manifest.get("judge_model_resolved")
+    if not resolved:
+        raise JevError(f"{mpath}: manifest has no judge_model_resolved; its build identity is unknown")
+    if manifest.get("question_set_digest") != question_set_digest:
+        raise JevError(
+            f"{mpath}: judgments question-set digest {manifest.get('question_set_digest')!r} != the "
+            f"answers' {question_set_digest!r}; these judgments are for a different question set"
+        )
+    # The manifest alone is not proof of verdicts: require the sidecar to exist and carry real rows,
+    # each agreeing with the pinned build + question-set digest (reusing the resume row guard).
+    if not judgments.exists():
+        raise JevError(
+            f"{judgments}: manifest present but the judgments file is missing; "
+            "`score --judgments` needs the sidecar itself — run `judge`"
+        )
+    judged = _load_existing(judgments, pinned_build=resolved, pinned_qsd=question_set_digest,
+                            require_verdict=True)
+    if not judged:
+        raise JevError(
+            f"{judgments}: no judgments recorded; `score --judgments` needs a sidecar with at least "
+            "one verdict before it can stamp a judge build into the summary"
+        )
+    return {"model_resolved": resolved, "rubric_id": manifest["rubric_id"]}

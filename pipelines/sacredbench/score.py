@@ -396,6 +396,7 @@ def score_file(
     expected_digest: str | None = None,
     evaluators: "list[str] | None" = None,
     expected_text: dict[tuple[str, str, str], int] | None = None,
+    judgments: Path | None = None,
 ) -> dict:
     """Score every answer row; write per-answer scores and return the summary dict.
 
@@ -444,6 +445,16 @@ def score_file(
                 f"the --questions digest {expected_digest} — scoring answers against a different "
                 "question set than they were collected for; point --questions at the matching set"
             )
+
+    # Explicit judge-provenance opt-in (Spec 21): with --judgments, bind the sidecar's manifest to
+    # these answers' question set and stamp the resolved judge build into the summary. Validated HERE,
+    # before any scores.jsonl is written, so a mismatch fails fast without a half-written side effect.
+    # Without --judgments, default `score` never reads a sidecar and the summary is unchanged.
+    judge_provenance: dict | None = None
+    if judgments is not None:
+        from . import jev
+
+        judge_provenance = jev.load_provenance(judgments, question_set_digest=next(iter(digests)))
 
     # resolve the grader selection ONCE (default = deterministic set); it drives both the emitted
     # text-retrieval submetric fields and which submetrics the summary aggregates.
@@ -669,6 +680,12 @@ def score_file(
     # text-retrieval cells in THIS summary, in selection order. The default set is {strict, containment};
     # a `--evaluator` subset is recorded here so a summary is self-describing about its scoring contract.
     summary["evaluators"] = [g.name for g in graders]
+    # Judge provenance (Spec 21): a SIBLING key to `evaluators`, present only with --judgments, so the
+    # summary states which resolved judge build produced any sidecar verdicts. `evaluators` stays a
+    # list[str] (LeaderboardTable.tsx:48 / test_score.py) and no cost/usage field enters the summary
+    # (test_tutorial_run.py). The judge never joins the deterministic headline.
+    if judge_provenance is not None:
+        summary["judge"] = judge_provenance
     # Additive run timestamp (Issue #7 pipeline half): a committed, mtime-independent
     # recency signal. The current viewer ignores it; it never affects scoring.
     summary["generated_at"] = datetime.now(timezone.utc).isoformat()
