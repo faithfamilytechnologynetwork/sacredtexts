@@ -13,15 +13,19 @@ import pytest
 
 from sacredbench.jev import (
     JEV_MODEL,
+    EquivalenceIndex,
     JevError,
     answer_digest,
     estimate,
     interpret,
     judge,
+    load_equivalence_index,
     summarize,
 )
 
 FIXTURE = Path(__file__).parent / "testdata" / "jev_decision_sample.json"
+INDEX_FIXTURE = Path(__file__).parent / "testdata" / "equivalence_index.sample.jsonl"
+INDEX_CORPUS_HASH = "testcorpus-ed3f05dcf703"  # matches the fixture manifest's corpus_hash
 
 
 def _live_payload() -> dict:
@@ -529,3 +533,260 @@ def test_score_cli_judgments_records_provenance(tmp_path):
     assert summary["judge"] == {"model_resolved": "typesafe/jev-1.14-20261014", "rubric_id": RUBRIC_ID}
     assert isinstance(summary["evaluators"], list)
     assert "cost" not in json.dumps(summary).lower()
+
+
+# ---- equivalence index consumer (Spec 21 phase 3, #32 schema verbatim) ----
+
+def _write_index(tmp_path, *, name="eqindex", corpus_hash=INDEX_CORPUS_HASH, digest="idx-A",
+                 row_count=1, rows=None):
+    """A minimal #32-schema index + manifest under tmp_path; returns the index file path."""
+    if rows is None:
+        rows = [{"work": "The Bible", "citation": "Isaiah 1:1", "language": "en",
+                 "wordings": [{"version": "KJV", "text": "the requested line of scripture here"},
+                              {"version": "ASV", "text": "an alternate indexed wording"}]}]
+    idx = tmp_path / f"{name}.jsonl"
+    idx.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    (tmp_path / f"{name}.jsonl.manifest.json").write_text(json.dumps({
+        "corpus_hash": corpus_hash, "row_count": row_count, "digest": digest, "excluded_restricted": [],
+    }), encoding="utf-8")
+    return idx
+
+
+def test_load_equivalence_index_happy_path_from_committed_fixture():
+    idx = load_equivalence_index(INDEX_FIXTURE, run_corpus_hash=INDEX_CORPUS_HASH)
+    assert isinstance(idx, EquivalenceIndex)
+    assert idx.corpus_hash == INDEX_CORPUS_HASH and idx.digest == "idxdigest-sample-00000001"
+    assert idx.row_count == 2
+    # .wordings excludes the requested edition (by version) and returns the OTHER indexed wording(s)
+    others = idx.wordings("The Bible", "Isaiah 1:1", "en", "KJV", "the requested line of scripture here")
+    assert [w["version"] for w in others] == ["ASV"]
+    # a citation absent from the index → no alternates (never a silent no-match upstream)
+    assert idx.wordings("The Bible", "Nahum 1:1", "en", "KJV", "x") == []
+
+
+def test_wordings_excludes_by_version_not_exact_text(tmp_path):
+    # orthographic drift: the index's KJV text differs from question.expected.text by punctuation,
+    # but it is still the REQUESTED edition and must not leak into indexed_other_wordings (else a
+    # false other_indexed_wording verdict). Exclusion is by version, so it is dropped regardless.
+    rows = [{"work": "The Bible", "citation": "Isaiah 1:1", "language": "en", "wordings": [
+        {"version": "KJV", "text": "the requested line of scripture here."},   # trailing period drift
+        {"version": "ASV", "text": "an alternate wording"}]}]
+    idx = load_equivalence_index(_write_index(tmp_path, rows=rows, row_count=1),
+                                 run_corpus_hash=INDEX_CORPUS_HASH)
+    others = idx.wordings("The Bible", "Isaiah 1:1", "en", "KJV", "the requested line of scripture here")
+    assert [w["version"] for w in others] == ["ASV"]  # KJV dropped by VERSION despite the text drift
+
+
+def test_load_equivalence_index_restricted_wording_fails_fast(tmp_path):
+    # baked constraint: an index wording for a RESTRICTED target must never reach the judge
+    rows = [{"work": "NABRE Bible", "citation": "Gen 1:1", "language": "en", "wordings": [
+        {"version": "NABRE", "text": "secret restricted text"},
+        {"version": "PUBLIC", "text": "public text"}]}]
+    idx = _write_index(tmp_path, rows=rows, row_count=1)
+    restricted = frozenset({("NABRE Bible", "NABRE", "en")})
+    with pytest.raises(JevError, match="RESTRICTED target"):
+        load_equivalence_index(idx, run_corpus_hash=INDEX_CORPUS_HASH, restricted_keys=restricted)
+
+
+def test_load_equivalence_index_corpus_hash_mismatch_fails_fast():
+    with pytest.raises(JevError, match="differs from the run's"):
+        load_equivalence_index(INDEX_FIXTURE, run_corpus_hash="some-other-corpus")
+
+
+def test_load_equivalence_index_missing_manifest_fails_fast(tmp_path):
+    idx = tmp_path / "bare.jsonl"
+    idx.write_text('{"work":"W","citation":"1:1","language":"en","wordings":[{"version":"a","text":"x"}]}\n')
+    with pytest.raises(JevError, match="no equivalence-index manifest"):
+        load_equivalence_index(idx, run_corpus_hash=INDEX_CORPUS_HASH)
+
+
+def test_load_equivalence_index_row_count_disagrees_fails_fast(tmp_path):
+    idx = _write_index(tmp_path, row_count=5)  # manifest claims 5, file has 1
+    with pytest.raises(JevError, match="row_count"):
+        load_equivalence_index(idx, run_corpus_hash=INDEX_CORPUS_HASH)
+
+
+def test_load_equivalence_index_malformed_wording_fails_fast(tmp_path):
+    bad = [{"work": "W", "citation": "1:1", "language": "en", "wordings": [{"version": "a"}]}]  # no text
+    idx = _write_index(tmp_path, row_count=1, rows=bad)
+    with pytest.raises(JevError, match="wording missing"):
+        load_equivalence_index(idx, run_corpus_hash=INDEX_CORPUS_HASH)
+
+
+def test_judge_with_index_asks_equivalence_and_records_index_digest(tmp_path):
+    idx = load_equivalence_index(INDEX_FIXTURE, run_corpus_hash=INDEX_CORPUS_HASH)
+    out = tmp_path / "j.jsonl"
+    seen = {}
+
+    def decide(state):
+        seen["state"] = state  # capture what the judge sent
+        return _payload(kind="other_indexed_wording")
+
+    # no explicit index_digest — judge derives it from index.digest (the digest is the index's identity)
+    done, failed, _ = judge([_row(qsd="d")], out, index=idx, decide=decide, concurrency=1,
+                            question_set_digest="d")
+    assert (done, failed) == (1, 0)
+    # the equivalence question was asked: the state carried the OTHER indexed wordings
+    assert seen["state"]["indexed_other_wordings"] == [{"version": "ASV", "text": "an alternate indexed wording of the same verse"}]
+    row = json.loads(out.read_text(encoding="utf-8").strip())
+    assert row["kind"] == "other_indexed_wording"
+    assert row["index_digest"] == idx.digest
+    assert "equivalence" not in row  # evaluated ⇒ flat kind, not the sentinel
+    manifest = json.loads((tmp_path / "j.jsonl.manifest.json").read_text(encoding="utf-8"))
+    assert manifest["index_digest"] == idx.digest
+
+
+def test_judge_rejects_index_digest_that_disagrees_with_index(tmp_path):
+    # the footgun codex named: an index paired with a contradicting explicit digest is refused
+    idx = load_equivalence_index(INDEX_FIXTURE, run_corpus_hash=INDEX_CORPUS_HASH)
+    with pytest.raises(JevError, match="differs from the supplied index"):
+        judge([_row(qsd="d")], tmp_path / "j.jsonl", index=idx, index_digest="not-the-index-digest",
+              decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+
+
+def test_judge_index_digest_without_index_fails_fast(tmp_path):
+    with pytest.raises(JevError, match="without an index"):
+        judge([_row(qsd="d")], tmp_path / "j.jsonl", index_digest="orphan",
+              decide=lambda s: _payload(), concurrency=1, question_set_digest="d")
+
+
+def test_judge_without_index_records_not_evaluated(tmp_path):
+    out = tmp_path / "j.jsonl"
+    judge([_row(qsd="d")], out, decide=lambda s: _payload(), concurrency=1, question_set_digest="d")
+    row = json.loads(out.read_text(encoding="utf-8").strip())
+    assert row["equivalence"] == "not_evaluated" and "kind" not in row and "index_digest" not in row
+
+
+def test_judge_mixed_index_resume_fails_fast(tmp_path):
+    out = tmp_path / "j.jsonl"
+    # two DIFFERENT indexes, same corpus_hash, different digest (judge derives the digest from each)
+    idx_a = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+                                   run_corpus_hash=INDEX_CORPUS_HASH)
+    idx_b = load_equivalence_index(_write_index(tmp_path, name="b", digest="idx-B"),
+                                   run_corpus_hash=INDEX_CORPUS_HASH)
+    judge([_row(qid="q-A", qsd="d")], out, index=idx_a,
+          decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+    # resuming with a DIFFERENT index (same corpus_hash) is refused by the manifest check — no
+    # mixed-index sidecar even when corpus_hash is unchanged
+    with pytest.raises(JevError, match="index digest"):
+        judge([_row(qid="q-B", qsd="d")], out, index=idx_b,
+              decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+
+
+def test_judge_resume_rejects_row_with_conflicting_index_digest(tmp_path):
+    # codex iter-1: the manifest check alone is not enough — a row whose index_digest conflicts with
+    # the pinned one must also be refused (no mixed-index rows under a matching manifest).
+    out = tmp_path / "j.jsonl"
+    idx = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+                                 run_corpus_hash=INDEX_CORPUS_HASH)
+    judge([_row(qid="q-A", qsd="d")], out, index=idx,
+          decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+    # hand-corrupt a row's index_digest, leaving the manifest intact
+    rows = out.read_text(encoding="utf-8").splitlines()
+    bad = json.loads(rows[0]); bad["index_digest"] = "idx-OTHER"; bad["question_id"] = "q-Z"
+    out.write_text("\n".join(rows + [json.dumps(bad)]) + "\n", encoding="utf-8")
+    with pytest.raises(JevError, match="row equivalence-index digest"):
+        judge([_row(qid="q-B", qsd="d")], out, index=idx,
+              decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+
+
+def test_judge_cli_equivalence_index_requires_questions(tmp_path, monkeypatch):
+    import sacredbench.cli as climod
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps(_row(qsd="d")) + "\n", encoding="utf-8")
+    r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl"),
+                                 "--equivalence-index", str(INDEX_FIXTURE)])
+    assert r.exit_code != 0
+    assert "requires --questions" in r.output
+
+
+def test_judge_cli_corpus_hash_mismatch_fails_fast(tmp_path, monkeypatch):
+    import sacredbench.cli as climod
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps(_row(qsd="d")) + "\n", encoding="utf-8")
+    questions = tmp_path / "questions.jsonl"
+    questions.write_text("", encoding="utf-8")
+    (tmp_path / "questions.jsonl.manifest.json").write_text(
+        json.dumps({"corpus_hash": "a-different-corpus", "question_set_digest": "d"}), encoding="utf-8")
+    r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl"),
+                                 "--equivalence-index", str(INDEX_FIXTURE), "--questions", str(questions)])
+    # JevError propagates (CliRunner invokes the app, not main()'s catch) — it's the fail-fast, and
+    # main() formats it as `error: …` exit 2 in a real invocation.
+    assert r.exit_code != 0
+    assert isinstance(r.exception, JevError) and "differs from the run's" in str(r.exception)
+
+
+def test_judge_cli_mispointed_questions_fails_fast(tmp_path, monkeypatch):
+    # claude #3: --questions bound by question_set_digest to THESE answers; a different run's
+    # questions file (wrong digest) is refused before its corpus_hash can be used.
+    import sacredbench.cli as climod
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps(_row(qsd="d")) + "\n", encoding="utf-8")
+    questions = tmp_path / "questions.jsonl"
+    questions.write_text("", encoding="utf-8")
+    # matching corpus_hash but a DIFFERENT question_set_digest → a different run's questions file
+    (tmp_path / "questions.jsonl.manifest.json").write_text(
+        json.dumps({"corpus_hash": INDEX_CORPUS_HASH, "question_set_digest": "other-run"}), encoding="utf-8")
+    r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl"),
+                                 "--equivalence-index", str(INDEX_FIXTURE), "--questions", str(questions)])
+    assert r.exit_code != 0
+    # the message's multi-word phrase is box-wrapped by typer; match single unsplittable tokens
+    assert "question_set_digest" in r.output and "other-run" in r.output
+
+
+def _eq_cli(tmp_path, monkeypatch, *, answers_qsd="d", manifest):
+    """Invoke `judge --equivalence-index <fixture> --questions <q>` with a given answers digest and a
+    given questions-manifest dict; returns the CliRunner result. Catalogue is stubbed (no restricted)."""
+    import sacredbench.cli as climod
+    from typer.testing import CliRunner
+    from sacredbench.cli import app
+
+    monkeypatch.setattr(climod, "_require_catalogue", lambda root: [])
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps(_row(qsd=answers_qsd)) + "\n", encoding="utf-8")
+    questions = tmp_path / "questions.jsonl"
+    questions.write_text("", encoding="utf-8")
+    (tmp_path / "questions.jsonl.manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl"),
+                                    "--equivalence-index", str(INDEX_FIXTURE), "--questions", str(questions)])
+
+
+def test_judge_cli_questions_manifest_without_digest_fails_fast(tmp_path, monkeypatch):
+    # codex iter-2: a manifest lacking question_set_digest must NOT be accepted (its corpus_hash would
+    # bind the index unverified) when there is an answers digest to bind to.
+    r = _eq_cli(tmp_path, monkeypatch, answers_qsd="d", manifest={"corpus_hash": INDEX_CORPUS_HASH})
+    assert r.exit_code != 0
+    assert "describes" in r.output  # "...cannot confirm --questions describes these answers"
+
+
+def test_judge_cli_answers_without_digest_fails_fast(tmp_path, monkeypatch):
+    # claude #1: answers with no question_set_digest give nothing to bind the index to → refuse,
+    # rather than silently skipping the binding and trusting an arbitrary --questions corpus_hash.
+    r = _eq_cli(tmp_path, monkeypatch, answers_qsd=None,
+                manifest={"corpus_hash": INDEX_CORPUS_HASH, "question_set_digest": "d"})
+    assert r.exit_code != 0
+    assert "coherent" in r.output  # "...re-collect to a coherent set before judging with an index"
+
+
+def test_estimate_mixed_index_fails_fast(tmp_path):
+    # the CLI runs estimate() BEFORE judge(), so the mixed-index error a user hits first surfaces from
+    # estimate — assert that path directly (test_judge_mixed_index_resume_fails_fast covers judge()).
+    out = tmp_path / "j.jsonl"
+    idx_a = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+                                   run_corpus_hash=INDEX_CORPUS_HASH)
+    judge([_row(qid="q-A", qsd="d")], out, index=idx_a,
+          decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
+    with pytest.raises(JevError, match="index digest"):
+        estimate([_row(qid="q-B", qsd="d")], out, index_digest="idx-B", question_set_digest="d")

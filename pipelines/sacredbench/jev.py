@@ -15,9 +15,9 @@ Per answer cell Jev is asked:
 - ``matches_requested`` — **containment**: the requested words are in the answer.
 
 A third, **passage-equivalence** question (``kind``) is asked **only** when an
-edition index is supplied (``--equivalence-index``, wired in a later phase). With
-no index the rubric does not ask it and each row records
-``equivalence: "not_evaluated"`` — never a silent no-match.
+edition index is supplied (``--equivalence-index``, consuming #32's schema via
+``load_equivalence_index``). With no index the rubric does not ask it and each row
+records ``equivalence: "not_evaluated"`` — never a silent no-match.
 
 Calls go to ``POST https://openrouter.ai/api/alpha/decisions`` with the same
 ``OPENROUTER_API_KEY`` as the OpenRouter panel. Because ``jev-latest`` floats, the
@@ -287,8 +287,12 @@ def _validate_verdict_row(row: dict, path: Path, line_no: int) -> None:
         )
 
 
+_UNCHECKED = object()  # sentinel: "do not check this row field" (vs the legitimate value None)
+
+
 def _load_existing(path: Path, *, pinned_build: str | None = None,
-                   pinned_qsd: str | None = None, require_verdict: bool = False) -> set[tuple]:
+                   pinned_qsd: str | None = None, require_verdict: bool = False,
+                   pinned_index_digest=_UNCHECKED) -> set[tuple]:
     """Resume keys already judged: (question_id, model_id, answer_digest). Guards the rubric and,
     given the manifest's ``pinned_build`` / ``pinned_qsd``, every existing row's resolved build AND
     question-set digest — so a hand-edited or half-written file whose rows disagree with the pinned
@@ -299,7 +303,13 @@ def _load_existing(path: Path, *, pinned_build: str | None = None,
 
     ``require_verdict`` (the ``load_provenance`` path) additionally demands each row carry a complete
     typed verdict (``_validate_verdict_row``), so a skeletal identity-only row cannot pass as a
-    judgment. The resume path leaves it ``False`` — its own writes are always complete."""
+    judgment. The resume path leaves it ``False`` — its own writes are always complete.
+
+    ``pinned_index_digest`` (the resume path) additionally binds each row's ``index_digest`` to the
+    sidecar's pinned equivalence-index identity — so a manifest can't match while a row carries a
+    missing or conflicting index digest (a mixed-index sidecar the manifest check alone would miss).
+    ``None`` is a real pinned value (a no-index sidecar: rows carry no ``index_digest``); the
+    ``_UNCHECKED`` sentinel (the default, used by ``load_provenance``) skips the check entirely."""
     keys: set[tuple] = set()
     if not path.exists():
         return keys
@@ -332,6 +342,12 @@ def _load_existing(path: Path, *, pinned_build: str | None = None,
                     f"{path}:{line_no}: row question-set digest {row.get('question_set_digest')!r} "
                     f"differs from the sidecar's {pinned_qsd!r}; these answers are a different "
                     "question set — point --out at a fresh file"
+                )
+            if pinned_index_digest is not _UNCHECKED and row.get("index_digest") != pinned_index_digest:
+                raise JevError(
+                    f"{path}:{line_no}: row equivalence-index digest {row.get('index_digest')!r} "
+                    f"differs from the sidecar's {pinned_index_digest!r}; no mixed-index files — "
+                    "point --out at a fresh file"
                 )
             if require_verdict:
                 _validate_verdict_row(row, path, line_no)
@@ -391,7 +407,7 @@ def estimate(rows: list[dict], out: Path, *, restricted_keys: frozenset = frozen
     _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
-                          pinned_qsd=qsd)
+                          pinned_qsd=qsd, pinned_index_digest=index_digest)
     pending, skipped_task, skipped_restricted = _partition(rows, done, restricted_keys)
     n = len(pending if limit is None else pending[:limit])
     return {
@@ -446,6 +462,19 @@ def judge(
         raise JevError("concurrency must be >= 1")
     _check_limit(limit)
     with_equivalence = index is not None
+    # The index's own digest is its identity — never a caller-supplied value that could disagree with
+    # the loaded index (which would pin the manifest to one digest while sending another index's
+    # wordings). Derive it; reject a mismatched explicit digest; and an index_digest without an index
+    # is incoherent (equivalence is off, so there is nothing to pin).
+    if index is not None:
+        if index_digest is not None and index_digest != index.digest:
+            raise JevError(
+                f"index_digest {index_digest!r} differs from the supplied index's {index.digest!r}; "
+                "do not pass a digest that disagrees with the index"
+            )
+        index_digest = index.digest
+    elif index_digest is not None:
+        raise JevError("index_digest supplied without an index; equivalence is off without an index")
     questions = build_questions(with_equivalence=with_equivalence)
     qsd = _single_question_set_digest(rows, question_set_digest)
 
@@ -461,7 +490,7 @@ def judge(
     _require_manifest_if_rows(out)
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
-                          pinned_qsd=qsd)
+                          pinned_qsd=qsd, pinned_index_digest=index_digest)
     pending, _skipped_task, _skipped_restricted = _partition(rows, done, restricted_keys)
     if limit is not None:
         pending = pending[:limit]
@@ -488,9 +517,13 @@ def judge(
                                        encoding="utf-8")
 
     def run_cell(row: dict) -> None:
-        citation = ((row.get("question") or {}).get("source") or {}).get("citation") or ""
+        source = (row.get("question") or {}).get("source") or {}
+        citation = source.get("citation") or ""
+        work = source.get("work")
+        language = source.get("language")
+        version = source.get("version")
         expected = ((row.get("question") or {}).get("expected") or {}).get("text") or ""
-        alternates = _alternates(index, citation, expected) if with_equivalence else []
+        alternates = _alternates(index, work, citation, language, version, expected) if with_equivalence else []
         state = judgment_state(row, alternates, with_equivalence=with_equivalence)
         interpreted = interpret(call(state), with_equivalence=with_equivalence)
         resolved = interpreted["judge_model_resolved"]
@@ -539,11 +572,117 @@ def judge(
     return done_count, len(failures), failures
 
 
-def _alternates(index, citation: str, expected_text: str) -> list[dict]:
-    """Other indexed wordings of this citation (equivalence; wired in a later phase)."""
+def _alternates(index, work, citation: str, language, requested_version, expected_text: str) -> list[dict]:
+    """Other indexed wordings of this ``(work, citation, language)`` (equivalence), excluding the
+    question's own edition (``requested_version``). ``[]`` when no index is supplied or the citation
+    is absent from it."""
     if index is None:
         return []
-    return index.wordings(citation, expected_text)
+    return index.wordings(work, citation, language, requested_version, expected_text)
+
+
+class EquivalenceIndex:
+    """In-memory consumer of #32's equivalence-index file. The schema is **consumed verbatim** (this
+    does NOT produce it, and #21 does not depend on #32's branch):
+
+    - index JSONL: one row per ``(work, citation, language)`` —
+      ``{work, citation, language, wordings: [{version, text}, …]}`` (single-wording rows omitted by
+      the producer; same-canonical-language only; restricted editions already filtered);
+    - manifest ``<path>.manifest.json``: ``{corpus_hash, row_count, digest, excluded_restricted}``.
+
+    ``corpus_hash`` binds the index to a run's corpus and ``digest`` is the index identity recorded
+    per sidecar row and in the sidecar manifest (so a changed index fails a resume — see
+    ``_load_manifest``)."""
+
+    def __init__(self, *, lookup: dict[tuple, list[dict]], corpus_hash: str, digest: str,
+                 row_count: int | None):
+        self._lookup = lookup
+        self.corpus_hash = corpus_hash
+        self.digest = digest
+        self.row_count = row_count
+
+    def wordings(self, work, citation: str, language, requested_version, expected_text: str) -> list[dict]:
+        """The OTHER indexed wordings of this citation: every wording in the row except the requested
+        one. The requested wording is identified by **``version``** (the question's own edition), not
+        by exact text — an exact-text match is brittle exactly in the Arabic/Hebrew orthographic-variance
+        regime this diagnoses (a one-diacritic drift between the index's text and ``expected_text``
+        would leave the requested wording in the alternates and invite a false ``other_indexed_wording``
+        verdict). A redundant exact-text exclusion is kept as a backstop. ``[]`` when the citation is
+        not in the index."""
+        rows = self._lookup.get((work, citation, language), [])
+        return [w for w in rows
+                if w.get("version") != requested_version and w.get("text") != expected_text]
+
+
+def load_equivalence_index(path: Path, *, run_corpus_hash: str,
+                           restricted_keys: frozenset = frozenset()) -> EquivalenceIndex:
+    """Load + validate #32's equivalence index, binding it to ``run_corpus_hash``. Fail fast (JevError)
+    on a missing manifest, a missing index file, a ``corpus_hash`` mismatch, a malformed row, a
+    duplicate ``(work, citation, language)`` key, or a ``row_count`` that disagrees with the file.
+
+    **Restricted-target guard (baked constraint, independent of the commit-time audit gate):** index
+    ``wordings[].text`` is sent to the third-party Decisions API, so every wording's
+    ``(work, version, language)`` is checked against ``restricted_keys`` here — relying on #32's
+    producer to have filtered is exactly the dependence the constraint forbids. A restricted wording
+    is a **broken index**, so this fails fast (not a cell-level skip)."""
+    mpath = _manifest_path(path)
+    if not mpath.exists():
+        raise JevError(
+            f"{path}: no equivalence-index manifest ({mpath}); #32 writes it beside the index — "
+            "point --equivalence-index at an index that has its manifest"
+        )
+    try:
+        manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise JevError(f"{mpath}: not JSON ({exc})") from exc
+    corpus = manifest.get("corpus_hash")
+    digest = manifest.get("digest")
+    if not corpus or not digest:
+        raise JevError(f"{mpath}: equivalence-index manifest missing corpus_hash and/or digest")
+    if corpus != run_corpus_hash:
+        raise JevError(
+            f"{mpath}: index corpus_hash {corpus!r} differs from the run's {run_corpus_hash!r}; the "
+            "index was built over a different corpus — point --equivalence-index at the matching index"
+        )
+    if not path.exists():
+        raise JevError(f"{path}: equivalence-index file not found")
+    lookup: dict[tuple, list[dict]] = {}
+    n_rows = 0
+    with open(path, encoding="utf-8") as handle:
+        for line_no, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise JevError(f"{path}:{line_no}: not JSON ({exc})") from exc
+            work, citation, language = row.get("work"), row.get("citation"), row.get("language")
+            wordings = row.get("wordings")
+            if not (work and citation and language):
+                raise JevError(f"{path}:{line_no}: index row missing work/citation/language")
+            if not isinstance(wordings, list) or not wordings:
+                raise JevError(f"{path}:{line_no}: index row has no wordings list")
+            for w in wordings:
+                if not isinstance(w, dict) or not w.get("version") or not isinstance(w.get("text"), str):
+                    raise JevError(f"{path}:{line_no}: index wording missing version/text")
+                rkey = (work, w["version"], language)
+                if rkey in restricted_keys:
+                    raise JevError(
+                        f"{path}:{line_no}: index wording {rkey!r} is a RESTRICTED target; its text "
+                        "must never reach the judge — this is a broken index (fail fast, independent "
+                        "of the commit-time audit gate)"
+                    )
+            key = (work, citation, language)
+            if key in lookup:
+                raise JevError(f"{path}:{line_no}: duplicate index row for {key!r}; one row per (work, citation, language)")
+            lookup[key] = wordings
+            n_rows += 1
+    row_count = manifest.get("row_count")
+    if row_count is not None and row_count != n_rows:
+        raise JevError(
+            f"{mpath}: manifest row_count {row_count} != {n_rows} rows in {path}; index/manifest disagree"
+        )
+    return EquivalenceIndex(lookup=lookup, corpus_hash=corpus, digest=digest, row_count=row_count)
 
 
 def summarize(path: Path) -> dict:

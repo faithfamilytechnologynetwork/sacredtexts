@@ -211,6 +211,25 @@ uv --project pipelines run python -m sacredbench judge runs/my-run/answers.jsonl
 uv --project pipelines run python -m sacredbench judge-summary runs/my-run/judgments.jsonl
 ```
 
+By default the judge asks only **containment** and a **refusal** diagnostic, recording
+`equivalence: "not_evaluated"`. Supply an **equivalence index** (the file built by #32, in its
+schema) to also ask the passage-equivalence question — "is the answer the requested wording,
+another *indexed* wording of the same citation, or neither?". It needs `--questions` so the run's
+`corpus_hash` (which lives in `questions.jsonl.manifest.json`, not the answers) can be bound to the
+index; a missing index manifest or a `corpus_hash` mismatch **fails fast**:
+
+```bash
+uv --project pipelines run python -m sacredbench judge runs/my-run/answers.jsonl \
+  --out runs/my-run/judgments.jsonl --yes \
+  --equivalence-index indexes/editions.jsonl \
+  --questions runs/my-run/questions.jsonl
+```
+
+Once a sidecar is pinned to an index, resuming it with a *different* index fails fast (no
+mixed-index file). To record which judge build produced the verdicts in a run's summary, pass the
+sidecar to `score --judgments runs/my-run/judgments.jsonl` (an explicit opt-in; the headline stays
+deterministic).
+
 Then audit the whole finished run one more time, now that it holds answers and scores:
 
 ```bash
