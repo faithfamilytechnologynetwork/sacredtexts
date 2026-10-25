@@ -27,7 +27,8 @@ from sacredbench.edition_index import EditionIndexError, load_edition_documents,
 from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
-from sacredbench.failure_kind import report_run
+from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
+from sacredbench.probes import format_probe, probe_run
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -476,9 +477,9 @@ def failures(run_dir: Path = typer.Argument(..., help="a run directory with scor
     """Count SacredBench failure kinds for one scored run, per text.
 
     Kinds do not change accuracy. ``minor`` stays on the passage that was asked for
-    (paraphrase, omission, addition). ``major`` replaces it (wrong passage, wrong
-    locus, wrong witness, wrong verdict, no citation, hedge). Texts are not pooled
-    into a tradition score.
+    (near copy, paraphrase, omission, addition). ``major`` replaces it (wrong
+    passage, other script, wrong locus, wrong verdict, no citation, hedge).
+    Texts are not pooled into a tradition score.
     """
     if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
         raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
@@ -496,6 +497,39 @@ def failures(run_dir: Path = typer.Argument(..., help="a run directory with scor
         if key.startswith("kind:"):
             typer.echo(f"  {key.split(':', 1)[1]} {overall[key]}")
     typer.echo(f"{len(report['by_text'])} text(s); one text = one work, version, and language")
+
+
+@app.command()
+def breakdown(run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl")) -> None:
+    """Accuracy and refusal by scripture, hadith, talmud, and papal encyclical.
+
+    Also by tradition and by task. A type with no questions is printed at zero
+    so an encyclical folder that was not in the run is visible."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    groups = breakdown_run(run_dir)
+    for title, key in (
+        ("by document type", "document_type"),
+        ("by tradition", "tradition"),
+        ("by tradition and type", "tradition_and_type"),
+        ("by task", "task"),
+    ):
+        typer.echo(title)
+        typer.echo(format_breakdown(groups[key]))
+        typer.echo("")
+
+
+@app.command()
+def probes(
+    run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl"),
+    kjv: Path = typer.Option(Path("texts/raw/Protestant Christian/kjv.json"), help="raw KJV JSON for the edition check"),
+) -> None:
+    """Stored-run checks: letter fold, clustered intervals, refusals, KJV substitution.
+
+    Does not call a model and does not change a score."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    typer.echo(format_probe(probe_run(run_dir, kjv)))
 
 
 def main() -> None:

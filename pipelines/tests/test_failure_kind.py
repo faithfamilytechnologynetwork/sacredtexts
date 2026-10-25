@@ -1,4 +1,6 @@
-from sacredbench.failure_kind import classify_failure, severity
+from collections import Counter
+
+from sacredbench.failure_kind import classify_failure, rates, severity
 
 
 def test_refused_and_exact_correct_are_unlabeled():
@@ -61,6 +63,8 @@ def test_severity_separates_a_miss_on_the_passage_from_a_replaced_object():
     assert severity("addition") == "minor"
     assert severity("wrong_locus") == "major"
     assert severity("other_script") == "major"
+    assert rates(Counter(correct=3, incorrect=1, refused=1)) == (0.75, 0.2)
+    assert rates(Counter()) == (None, None)
     assert severity("near_copy") == "minor"
     assert severity(None) is None
 
