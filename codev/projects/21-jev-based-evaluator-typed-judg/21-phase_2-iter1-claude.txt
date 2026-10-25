@@ -1,0 +1,36 @@
+I'll start by reading the key files for phase 2.I read the phase-2 files from disk, isolated the phase-2 diff (`git diff d1d5031`), and ran the pipelines suite in file order.
+
+## What I verified
+
+**Grader registration (`graders.py`)** — `Grader("jev", ("matches_requested_p", "refusal_p", "kind"), None, default=False, inline=False)`. Metric-key names match the sidecar fields actually written by `jev.py` (lines 191–210: `refusal_p`, `matches_requested_p`, `kind`/`equivalence`). `DEFAULT_EVALUATORS` filters on `g.default and g.inline`, so `jev` can't leak into the default; the import-time canonical-key check correctly exempts non-inline graders; `resolve_evaluators(["jev"])` hits the pre-existing "separate-pass" fail-fast. Verified by test at both API and CLI level.
+
+**Provenance (`score.py` + `jev.load_provenance`)** — opt-in only, validated *before* `scores.jsonl` is opened (so no half-written side effect on mismatch), fails fast on missing manifest / wrong `rubric_id` / absent `judge_model_resolved` / question-set mismatch, and stamps `summary["judge"] = {"model_resolved", "rubric_id"}` as a sibling of `summary["evaluators"]`. `evaluators` stays `list[str]` (viewer `LeaderboardTable` + `test_score.py:256` safe), no cost field added (`test_tutorial_run.py:66` guard honored). Without `--judgments`, `score` is untouched — `test_default_score_has_no_judge_key` plus the pre-existing `test_first_run_regression.test_rescoring_committed_run_reproduces_scores` cover the byte-identity criterion.
+
+**Fixture regression** — the old `test_graders.py` fixture that did `GRADERS["jev"] = …` / `del` in a `finally` is gone, replaced with a read-only assertion plus an explicit `test_jev_registration_survives_this_module` guard. `uv --project pipelines run pytest pipelines -q -p no:randomly`: **423 passed, 1 skipped**.
+
+## Findings (none blocking)
+
+1. **`graders.py` docstring now asserts a merge that doesn't exist.** It says the jev pass "merges its declared `metric_keys` into each row's open metrics map" and "It is now **registered**". The spec is explicit that Part 2 registration is *selection/discovery-only* and verdicts live in the sidecar, never merged into `scores.jsonl`. Since this module is the canonical doc for the seam, the wording should say the merge-into-rows path is a documented follow-up. The same stale clause survives in `CODE_WALKTHROUGH.md:243` ("its own resumable pass merges its `metric_keys`"), though the new paragraph below it correctly says the sidecar "never touches `scores.jsonl`".
+
+2. **Walkthrough pointer drift caused by this phase.** Adding 3–5 lines to `graders.py` moved every symbol the doc cites: `GRADERS` 49→52, `Grader` 33→36, `resolve_evaluators` 86→91, `submetrics_for` 111→116, `Grader.default` 37→40. `test_code_walkthrough.py` only checks the line is in range, so it passes vacuously here. Cheap to fix while you're in the file.
+
+3. **`load_provenance` duplicates `_load_manifest`.** Two near-identical manifest validators with different error strings (`jev.py:317` vs `:559`) — a future field added to one will drift from the other. Consider having `load_provenance` delegate.
+
+4. **Provenance binds on question-set digest only.** A sidecar from a *different collect run over the same question set* validates cleanly, even though the judged answers differ. Phase 1 already records `answer_digest` per row, so a row-level cross-check is available later. The plan scoped phase 2 to manifest fields, so this is within contract — worth noting as a follow-up, not a change request.
+
+5. **Minor test nits.** `assert "cost" not in json.dumps(summary).lower()` only holds because the fixture has no panel pricing (a priced run legitimately carries `usage.*.cost_usd`); the intent is "the judge adds no cost field," which would be better expressed directly. Also `test_score.py` has a module-level `from sacredbench.jev import …` mid-file (E402-style; no linter configured, so cosmetic).
+
+I was reviewing in a live builder worktree and made no edits.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2 deliverables are complete and correct — non-inline/verdict-less `jev` registration, explicit `--judgments` provenance validated before any write, fixed `test_graders.py` fixture, recipe extended; only doc-accuracy and dedup nits remain.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `graders.py` docstring (and the retained `CODE_WALKTHROUGH.md:243` clause) claim the jev pass merges `metric_keys` into score rows; Part 2 is sidecar-only per spec — reword to mark the merge as a follow-up.
+- `CODE_WALKTHROUGH.md` `graders.py` line pointers (49/33/86/111/37) drifted to 52/36/91/116/40 from this phase's edits; the range-only guard passes vacuously.
+- `jev.load_provenance` duplicates `_load_manifest` validation with divergent messages — consider delegating.
+- Provenance binds only on question-set digest, so a sidecar from a different collect run over the same question set validates; row-level `answer_digest` cross-check is a sensible follow-up (out of phase-2 scope).
+- Test nits: `"cost" not in summary` assertion is fixture-dependent; mid-file module-level import in `test_score.py`.

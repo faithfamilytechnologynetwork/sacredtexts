@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core registration and opt-in provenance work is sound, but provenance can be falsely stamped and documentation contradicts the sidecar-only contract.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `jev.load_provenance()` validates only `<path>.manifest.json`; it accepts an empty—or even absent—judgments file. Thus `score --judgments` can claim a judge build produced verdicts when none exist. Validate that the sidecar exists, contains at least one judgment, and that row identity agrees with the manifest. Current tests explicitly normalize the invalid empty-sidecar case.
+- `graders.py:17-19,55-66,96,109-110` and `CODE_WALKTHROUGH.md:243-245` incorrectly state that Jev merges metrics into score rows/`scores.jsonl`. The specification explicitly makes the sidecar authoritative and defers merging. Correct the docstrings, comments, recipe, and user-facing error message to describe sidecar output.

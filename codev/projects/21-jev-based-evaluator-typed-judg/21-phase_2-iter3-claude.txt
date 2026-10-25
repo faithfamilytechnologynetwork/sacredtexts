@@ -1,0 +1,36 @@
+I'll review phase_2 by reading the actual implementation files.I read the phase-2 implementation from disk, verified the two prior blockers against the actual code, and ran the project test gate.
+
+## Phase-2 deliverables — verified
+
+**1. `jev` registration (`graders.py:61`)** — `Grader("jev", ("matches_requested_p", "refusal_p", "kind"), None, default=False, inline=False)`. Verdict-less, non-inline, non-default. `DEFAULT_EVALUATORS` is computed as `g.default and g.inline` (line 77-79), so `jev` cannot leak in via either flag. The import-time canonical-key check (line 69-74) correctly exempts non-inline graders, so the sidecar field names don't trip it. Module docstring and the `resolve_evaluators` error text now say *sidecar*, not *merged into scores.jsonl* — the iteration-1 doc blocker is genuinely fixed in all four places the builder listed.
+
+**2. `test_graders.py` fixture** — the destructive `GRADERS["jev"] = …` / `del` pair is gone. `grep "GRADERS\["` across the whole test tree shows only read accesses, plus a new `test_jev_registration_survives_this_module` guard. The order-dependence risk the plan flagged is closed.
+
+**3. `score --judgments` provenance** — plumbed through both `score_file` call sites in `cli.py`, validated at `score.py:448-452` **before** `scores_path.parent.mkdir` and any write, so a bad sidecar fails with no half-written artifact. Stamped as a sibling key at line 680; `summary["evaluators"]` stays `list[str]`; no cost/usage enters the summary. The lazy `from . import jev` avoids the `jev → score.normalize` circular import — correct, and either import order works.
+
+**4. Prior blockers re-verified in code**
+- *Empty/absent sidecar* (codex iter-1): `load_provenance:626-637` requires the file to exist and `_load_existing` to return a non-empty key set.
+- *Skeletal row* (codex iter-2): `_load_existing` gained `require_verdict`, set only by `load_provenance`; `_validate_verdict_row:271-287` demands non-empty `question_id`/`model_id`/`answer_digest`, `refusal_p`/`matches_requested_p` as `[0,1]` floats via `_prob`, and either `kind` or the `equivalence: "not_evaluated"` sentinel. The resume path leaves the flag `False`, so no behavior change there. Both have targeted regression tests (`test_judgments_skeletal_row_fails_fast`, `test_judgments_row_missing_verdict_fields_fails_fast`).
+
+**5. Docs** — the CODE_WALKTHROUGH line pointers are now *exact*, not just in-range: `GRADERS`→54 ✓, `Grader`→38 ✓, `resolve_evaluators`→93 ✓, `submetrics_for`→119 ✓, `Grader.default`→42 ✓. The worked example describes the sidecar-authoritative contract correctly.
+
+**6. Gate** — `bash .codev/checks/test.sh` → **427 passed, 1 skipped**, matching the builder's claim. `test_original_run_regression.py:52` re-scores committed answers with default settings and byte-compares `scores.jsonl` — that's the phase-2 "default score unchanged" criterion, satisfied by a real test rather than an assertion. `git status`/`git diff` show no change under `runs/`. Viewer safety confirmed independently: `localResults.ts:169-171` builds a typed summary from whitelisted keys, so an unknown `judge` key is dropped, not surfaced.
+
+## Non-blocking notes (no action needed this phase)
+
+- **Provenance binds on question-set digest, not on these answers.** A sidecar produced from a *different collect run over the same question set* still validates — no row-level `answer_digest` cross-check against the answers, and no check that any judged cell overlaps the scored cells. The plan scopes phase-2 provenance to manifest fields (build + rubric + qsd), so this is correctly out of scope; the follow-up is recorded in the thread. Worth making sure it lands before anything downstream *reasons* from `summary["judge"]`.
+- **`metric_keys` declares `kind`, which a no-index phase-2 row writes as `equivalence: "not_evaluated"`.** Harmless today (nothing consumes a non-inline grader's keys), but the deferred per-row merge pass will have to handle the sentinel. The new `test_separate_pass_keys_match_the_sidecar_contract` at least makes drift visible.
+- **`load_provenance` duplicates `_load_manifest`'s field checks.** The builder's reason for not delegating (`_load_manifest` binds `index_digest`, a resume-path concern that must not constrain provenance once Phase 3 lands) holds up when you read both functions. Agreed as-is, but it's two validators that now have to stay in sync — a comment cross-referencing them would help the next reader.
+- I did not modify the tree; all checks were read-only plus the project's own test runner.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase-2 is complete and correct — both prior blockers are genuinely fixed in code with targeted regressions, the seam/CLI/summary/recipe are mutually consistent, the default scoring path is proven byte-identical, and 427 tests pass.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- (Note) Provenance validates build + rubric + question-set digest but not that the sidecar's rows correspond to *these* answers — a same-question-set sidecar from a different collect run passes. Out of phase-2 scope per the plan; should land before any consumer reasons from `summary["judge"]`.
+- (Note) `metric_keys` declares `kind` while a no-index row records `equivalence: "not_evaluated"`; the deferred merge pass must handle the sentinel.
+- (Note) `load_provenance` and `_load_manifest` keep parallel manifest checks by design — a cross-reference comment would reduce the drift risk.

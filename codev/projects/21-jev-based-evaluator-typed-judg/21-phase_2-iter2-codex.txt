@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 2 is largely correct, but provenance validation still accepts a skeletal row containing no actual typed verdict, allowing false judge provenance.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `jev.load_provenance()` relies on `_load_existing()` to prove that at least one judgment exists (`jev.py:593-605`), but `_load_existing()` only requires matching `rubric_id`, resolved build, and question-set digest. A row containing only those three fields produces the nonempty key `(None, None, None)` and causes `summary["judge"]` to be stamped despite containing no judgment. Validate required row identity and verdict fields—at minimum `question_id`, `model_id`, `answer_digest`, `refusal_p`, `matches_requested_p`, and either `kind` or `equivalence: "not_evaluated"`—and add a skeletal-row regression test.

@@ -82,3 +82,100 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
   - **Declined w/ evidence**: claude #4 (up-front `judge_model` requested-id equality) would break the legitimate "pin to the exact resolved build" resume (jev-latest manifest vs pinned-build arg → requested ids differ but resolved builds match); resolved build is the identity per spec. claude #3 (cosmetic already_judged count). claude #5 (trailers — tracked pre-PR).
 - New tests (4): row qsd mismatch; negative-limit zero-call; summarize-truncated; CLI corrupt-answers. **Suite now 414 passed, 1 pre-existing skip.**
 - This is porch's max_iterations=3 cycle — after `porch done`/`porch next` the implement loop force-advances. codex's iter-3 findings are genuinely fixed in-commit, so the force-advance does not mask an unaddressed blocker (verified per the force-advance lesson).
+
+## 2026-10-25 — Phase 2 implement (grader seam registration + evaluator provenance), iter 1
+- **Scope**: register `jev` in the Spec-15 seam, fix the del-in-finally test fixture, add the explicit
+  `score --judgments` provenance opt-in, extend the CODE_WALKTHROUGH recipe. 4 source/doc + 3 test files.
+- **graders.py**: replaced the commented example with the real registration
+  `Grader("jev", ("matches_requested_p","refusal_p","kind"), None, default=False, inline=False)` (metric
+  keys = the sidecar field names). Import-time inline-key check exempts non-inline graders, so the
+  non-canonical keys are fine. `DEFAULT_EVALUATORS` excludes it (filters `default and inline`);
+  `resolve_evaluators(["jev"])` fails fast ("separate-pass"). Docstring updated ("now registered").
+- **test_graders.py**: killed the fixture that did `GRADERS["jev"]=…` / `del` in finally (would now
+  delete the REAL entry → order-dependent failures). Split into 3 tests: jev is a real separate-pass
+  registration; jev survives the module (explicit anti-regression); the metric-merge path. Dropped the
+  now-unused `Grader` import.
+- **jev.py**: added `load_provenance(judgments, *, question_set_digest)` — validates the sidecar's
+  sibling `.manifest.json` (rubric == RUBRIC_ID, non-empty resolved build, qsd binds to the answers)
+  and returns `{"model_resolved", "rubric_id"}`. Fails fast (JevError) on missing manifest / wrong
+  rubric / absent build / qsd mismatch. Deliberately does NOT check index_digest (provenance is
+  decoupled from index state; `_load_manifest`'s index check is for the resume path only).
+- **score.py**: `score_file` gets `judgments: Path | None`. Validated EARLY (right after the digest
+  checks, before scores.jsonl is written → no half-written side effect on a mismatch). Stamps
+  `summary["judge"] = {"model_resolved", "rubric_id"}` as a SIBLING to `summary["evaluators"]` only
+  when `--judgments` is given. `evaluators` stays list[str]; no "cost" substring enters the summary
+  (uses `model_resolved`/`rubric_id`). Default `score` (no flag) is byte-identical / summary-unchanged.
+- **cli.py**: `score --judgments <path>` option added, passed through both score_file call sites.
+  Token-guard in test_jev (`jev.judge`/`post_decision`/`alpha/decisions`/`build_questions` forbidden in
+  score.py) stays satisfied — I reference only `jev.load_provenance`.
+- **CODE_WALKTHROUGH.md**: "Adding an evaluator" now has a worked Jev example (sidecar + manifest,
+  non-inline/verdict-less/non-default registration, `judge` pass, explicit `--judgments` provenance).
+- **Verified**: full suite via `.codev/checks/test.sh` → **423 passed, 1 pre-existing skip** (was 414;
+  +9 tests), in file-order (test_graders before test_jev/test_score, jev stays registered). Committed-run
+  regression/reproducibility tests still green (default score unchanged). Real-CLI smoke: `score
+  --evaluator jev` → exit 2 fail-fast; `score --judgments <fixture>` → `judge` provenance present,
+  `evaluators` a list, no cost field.
+- **No new live spend** (phase 2 is registration/provenance only; no Decisions calls). Signalling
+  phase complete next (iter 1); expect the 2-way codex+claude implement consult.
+
+### Phase 2 iter 1 review (codex REQUEST_CHANGES / claude APPROVE) — folded
+- Both converged on two substantive points; both actioned. Rebuttal: `21-phase_2-iter1-rebuttals.md`.
+- **codex #1 (blocking, real)**: `load_provenance` validated only the manifest → `score --judgments`
+  over an empty/absent sidecar would stamp a judge build though no verdicts exist (provenance lie).
+  Fixed: require sidecar exists + ≥1 row, and every row agrees with the manifest's build + qsd via
+  `_load_existing` (reuses the resume row guard; also addresses codex "row identity agrees" + reduces
+  the claude #3 dup). +2 tests (empty-sidecar, row-build-mismatch). My iter-1 fixtures wrongly wrote
+  EMPTY sidecars (normalising the bug) — now write a real row.
+- **codex #2 / claude #1 (blocking/nonblocking, real)**: docstrings/comment/error-msg/recipe said the
+  pass "merges metric_keys into scores.jsonl". Part 2 is sidecar-authoritative, merge deferred.
+  Reworded graders.py docstring + registration comment + resolve_evaluators error msg + CODE_WALKTHROUGH
+  (kept the `separate-pass` token the tests match).
+- **claude #2 (real)**: CODE_WALKTHROUGH graders.py pointers drifted → updated to exact lines
+  (GRADERS 54, Grader 38, resolve_evaluators 93, submetrics_for 119, Grader.default 42).
+- **claude #3 (partial)**: removed the row-validation dup (delegate to `_load_existing`); kept the
+  manifest-field checks separate ON PURPOSE — `_load_manifest` binds index_digest (resume concern),
+  provenance must stay decoupled so a Phase-3 indexed sidecar is still usable for provenance.
+- **claude #4 (declined, out of scope)**: provenance binds on qsd only, so a sidecar from a DIFFERENT
+  collect run over the SAME question set validates. Plan scoped phase-2 to manifest fields.
+  **FOLLOW-UP for a later phase/PR**: optional row-level `answer_digest` cross-check vs the specific
+  answers being scored (Phase 1 records answer_digest per row, so the data is there).
+- **claude #5 (partial)**: moved the mid-file import to top of test_score.py; kept the `"cost" not in`
+  summary assertion (mirrors test_tutorial_run.py:66 guard) with a clarifying comment.
+- Suite after folding: **425 passed, 1 pre-existing skip** via `.codev/checks/test.sh`. Real-CLI
+  re-smoke: real-row sidecar → provenance stamped exit 0; empty sidecar → clean fail-fast.
+
+### Phase 2 iter 2 review (codex REQUEST_CHANGES / claude APPROVE) — folded
+- Rebuttal: `21-phase_2-iter2-rebuttals.md`. claude confirmed BOTH iter-1 blockers genuinely fixed.
+- **codex #1 (blocking, real)**: my iter-1 fix leaned on `_load_existing` (checks only
+  rubric/build/qsd), so a SKELETAL row with just those 3 fields keys as `(None,None,None)` — non-empty
+  — and would still stamp `summary["judge"]`. Fixed: `_load_existing` gains opt-in `require_verdict`
+  (resume path leaves False); `load_provenance` sets it, enforcing `_validate_verdict_row` (non-empty
+  question_id/model_id/answer_digest, numeric refusal_p/matches_requested_p in [0,1], kind OR
+  equivalence=not_evaluated). +2 tests (skeletal-row, missing-verdict). CLI smoke: skeletal → "row
+  missing question_id; not a complete judgment".
+- **claude nits**: (1) vacuous merge test → renamed + driven from `GRADERS["jev"].metric_keys` (catches
+  registration↔sidecar drift); (2) bare manifest `json.loads` → wrapped in JevError in both
+  `load_provenance` and `_load_manifest` (uniform fail-fast); (3) `kind` key vs `equivalence` sentinel
+  → note for the deferred merge pass (no change); (4) CLI `--judgments` error → already clean via
+  `main()` JevError catch (exit 2, no traceback — verified), left as-is per claude.
+- claude independently verified `summary["judge"]` is viewer-safe (localResults.ts whitelists + drops
+  unknowns) and committed run evidence untouched.
+- Suite after folding: **427 passed, 1 pre-existing skip**. This is iter 2 of max 3.
+
+### Phase 2 iter 3 (final) review — CLEAN PASS (codex APPROVE / claude APPROVE)
+- Both APPROVE, HIGH confidence, **zero blocking issues** — a genuine clean pass, NOT a
+  max_iterations force-advance disposition. claude re-verified both prior blockers fixed in-code with
+  targeted regressions, the default-score byte-identity (via `test_original_run_regression.py:52`),
+  and viewer safety (`localResults.ts` whitelists summary keys → unknown `judge` key dropped).
+- Only non-blocking notes, all already recorded as follow-ups: (1) provenance binds on qsd not these
+  answers [follow-up]; (2) `kind` vs `equivalence` sentinel for the deferred merge [follow-up];
+  (3) `load_provenance`/`_load_manifest` parallel checks — added cross-reference comments in both
+  (the one cheap actionable suggestion). Suite still **427 passed, 1 skip** after the comment-only edit.
+- phase_2 DONE. porch advances to phase_3 (equivalence-index consumer).
+
+### FOLLOW-UPS for a later phase / the PR (not phase-2 scope)
+- Row-level `answer_digest` cross-check: `score --judgments` binds on question-set digest, so a sidecar
+  from a DIFFERENT collect run over the SAME question set validates (claude iter-1 #4). Phase 1 records
+  answer_digest per row → a real cross-check vs the answers being scored is feasible later.
+- The deferred per-row MERGE pass (sidecar verdicts → scores.jsonl open metrics map) must handle the
+  `kind` vs `equivalence: not_evaluated` asymmetry (claude iter-2 #3).
