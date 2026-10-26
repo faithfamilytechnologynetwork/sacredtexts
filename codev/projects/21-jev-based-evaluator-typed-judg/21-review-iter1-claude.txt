@@ -1,0 +1,55 @@
+I'll start by reading the spec, plan, and the core implementation files.I've read the spec, plan, review, all new source modules, the test suites, the committed run evidence, and the git history. I did not modify anything in the worktree (and did not run the test suite, since `uv run`/pytest would write into the builder's live tree).
+
+## What I verified
+
+**Code quality — strong.** `jev.py` is disciplined fail-fast code with no fallbacks: `interpret()` validates every authoritative field (bool-vs-number, probability range, non-empty decision id/provider/build, numeric cost — with the explicit reasoning that a tolerated `cost: None` would read as zero spend), `post_decision` retries only 429/5xx and fails immediately on 401/403, and the resume path has four independent identity guards (rubric, per-row build, per-row question-set digest, per-row index digest) plus `_require_manifest_if_rows` to close the manifest-less-sidecar hole. The `_UNCHECKED` sentinel distinguishing "don't check" from a legitimate `None` is exactly right, and `wordings()` excluding by `version` rather than exact text is the correct call for the RTL orthographic-variance regime this whole feature exists to diagnose.
+
+**Spec alignment — essentially complete.** `jev` is registered non-inline/verdict-less/`default=False`; `score --evaluator jev` fails fast; `score` without `--judgments` never reads a sidecar (`test_default_score_has_no_judge_key`); no `cross_translation` import; task filter and pre-send restricted guard present, with the restricted check extended to index wordings in `load_equivalence_index` (fail-fast, not a skip — right, since a restricted wording means a broken index).
+
+**Evidence integrity — confirmed independently.** `git diff main...HEAD -- runs/` shows only four *new* files; committed `scores.jsonl`/`answers.jsonl`/`summary.json` are untouched. I recomputed the headline numbers from `jev_agreement.json`: containment 0.9325 (239 both / 27 judge-only / **0 deterministic-only** / 134 neither), refusal 0.9725 (11 deterministic-only), 35 disagreement cells, class means 0.971/0.180 and 0.900/0.012 — all match the review and PR body. Sidecar rows carry digests only, no scripture text. Karr's authorship is preserved on the two Phase-1 `jev.py` commits; no `Co-Authored-By`/`Generated with` trailers remain anywhere on the branch; branch contains all of `main` (`git log HEAD..main` empty).
+
+**Tests — non-vacuous.** 60+ new tests, pinned to a committed redacted *live* response. The ones that matter most are real: the phase-2 provenance tests separately cover empty sidecar, skeletal row, identity-only-row-missing-verdicts, rogue mixed-build row, wrong question set, missing manifest, wrong rubric. `test_graders.py` was rewritten to stop mutating `GRADERS` (and added a guard that the registration survives the module) — good catch on a real cross-test hazard.
+
+## The one thing I'd fix before merge
+
+**The manual disagreement review was written and then lost.** The spec's success criterion is explicit: *"every disagreement cell is manually reviewed and written up in `codev/reviews/21-*.md`."* Commit `3f86b8a` had it — a `## Validation on the committed tutorial run (Phase 4)` section plus `### Manual disagreement review (all 35 cells accounted for)`, ~60 lines categorizing the 35 cells (24 containment-only / 8 refusal-only / 3 both) into three understood classes with code-point-level examples (`إِنِّى` vs `إِنِّي`, KJV "recompence"), the refusal-classifier false-positive finding, the boundary-uncertainty class, and the paper takeaway.
+
+Commit `4562895` ("Review: rewrite to the porch review-phase template", 150 insertions / 149 deletions) replaced the file wholesale and dropped both sections. What survives in HEAD is a checklist tick (`[x] … manual disagreement review`) and two summary bullets under "What Went Well." The substance — the thing the paper authors and the architect will actually read — is now only in git history. The thread file even asserts it is in `codev/reviews/21-*.md`, which is no longer true.
+
+Fix: re-add those two sections to the template-shaped review (`git show 3f86b8a:codev/reviews/21-jev-based-evaluator-typed-judg.md | sed -n '42,104p'`), e.g. as a `## Validation on the committed tutorial run` section before `## Deviations from Plan`. No code change.
+
+## Minor items (fold in with the above)
+
+- **Stale test count.** Review says "456 passed, 1 pre-existing skip"; the PR body says 557 after the rebase onto `main`. Reconcile to the post-rebase number.
+- **Stale follow-up.** The review still lists "strip `Co-Authored-By` trailers from the 10 pre-Phase-1 commits — requires a force-push, human-gated" as outstanding. I checked: there are none left on the branch. Drop or mark done.
+- **`status.yaml` lags.** It records no history entry for phase_2 iter-3, phase_3 iter-3, or phase_4 iter-2 — the very iterations that reached clean APPROVE/APPROVE. I read the six verdict files directly and all six are `APPROVE`, so the review's claims are accurate; the state file just didn't capture the final rounds. Worth a glance from whoever owns porch state, not a blocker.
+- **Non-blocking observation.** `TYPICAL_COST_USD = 2.7e-5` underestimates by ~8% against the live run's actual $0.011705/400 = $2.93e-5. Harmless for a pre-flight estimate (and documented as rough), but a nudge to 3e-5 would make the estimate conservative rather than optimistic for a budget guard.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Implementation, tests, and evidence integrity are all excellent; the review file is missing the manual disagreement write-up that the spec requires and that an earlier commit actually contained — a doc-only restore.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Spec success criterion unmet in HEAD: the "every disagreement cell manually reviewed" write-up (35 cells, 3 categories) existed in commit `3f86b8a` but was dropped by the review-template rewrite `4562895`; restore it into `codev/reviews/21-jev-based-evaluator-typed-judg.md` (no code change).
+- Review doc reports "456 passed" vs the PR body's "557 passed" post-rebase — reconcile.
+- Review doc still lists the `Co-Authored-By` trailer strip as an open, force-push-gated follow-up; it is already done on the branch.
+- `codev/projects/.../status.yaml` has no history rows for phase_2 iter-3, phase_3 iter-3, phase_4 iter-2 (the clean-APPROVE rounds). I verified those six verdict files are all APPROVE, so no substantive concern — the state file just lags.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds the **Jev judge** (TypeSafe System-One Decisions model, `jev-latest` → `typesafe/jev-1.14-20261014`) as a paid, explicitly-invoked, resumable **separate-pass grader** over an already-collected answers file. It records a containment verdict and a refusal diagnostic per text-retrieval cell — plus an optional passage-equivalence verdict when #32's edition index is supplied — into a resumable **sidecar**, never into `scores.jsonl`. The deterministic Spec-15 headline is untouched and refusal stays an outcome owned by `outcomes.py`.
+
+  Part 2 of 3 of #30. Closes #21.
+
+  ## Key Changes
+  - `jev.py`: judge pass + `judge` / `judge-summary` CLI — resumable sidecar with a header manifest, resolved-build-as-grader-identity (build-mismatched resume, mixed-build rows, and mixed-index rows all fail fast), task filter (`retrieve_quote`/`complete_unit` only), pre-send restricted-target guard, pre-flight cost estimate + `--limit` + `--yes` gate, spend read from the API's own `usage.cost`. Carries Jonathan Karr's authorship.
+  - `graders.py`: `jev` registered in the Spec-15 seam as non-inline / verdict-less / `default=False`; `score --evaluator jev` fails fast. `score --judgments <sidecar>` is an explicit provenance opt-in that stamps `summary["judge"]` only after validating both the manifest **and** that the sidecar holds ≥1 complete verdict row agreeing with it.
+  - `--equivalence-index`: consumes #32's schema verbatim (corpus_hash / manifest / row_count / index-digest fail-fasts, plus a restricted-wording guard independent of the audit gate); off by default, recording `equivalence: "not_evaluated"` rather than a silent negative.
+  - `jev_agreement.py` + `judge-agreement` CLI: read-only join of answers × scores × judgments with an `answer_digest` self-check, thresholded confusion at p ≥ 0.5, raw per-deterministic-class probability distributions, and the exhaustive disagreement set.
+  - Docs: `CODE_WALKTHROUGH.md` separate-pass evaluator recipe, `TUTORIAL.md` judge/agreement commands, `pipelines/README.md` module map.
+
+  ## Test Plan
+  - `.codev/checks/test.sh` — full suite green (1 pre-existing network skip); ~60 new tests across `test_jev.py`, `test_jev_agreement.py`, `test_score.py`, `test_graders.py`, with the response parser pinned to a committed redacted **live** Decisions payload. No network, no key, no spend in unit tests.
+  - Live validation on the committed tutorial run: 400 cells, $0.011705, 0 failures. `git diff` on the run's committed `answers.jsonl` / `scores.jsonl` / `summary.json` is empty; only `judgments.jsonl(+manifest)` and `jev_agreement.{json,md}` were added. Copyright audit passes.
+  - Reproduce the agreement report: `uv --project pipelines run python -m sacredbench judge-agreement runs/tutorial-2026-10-11/{answers,scores}.jsonl runs/tutorial-2026-10-11/judgments.jsonl` — containment 93.25% (27 judge-only orthographic near-misses, 0 deterministic-only), refusal 97.25% (11 deterministic-only, all refusal-classifier false-positives on hedged web-search answers).
