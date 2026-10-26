@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from sacredbench.jev import RUBRIC_ID, JevError
+from sacredbench.jev import RUBRIC_ID, JevError, answer_digest
 from sacredbench.score import (
     ScoreError,
     normalize,
@@ -272,15 +272,18 @@ def _answers_file(tmp_path, digest="d"):
 
 
 def _sidecar_with_manifest(tmp_path, *, resolved="typesafe/jev-1.14-20261014", digest="d",
-                           rubric=RUBRIC_ID, rows=True):
+                           rubric=RUBRIC_ID, rows=True, adigest=None):
     """A judgments sidecar + sibling manifest. `rows=True` writes one real verdict row that agrees
-    with the manifest (build + question-set digest); `rows=False` leaves the sidecar empty."""
+    with the manifest (build + question-set digest) AND with _answers_file's answer "x" (its
+    answer_digest), so `score --judgments` binds; pass `adigest` to force a non-matching answer.
+    `rows=False` leaves the sidecar empty."""
     sidecar = tmp_path / "judgments.jsonl"
     if rows:
         row = {
             "question_id": "retrieve_quote-0", "model_id": "m1", "model": "jev",
             "rubric_id": RUBRIC_ID, "judge_model": "jev-latest", "judge_model_resolved": resolved,
-            "question_set_digest": digest, "answer_digest": "a0",
+            "question_set_digest": digest,
+            "answer_digest": adigest if adigest is not None else answer_digest("x"),
             "refusal_p": 0.1, "matches_requested_p": 0.9, "equivalence": "not_evaluated",
             "usage": {"in": 1, "out": 1, "cost": 1e-5},
         }
@@ -308,6 +311,14 @@ def test_judgments_stamps_resolved_build_in_sibling_key(tmp_path):
     # row's own usage.cost never reaches it) — mirrors the test_tutorial_run.py:66 guard.
     assert summary["evaluators"] == ["strict", "containment"]
     assert "cost" not in json.dumps(summary).lower()
+
+
+def test_judgments_from_different_answers_rejected(tmp_path):
+    # architect PR#47 #2: a sidecar whose rows are for DIFFERENT answers (same question set) must not
+    # stamp provenance. The row's answer_digest does not match _answers_file's answer "x".
+    sidecar = _sidecar_with_manifest(tmp_path, adigest=answer_digest("a completely different answer"))
+    with pytest.raises(JevError, match="does not match any answer being scored"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
 
 
 def test_judgments_empty_sidecar_fails_fast(tmp_path):

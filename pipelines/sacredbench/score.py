@@ -454,7 +454,15 @@ def score_file(
     if judgments is not None:
         from . import jev
 
-        judge_provenance = jev.load_provenance(judgments, question_set_digest=next(iter(digests)))
+        # bind the sidecar to THESE answers: (question_id, model_id, answer_digest) per answer row, so
+        # a sidecar from a different collection (same question set) cannot stamp false provenance
+        answer_keys = {
+            (r["question_id"], r["model_id"], jev.answer_digest(r.get("answer") or ""))
+            for r in rows
+        }
+        judge_provenance = jev.load_provenance(
+            judgments, question_set_digest=next(iter(digests)), answer_keys=answer_keys
+        )
 
     # resolve the grader selection ONCE (default = deterministic set); it drives both the emitted
     # text-retrieval submetric fields and which submetrics the summary aggregates.

@@ -26,11 +26,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .jev import answer_digest as _answer_digest
+from .jev import JUDGED_TASKS, answer_digest as _answer_digest
 
 THRESHOLD = 0.5
-# the judged text-retrieval tasks (mirrors jev.JUDGED_TASKS; a judgment should only exist for these)
-JUDGED_TASKS = ("retrieve_quote", "complete_unit")
+# JUDGED_TASKS is imported from jev (the single source of truth) — a judgment should only exist for
+# those text-retrieval tasks.
 _HIST_EDGES = (0.0, 0.25, 0.5, 0.75, 1.0)  # half-open bins [0,0.25), …, [0.75,1.0]
 
 
@@ -74,18 +74,22 @@ def _distribution(ps: list[float]) -> dict:
 def join_cells(answers: list[dict], scores: list[dict], judgments: list[dict]) -> list[dict]:
     """Join the three JSONL streams on ``(question_id, model_id)`` into one cell per judgment.
 
-    A judgment is the judge's output, so it drives the universe: every judgment must have a matching
-    score (a judgment with no score is an incoherent pairing → fail fast). The answer supplies the
-    text/expected for manual review; a missing answer leaves the review context blank. When both the
-    answer and the judgment's ``answer_digest`` are present, they are **cross-checked** (the judgment's
-    digest must equal ``jev.answer_digest`` of the joined answer) so the report is self-verifying —
-    pointing it at the wrong answers file fails fast rather than producing a plausible-looking but
-    mis-joined report. Non-text-retrieval judgments (there should be none) fail fast."""
+    A judgment is the judge's output, so it drives the universe. The join is **strict and
+    self-verifying**: every judgment must have a matching score, a matching answer, and a
+    ``answer_digest`` equal to ``jev.answer_digest`` of that answer — so pointing the report at the
+    wrong answers file (missing answers, or answers whose digests don't match) fails fast rather than
+    producing a plausible-but-mis-joined report. A duplicate ``(question_id, model_id)`` among the
+    judgments fails fast too (rather than silently overwriting). Non-text-retrieval judgments (there
+    should be none) fail fast."""
     scores_by_key = {(r.get("question_id"), r.get("model_id")): r for r in scores}
     answers_by_key = {(r.get("question_id"), r.get("model_id")): r for r in answers}
     cells = []
+    seen: set[tuple] = set()
     for j in judgments:
         key = (j.get("question_id"), j.get("model_id"))
+        if key in seen:
+            raise AgreementError(f"duplicate judgment for {key}; one judgment per (question_id, model_id)")
+        seen.add(key)
         score = scores_by_key.get(key)
         if score is None:
             raise AgreementError(f"judgment {key} has no matching score row; cannot join")
@@ -93,17 +97,19 @@ def join_cells(answers: list[dict], scores: list[dict], judgments: list[dict]) -
         if task not in JUDGED_TASKS:
             raise AgreementError(f"judgment {key} is for non-judged task {task!r}")
         metrics = score.get("metrics") or {}
-        answer = answers_by_key.get(key) or {}
-        expected = (((answer.get("question") or {}).get("expected")) or {}).get("text")
-        # self-verify the join: the judgment's answer_digest must match the joined answer's digest
+        answer = answers_by_key.get(key)
+        if answer is None:
+            raise AgreementError(f"judgment {key} has no matching answer row; cannot bind the report")
         row_digest = j.get("answer_digest")
-        if row_digest is not None and "answer" in answer:
-            actual = _answer_digest(answer.get("answer") or "")
-            if actual != row_digest:
-                raise AgreementError(
-                    f"judgment {key} answer_digest {row_digest!r} != the joined answer's {actual!r}; "
-                    "the judgments were produced over different answers — point at the matching run"
-                )
+        if not row_digest:
+            raise AgreementError(f"judgment {key} has no answer_digest; cannot self-verify the join")
+        actual = _answer_digest(answer.get("answer") or "")
+        if actual != row_digest:
+            raise AgreementError(
+                f"judgment {key} answer_digest {row_digest!r} != the joined answer's {actual!r}; "
+                "the judgments were produced over different answers — point at the matching run"
+            )
+        expected = (((answer.get("question") or {}).get("expected")) or {}).get("text")
         cells.append({
             "question_id": key[0],
             "model_id": key[1],

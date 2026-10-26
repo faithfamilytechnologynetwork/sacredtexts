@@ -23,7 +23,7 @@ def _triple(qid, mid, *, contains_reference, outcome, token_f1, matches_requeste
                              "token_f1": token_f1, "correct": int(outcome == "correct")}}
     judgment_row = {"question_id": qid, "model_id": mid, "rubric_id": "sacredbench-jev-1",
                     "matches_requested_p": matches_requested_p, "refusal_p": refusal_p,
-                    "equivalence": "not_evaluated"}
+                    "equivalence": "not_evaluated", "answer_digest": answer_digest(answer)}
     return answer_row, score_row, judgment_row
 
 
@@ -147,3 +147,27 @@ def test_judge_agreement_cli_writes_reports(tmp_path):
     report = _json.loads((tmp_path / "ag.json").read_text())
     assert report["n_cells"] == 4 and report["n_disagreements"] == 2
     assert (tmp_path / "ag.md").exists()
+
+
+# ---- PR #47 round-1: the join is strict + self-verifying ----
+
+def test_join_fails_fast_on_missing_answer():
+    answers, scores, judgments = _streams()
+    answers.pop()  # drop q-D's answer
+    with pytest.raises(AgreementError, match="no matching answer"):
+        join_cells(answers, scores, judgments)
+
+
+def test_join_fails_fast_on_missing_answer_digest():
+    a, s, j = _triple("q-A", "m", contains_reference=1, outcome="correct", token_f1=1.0,
+                      matches_requested_p=0.9, refusal_p=0.02)
+    del j["answer_digest"]
+    with pytest.raises(AgreementError, match="no answer_digest"):
+        join_cells([a], [s], [j])
+
+
+def test_join_fails_fast_on_duplicate_judgment():
+    a, s, j = _triple("q-A", "m", contains_reference=1, outcome="correct", token_f1=1.0,
+                      matches_requested_p=0.9, refusal_p=0.02)
+    with pytest.raises(AgreementError, match="duplicate judgment"):
+        join_cells([a, a], [s, s], [j, j])

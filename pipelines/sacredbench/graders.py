@@ -58,6 +58,8 @@ GRADERS: dict[str, Grader] = {
     # are the sidecar field names its own pass (jev.py) WRITES to a sidecar — not canonical
     # primitives, which is why the inline-key import check below exempts non-inline graders.
     # Verdict-less: it contributes recorded metrics (in the sidecar), never the deterministic headline.
+    # NB: `kind` is INDEX-CONDITIONAL in the sidecar — a no-index row records `equivalence:
+    # "not_evaluated"` instead — so the deferred merge-into-scores.jsonl pass must treat it as optional.
     "jev": Grader("jev", ("matches_requested_p", "refusal_p", "kind"), None, default=False, inline=False),
 }
 

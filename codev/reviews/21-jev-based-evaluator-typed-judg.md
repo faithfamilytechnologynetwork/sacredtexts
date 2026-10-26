@@ -35,6 +35,52 @@ Validated live on the committed tutorial run (400 cells, $0.011705). Part 2 of 3
 - [x] Public repo — no key material; no NABRE/TLG text in any committed artifact (all phases)
 - [x] Carried code preserves Jonathan Karr's authorship on the Phase-1 `jev.py` commit (Phase 1)
 
+## Validation on the committed tutorial run (Phase 4)
+
+**Live pass.** 400 `retrieve_quote` cells on the **committed** `runs/tutorial-2026-10-11/answers.jsonl`,
+`jev-latest` → `typesafe/jev-1.14-20261014`, 0 failures, **actual spend $0.011705** (pre-flight $0.0108;
+project total ≈ $0.0118, cap $8). No equivalence index ⇒ every row records `equivalence:
+"not_evaluated"`. Only new files were written (`judgments.jsonl` + `.manifest.json`,
+`jev_agreement.{json,md}`); `git diff` on the committed `answers.jsonl`/`scores.jsonl`/`summary.json` is
+empty, and the copyright audit passes.
+
+**Agreement (threshold p ≥ 0.5), via the tested `jev_agreement` module:**
+
+| Axis | Judge vs deterministic | Agreement | Split |
+|---|---|---|---|
+| Containment | `matches_requested_p` vs `contains_reference` | **93.25%** (373/400) | both 239, judge-only 27, deterministic-only **0**, neither 134 |
+| Refusal | `refusal_p` vs `refused` outcome | **97.25%** (389/400) | both 116, judge-only **0**, deterministic-only 11, neither 273 |
+
+Raw per-class probability means separate cleanly: containment `contains_reference=1` → **0.971**
+(238/239 in [0.75,1.0]), `=0` → **0.180** (but 21 in [0.75,1.0] — the near-misses); refusal `refused` →
+**0.900**, `not_refused` → **0.012**.
+
+### Manual disagreement review (all 35 cells reviewed)
+
+Disagreements: **24 containment-only + 8 refusal-only + 3 both** = 35 cells (27 containment + 11 refusal
+axis-disagreements). Every one was inspected (`jev_agreement.md` carries each with its expected/answer
+excerpt); they fall into three understood classes, **none a judge error**:
+
+1. **Containment near-misses — orthographic / vocalization variance (27 cells, all judge-only; 0
+   deterministic-only).** The designed diagnostic value. Two sub-kinds: Arabic **Uthmani digitization**
+   differences (same verse, different mark/joiner code points — e.g. `إِنِّى` vs `إِنِّي`;
+   `token_f1` 0.36–0.98, judge `matches_requested_p` 0.8–0.93) and English **archaic spelling** (KJV
+   "recompence" vs expected "recompense", `token_f1` ≈ 0.98). Because deterministic-only = 0, the judge
+   never contradicts a deterministic catch — it only **adds recall** on the near-misses.
+2. **Refusal false-positives on hedged-but-delivering web-search answers (11 cells, all `*-search`
+   arms).** The answer prefaces with a disclaimer ("I couldn't find the exact William Davidson Edition
+   text…") then **delivers** the passage, often in a different vocalization. The deterministic cue-based
+   refusal classifier flags the disclaimer as `refused`; the judge correctly scores low `refusal_p`
+   (0.03–0.49) and, for the 3 both-axis cells, high `matches_requested_p` (0.63–0.93). A real finding →
+   filed as **#48** (ties into the independent-rater work in #41).
+3. **Refusal-boundary uncertainty (subset).** A few `opus-search` cells sit just under the 0.5 cut
+   (`refusal_p` 0.45–0.49) — genuine declines where the judge is merely unconfident, visible in the raw
+   distribution rather than the thresholded cut.
+
+**Takeaway for the paper:** the judge is a high-value *recall* complement for containment in the RTL
+orthographic-variance regime (27 near-miss catches, 0 deterministic regressions) and a sharp cross-check
+that surfaced the refusal-classifier false-positives (#48).
+
 ## Deviations from Plan
 
 - **None material.** Phase 4 added a `judge-agreement` **CLI subcommand** (not explicitly called for in
@@ -89,6 +135,25 @@ worktree, per the hot-tier lesson). 12 rounds total. No `CONSULT_ERROR`s.
   rows + sidecar manifest + score provenance); recorded as a follow-up.
 - claude independently re-derived every agreement number from the committed data and confirmed
   byte-reproducibility + evidence integrity — both iter-2 verdicts APPROVE.
+
+### Review Phase (PR #47, Round 1) — codex REQUEST_CHANGES / claude APPROVE; architect integration review
+All folded in-PR; the committed sidecar/agreement files stayed byte-unchanged (no re-judge, no new spend):
+- **Equivalence-index digest trusted, not verified** (codex) → **Addressed**: `load_equivalence_index`
+  recomputes `sha256(file_bytes)[:16]` and fails on mismatch (test: same-row-count tampering).
+- **`score --judgments` didn't bind judgments to the scored answers** (architect) → **Addressed**:
+  `load_provenance` now requires every judged `(question_id, model_id, answer_digest)` to be among the
+  answers being scored (test: a sidecar from different answers is refused).
+- **`_single_question_set_digest` accepted a digest-less answers file** (architect) → **Addressed**:
+  the judge now requires ≥1 non-empty digest (matching `collect`/`score`).
+- **`interpret()` under-validated the typed choice** (codex) → **Addressed**: all `kind` labels present,
+  every probability + the confidence in [0,1], usage cost/tokens non-negative (tests for each).
+- **`jev_agreement` join not strict** (codex) → **Addressed**: every judgment needs a matching answer +
+  `answer_digest`; duplicate `(qid, model_id)` fails.
+- Minors → **Addressed**: import `JUDGED_TASKS` from `jev`; parenthesize the retry predicate; nudge
+  `TYPICAL_COST_USD` to 3e-5 (conservative); `graders.py` note that `kind` is index-conditional for the
+  merge pass; this review's stale test count fixed; the dropped manual disagreement review restored (below).
+- Follow-ups filed: **#48** (refusal-classifier false positives, F1) and **#49** (merge pass / spend
+  circuit-breaker / self-describing report, F2).
 
 ## Lessons Learned
 
@@ -149,21 +214,26 @@ Same flag-don't-edit disposition as above.
 
 ## Flaky Tests
 
-No flaky tests encountered. The full suite is deterministic: **456 passed, 1 pre-existing skip**
+No flaky tests encountered. The full suite is deterministic: **565 passed, 1 pre-existing skip**
 (`test_original_run_regression` network skip) via `.codev/checks/test.sh`. Unit tests inject a fake
 decider — no network, no key, no spend; the only live calls were the two budgeted smokes (Phase-1
 single cell $0.000027; Phase-4 tutorial pass $0.011705).
 
 ## Follow-up Items
 
-- **Self-describing agreement report** (phase-4 iter-2 claude): stamp `judge_model_resolved` +
-  `rubric_id` into the `jev_agreement.{json,md}` header so the paper-citable artifact needs no join.
-- **`n_indexed_other_wordings` per judged row** (phase-3 iter-3 claude): when an index is used,
-  `neither` can't be distinguished from "no index row for this citation"; record the alternates count.
-- **Row-level `answer_digest` cross-check in `score --judgments`**: provenance binds on the question-set
-  digest, so a sidecar from a different collect run over the same question set validates.
+Filed as issues during the PR #47 review (architect-directed), referenced here:
+
+- **#48 (F1) — refusal-classifier false positives** on hedged-but-delivering web-search answers: the 11
+  enumerated phase-4 cells where the deterministic cue matcher over-calls `refused`, biasing accuracy
+  denominators + coverage; fix path is adjudication against `outcomes.py` with those 11 as a
+  pre-registered set (ties into the independent-rater issue #41).
+- **#49 (F2) — Jev evaluator follow-ups**: the deferred per-row **merge-into-`scores.jsonl`** pass for
+  new runs (treating `kind` as index-conditional); a **running-spend circuit breaker** (today's budget
+  guard is pre-flight only); and a **self-describing agreement report** (`judge_model_resolved` /
+  `rubric_id` header + `n_indexed_other_wordings` per row, so `neither` separates from "no index row").
 - **`_STATE_CHAR_LIMIT` + a very large index row** makes that cell fail every retry; consider capping
-  alternates (recoverable) vs. the current fail-fast. Not reachable with #32's current shape.
-- **Pre-PR history hygiene** (carried from the thread): strip `Co-Authored-By: Claude Opus 4.8` trailers
-  from the 10 pre-Phase-1 Spec-21 commits (message-only rewrite; requires a force-push — human-gated).
-- **Rebase onto main**: expect a `cli.py` textual conflict with #34 (whoever merges second rebases).
+  alternates (recoverable) vs. the current fail-fast. Not reachable with #32's current shape; rolls into
+  #49 if pursued.
+
+(The pre-PR trailer strip and the rebase onto main — earlier thread TODOs — are **done** on this branch:
+the 10 pre-Phase-1 commits carry no trailers, and the branch is rebased onto current `main`.)

@@ -50,9 +50,10 @@ JUDGED_TASKS = ("retrieve_quote", "complete_unit")
 
 _KINDS = ("refusal", "requested_wording", "other_indexed_wording", "neither")
 _STATE_CHAR_LIMIT = 100_000
-# Typical observed cost of one decision (verified live, Spec 21): ~ $2.7e-5 for a
-# two/three-question call. Used only for the pre-flight estimate, never billed.
-TYPICAL_COST_USD = 2.7e-5
+# Typical observed cost of one decision (verified live, Spec 21): the Phase-4 tutorial pass measured
+# $0.011705 / 400 = $2.93e-5 per call, so this is rounded UP to 3e-5 — a pre-flight estimate for a
+# budget guard should be conservative (slightly over), never optimistic. Used only for the estimate.
+TYPICAL_COST_USD = 3e-5
 
 
 class JevError(Exception):
@@ -180,10 +181,10 @@ def interpret(payload: dict, *, with_equivalence: bool) -> dict:
     if not isinstance(usage, dict):
         raise JevError("decisions response missing usage")
     cost, tin, tout = usage.get("cost"), usage.get("input_tokens"), usage.get("output_tokens")
-    if not _num(cost):
-        raise JevError(f"decisions usage.cost is not numeric: {cost!r}")
-    if not _num(tin) or not _num(tout):
-        raise JevError(f"decisions usage token counts are not numeric: in={tin!r} out={tout!r}")
+    if not _num(cost) or cost < 0:
+        raise JevError(f"decisions usage.cost is not a non-negative number: {cost!r}")
+    if not _num(tin) or not _num(tout) or tin < 0 or tout < 0:
+        raise JevError(f"decisions usage token counts are not non-negative numbers: in={tin!r} out={tout!r}")
     out = {
         "decision_id": _nonempty_str(payload.get("id"), "the decision id"),
         "judge_model_resolved": _nonempty_str(payload.get("model"), "the resolved model build"),
@@ -199,9 +200,15 @@ def interpret(payload: dict, *, with_equivalence: bool) -> dict:
         probs = kind.get("probabilities")
         if not isinstance(probs, dict):
             raise JevError("kind.probabilities missing or not an object")
+        # The typed choice distribution is authoritative — validate it fully (fail loud), not just the
+        # container: every expected label present, each value a probability in [0,1].
+        missing = [k for k in _KINDS if k not in probs]
+        if missing:
+            raise JevError(f"kind.probabilities missing label(s) {missing}; expected all of {_KINDS}")
+        for label, p in probs.items():
+            _prob(p, f"kind.probabilities[{label!r}]")
         conf = kind.get("confidence")
-        if not _num(conf):
-            raise JevError(f"kind.confidence is not numeric: {conf!r}")
+        _prob(conf, "kind.confidence")
         # Flat fields, matching the spec's authoritative sidecar schema.
         out["kind"] = kind["choice"]
         out["kind_probabilities"] = probs
@@ -228,7 +235,7 @@ def post_decision(state: dict, questions: dict, model: str, api_key: str,
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace")[:500]
-            if exc.code in (401, 403) or attempt == retries or exc.code < 500 and exc.code != 429:
+            if exc.code in (401, 403) or attempt == retries or (exc.code < 500 and exc.code != 429):
                 raise JevError(f"decisions API {exc.code}: {detail}") from exc
             last = exc
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
@@ -253,9 +260,12 @@ def _require_manifest_if_rows(out: Path) -> None:
         )
 
 
-def _single_question_set_digest(rows: list[dict], given: str | None) -> str | None:
-    """The one question-set digest the answers were collected under (fail fast if mixed)."""
-    if given is not None:
+def _single_question_set_digest(rows: list[dict], given: str | None) -> str:
+    """The one non-empty question-set digest the answers were collected under (fail fast if mixed or
+    absent). ``collect`` always stamps the digest and ``score`` rejects its absence, so the judge
+    requires it too — a digest-less answers file would otherwise pin ``question_set_digest: null`` into
+    the sidecar and open a stale-judgment reuse window across different question sets."""
+    if given:
         return given
     digests = {r.get("question_set_digest") for r in rows if r.get("question_set_digest")}
     if len(digests) > 1:
@@ -265,7 +275,12 @@ def _single_question_set_digest(rows: list[dict], given: str | None) -> str | No
             "answers mix rows with and without a question_set_digest; they are not one coherent "
             "question set — regenerate/collect, or judge a single set at a time"
         )
-    return next(iter(digests)) if digests else None
+    if not digests:
+        raise JevError(
+            "answers carry no question_set_digest — refusing to judge a foreign/pre-digest answers "
+            "file (collect stamps it on every row); regenerate/collect before judging"
+        )
+    return next(iter(digests))
 
 
 def _validate_verdict_row(row: dict, path: Path, line_no: int) -> None:
@@ -646,6 +661,17 @@ def load_equivalence_index(path: Path, *, run_corpus_hash: str,
         )
     if not path.exists():
         raise JevError(f"{path}: equivalence-index file not found")
+    # The digest is the index's content identity (recorded into judgments + the resume identity), so
+    # VERIFY it against the bytes actually loaded — never trust the manifest's copy. The producer's
+    # digest is sha256(JSONL bytes)[:16] (edition_index.build_manifest); an edited index with a
+    # preserved row_count + stale manifest digest would otherwise pin the old identity and create the
+    # mixed-index sidecar this guards against.
+    actual_digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    if actual_digest != digest:
+        raise JevError(
+            f"{path}: recomputed digest {actual_digest!r} != manifest digest {digest!r}; the index "
+            "file was modified without updating its manifest — regenerate the index"
+        )
     lookup: dict[tuple, list[dict]] = {}
     n_rows = 0
     with open(path, encoding="utf-8") as handle:
@@ -727,7 +753,8 @@ def summarize(path: Path) -> dict:
     }
 
 
-def load_provenance(judgments: Path, *, question_set_digest: str | None) -> dict:
+def load_provenance(judgments: Path, *, question_set_digest: str | None,
+                    answer_keys: set[tuple] | None = None) -> dict:
     """Validate that a judgments sidecar binds to the answers being scored and return the
     resolved-build provenance to stamp into a run's summary (``score --judgments``). No network.
 
@@ -738,11 +765,15 @@ def load_provenance(judgments: Path, *, question_set_digest: str | None) -> dict
       and record the question-set digest of the answers being scored;
     - the sidecar file must exist and hold **at least one** judgment, and every row must agree with
       the manifest's resolved build and question-set digest (via ``_load_existing``, the same row
-      guard the resume path uses — a build- or set-mismatched / build-less row fails fast).
+      guard the resume path uses — a build- or set-mismatched / build-less row fails fast);
+    - when ``answer_keys`` (the ``{(question_id, model_id, answer_digest)}`` of the answers being
+      scored) is given, **every** judged row must be one of them — so a sidecar produced over a
+      *different collection* of the same question set (same qsd, different answers) is refused rather
+      than stamping false provenance. The question-set digest alone does not bind the actual answers.
 
-    A missing manifest, wrong rubric, absent build, question-set mismatch, missing/empty sidecar, or a
-    row that disagrees with the pinned identity **fails fast**. This is an explicit opt-in: default
-    ``score`` never reads an adjacent sidecar.
+    A missing manifest, wrong rubric, absent build, question-set mismatch, missing/empty sidecar, a
+    row that disagrees with the pinned identity, or a judged row that is not among ``answer_keys``
+    **fails fast**. This is an explicit opt-in: default ``score`` never reads an adjacent sidecar.
 
     NB: the manifest checks below parallel ``_load_manifest`` (the resume-path validator) on purpose —
     they are kept separate so provenance does not bind ``index_digest`` (see ``_load_manifest``).
@@ -781,4 +812,16 @@ def load_provenance(judgments: Path, *, question_set_digest: str | None) -> dict
             f"{judgments}: no judgments recorded; `score --judgments` needs a sidecar with at least "
             "one verdict before it can stamp a judge build into the summary"
         )
+    # Bind the judgments to the EXACT answers being scored: a judged (qid, model_id, answer_digest)
+    # that is not among the answers' keys means this sidecar was produced over a different collection
+    # (even of the same question set) — refuse rather than stamp its build as this run's provenance.
+    if answer_keys is not None:
+        orphan = judged - answer_keys
+        if orphan:
+            q, m, _ = sorted(orphan)[0]
+            raise JevError(
+                f"{judgments}: judgment for ({q!r}, {m!r}) does not match any answer being scored "
+                "(question_id/model_id/answer_digest) — these judgments are for different answers; "
+                "`score --judgments` must point at the sidecar for THIS run's answers"
+            )
     return {"model_resolved": resolved, "rubric_id": manifest["rubric_id"]}

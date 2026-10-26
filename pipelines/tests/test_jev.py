@@ -6,6 +6,7 @@ shape, not a hand-written mock (project lesson: mocking the provider seam hides
 live-only failures).
 """
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -44,14 +45,18 @@ def _payload(refusal=0.1, matches=0.2, build="typesafe/jev-1.14-20261014", kind=
         "usage": {"input_tokens": 12, "output_tokens": 0, "cost": 0.000001},
     }
     if kind is not None:
+        # a full choice distribution over all kinds (the live API returns every label), the chosen
+        # one carrying the mass — interpret() now validates all labels are present + in [0,1]
+        probs = {k: 0.0 for k in ("refusal", "requested_wording", "other_indexed_wording", "neither")}
+        probs[kind] = 0.8
         p["answers"]["kind"] = {"type": "choice", "choice": kind,
-                                "probabilities": {kind: 0.8}, "confidence": 0.7}
+                                "probabilities": probs, "confidence": 0.7}
     return p
 
 
 def _row(answer="some other sentence entirely", task="retrieve_quote",
          work="The Bible", version="KJV", language="en",
-         qid="retrieve_quote-aaaa", model_id="m1", qsd=None):
+         qid="retrieve_quote-aaaa", model_id="m1", qsd="qs-digest-1"):
     row = {
         "question_id": qid,
         "model_id": model_id,
@@ -252,8 +257,8 @@ def test_manifest_without_build_fails_fast(tmp_path):
 
 def test_mixed_question_set_digest_presence_fails_fast(tmp_path):
     out = tmp_path / "j.jsonl"
-    rows = [_row(qid="q1", qsd="deadbeef"), _row(qid="q2")]  # one with a digest, one without
-    with pytest.raises(JevError, match="question_set_digest"):
+    rows = [_row(qid="q1", qsd="deadbeef"), _row(qid="q2", qsd=None)]  # one with a digest, one without
+    with pytest.raises(JevError, match="with and without a question_set_digest"):
         estimate(rows, out)
 
 
@@ -514,7 +519,7 @@ def test_score_cli_judgments_records_provenance(tmp_path):
     sidecar.write_text(json.dumps({
         "question_id": "retrieve_quote-0", "model_id": "m1", "rubric_id": RUBRIC_ID,
         "judge_model": "jev-latest", "judge_model_resolved": "typesafe/jev-1.14-20261014",
-        "question_set_digest": "d", "answer_digest": "a0",
+        "question_set_digest": "d", "answer_digest": answer_digest("x"),  # binds to _score_answers' answer "x"
         "refusal_p": 0.1, "matches_requested_p": 0.9, "equivalence": "not_evaluated",
     }) + "\n", encoding="utf-8")
     (tmp_path / "judgments.jsonl.manifest.json").write_text(json.dumps({
@@ -537,17 +542,24 @@ def test_score_cli_judgments_records_provenance(tmp_path):
 
 # ---- equivalence index consumer (Spec 21 phase 3, #32 schema verbatim) ----
 
-def _write_index(tmp_path, *, name="eqindex", corpus_hash=INDEX_CORPUS_HASH, digest="idx-A",
-                 row_count=1, rows=None):
-    """A minimal #32-schema index + manifest under tmp_path; returns the index file path."""
+def _write_index(tmp_path, *, name="eqindex", corpus_hash=INDEX_CORPUS_HASH, rows=None,
+                 row_count=None, digest=None):
+    """A minimal #32-schema index + manifest under tmp_path; returns the index file path. The manifest
+    digest is the REAL sha256[:16] of the written bytes (matching the producer) unless overridden;
+    row_count defaults to len(rows). Pass `digest=`/`row_count=` to force a mismatch for a negative test."""
     if rows is None:
         rows = [{"work": "The Bible", "citation": "Isaiah 1:1", "language": "en",
                  "wordings": [{"version": "KJV", "text": "the requested line of scripture here"},
                               {"version": "ASV", "text": "an alternate indexed wording"}]}]
     idx = tmp_path / f"{name}.jsonl"
-    idx.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    body = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    idx.write_text(body, encoding="utf-8")
+    real = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
     (tmp_path / f"{name}.jsonl.manifest.json").write_text(json.dumps({
-        "corpus_hash": corpus_hash, "row_count": row_count, "digest": digest, "excluded_restricted": [],
+        "corpus_hash": corpus_hash,
+        "row_count": len(rows) if row_count is None else row_count,
+        "digest": real if digest is None else digest,
+        "excluded_restricted": [],
     }), encoding="utf-8")
     return idx
 
@@ -555,7 +567,7 @@ def _write_index(tmp_path, *, name="eqindex", corpus_hash=INDEX_CORPUS_HASH, dig
 def test_load_equivalence_index_happy_path_from_committed_fixture():
     idx = load_equivalence_index(INDEX_FIXTURE, run_corpus_hash=INDEX_CORPUS_HASH)
     assert isinstance(idx, EquivalenceIndex)
-    assert idx.corpus_hash == INDEX_CORPUS_HASH and idx.digest == "idxdigest-sample-00000001"
+    assert idx.corpus_hash == INDEX_CORPUS_HASH and idx.digest == "193ba2f4ebe1ddb6"
     assert idx.row_count == 2
     # .wordings excludes the requested edition (by version) and returns the OTHER indexed wording(s)
     others = idx.wordings("The Bible", "Isaiah 1:1", "en", "KJV", "the requested line of scripture here")
@@ -657,13 +669,19 @@ def test_judge_without_index_records_not_evaluated(tmp_path):
     assert row["equivalence"] == "not_evaluated" and "kind" not in row and "index_digest" not in row
 
 
+_INDEX_ROWS_B = [{"work": "The Bible", "citation": "Genesis 1:1", "language": "en",
+                  "wordings": [{"version": "KJV", "text": "in the beginning"},
+                               {"version": "ASV", "text": "in the beginning (asv)"}]}]
+
+
 def test_judge_mixed_index_resume_fails_fast(tmp_path):
     out = tmp_path / "j.jsonl"
-    # two DIFFERENT indexes, same corpus_hash, different digest (judge derives the digest from each)
-    idx_a = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+    # two DIFFERENT-content indexes, same corpus_hash → different REAL digests (no digest override)
+    idx_a = load_equivalence_index(_write_index(tmp_path, name="a"),
                                    run_corpus_hash=INDEX_CORPUS_HASH)
-    idx_b = load_equivalence_index(_write_index(tmp_path, name="b", digest="idx-B"),
+    idx_b = load_equivalence_index(_write_index(tmp_path, name="b", rows=_INDEX_ROWS_B),
                                    run_corpus_hash=INDEX_CORPUS_HASH)
+    assert idx_a.digest != idx_b.digest
     judge([_row(qid="q-A", qsd="d")], out, index=idx_a,
           decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
     # resuming with a DIFFERENT index (same corpus_hash) is refused by the manifest check — no
@@ -677,7 +695,7 @@ def test_judge_resume_rejects_row_with_conflicting_index_digest(tmp_path):
     # codex iter-1: the manifest check alone is not enough — a row whose index_digest conflicts with
     # the pinned one must also be refused (no mixed-index rows under a matching manifest).
     out = tmp_path / "j.jsonl"
-    idx = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+    idx = load_equivalence_index(_write_index(tmp_path, name="a"),
                                  run_corpus_hash=INDEX_CORPUS_HASH)
     judge([_row(qid="q-A", qsd="d")], out, index=idx,
           decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
@@ -784,9 +802,50 @@ def test_estimate_mixed_index_fails_fast(tmp_path):
     # the CLI runs estimate() BEFORE judge(), so the mixed-index error a user hits first surfaces from
     # estimate — assert that path directly (test_judge_mixed_index_resume_fails_fast covers judge()).
     out = tmp_path / "j.jsonl"
-    idx_a = load_equivalence_index(_write_index(tmp_path, name="a", digest="idx-A"),
+    idx_a = load_equivalence_index(_write_index(tmp_path, name="a"),
                                    run_corpus_hash=INDEX_CORPUS_HASH)
     judge([_row(qid="q-A", qsd="d")], out, index=idx_a,
           decide=lambda s: _payload(kind="neither"), concurrency=1, question_set_digest="d")
     with pytest.raises(JevError, match="index digest"):
-        estimate([_row(qid="q-B", qsd="d")], out, index_digest="idx-B", question_set_digest="d")
+        estimate([_row(qid="q-B", qsd="d")], out, index_digest="definitely-not-the-real-digest",
+                 question_set_digest="d")
+
+
+# ---- PR #47 round-1 hardening: digest verify, typed-response validation, required digest ----
+
+def test_load_equivalence_index_tampered_file_same_row_count_fails_fast(tmp_path):
+    # edit a wording's text in place (row_count unchanged) without updating the manifest → digest fail
+    idx = _write_index(tmp_path)
+    body = idx.read_text(encoding="utf-8")
+    idx.write_text(body.replace("an alternate indexed wording", "TAMPERED wording"), encoding="utf-8")
+    with pytest.raises(JevError, match="was modified without updating its manifest"):
+        load_equivalence_index(idx, run_corpus_hash=INDEX_CORPUS_HASH)
+
+
+def test_interpret_rejects_incomplete_or_out_of_range_choice():
+    p = _payload(kind="neither"); del p["answers"]["kind"]["probabilities"]["refusal"]
+    with pytest.raises(JevError, match="missing label"):
+        interpret(p, with_equivalence=True)
+    p = _payload(kind="neither"); p["answers"]["kind"]["probabilities"]["refusal"] = "high"
+    with pytest.raises(JevError, match="probabilities"):
+        interpret(p, with_equivalence=True)
+    p = _payload(kind="neither"); p["answers"]["kind"]["probabilities"]["refusal"] = 1.5
+    with pytest.raises(JevError, match="probabilities"):
+        interpret(p, with_equivalence=True)
+    p = _payload(kind="neither"); p["answers"]["kind"]["confidence"] = 1.5
+    with pytest.raises(JevError, match="confidence"):
+        interpret(p, with_equivalence=True)
+
+
+def test_interpret_rejects_negative_usage():
+    p = _payload(); p["usage"]["cost"] = -0.01
+    with pytest.raises(JevError, match="cost"):
+        interpret(p, with_equivalence=False)
+    p = _payload(); p["usage"]["input_tokens"] = -1
+    with pytest.raises(JevError, match="token counts"):
+        interpret(p, with_equivalence=False)
+
+
+def test_judge_requires_a_question_set_digest(tmp_path):
+    with pytest.raises(JevError, match="no question_set_digest"):
+        estimate([_row(qid="q1", qsd=None)], tmp_path / "j.jsonl")
