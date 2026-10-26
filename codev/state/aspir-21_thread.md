@@ -292,6 +292,22 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
   guard) in the module docstring + review; (5) fixed the "recorded" docstring nit. (6) commit = done.
 - Suite 454→**456**. Committed report byte-identical after the answer_digest check. This is iter 1 of max 3.
 
+### Phase 4 iter 2 (re-verify) — CLEAN PASS (codex APPROVE / claude APPROVE)
+- Both APPROVE, HIGH, **zero blocking**. Both iter-1 blockers resolved (files now tracked in `e98233e`;
+  answer_digest self-verify + CLI test landed). claude re-derived EVERY number exactly from committed
+  data, confirmed byte-reproducibility + evidence integrity + 456-gate + audit + manual-review quality.
+- 3 non-blocking minors, NOT patched (clean pass stands, not re-opening an approved phase):
+  (1) agreement report has no `judge_model_resolved`/`rubric_id` header — spec-satisfied elsewhere
+  (rows + sidecar manifest + score provenance) → FOLLOW-UP; (2)/(3) review-prose nits (category-1
+  narrative overlaps the 2 Hebrew both-axes cells; English near-miss token_f1 is 0.98 not 0.86–0.98) —
+  per-axis COUNTS (27/11) are exact; acknowledged, substance correct.
+- **phase_4 DONE → project implementation COMPLETE (all 4 phases).** Next: PR ("Part 2 of 3 of #30",
+  closes #21) with the PR TODOs below.
+
+### FOLLOW-UP (from phase_4 iter-2 claude): self-describing agreement report
+- Stamp `judge_model_resolved` + `rubric_id` into the `jev_agreement.{json,md}` header (derive from the
+  judgment rows' consistent build) so the paper-citable artifact is self-describing without a join.
+
 ### PR TODOs (do at PR time)
 - Strip `Co-Authored-By: Claude Opus 4.8` trailers from early spec/plan/thread/rebuttal commits
   (message-only rewrite, tree unchanged, verify git log) JUST before opening the PR.
