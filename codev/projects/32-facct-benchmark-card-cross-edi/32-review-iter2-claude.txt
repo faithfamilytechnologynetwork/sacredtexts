@@ -1,0 +1,64 @@
+I'll start by locating the worktree and reading the actual source files, since the builder's rebuttal makes specific claims I need to verify.Now let me verify the specific claims in the builder's rebuttal against the actual code — particularly `corpus_hash` semantics and the CLI path guard.Now the critical structural question for blocking item 1 — what docs set does `generate` actually hash?Tests look non-vacuous. Let me verify the claims empirically — run the suite and check the committed card actually reproduces.Let me check branch freshness, commit format, leftover debris, and whether the deprecated `cite_key` alias is actually used anywhere.Let me independently recompute the card's headline numbers from the raw run evidence, rather than trusting either the card or its pin test.Card reproduces exactly from raw evidence. Now let me check the one gap I suspect — whether the card verifies its catalogue matches the run's corpus — plus review doc completeness.I did not modify anything in the tree — I ran the suite with `-p no:cacheprovider` and confirmed `git status` shows only pre-existing untracked builder scaffolding plus the parallel reviewers' own consult outputs.
+
+## Review
+
+### Independent verification (not taken on trust)
+
+I recomputed the card's headline figures directly from the raw run evidence rather than relying on the card, its pin test, or the builder's rebuttal:
+
+| Figure | Independent recompute | Card |
+|---|---|---|
+| Outcomes (total) | 522 / 572 / 334 | match, per-model and per-task |
+| Accuracy | recomputed from counts | matches to 4dp |
+| CF denominators | haiku 15, gpt-oss 17, opus 0 | 32 total ✓ |
+| CF numerators | — | 3 total ✓ |
+| `zero_question_languages` | — | `['grc','la']` ✓ (item 9) |
+| `corpus_hash` | — | `5ae493e7e249575c` ✓ |
+
+Suite: **442 passed, 1 skipped** — exactly as claimed. Audit clean. Branch is up to date (`origin/main` is an ancestor, 0 behind / 52 ahead). Commit format correct; AC14 verified — three carry-over commits authored `Jonathan Karr <jka83321@gmail.com>`.
+
+### Prior blocking items — all genuinely fixed
+
+- **Export `corpus_hash` (codex + architect #1).** Not just empirically equal — *structurally* sound. I traced `generate.build_manifest` → it hashes the full loaded `docs` set, with `_build_texts` applying the language filter internally. `load_edition_documents`'s `all_nonrestricted` is the matching set. Pinned by `test_real_catalogue_export_corpus_hash_equals_run_manifest`.
+- **Run-bound counterfactual (codex + #2).** `selected_keys` from the run manifest; `by_cite` keyed `(work, language, citation)` so language scoping is structural, not a re-filter. The test is non-vacuous — it asserts a 4th unselected English Bible and a Spanish edition never appear.
+- **Transactional writes (codex + #3).** `atomic_write_texts` is a real both-or-neither: stage-all → swap-all → rollback-to-prior-bytes, with backup cleanup in `finally`. Tested for **both** writers via an injected second-swap failure asserting prior bytes survive and no temp/backup residue.
+- **Items 4–9** all verified: `_bounded_equal`, `by_norm`, `_BOOK_ALIAS` are gone (grep-clean); `_within` is the inverse rule with symlink resolution and 4 tests.
+
+Test quality is notably high — several tests carry explicit mutation reasoning ("Deleting the `version==requested` guard breaks this"), which is exactly what makes a guard's coverage checkable by reading.
+
+### Non-blocking findings
+
+**1. The card never verifies its catalogue matches the run's corpus.** `build_facct` copies `corpus_hash` from the run manifest (`facct.py:346`) — the only occurrence in the file — while `_counterfactual` builds its index from the *current* `texts/raw` and **discards `_all`** (`facct.py:241`). So edition *identities* are pinned to the run, but edition *text content* is not. If a wording in `texts/raw` changed after a run, a regenerated card would compute its counterfactual against text that run never used while displaying the run's old `corpus_hash`.
+
+For `original-2026-10-21` the pin test contains this (a fresh build would diverge from the committed card). The gap is for **any other run** — a future card, or regenerating a historic one. The remedy is ~3 lines using machinery you already have and have already proven equal: compare `gen.corpus_hash(all_docs)` against `manifest["corpus_hash"]` and raise `FacctError`. Consistent with the project's fail-fast principle and with the drift guard's existing intent.
+
+**2. Dead `cite_key` alias.** `edition_index.py:83` defines it as a "deprecated spelling" with **zero callers** (the only other hit is a stale comment at line 69 saying `cite_key is not None` where the code calls `is_verse_citation`). This is the same class of thing you deliberately removed in items 4 and 7 — and on a module whose export schema is frozen for issue #21, a dead deprecated predicate invites a future consumer to reach for the wrong name.
+
+**3. Review doc staleness (2 lines).** "Deviations from Plan" still says the `_bounded_equal` "alias kept" — item 4 deleted it. AC6 still credits "`cite_key` returns None" — the live path is `lookup_key`/`is_verse_citation`.
+
+---
+VERDICT: APPROVE
+SUMMARY: All four prior blocking items are verifiably fixed and every card figure reproduces exactly from the raw run evidence; remaining findings are one latent corpus-drift guard for non-committed runs plus two cleanliness items.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Non-blocking: `build_facct` copies the run's `corpus_hash` but never compares it to the current catalogue, while the counterfactual indexes current `texts/raw` and discards `all_docs` (facct.py:241,346) — edition identities are run-pinned, text content is not. Guarded for the committed run by the pin test only.
+- Non-blocking: dead `cite_key` alias with zero callers (edition_index.py:83) plus a stale comment at line 69, inconsistent with the deliberate removal of `_bounded_equal` / `by_norm`.
+- Non-blocking: review doc's "Deviations from Plan" and AC6 lines are stale after items 4 and 8.
+
+PR_SUMMARY: |
+  ## Summary
+  Part 3 of 3 of #30 (Jonathan Karr's PR): a shared cross-edition index and a FAccT benchmark card, reworked against the scoring contract now on `main`. Outcomes (correct / incorrect / refused) come verbatim from `scores.jsonl` / `outcomes.py` — no second refusal rule, no `fabrication` label — and the pool is the 17-text original-language Spec-26 set. The card reads `runs/original-2026-10-21` as-is: it never re-scores and never calls a model.
+
+  ## Key Changes
+  - **Shared `edition_index` module + `edition-index` CLI** — indexes same-canonical-language, non-restricted editions sharing a citation; exports JSONL + manifest on a frozen schema for issue #21. NABRE/TLG (restricted) are never indexed, even with payloads present locally. The in-process index and the exported rows group on the *same* key `(work, language, raw citation)`, so #21 and the card can never see different sibling sets.
+  - **`corpus_hash` is generate-comparable** — hashed over the full non-restricted converted set (translations included, before the language filter), so it equals a run manifest's `corpus_hash` (reproduces `5ae493e7e249575c`), letting #21's consumer fail fast on a corpus mismatch.
+  - **`facct.json` card data** — run census (tradition / language / document type / license; zero-question languages as the union of target and canonical languages; excluded texts with reasons), the three outcomes, and the Bible `retrieve_quote` edition counterfactual reusing `score.bounded_contains`. The counterfactual considers only editions in the run's `selected_texts`, scoped to the question language, so a Bible edition added later cannot change a historic run's card.
+  - **`facct.md` card** — one editable prose block (`facct.CARD_PROSE`), per-task correctness rule, panel + task glosses, every number interpolated from the run and drift-guarded. Both files written via a shared both-or-neither atomic writer; output paths may only be a new file or the card's own outputs.
+  - **Generated + committed** `runs/original-2026-10-21/facct.{json,md}`; copyright audit extended to content-scan `.md` and to read a card's census origin.
+
+  ## Test Plan
+  - `uv --project pipelines run pytest pipelines` → 442 passed, 1 skipped (pre-existing CI corpus skip).
+  - `uv --project pipelines run python -m sacredbench audit runs/original-2026-10-21 texts/standardized` → clean.
+  - Independently reproduce the card from raw evidence: outcomes 522/572/334, counterfactual 32 denominator / 3 `other_edition`, `corpus_hash 5ae493e7e249575c`.
+  - Regression pins: committed card equals a fresh build (json and md); export `corpus_hash` equals the run manifest's; atomic rollback verified for both writers via an injected swap failure.

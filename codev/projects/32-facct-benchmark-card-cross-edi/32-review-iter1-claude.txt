@@ -1,0 +1,61 @@
+I'll start by reading the PR diff and the relevant project files.Let me read the spec, plan, and review documents, plus the core implementation files.Now let me read the core implementation files.Let me check a potential CI issue: whether the Greek Orthodox catalogue entry is committed.Let me verify one spec claim: that `excluded_restricted` names both NABRE and TLG on the real catalogue.I have a complete picture. Let me summarize my review.
+
+## Review: PR #34 — FAccT benchmark card + cross-edition reading
+
+**Note on method:** I read the files from disk rather than relying on the diff, and verified the committed card against the run evidence with read-only JSON comparisons. I deliberately did **not** run `pytest` — it would write `__pycache__`/`.pytest_cache` into a live builder worktree — and I made no edits to the tree.
+
+### What I verified independently
+
+| Claim | Result |
+|---|---|
+| Card outcome counts == `summary.json` | ✅ Exact match, 3 models × 4 tasks + `_overall`, zero mismatches |
+| Counterfactual 32 denominator / 3 numerator | ✅ Reproduced from `scores.jsonl` + `answers.jsonl` |
+| `opus` showing 0/0 | ✅ Genuine — opus went 21/21 on Bible `retrieve_quote`, not a filter bug |
+| No `fabrication` label | ✅ Absent from both artifacts |
+| Card embeds no verse bodies | ✅ 7 KB, citations + numbers only, zero non-Latin chars |
+| `excluded_restricted` == `[NABRE, TLG]` | ✅ Both are `license: restricted` with `language == canonical_language` — matches the spec's frozen contract |
+| Branch vs base | ✅ 48 ahead, 0 behind `origin/main` |
+| `runs/` routes to the test lane | ✅ `.codev/checks/test.sh` maps `runs/` → pipelines pytest, so the card is audited |
+
+The three tagged cells are all ASV-requested answers carrying KJV wording — precisely the edition trap the spec describes. Single-contract discipline held throughout: outcomes come verbatim from `metrics.outcome`, containment reuses the promoted `score.bounded_contains`, and the `scores↔summary` verification is genuinely bidirectional (set equality both ways plus a recomputed `_overall`).
+
+### Findings — all non-blocking
+
+**1. The `passage.work != _BIBLE` guard is not covered by any test** (`facct.py:254`). This is the guard against the `by_cite` work-blindness hazard that `edition_index.py:64-67` documents — the "false `other_edition` tag on a non-Bible cell" risk the spec rates **High impact**. Settled by reading, not mutation: `_raw_tree` builds only the three Bible editions, and the single non-Bible cell (Qur'an `2:255`) has a citation `cite_key` returns `None` for, so it never reaches the index loop. Delete that `continue` and nothing in the suite fails. Benign today (Moses/Abraham/Helaman aren't Bible book names), but it's a one-line fixture fix: add a non-Bible work with a colliding citation and assert it never lands in `other_editions`.
+
+**2. `EditionIndex.by_norm` is dead** (`edition_index.py:69, 97, 121) — populated, never read anywhere. It's PR #30's same-words-across-traditions machinery whose consumer was descoped, and it costs a normalized-text dict over the *entire* corpus (Talmud + 9 hadith collections) on every card build to answer a Bible-only question.
+
+**3. Two names for one predicate.** `score.py:266` keeps `_bounded_equal = bounded_contains`, and `outcomes.py:124` still imports the private name. Three call sites — worth finishing the rename.
+
+**4. Typed numbers in `runs/original-2026-10-21/README.md`** ("32 incorrect… 3 answered a different edition"). The card is drift-guarded; this prose beside it isn't. A sanctioned rebaseline regenerates the card and leaves the README silently stale — the anti-drift failure mode, one file over.
+
+**5.** `test_real_catalogue_indexes_bibles_and_excludes_restricted` pins `NABRE` but not `TLG`, though the spec freezes the real-catalogue value as both.
+
+**6.** `CODE_WALKTHROUGH.md` isn't updated for two new modules and two CLI subcommands.
+
+---
+VERDICT: APPROVE
+SUMMARY: Spec-complete and independently verified — card numbers reproduce exactly from the run evidence, single scoring contract held, copyright gate extended correctly; findings are an untested index-side guard and minor cleanliness items.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The `passage.work != _BIBLE` guard in `_counterfactual` (facct.py:254) is not covered: the fixture has no non-Bible work with a Bible-style citation, so deleting the guard breaks no test — on a risk the spec rates High impact
+- `EditionIndex.by_norm` is dead (no consumer) yet indexes the whole corpus on every card build
+- `score.py` keeps both `bounded_contains` and the `_bounded_equal` alias; `outcomes.py` still imports the private name
+- `runs/original-2026-10-21/README.md` types the 32/3 counterfactual figures into un-drift-guarded prose
+- `excluded_restricted` real-catalogue test pins NABRE but not TLG; `CODE_WALKTHROUGH.md` not updated for the two new modules
+
+PR_SUMMARY: |
+  ## Summary
+  Part 3 of 3 of #30: the FAccT benchmark card and cross-edition reading, reworked against the scoring contract now on `main`. Outcomes (correct / incorrect / refused) are read verbatim from `scores.jsonl` / `outcomes.py` — no second refusal rule, no `fabrication` label — and the pool is the 17-text original-language Spec-26 set. The card reads `runs/original-2026-10-21` as-is, never re-scores, never calls a model, and derives every number from the run. Closes #32.
+
+  ## Key Changes
+  - Shared `edition_index` module + `edition-index` CLI on a frozen JSONL/manifest schema for issue #21; restricted editions (NABRE, TLG) never indexed even with payloads present locally
+  - `facct.py` → `facct.json`: run census (tradition / language / document type / license, zero-question languages, excluded texts with reasons), the three outcomes, and the Bible `retrieve_quote` edition counterfactual reusing the promoted `score.bounded_contains`
+  - `facct.md` markdown card with one editable prose block (`facct.CARD_PROSE`); every figure interpolated from the run, both files written atomically (both-or-neither)
+  - Generated and committed `runs/original-2026-10-21/facct.{json,md}` with evidence byte-unchanged; audit extended to content-scan `.md` and to read a card's `census.selected_texts` for origin
+
+  ## Test Plan
+  - `uv --project pipelines run pytest pipelines` → 437 passed, 1 skipped (pre-existing CI corpus skip); 48 new tests across `test_facct.py` and `test_edition_index.py`
+  - Committed card pinned to a fresh build by `test_original_run_regression.py::test_committed_facct_card_matches_the_run` (json and md)
+  - Verified on the real run: 17 texts, 476 questions, counterfactual 3/32 across the panel; card outcome counts match `summary.json` exactly; `audit` clean and the card carries no passage bodies

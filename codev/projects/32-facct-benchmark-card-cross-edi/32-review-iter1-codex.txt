@@ -1,0 +1,24 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core card logic is strong, but the edition export is not actually transactional and the counterfactual is not bound to the run’s corpus.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `edition_index.write_export()` claims both-or-neither behavior, but lines 219–220 replace the JSONL before the manifest without rollback. If the second replacement fails, consumers receive a new index with a stale or missing manifest. Use collision-safe temporary files plus backup/rollback logic, and add a failure-injection test for the second replacement.
+- `build_facct()` copies the run manifest’s `corpus_hash` while calculating the counterfactual from the current raw corpus without validating or recording that corpus. They already differ: the run records `5ae493e7e249575c`, while `load_edition_documents()` currently hashes to `08f1bc8c010cfbe6`. Thus raw-corpus changes can silently alter `other_edition` results while the card advertises only the run hash. Validate compatibility or record/pin the actual edition-index corpus hash, with a regression test.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds a shared, restricted-safe edition index and generates a FAccT benchmark card for the committed original-language benchmark run. The card reports census, outcome, coverage, and Bible edition-counterfactual data without re-scoring or making model calls.
+
+  ## Key Changes
+  - Adds the `edition-index` and `facct` CLI workflows.
+  - Generates and commits `facct.json` and `facct.md`.
+  - Extends copyright auditing to Markdown artifacts.
+  - Adds fixture and committed-run regression coverage.
+
+  ## Test Plan
+  - Run `uv --project pipelines run pytest pipelines`.
+  - Inject a failure during the second edition-index replacement and verify both old outputs remain unchanged.
+  - Verify the corpus used for counterfactual analysis is validated or explicitly recorded.
+  - Run the copyright audit over committed run artifacts.

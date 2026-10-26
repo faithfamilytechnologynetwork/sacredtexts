@@ -1,0 +1,25 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Most prior findings are addressed, but the counterfactual remains unverified against the run corpus and the two edition-index views still diverge for non-Bible citations.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `facct.build_facct()` copies the run manifest’s `corpus_hash`, but `_counterfactual()` discards the hashable `all_nonrestricted` corpus returned by `load_edition_documents()` and never compares it with that manifest. Restricting candidates to `selected_texts` prevents newly added editions from participating, but edits to an existing selected edition can still silently change a historical counterfactual. Compare `generate.corpus_hash(all_nonrestricted)` with the run hash and fail on mismatch, or record the actual index hash distinctly; add a wording-mutation mismatch test.
+- `index_documents()` only populates `by_cite` for citations matching the Bible-style regex, while `export_rows()` exports every shared raw citation. Consequently, the claimed one-for-one equivalence fails once non-Bible sibling editions share a citation; the existing equality test only uses Bible citations. Index all raw `(work, language, citation)` keys and retain the explicit Bible scope in `facct._counterfactual()`, or intentionally apply the same filter to both consumers and document that frozen-schema limitation.
+- The reported 442-passed/1-skipped result was not independently rerun because this review environment is read-only; the test implementation and recorded result were inspected.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds a shared, restricted-safe cross-edition index and a FAccT benchmark card for the committed original-language benchmark run. The card reports corpus census, scoring outcomes, coverage, and a Bible edition counterfactual without re-scoring or making model calls.
+
+  ## Key Changes
+  - Adds `edition-index` and `facct` CLI workflows with paired-output rollback handling.
+  - Generates and commits `facct.json` and `facct.md`.
+  - Extends copyright auditing to Markdown and card census origins.
+  - Adds fixture, failure-injection, and committed-run regression coverage.
+
+  ## Test Plan
+  - Run `uv --project pipelines run pytest pipelines`.
+  - Verify card generation rejects a raw corpus whose hash differs from the run manifest.
+  - Test in-process/export equivalence using a non-Bible shared citation.
+  - Run the copyright audit over committed run artifacts.
