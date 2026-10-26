@@ -27,6 +27,10 @@ from sacredbench.edition_index import EditionIndexError, load_edition_documents,
 from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
+from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
+from sacredbench.probes import format_probe, probe_run
+from sacredbench.editions import edition_run, format_editions
+from sacredbench.splits import format_splits, split_run
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -468,6 +472,103 @@ def facct(
     typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "
                f"{report['census']['n_questions']} questions, {other_edition} other_edition tag(s) "
                f"across {len(cf)} model(s)")
+
+
+@app.command()
+def failures(run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl")) -> None:
+    """Count SacredBench failure kinds for one scored run, per text.
+
+    Kinds do not change accuracy. ``minor`` stays on the passage that was asked for
+    (near copy, paraphrase, omission, addition). ``major`` replaces it (wrong
+    passage, other script, wrong locus, wrong verdict, no citation, hedge).
+    Texts are not pooled into a tradition score.
+    """
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    report = report_run(run_dir)
+    overall = report["overall"]
+    typer.echo(
+        "outcomes "
+        + " ".join(f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("outcome:"))
+    )
+    typer.echo(
+        "severity "
+        + " ".join(f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("severity:"))
+    )
+    for key in sorted(overall):
+        if key.startswith("kind:"):
+            typer.echo(f"  {key.split(':', 1)[1]} {overall[key]}")
+    typer.echo(f"{len(report['by_text'])} text(s); one text = one work, version, and language")
+
+
+@app.command()
+def breakdown(run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl")) -> None:
+    """Accuracy and refusal by scripture, hadith, talmud, and papal encyclical.
+
+    Also by tradition and by task. A type with no questions is printed at zero
+    so an encyclical folder that was not in the run is visible."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    groups = breakdown_run(run_dir)
+    for title, key in (
+        ("by document type", "document_type"),
+        ("by tradition", "tradition"),
+        ("by tradition and type", "tradition_and_type"),
+        ("by task", "task"),
+    ):
+        typer.echo(title)
+        typer.echo(format_breakdown(groups[key]))
+        typer.echo("")
+
+
+@app.command()
+def probes(
+    run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl"),
+    kjv: Path = typer.Option(Path("texts/raw/Protestant Christian/kjv.json"), help="raw KJV JSON for the edition check"),
+) -> None:
+    """Stored-run checks: letter fold, clustered intervals, refusals, KJV substitution.
+
+    Does not call a model and does not change a score."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    if not kjv.is_file():
+        raise ScoreError(f"missing edition JSON: {kjv}")
+    typer.echo(format_probe(probe_run(run_dir, kjv)))
+
+
+@app.command()
+def splits(
+    run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl"),
+    quran: Path = typer.Option(
+        Path("texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json"),
+        help="Uthmani Qur'an JSON, keys like 1:1, for citation distance",
+    ),
+    bible: Path = typer.Option(
+        Path("texts/raw/Protestant Christian/kjv.json"),
+        help="KJV JSON for whether a cited Bible verse exists",
+    ),
+) -> None:
+    """Tables behind the manuscript: per model, refusals, gap test, distance, cutoffs.
+
+    Does not call a model and does not change a score."""
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    for label, path in (("Qur'an", quran), ("Bible", bible)):
+        if not path.is_file():
+            raise ScoreError(f"missing {label} JSON: {path}")
+    typer.echo(format_splits(split_run(run_dir, quran, bible)))
+
+
+@app.command()
+def editions(
+    raw_root: Path = typer.Option(cat.RAW_ROOT, help="raw texts root (catalogue + edition index)"),
+) -> None:
+    """Folded agreement of the public-domain English Bibles. Does not score a model.
+
+    Builds the per-edition verse index from the Spec 32 edition index (the converter + the
+    licence gate), so restricted editions are never read. Makes no network call."""
+    _require_catalogue(raw_root)
+    typer.echo(format_editions(edition_run(raw_root)))
 
 
 def main() -> None:

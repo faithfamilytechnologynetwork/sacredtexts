@@ -1,0 +1,22 @@
+id: '36'
+title: integrate-pr-35-failure-kinds-
+protocol: air
+phase: pr
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-10-25T22:53:09.559Z'
+    approved_at: '2026-10-26T03:26:01.343Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-25T22:35:24.407Z'
+updated_at: '2026-10-26T03:26:01.343Z'
+pr_history:
+  - phase: pr
+    pr_number: 44
+    branch: builder/air-36
+    created_at: '2026-10-25T22:53:00.159Z'
+pr_ready_for_human: false

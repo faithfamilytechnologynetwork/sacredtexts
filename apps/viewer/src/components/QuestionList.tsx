@@ -1,3 +1,4 @@
+import { FAILURE_KIND_LABEL, failureSeverity } from "../lib/failureKind";
 import { type QuestionResult } from "../lib/localResults";
 import { formatMetric } from "../lib/explorer";
 
@@ -48,6 +49,17 @@ export function QuestionList({ results }: { results: QuestionResult[] }) {
         <li key={r.question_id} className="rounded-lg border border-default-200 p-4">
           <div className="flex flex-wrap items-center gap-2 text-xs text-default-500">
             <StatusBadge r={r} />
+            {r.failure && (
+              <span
+                className={
+                  failureSeverity(r.failure) === "major"
+                    ? "rounded border border-danger-300 bg-danger-50 px-2 py-0.5 text-xs font-medium text-danger-800"
+                    : "rounded border border-warning-300 bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning-800"
+                }
+              >
+                {failureSeverity(r.failure)} · {FAILURE_KIND_LABEL[r.failure]}
+              </span>
+            )}
             <span className="font-mono">{r.question_id}</span>
             <span>·</span>
             <span>{r.task}</span>

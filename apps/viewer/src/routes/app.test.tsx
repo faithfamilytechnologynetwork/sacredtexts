@@ -18,10 +18,10 @@ describe("routing", () => {
 });
 
 describe("app shell", () => {
-  it("shows the Sacred Texts brand and no multibrowser nav/GitHub link", async () => {
+  it("shows the SacredBench brand and no multibrowser nav/GitHub link", async () => {
     vi.stubGlobal("fetch", constFetcher("[]")); // empty run index → home resolves to empty state
     renderApp("/");
-    expect(await screen.findByRole("link", { name: /Sacred Texts/i })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /SacredBench/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /traditions on GitHub/i })).toBeNull();
     expect(screen.queryByRole("link", { name: /^Results$/ })).toBeNull();
     expect(screen.queryByRole("link", { name: /^Review$/ })).toBeNull();

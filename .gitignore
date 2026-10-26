@@ -53,3 +53,12 @@ apps/viewer/dist/
 .env
 .env.*
 !.env.example
+
+# Local FAccT manuscript and its PDF (not part of the public repo).
+.papers/
+
+# macOS Finder metadata and a stray LaTeX build log — never committed. (LaTeX build
+# artifacts otherwise live under the ignored .papers/.)
+.DS_Store
+*.DS_Store
+texput.log

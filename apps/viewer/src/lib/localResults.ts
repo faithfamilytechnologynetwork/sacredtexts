@@ -4,6 +4,8 @@
 // roster so a model's un-answered questions ("missing cells") are listable. Deliberately
 // independent of the GitHub data layer — this is the local-only results view.
 
+import { classifyFailure, type FailureKind } from "./failureKind";
+
 export interface Cell {
   n: number;
   accuracy: number | null;
@@ -118,6 +120,8 @@ export interface QuestionResult {
   exact: number | null;
   normalized: number | null;
   token_f1: number | null;
+  /** How an incorrect answer failed, or `addition` on a correct quote that runs past the span. */
+  failure: FailureKind | null;
 }
 
 function isRecord(x: unknown): x is Record<string, unknown> {
@@ -195,7 +199,7 @@ function expectedText(expected: Record<string, unknown>): string {
   for (const k of ["text", "citation", "answer"]) {
     if (typeof expected[k] === "string") return expected[k] as string;
   }
-  return JSON.stringify(expected);
+  return ""; // aligns with the pipeline's expected_text(): no text/citation/answer -> "".
 }
 
 function metricOrNull(metrics: ScoreMetrics | undefined, key: "exact" | "normalized" | "token_f1"): number | null {
@@ -203,22 +207,51 @@ function metricOrNull(metrics: ScoreMetrics | undefined, key: "exact" | "normali
   return typeof v === "number" ? v : null;
 }
 
-function answeredResult(s: ScoreRow | undefined, a: AnswerRow, fallbackTask: string): QuestionResult {
+function numOrNull(metrics: ScoreMetrics | undefined, key: string): number | null {
+  const v = metrics?.[key];
+  return typeof v === "number" ? v : null;
+}
+
+function withFailure(
+  row: Omit<QuestionResult, "failure">,
+  metrics: ScoreMetrics | undefined,
+): QuestionResult {
   return {
-    question_id: a.question_id,
-    model_id: a.model_id,
-    task: s?.task ?? a.task ?? fallbackTask,
-    correct: s?.metrics.correct === 1,
-    missing: false,
-    refused: s?.metrics.outcome === "refused",
-    prompt: a.question.prompt ?? "",
-    answer: a.answer ?? "",
-    expected: expectedText(a.question.expected),
-    tradition: a.question.source?.tradition ?? [],
-    exact: metricOrNull(s?.metrics, "exact"),
-    normalized: metricOrNull(s?.metrics, "normalized"),
-    token_f1: metricOrNull(s?.metrics, "token_f1"),
+    ...row,
+    failure: classifyFailure({
+      task: row.task,
+      correct: row.correct,
+      refused: row.refused,
+      missing: row.missing,
+      answer: row.answer,
+      expected: row.expected,
+      tokenF1: row.token_f1,
+      normalized: row.normalized,
+      containsReference: numOrNull(metrics, "contains_reference"),
+      nCandidates: numOrNull(metrics, "n_candidates"),
+    }),
   };
+}
+
+function answeredResult(s: ScoreRow | undefined, a: AnswerRow, fallbackTask: string): QuestionResult {
+  return withFailure(
+    {
+      question_id: a.question_id,
+      model_id: a.model_id,
+      task: s?.task ?? a.task ?? fallbackTask,
+      correct: s?.metrics.correct === 1,
+      missing: false,
+      refused: s?.metrics.outcome === "refused",
+      prompt: a.question.prompt ?? "",
+      answer: a.answer ?? "",
+      expected: expectedText(a.question.expected),
+      tradition: a.question.source?.tradition ?? [],
+      exact: metricOrNull(s?.metrics, "exact"),
+      normalized: metricOrNull(s?.metrics, "normalized"),
+      token_f1: metricOrNull(s?.metrics, "token_f1"),
+    },
+    s?.metrics,
+  );
 }
 
 function missingResult(model_id: string, q: QuestionRow): QuestionResult {
@@ -236,6 +269,7 @@ function missingResult(model_id: string, q: QuestionRow): QuestionResult {
     exact: null,
     normalized: null,
     token_f1: null,
+    failure: null,
   };
 }
 
@@ -296,6 +330,10 @@ export function joinResults(
         exact: metricOrNull(s.metrics, "exact"),
         normalized: metricOrNull(s.metrics, "normalized"),
         token_f1: metricOrNull(s.metrics, "token_f1"),
+        // No roster means no answer/expected text on this back-compat path, so the script- and
+        // span-based kinds (other_script, omission) are unreachable and a cell could flip
+        // minor<->major vs the pipeline. Leave it unlabeled rather than classify from "".
+        failure: null,
       });
     }
   }

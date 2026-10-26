@@ -1,6 +1,6 @@
 # sacredtexts
 
-**Sacred Texts Benchmark — Phase 1**: can AI models correctly recognize,
+**SacredBench (the Sacred Texts Benchmark) — Phase 1**: can AI models correctly recognize,
 retrieve, and generate sacred texts — with provenance — and reject false
 premises and incorrect texts?
 

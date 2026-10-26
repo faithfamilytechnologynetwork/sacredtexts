@@ -41,9 +41,11 @@ export function LeaderboardTable({ summary, runId }: { summary: Summary; runId: 
     <div className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-2xl font-semibold">Leaderboard</h1>
       <p className="mt-1 text-sm text-default-500">
-        Ranked by overall accuracy (how often a model is right <em>when it answers</em>);{" "}
-        <span className="font-medium">coverage</span> is how often it answers — read the pair
-        together. Local only — from the run's <code>summary.json</code>.
+        Sacred texts from varying traditions. Each row is one model.{" "}
+        <span className="font-medium">Accuracy</span> is how often it is right when it answers.{" "}
+        <span className="font-medium">Coverage</span> is how often it answers. Open a model to see
+        whether a wrong answer stayed on the passage (minor) or replaced it (major). Traditions are
+        listed separately below and are not one score.
       </p>
       {summary.evaluators && summary.evaluators.length > 0 && (
         <p className="mt-1 text-xs text-default-400">
