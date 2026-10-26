@@ -308,6 +308,22 @@ Protocol: ASPIR (strict). Part 2 of 3 of Jonathan Karr's PR #30 (the Jev judge).
 - Stamp `judge_model_resolved` + `rubric_id` into the `jev_agreement.{json,md}` header (derive from the
   judgment rows' consistent build) so the paper-citable artifact is self-describing without a join.
 
+## 2026-10-26 — Review phase: trailer strip + rebase + PR
+- **Trailer strip (human-approved, Waleed via architect)**: message-only `git filter-branch --msg-filter`
+  over merge-base..HEAD stripped `Co-Authored-By: Claude Opus 4.8` from the 10 pre-Phase-1 commits.
+  VERIFIED tree hashes byte-identical before/after (55 commits), 0 trailers remain. `git push
+  --force-with-lease` succeeded (f7fdcfd...1636db1, lease held). Safety tag `pre-rebase-aspir21`.
+- **Rebase onto origin/main (feeba97, #44 merged)**: human-approved. cli.py conflicts resolved
+  (additive — kept main's edition-index/facct/probe/editions/splits commands+imports AND my
+  judge/judge-summary/judge-agreement + merged main()'s error tuple to include JevError+AgreementError).
+  TUTORIAL/README auto-merged. **Full suite 557 passed, 1 skip** (main's ~100 new tests + mine).
+- **#32 producer is now on main** (`edition-index` command). Ran the deferred real-export smoke:
+  produced the real 31,102-row index (corpus_hash 5ae493e7e249575c, excluded_restricted [NABRE,TLG]);
+  my `load_equivalence_index` consumes it cleanly — schema fits VERBATIM, digest/row_count validated,
+  restricted guard passes (no excluded edition reaches the judge), lookup returns the right alternates
+  (ASV/WEB excluding requested KJV). Consumer↔producer compatible.
+- Next: force-push the rebased branch, open the PR, ping architect.
+
 ### PR TODOs (do at PR time)
 - Strip `Co-Authored-By: Claude Opus 4.8` trailers from early spec/plan/thread/rebuttal commits
   (message-only rewrite, tree unchanged, verify git log) JUST before opening the PR.
