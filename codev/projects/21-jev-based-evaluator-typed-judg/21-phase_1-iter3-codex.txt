@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Mixed-build safeguards are fixed, but resume can still reuse a row from a mismatched question set, and negative limits undermine the budget cap.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `_load_existing()` never checks each row’s `question_set_digest` against the manifest. A malformed sidecar row with matching question/model/answer digests but a different question-set digest is treated as complete, violating stale-safe resume. Validate row-level digest presence/equality and add a regression test.
+- `--limit` accepts negative values; `pending[:-1]` judges all but one cell rather than rejecting the input. Validate `limit >= 0` in both estimate/judge or at the CLI boundary, with a test ensuring negative limits make zero API calls.

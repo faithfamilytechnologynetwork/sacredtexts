@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The spec is well structured and feasible, but unresolved data-flow and edition-index decisions make its core equivalence feature and acceptance tests indeterminate.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- **The critical edition-index question must be resolved before planning.** Recommended option (a), using no alternate wordings, cannot satisfy the stated passage-equivalence requirement because `other_indexed_wording` can never occur. Either scope this spec explicitly to containment only or select an index source that makes equivalence functional.
+- **The output contract is internally inconsistent.** Desired State says Jev metrics are merged into score rows, and the existing `graders.py` seam explicitly describes that behavior, while recommended Approach 1 is sidecar-only and says no score merge is built. Specify whether `metric_keys` are sidecar fields or score metrics, name them, and define the authoritative judgment-row schema.
+- **The resumability identity is insufficient.** Keying only on question × model × requested judge model can silently reuse stale judgments when an answer changes, prompts/questions change, or `jev-latest` resolves to a newer build. Bind the artifact to immutable answer identity/content, question-set digest, judge prompt/schema version, and resolved build—or fail fast on mismatches.
+- **Judgment scope is ambiguous.** State whether all four task types are judged or only `retrieve_quote`/`complete_unit`; passage-wording categories are not naturally applicable to `verify_source` and `cite_passage`. Define how skipped/inapplicable cells appear in summaries.
+- **Agreement criteria are not yet testable.** Fix the thresholds and boundary behavior used to turn containment and refusal probabilities into agreement/disagreement classifications. Otherwise “every disagreement cell” is not a stable set.

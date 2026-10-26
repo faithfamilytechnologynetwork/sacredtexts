@@ -14,9 +14,14 @@ Decisions encoded here:
 - `strict` owns ``exact``/``normalized`` (verdict: ``normalized == 1``); `containment` owns
   ``contains_reference`` (verdict: ``contains_reference == 1``). Default = both → the phase-1 headline
   ``normalized OR contains_reference`` and byte-identical metrics.
-- A paid / separate-pass grader (the future Jev judge, issue #21) is expressible as a descriptor with
-  ``inline=False`` and **no verdict callable**: ``score`` never computes it inline; a later resumable
-  pass merges its declared ``metric_keys`` into each row's open metrics map. We do not build it here.
+- A paid / separate-pass grader (the Jev judge, issue #21) is a descriptor with ``inline=False`` and
+  **no verdict callable**: ``score`` never computes it inline; its own resumable pass (``jev.py``)
+  writes its typed verdicts to a **sidecar** beside the run — in this part the sidecar is
+  authoritative and nothing is merged into ``scores.jsonl`` (a per-row merge is a documented
+  follow-up). It is now **registered** as ``jev`` (non-inline, verdict-less, ``default=False``) so
+  the Spec 15 seam / CLI / recipe are coherent — its ``metric_keys`` are the sidecar field names
+  ``matches_requested_p`` / ``refusal_p`` / ``kind``. Selecting it on ``score --evaluator`` fails
+  fast; it is never in the default set.
 """
 
 from __future__ import annotations
@@ -49,9 +54,13 @@ _CANONICAL_ORDER: tuple[str, ...] = ("exact", "normalized", "token_f1", "contain
 GRADERS: dict[str, Grader] = {
     "strict": Grader("strict", ("exact", "normalized"), lambda m: m["normalized"] == 1),
     "containment": Grader("containment", ("contains_reference",), lambda m: m["contains_reference"] == 1),
-    # Example of the separate-pass seam (NOT built here; issue #21). Registered so the shape is
-    # exercisable, non-default, non-inline, verdict-less:
-    # "jev": Grader("jev", ("jev_verdict", "jev_prob"), None, default=False, inline=False),
+    # The paid Jev judge (issue #21): a separate-pass grader, never inline/default. Its metric_keys
+    # are the sidecar field names its own pass (jev.py) WRITES to a sidecar — not canonical
+    # primitives, which is why the inline-key import check below exempts non-inline graders.
+    # Verdict-less: it contributes recorded metrics (in the sidecar), never the deterministic headline.
+    # NB: `kind` is INDEX-CONDITIONAL in the sidecar — a no-index row records `equivalence:
+    # "not_evaluated"` instead — so the deferred merge-into-scores.jsonl pass must treat it as optional.
+    "jev": Grader("jev", ("matches_requested_p", "refusal_p", "kind"), None, default=False, inline=False),
 }
 
 # Fail fast at import: an inline grader may only own fields score.py actually computes
@@ -102,7 +111,8 @@ def resolve_evaluators(raw: list[str] | tuple[str, ...] | None) -> list[Grader]:
         if not g.inline:
             raise GraderError(
                 f"evaluator {name!r} is a separate-pass grader and cannot be run inline by `score`; "
-                "it is merged into scores.jsonl by its own resumable pass"
+                "its verdicts are written to a sidecar by its own resumable pass (`judge`), never into "
+                "scores.jsonl"
             )
         graders.append(g)
     return graders

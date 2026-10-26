@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from sacredbench.jev import RUBRIC_ID, JevError, answer_digest
 from sacredbench.score import (
     ScoreError,
     normalize,
@@ -258,6 +259,140 @@ def test_summary_stamps_evaluators(tmp_path):
     answers.write_text(json.dumps(_answer("retrieve_quote-0", "m1", "retrieve_quote", "x", {"text": "x"}, ["A"])) + "\n")
     summary = score_file(answers, tmp_path / "scores.jsonl")
     assert summary["evaluators"] == ["strict", "containment"]  # default set, provenance-stamped
+
+
+# ---- `score --judgments` provenance opt-in (Spec 21 phase 2) --------------
+
+def _answers_file(tmp_path, digest="d"):
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(
+        json.dumps(_answer("retrieve_quote-0", "m1", "retrieve_quote", "x", {"text": "x"}, ["A"], digest=digest)) + "\n"
+    )
+    return answers
+
+
+def _sidecar_with_manifest(tmp_path, *, resolved="typesafe/jev-1.14-20261014", digest="d",
+                           rubric=RUBRIC_ID, rows=True, adigest=None):
+    """A judgments sidecar + sibling manifest. `rows=True` writes one real verdict row that agrees
+    with the manifest (build + question-set digest) AND with _answers_file's answer "x" (its
+    answer_digest), so `score --judgments` binds; pass `adigest` to force a non-matching answer.
+    `rows=False` leaves the sidecar empty."""
+    sidecar = tmp_path / "judgments.jsonl"
+    if rows:
+        row = {
+            "question_id": "retrieve_quote-0", "model_id": "m1", "model": "jev",
+            "rubric_id": RUBRIC_ID, "judge_model": "jev-latest", "judge_model_resolved": resolved,
+            "question_set_digest": digest,
+            "answer_digest": adigest if adigest is not None else answer_digest("x"),
+            "refusal_p": 0.1, "matches_requested_p": 0.9, "equivalence": "not_evaluated",
+            "usage": {"in": 1, "out": 1, "cost": 1e-5},
+        }
+        sidecar.write_text(json.dumps(row) + "\n")
+    else:
+        sidecar.write_text("")
+    (tmp_path / "judgments.jsonl.manifest.json").write_text(json.dumps({
+        "rubric_id": rubric, "judge_model": "jev-latest", "judge_model_resolved": resolved,
+        "question_set_digest": digest, "index_digest": None,
+    }))
+    return sidecar
+
+
+def test_default_score_has_no_judge_key(tmp_path):
+    # Without --judgments, `score` is unchanged: no `judge` provenance key enters the summary.
+    summary = score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl")
+    assert "judge" not in summary
+
+
+def test_judgments_stamps_resolved_build_in_sibling_key(tmp_path):
+    sidecar = _sidecar_with_manifest(tmp_path)
+    summary = score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+    assert summary["judge"] == {"model_resolved": "typesafe/jev-1.14-20261014", "rubric_id": RUBRIC_ID}
+    # evaluators stays a name list; the judge key adds no cost/usage field to the SUMMARY (the sidecar
+    # row's own usage.cost never reaches it) — mirrors the test_tutorial_run.py:66 guard.
+    assert summary["evaluators"] == ["strict", "containment"]
+    assert "cost" not in json.dumps(summary).lower()
+
+
+def test_judgments_from_different_answers_rejected(tmp_path):
+    # architect PR#47 #2: a sidecar whose rows are for DIFFERENT answers (same question set) must not
+    # stamp provenance. The row's answer_digest does not match _answers_file's answer "x".
+    sidecar = _sidecar_with_manifest(tmp_path, adigest=answer_digest("a completely different answer"))
+    with pytest.raises(JevError, match="does not match any answer being scored"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_empty_sidecar_fails_fast(tmp_path):
+    # A manifest alone is not proof of verdicts: an empty sidecar must NOT stamp a judge build
+    # (codex phase-2 finding — provenance would otherwise claim a pass that produced nothing).
+    sidecar = _sidecar_with_manifest(tmp_path, rows=False)
+    with pytest.raises(JevError, match="no judgments recorded"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_skeletal_row_fails_fast(tmp_path):
+    # codex iter-2: a row carrying ONLY rubric/build/qsd (no question_id/verdict fields) keys as
+    # present but is not a judgment — provenance must not be stamped for it.
+    sidecar = tmp_path / "judgments.jsonl"
+    sidecar.write_text(json.dumps({
+        "rubric_id": RUBRIC_ID, "judge_model_resolved": "typesafe/jev-1.14-20261014",
+        "question_set_digest": "d",
+    }) + "\n")
+    (tmp_path / "judgments.jsonl.manifest.json").write_text(json.dumps({
+        "rubric_id": RUBRIC_ID, "judge_model": "jev-latest",
+        "judge_model_resolved": "typesafe/jev-1.14-20261014", "question_set_digest": "d",
+        "index_digest": None,
+    }))
+    with pytest.raises(JevError, match="not a complete judgment"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_row_missing_verdict_fields_fails_fast(tmp_path):
+    # a row with full identity but no refusal_p/matches_requested_p is still not a judgment
+    sidecar = tmp_path / "judgments.jsonl"
+    sidecar.write_text(json.dumps({
+        "question_id": "retrieve_quote-0", "model_id": "m1", "answer_digest": "a0",
+        "rubric_id": RUBRIC_ID, "judge_model_resolved": "typesafe/jev-1.14-20261014",
+        "question_set_digest": "d",
+    }) + "\n")
+    (tmp_path / "judgments.jsonl.manifest.json").write_text(json.dumps({
+        "rubric_id": RUBRIC_ID, "judge_model": "jev-latest",
+        "judge_model_resolved": "typesafe/jev-1.14-20261014", "question_set_digest": "d",
+        "index_digest": None,
+    }))
+    with pytest.raises(JevError, match="refusal_p"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_row_build_mismatch_fails_fast(tmp_path):
+    # a row whose resolved build disagrees with the manifest is refused (mixed-build sidecar)
+    sidecar = _sidecar_with_manifest(tmp_path)
+    rogue = {"question_id": "retrieve_quote-1", "model_id": "m1", "rubric_id": RUBRIC_ID,
+             "judge_model_resolved": "typesafe/jev-9.9-OTHER", "question_set_digest": "d",
+             "answer_digest": "a1"}
+    with sidecar.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rogue) + "\n")
+    with pytest.raises(JevError, match="no mixed-build files"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_wrong_question_set_fails_fast(tmp_path):
+    # the sidecar manifest's digest must bind to the answers being scored
+    sidecar = _sidecar_with_manifest(tmp_path, digest="other-set")
+    with pytest.raises(JevError, match="different question set"):
+        score_file(_answers_file(tmp_path, digest="d"), tmp_path / "scores.jsonl", judgments=sidecar)
+
+
+def test_judgments_missing_manifest_fails_fast(tmp_path):
+    bare = tmp_path / "bare.jsonl"
+    bare.write_text("")  # no sibling .manifest.json
+    with pytest.raises(JevError, match="no manifest"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=bare)
+
+
+def test_judgments_wrong_rubric_fails_fast(tmp_path):
+    sidecar = _sidecar_with_manifest(tmp_path, rubric="not-the-rubric")
+    with pytest.raises(JevError, match="rubric"):
+        score_file(_answers_file(tmp_path), tmp_path / "scores.jsonl", judgments=sidecar)
 
 
 def test_verify_and_citation_tasks():

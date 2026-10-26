@@ -1,0 +1,53 @@
+I'll review Phase 4 by reading the actual implementation files from disk.Now let me verify the committed state and read the review + tests.Let me independently re-derive the numbers and verify evidence integrity.All review numbers match my independent re-derivation exactly. Now verifying evidence integrity and report reproducibility.Evidence integrity confirmed — only 4 added files, no mutation. Now verifying report reproducibility and the test gate.Verifying the iteration-1 fixes landed and spot-checking the manual-review claims.Let me inspect the 2 Hebrew cells whose low token_f1 (~0.22) doesn't fit either sub-kind named in the review.I verified Phase 4 end-to-end by reading the files and re-deriving every claim from the committed data rather than trusting the write-up.
+
+## Iteration-1 blockers: resolved
+
+**codex's sole REQUEST_CHANGES reason (files untracked / absent from PR scope) is genuinely fixed.** `git ls-files --error-unmatch` confirms all seven Phase-4 artifacts are tracked, committed in `e98233e` ("[Spec 21][Phase 4] feat: Validate the Jev judge on the committed tutorial run"). Working tree is clean for `runs/`, `pipelines/`, `codev/reviews/`. A diff-based reviewer now sees the phase.
+
+**claude's six polish items all landed in code**, not just in the rebuttal:
+- `join_cells` cross-checks `answer_digest` against the joined answer and fails fast (`jev_agreement.py:98–106`), with `test_join_cross_checks_answer_digest` covering both directions.
+- `test_judge_agreement_cli_writes_reports` exercises the command end-to-end via `CliRunner`, asserting both output files.
+- Restricted-text reachability is documented as the transitive guarantee it is (module docstring lines 18–21: judgment-driven join + `jev.py` pre-send guard).
+- The "but recorded" docstring nit is reworded; `judge-agreement` is documented in both `TUTORIAL.md` (runnable recipe) and `CODE_WALKTHROUGH.md`.
+
+## Independent verification
+
+Every number in the review re-derived exactly from `judgments.jsonl` × `scores.jsonl` × `answers.jsonl`:
+
+| Claim | Re-derived |
+|---|---|
+| Containment 93.25% (373/400), 239/27/**0**/134 | exact match |
+| Refusal 97.25% (389/400), 116/**0**/11/273 | exact match |
+| 35 disagreements = 24 cont / 8 ref / 3 both | exact match |
+| Means 0.971 / 0.180 / 0.900 / 0.012; 238, 21, 114 in [0.75,1.0] | exact match |
+| Spend $0.011705 | $0.011705442 |
+
+Also confirmed: all 400 cells are `retrieve_quote`, all `equivalence: "not_evaluated"`, single resolved build across all rows, and **all 400 `answer_digest`s match** `sha256` of the committed answers — the join is provably over the right run.
+
+**Report is byte-reproducible.** Regenerating via the CLI into a tmp dir (not the tree) yields `cmp`-identical JSON *and* markdown against the committed artifacts, and left `runs/` clean.
+
+**Evidence integrity holds.** `git diff <base>...HEAD` over `answers.jsonl`/`scores.jsonl`/`summary.json`/`summary.md`/`questions.jsonl` is empty; the branch's only `runs/` changes are four `A` (added) files. Row schema matches the spec precisely — `index_digest` is **absent** (not null) when no index was used.
+
+**Gates pass**: `.codev/checks/test.sh` → **456 passed, 1 pre-existing skip** (matches the claim); `audit runs/tutorial-2026-10-11` → "copyright audit OK — origin only".
+
+**Manual-review categorization is accurate.** The 11 refusal cells are all `*-search` arms (opus-search 10, haiku-search 1) — the claim checks out. I chased the two Hebrew cells at `token_f1` ≈ 0.22 that didn't fit category 1's sub-kinds; they're the both-axes cells at `matches_requested_p` 0.63/0.93 — exactly the range category 2 states — and reading them, the judge is *correct* (the second genuinely delivers the passage with `ת"ל` abbreviated). The "none is a judge error" claim survives scrutiny.
+
+## Non-blocking notes
+
+1. `jev_agreement.json/md` carry no judge-build provenance (keys are `n_cells`, `threshold`, `containment`, `refusal`, `disagreements`). Not a spec violation — the spec requires the build in rows, sidecar manifest, and `score --evaluator` provenance, and all three hold — but for a paper-citable artifact, stamping `judge_model_resolved` + `rubric_id` into the report header would make it self-describing without a join.
+2. Review nit: category 1 says "27 cells, all judge-only" with two sub-kinds (Arabic, English), but 2 of those 27 are the Hebrew both-axes cells discussed under category 2 — narrative overlap only; the stated per-axis counts (27 / 11) are exact.
+3. Review nit: "English archaic spelling … `token_f1` 0.86–0.98" — the two Latin-script cells I measure are both 0.98. Cosmetic.
+
+I did not modify, create, or revert anything in the tree; the report regeneration went to a temp directory and the byte-comparison was read-only.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 4 is complete and independently verified — every numeric claim re-derived exactly from committed data, report byte-reproducible, committed evidence provably untouched, 456-test gate and audit pass, and both iteration-1 blockers (untracked files, missing digest cross-check/CLI test) are genuinely fixed.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- (Minor) Agreement report carries no `judge_model_resolved`/`rubric_id` header — spec-satisfied elsewhere, but would make the paper-citable artifact self-describing.
+- (Minor) Review prose: category 1's "27 cells, two sub-kinds" overlaps the 2 Hebrew both-axes cells covered in category 2; stated per-axis counts are exact.
+- (Minor) Review prose: English near-miss `token_f1` stated as 0.86–0.98; both Latin-script cells measure 0.98.

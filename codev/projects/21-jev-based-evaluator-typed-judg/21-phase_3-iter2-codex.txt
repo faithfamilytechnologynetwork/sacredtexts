@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 3 is largely complete, but the questions-to-answers binding still permits an unverifiable manifest.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `pipelines/sacredbench/cli.py:69-74` only compares `question_set_digest` when the questions manifest contains one. If it is missing, `_run_corpus_hash()` accepts the manifest despite receiving an answers digest, allowing a mis-pointed or malformed `--questions` manifest to supply the index-binding `corpus_hash`. Require the manifest digest to be present and equal whenever `answers_digest` is provided, and add a missing-digest test.

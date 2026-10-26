@@ -31,6 +31,8 @@ from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
 from sacredbench.probes import format_probe, probe_run
 from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
+from sacredbench.jev import JevError
+from sacredbench.jev_agreement import AgreementError
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -49,6 +51,43 @@ def _require_catalogue(raw_root: Path) -> list[cat.Source]:
             f"{e} — the license gate needs the source catalogue. Run from the repo "
             f"root or pass --raw-root pointing at texts/raw."
         ) from e
+
+
+def _run_corpus_hash(questions: Path, *, answers_digest: str | None = None) -> str:
+    """The run's ``corpus_hash`` from the questions manifest (``<questions>.manifest.json``) — the
+    defined source for binding an equivalence index to this run. Fails loudly if the manifest or the
+    field is absent (answer rows do not carry corpus_hash, so this must be located explicitly).
+
+    When ``answers_digest`` is given, the manifest's ``question_set_digest`` must equal it — so a
+    mis-pointed ``--questions`` (a different run's questions file) cannot silently supply the wrong
+    ``corpus_hash``."""
+    mpath = Path(str(questions) + ".manifest.json")
+    if not mpath.exists():
+        raise typer.BadParameter(
+            f"no run manifest {mpath}; --questions must point at a questions.jsonl that has its manifest"
+        )
+    try:
+        data = json.loads(mpath.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(f"{mpath} is not valid JSON ({exc})")
+    corpus = data.get("corpus_hash")
+    if not corpus:
+        raise typer.BadParameter(f"{mpath}: no corpus_hash in the run manifest")
+    qsd = data.get("question_set_digest")
+    if answers_digest is not None:
+        # the binding must not be silently skippable on the manifest side either: with an answers
+        # digest to bind to, the manifest MUST carry a question_set_digest, and it must match.
+        if not qsd:
+            raise typer.BadParameter(
+                f"{mpath}: no question_set_digest; cannot confirm --questions describes these answers "
+                "(its corpus_hash would be used unverified) — point --questions at this run's manifest"
+            )
+        if qsd != answers_digest:
+            raise typer.BadParameter(
+                f"{mpath}: question_set_digest {qsd!r} != the answers' {answers_digest!r}; --questions "
+                "points at a different run — its corpus_hash would not describe these answers"
+            )
+    return corpus
 
 
 @app.command()
@@ -312,6 +351,12 @@ def score(
              "(default: the deterministic set strict,containment; unknown names fail fast; "
              "paid/separate-pass graders are never default and cannot run here).",
     ),
+    judgments: Path = typer.Option(
+        None, "--judgments",
+        help="a Jev judgments sidecar (from `judge`) whose resolved build is recorded in the summary's "
+             "`judge` provenance key (explicit opt-in; the headline stays deterministic and this never "
+             "reads an adjacent sidecar on its own). Its manifest must bind to these answers.",
+    ),
 ) -> None:
     """Score all answers and write the per-model summary. Graders are selectable via --evaluator."""
     from .graders import GraderError, resolve_evaluators
@@ -375,9 +420,9 @@ def score(
                            "price_in": m.price_in, "price_out": m.price_out}
         summary = score_file(answers, scores_out, expected, expected_tradition, panel,
                              expected_digest=gen.question_set_digest(qs), evaluators=evaluator or None,
-                             expected_text=expected_text)
+                             expected_text=expected_text, judgments=judgments)
     else:
-        summary = score_file(answers, scores_out, evaluators=evaluator or None)
+        summary = score_file(answers, scores_out, evaluators=evaluator or None, judgments=judgments)
     summary_out.parent.mkdir(parents=True, exist_ok=True)
     with open(summary_out, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=1)
@@ -571,13 +616,149 @@ def editions(
     typer.echo(format_editions(edition_run(raw_root)))
 
 
+@app.command()
+def judge(
+    answers: Path = typer.Argument(help="answers.jsonl from `collect`"),
+    out: Path = typer.Option(Path("runs/judgments.jsonl"), help="sidecar judgments file (resumable)"),
+    model: str = typer.Option(None, help="Decisions model id (default: the floating jev-latest alias)"),
+    concurrency: int = typer.Option(4, help="parallel decision calls"),
+    limit: int = typer.Option(None, help="cap cells judged this invocation (budget guard)"),
+    raw_root: Path = typer.Option(Path("texts/raw"), help="catalogue root for the restricted-target guard"),
+    equivalence_index: Path = typer.Option(
+        None, "--equivalence-index",
+        help="#32 equivalence index (JSONL + .manifest.json); turns ON the passage-equivalence "
+             "question. Requires --questions (for the run corpus_hash). Without it, equivalence is "
+             "recorded as 'not_evaluated'.",
+    ),
+    questions: Path = typer.Option(
+        None, "--questions",
+        help="questions.jsonl whose sibling .manifest.json supplies the run corpus_hash; REQUIRED "
+             "with --equivalence-index (answer rows carry no corpus_hash — never co-location-guess it).",
+    ),
+    yes: bool = typer.Option(False, "--yes", help="skip the pre-flight confirmation and judge now"),
+) -> None:
+    """Jev judgments (PAID, Decisions API) for already-collected answers → a sidecar. Never rescoring.
+
+    Prints a pre-flight estimate and stops unless --yes is given, so a live pass cannot start
+    unseen. Judges only text-retrieval cells; skips restricted-source cells before any send.
+    """
+    from sacredbench import jev
+
+    jev_model = model or jev.JEV_MODEL
+    if not answers.exists():
+        raise typer.BadParameter(f"input path not found: {answers} — run `collect` first")
+    try:
+        rows = [json.loads(line) for line in answers.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(f"{answers} is not valid JSONL ({exc}) — regenerate with `collect`")
+    sources = _require_catalogue(raw_root)
+    restricted = frozenset(aud.restricted_keys(sources))
+
+    # Equivalence index (off unless supplied). Its corpus_hash must bind to the run's, which lives
+    # only in the questions manifest — located by the explicit --questions option, never by guessing.
+    index = None
+    index_digest = None
+    if equivalence_index is not None:
+        if questions is None:
+            raise typer.BadParameter(
+                "--equivalence-index requires --questions (the run corpus_hash lives in "
+                "questions.jsonl.manifest.json; answer rows do not carry it)"
+            )
+        # the answers' own question-set digest binds --questions to THIS run (a mis-pointed
+        # --questions would otherwise silently supply another run's corpus_hash). The binding only
+        # works if the answers carry exactly one non-empty digest — require it, so the check can
+        # never be silently skipped on the answers side.
+        ans_digests = {r.get("question_set_digest") for r in rows}
+        if len(ans_digests) != 1 or not next(iter(ans_digests)):
+            raise typer.BadParameter(
+                "--equivalence-index needs answers with a single non-empty question_set_digest to bind "
+                "the index to this run; these answers carry none or mix several — re-collect to a "
+                "coherent set before judging with an index"
+            )
+        run_corpus_hash = _run_corpus_hash(questions, answers_digest=next(iter(ans_digests)))
+        index = jev.load_equivalence_index(equivalence_index, run_corpus_hash=run_corpus_hash,
+                                           restricted_keys=restricted)
+        index_digest = index.digest
+    elif questions is not None:
+        raise typer.BadParameter("--questions is only used together with --equivalence-index")
+
+    # JevError (bad/absent manifest, build conflict, …) bubbles to main() for a clean message.
+    est = jev.estimate(rows, out, restricted_keys=restricted, limit=limit, index_digest=index_digest)
+    typer.echo(
+        f"pre-flight: {est['pending']} cell(s) to judge with {jev_model} "
+        f"(~${est['estimated_usd']:.4f}); {est['already_judged']} already judged, "
+        f"{est['skipped_task']} non-text-retrieval skipped, "
+        f"{est['skipped_restricted']} restricted-source skipped"
+    )
+    if est["pending"] == 0:
+        typer.echo("nothing to judge.")
+        return
+    if not yes:
+        typer.secho("PAID live pass — re-run with --yes to proceed.", fg="yellow")
+        raise typer.Exit(2)
+
+    done, failed, messages = jev.judge(
+        rows, out, index=index, model=jev_model, concurrency=concurrency, limit=limit,
+        restricted_keys=restricted, index_digest=index_digest,
+    )
+    summary = jev.summarize(out)
+    typer.echo(f"judged {done} -> {out}; file has {summary['n']} row(s) {summary['kinds']}")
+    typer.echo(f"total Jev spend this file: ${summary['total_cost_usd']:.6f}")
+    if summary["judge_models"]:
+        typer.echo("resolved judge model(s): " + ", ".join(summary["judge_models"]))
+    if failed:
+        typer.secho(f"{failed} cell(s) FAILED (still pending; re-run to retry):", fg="red", err=True)
+        for msg in messages:
+            typer.secho(f"  {msg}", fg="red", err=True)
+        raise typer.Exit(1)
+
+
+@app.command("judge-summary")
+def judge_summary(
+    out: Path = typer.Argument(help="a judgments sidecar written by `judge`"),
+) -> None:
+    """Counts + resolved build(s) over a finished sidecar. No network, no calls."""
+    from sacredbench import jev
+
+    if not out.exists():
+        raise typer.BadParameter(f"sidecar not found: {out} — run `judge` first")
+    s = jev.summarize(out)
+    typer.echo(json.dumps(s, ensure_ascii=False, indent=1))
+
+
+@app.command("judge-agreement")
+def judge_agreement(
+    answers: Path = typer.Argument(help="answers.jsonl from `collect`"),
+    scores: Path = typer.Argument(help="scores.jsonl from `score`"),
+    judgments: Path = typer.Argument(help="judgments sidecar from `judge`"),
+    json_out: Path = typer.Option(None, help="write the JSON report here"),
+    md_out: Path = typer.Option(None, help="write the markdown report here"),
+) -> None:
+    """Agreement report: Jev verdicts vs the deterministic tiers (containment / refusal). Read-only —
+    never re-scores or mutates the run. Prints the markdown; also writes JSON/markdown when asked."""
+    from sacredbench import jev_agreement as agr
+
+    for p in (answers, scores, judgments):
+        if not p.exists():
+            raise typer.BadParameter(f"input path not found: {p}")
+    report = agr.agreement(agr.load(answers, scores, judgments))
+    md = agr.render_markdown(report)
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    if md_out is not None:
+        md_out.parent.mkdir(parents=True, exist_ok=True)
+        md_out.write_text(md, encoding="utf-8")
+    typer.echo(md)
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
         gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
-        FacctError,
+        FacctError, JevError, AgreementError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

@@ -1,0 +1,151 @@
+id: '21'
+title: jev-based-evaluator-typed-judg
+protocol: aspir
+phase: review
+plan_phases:
+  - id: phase_1
+    title: Jev judge pass and CLI
+    status: complete
+  - id: phase_2
+    title: Grader seam registration and evaluator provenance
+    status: complete
+  - id: phase_3
+    title: Equivalence-index consumer
+    status: complete
+  - id: phase_4
+    title: Validation on the committed tutorial run
+    status: complete
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-10-26T03:56:14.565Z'
+    approved_at: '2026-10-26T04:58:25.302Z'
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: true
+history:
+  - iteration: 1
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter2-claude.txt
+  - iteration: 3
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter3-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_1-iter3-claude.txt
+  - iteration: 1
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_2-iter1-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_2-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_2-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_2-iter2-claude.txt
+  - iteration: 1
+    plan_phase: phase_3
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_3
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_3-iter2-claude.txt
+  - iteration: 1
+    plan_phase: phase_4
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_4-iter1-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-21/codev/projects/21-jev-based-evaluator-typed-judg/21-phase_4-iter1-claude.txt
+started_at: '2026-10-23T23:35:10.141Z'
+updated_at: '2026-10-26T04:58:25.302Z'
+force_advanced:
+  phase: phase_1
+  iteration: 3
+  max_iterations: 3
+  rebuttal_file: 21-phase_1-iter3-rebuttals.md
+  at: '2026-10-25T22:43:22.046Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-10-25T22:43:23.988Z'
+    acknowledged_at: '2026-10-25T22:44:52.289Z'
+  - boundary: plan-phase:phase_3
+    at: '2026-10-25T23:09:10.137Z'
+    acknowledged_at: '2026-10-25T23:11:47.070Z'
+  - boundary: plan-phase:phase_4
+    at: '2026-10-25T23:37:24.207Z'
+    acknowledged_at: '2026-10-25T23:38:24.871Z'
+  - boundary: enter:review
+    at: '2026-10-25T23:59:00.782Z'
+    acknowledged_at: '2026-10-25T23:59:41.912Z'
+pr_history:
+  - phase: review
+    pr_number: 47
+    branch: builder/aspir-21
+    created_at: '2026-10-26T03:37:30.744Z'
+pr_ready_for_human: false

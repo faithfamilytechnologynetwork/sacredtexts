@@ -1,0 +1,37 @@
+I'll start by reading the key implementation files for phase 2.I've read the implementation files, run the suite, and cross-checked the iteration-1 disputes against the code.
+
+## Verification of iteration-1 blocking items
+
+**codex #1 — false provenance on an empty/absent sidecar: genuinely fixed.** `jev.py:559-606` now, after the manifest checks, (a) requires `judgments.exists()`, (b) delegates row validation to `_load_existing(path, pinned_build=resolved, pinned_qsd=question_set_digest)` — the same guard the resume path uses, so a build-less, build-mismatched, or set-mismatched row fails fast — and (c) requires a non-empty key set ("no judgments recorded"). Covered by `test_judgments_empty_sidecar_fails_fast` and `test_judgments_row_build_mismatch_fails_fast`. The reuse also removes most of the duplication claude #3 flagged; the remaining `_load_manifest` divergence (it binds `index_digest`, a resume concern) is a sound reason to keep them separate.
+
+**codex #2 / claude #1 — "merges into scores.jsonl" wording: fixed everywhere I could find it.** `graders.py` module docstring (lines 17-24), the `jev` registration comment (57-60), the `resolve_evaluators` error text (109-114, `separate-pass` token retained for the CLI tests), and `CODE_WALKTHROUGH.md`. The walkthrough's new Jev section is accurate against the code: `--out` flag, `<out>.manifest.json` sibling, `score --judgments` validating manifest *and* rows, `summary["judge"]` shape.
+
+**Line pointers** (`graders.py:54/38/93/119/42`, `score.py:125`) are now exact, not just in-range.
+
+## Phase-2 deliverables
+
+All present and correct: non-inline/verdict-less/`default=False` `jev` registration with sidecar-consistent keys; absent from `DEFAULT_EVALUATORS`; `score --evaluator jev` fails fast (unit + CLI test); `test_graders.py` fixture no longer `del`etes the real entry, plus an explicit `test_jev_registration_survives_this_module` guard; `score --judgments` is a strict opt-in validated **before** `scores.jsonl` is opened (`score.py:444-452`, so no half-written side effect); `summary["judge"]` is a sibling key, `evaluators` stays `list[str]`, no cost field. `425 passed, 1 skipped` via the pipelines lane.
+
+I also checked the viewer, which neither review covered: `apps/viewer/src/lib/localResults.ts:160-173` whitelists summary keys and drops unknowns, so the new `judge` key cannot break the leaderboard/standings parse. Committed run evidence is untouched (`git status` shows no `runs/**` change).
+
+## Non-blocking observations
+
+1. **`test_separate_pass_metric_merge_path` is now vacuous.** With the fake-grader fixture removed, it asserts `dict.update()` works and never touches `GRADERS["jev"].metric_keys` — so it cannot catch drift between the registration and the sidecar schema, and it documents a merge path the spec explicitly defers. Drive it from `GRADERS["jev"].metric_keys` or delete it.
+2. **Malformed-manifest asymmetry.** `load_provenance` and `_load_manifest` call `json.loads` bare, so a truncated `.manifest.json` surfaces a raw `JSONDecodeError`, while `_load_existing`/`summarize` deliberately wrap JSON errors in `JevError`. A one-line wrap would make the fail-fast path uniform.
+3. **`metric_keys` includes `kind`, but a no-index row writes `equivalence: "not_evaluated"` instead.** Harmless now (nothing consumes a non-inline grader's keys), but a future merge pass must handle the sentinel.
+4. **CLI error surface:** a bad `--judgments` propagates `JevError` as a traceback, whereas `--evaluator` gets `typer.BadParameter`. Consistent with the existing `ScoreError` raises in the same command, so I'd leave it — just noting the inconsistency.
+5. The plan's "summary equal modulo `generated_at`" check isn't a dedicated test; it's effectively covered by the two byte-identity re-score regressions plus `test_default_score_has_no_judge_key`. Adequate.
+
+I declined to mutate anything in the worktree; the vacuity judgment in (1) is from reading the test, not from deleting the registration.
+
+---
+VERDICT: APPROVE
+SUMMARY: Both iteration-1 blockers are genuinely fixed in code and tests; phase-2 deliverables are complete, the seam is coherent, and the summary addition is viewer-safe — only test-hygiene and error-wrapping nits remain.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- (minor) `test_separate_pass_metric_merge_path` is vacuous post-fixture-removal — tie it to `GRADERS["jev"].metric_keys` or drop it.
+- (minor) `load_provenance`/`_load_manifest` raise raw `JSONDecodeError` on a malformed manifest while the rest of `jev.py` wraps JSON errors in `JevError`.
+- (minor) `jev.metric_keys` declares `kind`, which a no-index sidecar row never carries (it writes `equivalence: "not_evaluated"`) — note for the deferred merge pass.

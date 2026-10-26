@@ -1,0 +1,25 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core design is strong, but index integrity and typed-response validation gaps can produce incorrectly attributed or malformed judgments.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- **Equivalence-index digest is trusted but never verified** (`pipelines/sacredbench/jev.py:628-685`). The producer defines `digest` as `sha256(index bytes)[:16]`, yet the consumer merely copies the manifest value. If index contents change without a matching manifest update, resume accepts the old identity, skips earlier cells, and appends judgments based on new wordings under the old digest—creating the mixed-index sidecar the implementation claims to prevent. Recompute and compare the digest before loading rows, with a regression test for modified JSONL plus unchanged manifest.
+- **Choice output is not fully type-validated** (`jev.py:195-208`). `kind_probabilities` may contain missing labels, strings, booleans, or out-of-range values, while `kind_confidence` accepts any numeric value, including values outside `[0,1]`. These malformed values are written into the authoritative typed sidecar despite the fail-loud contract. Validate probability keys/values and confidence bounds; also reject negative cost/token usage.
+- **Agreement reports are not reliably self-verifying** (`pipelines/sacredbench/jev_agreement.py:74-127`). A judgment with no matching answer or no `answer_digest` is accepted, producing blank manual-review context and bypassing answer binding. This conflicts with `CODE_WALKTHROUGH.md`’s self-verifying claim. Require a matching answer and authoritative digest for every judgment; duplicate join keys should also fail rather than silently overwrite.
+- The review document’s test result is stale: it says **456 passed**, while the PR reports **557 passed**. Update the final review record and remove resolved follow-ups about rebasing and Co-Authored-By trailers.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds Jev as an explicit, paid, resumable separate-pass diagnostic grader. It records containment, refusal, and optional passage-equivalence judgments in a sidecar without changing deterministic scores or headlines.
+
+  ## Key Changes
+  - Adds `judge`, `judge-summary`, and `judge-agreement` commands with resumability, cost reporting, and restricted-source guards.
+  - Registers Jev as a non-inline, non-default grader and adds explicit judgment provenance.
+  - Consumes the edition-equivalence index and commits tutorial-run validation evidence.
+
+  ## Test Plan
+  - Run `.codev/checks/test.sh`.
+  - Verify a modified index with an unchanged manifest is rejected.
+  - Verify malformed choice probabilities/confidence are rejected without writing a row.
+  - Verify agreement generation rejects missing answers, digests, and duplicate join keys.

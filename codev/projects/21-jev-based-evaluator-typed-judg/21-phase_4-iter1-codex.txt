@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 4 deliverables exist locally but are untracked and absent from the canonical PR scope, so this phase would not ship.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Required Phase 4 files are untracked and missing from the supplied canonical file list: `jev_agreement.py`, its tests, tutorial judgments/manifest, agreement reports, and the review document. The Phase 4 `cli.py` changes are also uncommitted. Add these files explicitly and refresh the review scope before approval; otherwise the agreement implementation, validation evidence, test coverage, and manual review are absent from the PR.

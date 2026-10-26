@@ -240,17 +240,42 @@ would register them in `_SUBMETRICS` (`pipelines/sacredbench/score.py:125`), cur
 #### Adding an evaluator (a named grader)
 
 Graders decide correct-vs-incorrect for the text-retrieval tasks and are selectable by name on
-`score --evaluator`. Register one in `GRADERS` (`pipelines/sacredbench/graders.py:49`) as a `Grader`
-(`pipelines/sacredbench/graders.py:33`): its `name`, the `metric_keys` it owns (only the canonical
+`score --evaluator`. Register one in `GRADERS` (`pipelines/sacredbench/graders.py:54`) as a `Grader`
+(`pipelines/sacredbench/graders.py:38`): its `name`, the `metric_keys` it owns (only the canonical
 primitives `score.py` computes — enforced at import, so a stray key fails loudly), and a
-`verdict(metrics) -> bool`. `resolve_evaluators` (`pipelines/sacredbench/graders.py:86`) and
-`submetrics_for` (`pipelines/sacredbench/graders.py:111`) pick it up and the headline becomes the OR
-of the selected verdicts. **`Grader.default` defaults to `True`** (`pipelines/sacredbench/graders.py:37`)
+`verdict(metrics) -> bool`. `resolve_evaluators` (`pipelines/sacredbench/graders.py:93`) and
+`submetrics_for` (`pipelines/sacredbench/graders.py:119`) pick it up and the headline becomes the OR
+of the selected verdicts. **`Grader.default` defaults to `True`** (`pipelines/sacredbench/graders.py:42`)
 — a new inline grader joins the default headline (and reshapes committed `scores.jsonl`) unless you
-pass `default=False`. A paid / separate-pass grader (the future Jev judge, issue #21) is a descriptor
+pass `default=False`. A paid / separate-pass grader (the Jev judge, issue #21) is a descriptor
 with `inline=False` and **no verdict callable** — `score` never runs it inline; its own resumable pass
-merges its `metric_keys`. Do not make refusal a grader; it is an outcome that short-circuits whichever
-graders run.
+writes its verdicts to a sidecar (the sidecar is authoritative in this part — nothing is merged into
+`scores.jsonl`; a per-row merge is a documented follow-up). Do not make refusal a grader; it is an
+outcome that short-circuits whichever graders run.
+
+**The Jev evaluator (a worked example of the separate-pass seam).** Jev is a paid judge over an
+*already-collected* answers file, not part of `score`. It is registered in `GRADERS`
+(`pipelines/sacredbench/graders.py`) as `Grader("jev", ("matches_requested_p", "refusal_p", "kind"),
+None, default=False, inline=False)` — **verdict-less, non-inline, non-default**, with its `metric_keys`
+being the sidecar field names its pass writes (not canonical primitives; the import-time key check
+exempts non-inline graders). Because `inline=False`, `score --evaluator jev` **fails fast** and `jev`
+is absent from `DEFAULT_EVALUATORS`, so it can never reshape the deterministic headline. The pass
+itself lives in `pipelines/sacredbench/jev.py`, invoked by `sacredbench judge <answers.jsonl> --out
+<sidecar>`: it calls the Decisions API (`OPENROUTER_API_KEY`), writes a resumable **sidecar**
+(`<out>.jsonl` + a sibling `<out>.jsonl.manifest.json` pinning the resolved judge build, `rubric_id`,
+and question-set digest), and never touches `scores.jsonl`. To record *which* judge build produced a
+run's verdicts, `score --judgments <sidecar>` is an **explicit opt-in**: it validates the sidecar
+manifest **and its rows** bind to these answers (same rubric, resolved build, and question-set digest,
+with at least one recorded verdict) and stamps `summary["judge"] = {"model_resolved": …, "rubric_id": …}`
+beside `summary["evaluators"]` (default `score` never reads an adjacent sidecar, so a re-score stays
+reproducible; no cost/usage field enters the summary).
+
+To quantify how the judge agrees with the deterministic tiers, `pipelines/sacredbench/jev_agreement.py`
+(the `judge-agreement` CLI command) joins answers × scores × judgments on `(question_id, model_id)` —
+self-verifying via each row's `answer_digest` — and reports containment/refusal confusion at p ≥ 0.5,
+the raw per-deterministic-class probability distribution, and the exhaustive disagreement set. It is
+read-only (never re-scores); its `jev_agreement.{json,md}` output is new sidecar evidence. See the Jev plan/spec (`codev/plans/21-*.md`)
+for the full contract.
 
 ### 4. Know the matching backbone — `_SUBMETRICS` / `normalize`
 
