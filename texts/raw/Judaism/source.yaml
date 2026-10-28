@@ -1,17 +1,16 @@
 # Source catalogue for the Judaism corpus.
-# The Babylonian Talmud (Sefaria William Davidson Edition), dozens of tractate
-# shards in English (en) and Aramaic (he) under "Talmud Bavli/" (some English
-# tractates live in the "Talmud - English Translation (Davidson)/" subdirectory,
-# hence the recursive glob). Converter: sefaria_talmud (Phase 3) — it strips HTML
-# markup, applies the 2a daf offset, and skips the empty leading sections.
+# The Babylonian Talmud (Sefaria William Davidson Edition), one tractate shard
+# per language, English (en) and Aramaic (he), flat under "Talmud Bavli/".
+# Converter: sefaria_talmud (Phase 3) — it strips HTML markup, applies the 2a
+# daf offset, and skips the empty leading sections.
 #
 # Split into two language targets so each stays one (work, version, language)
 # unit and the English-only first run can select by path.
 source_url: https://www.sefaria.org/
 provenance:
   retrieved_from: https://www.sefaria.org/ (William Davidson Edition text export, JSON per tractate/language)
-  fetch_method: working-group Box drop ("Phase I / raw JSON")
-  fetch_date: "2026-10-10"
+  fetch_method: working-group Box drop ("Phase I / raw JSON"); refreshed 2026-10-28 from the working-group drop "Talmud (WD ed - he en) SacredTextsBench.zip" (adds Meilah/Niddah/Tamid en+he, one-line Berakhot-en correction at 8b, flattens the former English subdirectory, drops the Vocalized-Aramaic Shevuot variant)
+  fetch_date: "2026-10-28"
 notes: >-
   William Davidson Edition (Koren Noe / Steinsaltz). Internal license CC-BY-NC,
   recorded in license_detail and mapped to the "open" enum.
@@ -27,8 +26,10 @@ targets:
     license_detail: CC-BY-NC — Sefaria, William Davidson Edition (Koren Noe / Steinsaltz)
     requested_as: ["the Talmud", "the Babylonian Talmud", "the Talmud Bavli", "the Gemara"]
     canonical_language: he
-  # Canonical Aramaic only — exclude the one "Vocalized Aramaic" Shevuot variant,
-  # which is a different edition (would collide with the standard Shevuot).
+  # Pin the edition name in the glob: canonical Aramaic only. The one
+  # "Vocalized Aramaic" Shevuot file is kept OUT of the corpus by this glob —
+  # it is retained purely as real-data fixture for the normalization tests
+  # (pipelines/tests/test_normalize_nonlatin.py).
   - payload: Talmud Bavli/**/*- he - William Davidson Edition - Aramaic.json
     converter: sefaria_talmud
     work: Talmud Bavli

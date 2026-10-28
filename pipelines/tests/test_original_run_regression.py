@@ -10,8 +10,11 @@ generator guard (`test_first_run_regression.py`). Two invariants:
   leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit` over 1,428 real answers.
 - **Generation invariance (skips if `texts/standardized/` is absent, i.e. in a fresh clone /
   CI where the rebuilt corpus is gitignored):** regenerating the question set from the committed
-  manifest's own inputs/seed/per_text/negatives_share reproduces the pinned question-set digest
-  `de65959a99dea9b3`. This is what Phase 2's retirement note promised was "digest-pinned here".
+  manifest's own inputs/seed/per_text/negatives_share reproduces a pinned question-set digest.
+  The pin is anchored to the CURRENT corpus (``ANCHOR_CORPUS_HASH``/``ANCHOR_DIGEST`` below):
+  while the corpus stood at the run's own ``corpus_hash`` this reproduced the run's digest
+  `de65959a99dea9b3` (what Phase 2's retirement note promised was "digest-pinned here"); each
+  sanctioned corpus update re-pins the anchor pair.
 
 Both write only to tmp paths; neither touches the committed evidence.
 """
@@ -32,6 +35,16 @@ from sacredbench.score import _citation_candidates, score_file
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUN = REPO_ROOT / "runs" / "original-2026-10-21"
 PINNED_DIGEST = "de65959a99dea9b3"
+
+# Generation-invariance anchor over the CURRENT corpus. The committed run reproduced its own
+# digest while the corpus stood at its manifest's corpus_hash (5ae493e7e249575c); a sanctioned
+# corpus update legitimately moves both values (2026-10-28: Talmud WD refresh — Meilah/Niddah/
+# Tamid added, one-line Berakhot-en correction). On such an update, re-pin BOTH constants from
+# a fresh `generate` with the run manifest's params and rebuild the committed FAccT card
+# (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves).
+# Never loosen these assertions and never touch the committed run evidence itself.
+ANCHOR_CORPUS_HASH = "e6e375220d270943"  # texts/ as of 2026-10-28 (Talmud WD refresh)
+ANCHOR_DIGEST = "1da74d96d15286ae"  # generate over that corpus with the run's params
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer
 # that yields ZERO citation candidates was hand-surveyed: a first-person inability to cite
@@ -88,7 +101,12 @@ def test_cite_passage_decline_survey_is_pinned():
 
 
 def test_regenerating_original_run_reproduces_digest(tmp_path, monkeypatch):
-    """Regenerate from the committed manifest's own params and match the pinned digest."""
+    """Regenerate with the committed manifest's own params and match the anchor digest.
+
+    The anchor is the current corpus (ANCHOR_CORPUS_HASH/ANCHOR_DIGEST above), not the
+    committed run's own corpus state: generator-code drift still trips the digest assert,
+    while a deliberate corpus update trips the corpus-hash assert and demands a re-pin.
+    """
     manifest_path = RUN / "questions.jsonl.manifest.json"
     standardized = REPO_ROOT / "texts" / "standardized"
     if not manifest_path.exists() or not standardized.exists():
@@ -115,5 +133,12 @@ def test_regenerating_original_run_reproduces_digest(tmp_path, monkeypatch):
     regenerated = json.loads(
         (tmp_path / "questions.jsonl.manifest.json").read_text(encoding="utf-8")
     )
-    assert regenerated["question_set_digest"] == PINNED_DIGEST
-    assert regenerated["corpus_hash"] == m["corpus_hash"]
+    assert regenerated["corpus_hash"] == ANCHOR_CORPUS_HASH, (
+        "the corpus moved — if this was a sanctioned texts/ update, re-pin "
+        "ANCHOR_CORPUS_HASH and ANCHOR_DIGEST (see the comment at the anchors) "
+        "and rebuild the committed FAccT card; otherwise find what changed texts/"
+    )
+    assert regenerated["question_set_digest"] == ANCHOR_DIGEST, (
+        "generate produced a different question set for a fixed corpus + params — "
+        "generator-code drift; this must be deliberate and re-pinned"
+    )

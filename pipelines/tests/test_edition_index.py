@@ -348,17 +348,28 @@ def test_real_catalogue_indexes_bibles_and_excludes_restricted():
     assert all(d.work != "Papal Encyclicals" for d in indexed)
 
 
-def test_real_catalogue_export_corpus_hash_equals_run_manifest():
-    # BLOCKING 1: the export manifest's corpus_hash must equal the run manifest's, so #21's consumer
-    # (fail unless index corpus_hash == run corpus_hash) passes when the corpus is the same.
+def test_real_catalogue_export_corpus_hash_equals_generate_hash_over_standardized():
+    # BLOCKING 1: the export manifest's corpus_hash must be directly comparable to a run manifest's,
+    # so #21's consumer (fail unless index corpus_hash == run corpus_hash) passes when the corpus is
+    # the same. A run manifest hashes docs loaded from texts/standardized/ (the generate path); the
+    # export hashes docs converted on the fly from texts/raw/. Assert the two producers agree over
+    # the LIVE tree — the invariant that holds across corpus updates (pinning the committed run's
+    # own corpus_hash here would freeze the corpus at that run forever; it legitimately moved with
+    # the 2026-10-28 Talmud refresh).
     raw = REPO_ROOT / "texts" / "raw"
-    run_manifest = REPO_ROOT / "runs" / "original-2026-10-21" / "questions.jsonl.manifest.json"
-    if not raw.exists() or not run_manifest.exists():
-        pytest.skip("no raw tree / committed run")
+    standardized = REPO_ROOT / "texts" / "standardized"
+    if not raw.exists() or not standardized.exists():
+        pytest.skip("no raw tree / rebuilt standardized tree")
     indexed, all_docs, excluded = load_edition_documents(raw)
     body = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in export_rows(indexed))
     from sacredbench.edition_index import build_manifest
+    from sacredbench.schema import load_document
 
     manifest = build_manifest(all_docs, body, excluded)
-    run_corpus_hash = json.loads(run_manifest.read_text())["corpus_hash"]
-    assert manifest["corpus_hash"] == run_corpus_hash
+    sources = cat.discover_catalogue(raw)
+    kept = cat.filter_standardized_paths(
+        cat.expand_json([standardized]), sources, include_restricted=False,
+        standardized_root=standardized,
+    )
+    standardized_docs = [load_document(f) for f in kept]
+    assert manifest["corpus_hash"] == gen.corpus_hash(standardized_docs)
