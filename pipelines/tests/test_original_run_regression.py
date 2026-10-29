@@ -39,12 +39,14 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # Generation-invariance anchor over the CURRENT corpus. The committed run reproduced its own
 # digest while the corpus stood at its manifest's corpus_hash (5ae493e7e249575c); a sanctioned
 # corpus update legitimately moves both values (2026-10-28: Talmud WD refresh — Meilah/Niddah/
-# Tamid added, one-line Berakhot-en correction). On such an update, re-pin BOTH constants from
+# Tamid added, one-line Berakhot-en correction; Spec 50: Sri Guru Granth Sahib added, 18 texts,
+# 504 questions). On such an update, re-pin BOTH constants from
 # a fresh `generate` with the run manifest's params and rebuild the committed FAccT card
-# (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves).
+# (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves;
+# a text added after the run leaves the card unchanged, Spec 50).
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "e6e375220d270943"  # texts/ as of 2026-10-28 (Talmud WD refresh)
-ANCHOR_DIGEST = "1da74d96d15286ae"  # generate over that corpus with the run's params
+ANCHOR_CORPUS_HASH = "5aedc15da0e3715d"  # texts/ as of Spec 50 (Sri Guru Granth Sahib added)
+ANCHOR_DIGEST = "5a576742d73dc5e5"  # generate over that corpus with the run's params
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer
 # that yields ZERO citation candidates was hand-surveyed: a first-person inability to cite
