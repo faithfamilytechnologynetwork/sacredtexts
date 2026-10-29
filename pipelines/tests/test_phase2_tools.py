@@ -43,11 +43,33 @@ def _write(tmp_path, models) -> Path:
     return p
 
 
-def test_web_search_on_openai_third_party_host_rejected(tmp_path):
-    """web_search on provider=openai with a base_url set routes search through a third-party
-    OpenAI-compatible host (OpenRouter :online / Exa) — rejected (#54): native search only."""
+def test_web_search_on_third_party_host_non_native_family_rejected(tmp_path):
+    """web_search on provider=openai + base_url is allowed only for a model family the host
+    forwards to the provider's native search; an unknown family (here a bare 'm') is a
+    third-party web layer — rejected (#54)."""
     cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": "m",
                             "base_url": "https://x/v1", "api_key_env": "K", "tools": ["web_search"]}])
+    with pytest.raises(ConfigError, match="third-party OpenAI-compatible host"):
+        load_config(cfg)
+
+
+def test_web_search_on_openrouter_native_family_accepted(tmp_path):
+    """anthropic/* and openai/* through OpenRouter carry the provider's NATIVE search (verified
+    #54), so web_search is accepted on those families even with a base_url set."""
+    for slug in ("anthropic/claude-sonnet-5.5", "openai/gpt-6.1-sol"):
+        cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": slug,
+                                 "base_url": "https://openrouter.ai/api/v1",
+                                 "api_key_env": "OPENROUTER_API_KEY", "tools": ["web_search"]}])
+        loaded = load_config(cfg)
+        assert loaded.models[0].tools == ("web_search",)
+
+
+def test_web_search_gemini_family_on_openrouter_rejected(tmp_path):
+    """google/* is intentionally NOT a forwarded family (grounding doesn't fire reliably through
+    OpenRouter) — web_search on it through the host is rejected; it runs on a native key only."""
+    cfg = _write(tmp_path, [{"id": "g", "provider": "openai", "model": "google/gemini-3.8-flash",
+                             "base_url": "https://openrouter.ai/api/v1",
+                             "api_key_env": "OPENROUTER_API_KEY", "tools": ["web_search"]}])
     with pytest.raises(ConfigError, match="third-party OpenAI-compatible host"):
         load_config(cfg)
 
@@ -259,6 +281,7 @@ def _install_fake_openai(monkeypatch, responses_resp=None, chat_resp=None):
     fake.OpenAI = lambda **kw: client_obj
     monkeypatch.setitem(sys.modules, "openai", fake)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     return captured
 
 
@@ -308,6 +331,62 @@ def test_openai_search_off_uses_chat_completions(monkeypatch):
     assert text == "off answer" and captured["_endpoint"] == "chat"
     assert "tools" not in captured
     assert usage == {"in": 1, "out": 2}
+
+
+# --- OpenRouter-transported native search (chat.completions) -----------------
+
+
+class _Dump:
+    """A stand-in for a pydantic object: exposes model_dump() returning a fixed dict."""
+    def __init__(self, d):
+        self._d = d
+
+    def model_dump(self):
+        return self._d
+
+
+def _openrouter_chat_resp(text="the answer", finish="stop", searches=2, citations=("https://a",),
+                          provider="OpenAI"):
+    usage = _Dump({"prompt_tokens": 3, "completion_tokens": 4,
+                   "server_tool_use_details": {"web_search_requests": searches}})
+    anns = [_Dump({"type": "url_citation", "url_citation": {"url": u}}) for u in citations]
+    msg = types.SimpleNamespace(content=text, annotations=anns)
+    choice = types.SimpleNamespace(finish_reason=finish, message=msg)
+    return types.SimpleNamespace(choices=[choice], usage=usage, provider=provider)
+
+
+def _or_model(model_id, slug):
+    return ModelSpec(id=model_id, provider="openai", model=slug,
+                     base_url="https://openrouter.ai/api/v1", api_key_env="OPENROUTER_API_KEY",
+                     max_tokens=4096, temperature=0, tools=("web_search",))
+
+
+def test_openrouter_native_search_anthropic_family_forwards_anthropic_block(monkeypatch):
+    resp = _openrouter_chat_resp(searches=1, citations=("https://a", "https://a", "https://b"),
+                                 provider="Claude Platform on AWS")
+    captured = _install_fake_openai(monkeypatch, chat_resp=resp)
+    text, usage, _ = complete(_or_model("sonnet-search", "anthropic/claude-sonnet-5.5"), "p")
+    assert text == "the answer" and captured["_endpoint"] == "chat"
+    assert captured["tools"] == [providers.WEB_SEARCH_TOOL]       # Anthropic native block
+    assert captured["max_tokens"] == 4096
+    assert usage["web_search_requests"] == 1
+    assert usage["citations"] == ["https://a", "https://b"]       # deduped
+    assert usage["provider"] == "Claude Platform on AWS"          # provider-of-record recorded
+    assert usage["in"] == 3 and usage["out"] == 4
+
+
+def test_openrouter_native_search_openai_family_forwards_normalised_shape(monkeypatch):
+    captured = _install_fake_openai(monkeypatch, chat_resp=_openrouter_chat_resp(provider="OpenAI"))
+    _, usage, _ = complete(_or_model("sol-search", "openai/gpt-6.1-sol"), "p")
+    assert captured["tools"] == [providers.OPENAI_WEB_SEARCH_TOOL]  # {"type": "web_search"}
+    assert usage["provider"] == "OpenAI" and usage["web_search_requests"] == 2
+
+
+@pytest.mark.parametrize("finish", ["length", "error"])
+def test_openrouter_search_non_stop_finish_fails_loud(monkeypatch, finish):
+    _install_fake_openai(monkeypatch, chat_resp=_openrouter_chat_resp(finish=finish))
+    with pytest.raises(ProviderError, match="non-terminal finish_reason"):
+        complete(_or_model("x", "anthropic/claude-sonnet-5.5"), "p")
 
 
 # --- Gemini native search (Google-Search grounding) --------------------------

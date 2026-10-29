@@ -29,14 +29,19 @@ PROVIDERS = ("anthropic", "openai", "gemini")
 # NATIVE server-side search — Anthropic `web_search`, OpenAI Responses-API `web_search`,
 # Google-Search grounding — i.e. the search a user actually gets from that product.
 TOOLS = ("web_search",)
-# Providers that expose a native server-side search tool. All three current providers do, so
-# `web_search` is valid on each — but see the base_url guard below: on `openai` it is rejected
-# when a third-party `base_url` is set, because that routes search through a third-party
-# OpenAI-compatible host (OpenRouter `:online` / Exa), a uniform third-party layer rather than
-# the real product experience (#54 explicitly rejects those). `anthropic`/`gemini` always use
-# the vendor's own client in the provider seam (base_url is not a search path), so only the
-# `openai` host needs guarding.
+# Providers that expose a native server-side search tool on their OWN endpoint. All three do.
 _NATIVE_SEARCH_PROVIDERS = frozenset({"anthropic", "openai", "gemini"})
+# `web_search` may also run through an OpenAI-compatible host (`provider: openai` + `base_url`,
+# i.e. OpenRouter) — but ONLY for model families whose request OpenRouter forwards to the
+# provider's NATIVE server-side search, verified per-arm (#54): the provider-of-record is the
+# real vendor, usage carries that vendor's `server_tool_use_details`, and citations use the
+# vendor's own annotation shape (content-snippet for Anthropic, char-offset for OpenAI) — NOT a
+# uniform OpenRouter/Exa web layer, which #54 rejects as unrepresentative. Keyed on the model
+# slug's family prefix. gemini is intentionally ABSENT: its grounding does not reliably fire
+# through OpenRouter (routing-variance across the Google AI Studio / Vertex backends — AI Studio
+# shared-pool 429s, Vertex returns finish=error with no search), so it is run only on a native
+# GEMINI_API_KEY (provider: gemini). Any other family on a third-party host is rejected.
+_OPENROUTER_NATIVE_SEARCH_FAMILIES = ("anthropic/", "openai/")
 
 
 class ConfigError(Exception):
@@ -65,12 +70,16 @@ class RunConfig:
     concurrency: int = 8
 
 
-def _parse_tools(raw, provider: str, base_url: str | None, i: int, path: Path) -> tuple[str, ...]:
+def _parse_tools(
+    raw, provider: str, base_url: str | None, model: str, i: int, path: Path
+) -> tuple[str, ...]:
     """Validate a model entry's optional ``tools`` list, fail-fast. ``None`` → no tools.
-    A non-list or an unrecognised value is a ``ConfigError``. ``web_search`` is a native
-    server-side tool: valid on any provider that exposes one, but rejected on ``openai`` when
-    a third-party ``base_url`` is set (that would route search through a third-party layer,
-    which #54 forbids) — never silently ignored (the YAML key is otherwise unchecked today)."""
+    A non-list or an unrecognised value is a ``ConfigError``. ``web_search`` is native
+    server-side search: valid on a provider's own endpoint, and also through an OpenAI-
+    compatible host (``provider: openai`` + ``base_url``) but ONLY for a model family whose
+    request OpenRouter forwards to the provider's native search (``_OPENROUTER_NATIVE_SEARCH_
+    FAMILIES``) — any other family on a third-party host is a third-party web layer, which #54
+    forbids. Never silently ignored (the YAML key is otherwise unchecked today)."""
     if raw is None:
         return ()
     if not isinstance(raw, list):
@@ -87,12 +96,16 @@ def _parse_tools(raw, provider: str, base_url: str | None, i: int, path: Path) -
                     f"{path}: models[{i}] tool 'web_search' needs a provider with a native "
                     f"search tool ({sorted(_NATIVE_SEARCH_PROVIDERS)}), not {provider!r}"
                 )
-            if provider == "openai" and base_url:
+            if provider == "openai" and base_url and not any(
+                model.startswith(fam) for fam in _OPENROUTER_NATIVE_SEARCH_FAMILIES
+            ):
                 raise ConfigError(
-                    f"{path}: models[{i}] tool 'web_search' is OpenAI's native Responses-API "
-                    f"search and runs only on OpenAI's own endpoint; it must not route through "
-                    f"a third-party OpenAI-compatible host (base_url={base_url!r}) — third-party "
-                    "search layers (OpenRouter ':online' / Exa) are out of scope (#54)"
+                    f"{path}: models[{i}] tool 'web_search' on a third-party OpenAI-compatible "
+                    f"host (base_url={base_url!r}) is allowed only for a model family whose "
+                    f"native search that host forwards to the provider "
+                    f"({list(_OPENROUTER_NATIVE_SEARCH_FAMILIES)}); model {model!r} is not one, "
+                    "so this would be a third-party web layer (OpenRouter ':online' / Exa), "
+                    "out of scope (#54)"
                 )
         tools.append(t)
     # order-independent identity: a model's tools are a set, serialised sorted
@@ -135,7 +148,9 @@ def load_config(path: Path) -> RunConfig:
         for pk, pv in (("price_in", price_in), ("price_out", price_out)):
             if pv is not None and (not isinstance(pv, (int, float)) or pv < 0):
                 raise ConfigError(f"{path}: models[{i}] {pk} must be a non-negative number")
-        tools = _parse_tools(m.get("tools"), m["provider"], m.get("base_url"), i, path)
+        tools = _parse_tools(
+            m.get("tools"), m["provider"], m.get("base_url"), str(m["model"]), i, path
+        )
         specs.append(
             ModelSpec(
                 id=str(m["id"]),

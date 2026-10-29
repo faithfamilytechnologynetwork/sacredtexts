@@ -140,3 +140,25 @@ Per arm × model × text (and per task):
 
 Each hypothesis → confirmed / disconfirmed / inconclusive against the Phase-1 criteria, with
 the counter-evidence shown. Conclusions land in `codev/reviews/54-...md` and the run README.
+
+---
+
+## Design update (2026-10-29, architect-directed) — OpenRouter transport, gemini deferred
+
+The pre-registered **hypotheses and success criteria above are unchanged.** Only the mechanism
+and panel changed, on the architect's call (Waleed asked "can't we still use OpenRouter"):
+
+- **Transport**: run through OpenRouter on the existing `OPENROUTER_API_KEY` instead of three
+  native keys. This is legitimate **only because** each arm is verified per-run to forward to
+  the provider's *own native* search — not OpenRouter's `:online`/Exa layer. The Baked Decision
+  ("native, not a third-party layer") is preserved and enforced by a required per-arm
+  verification (provider-of-record + `server_tool_use_details` + per-provider annotation shape),
+  recorded in the run README. `config.py`'s guard moved from "native host only" to a
+  **per-model-family** map of families OpenRouter forwards natively (`anthropic/`, `openai/`).
+- **Panel**: **2 models** (sonnet + sol), 56 × 2 × 2 = **224 cells**. Matches the main panel +
+  exp-arabic comparability.
+- **Gemini deferred**: `google/gemini-3.8-flash` does not reliably fire native search through
+  OpenRouter (routing-variance: AI Studio 429s, Vertex `finish=error`, no server-tool evidence).
+  A flaky arm is not experiment-grade, so gemini is deferred to a native `GEMINI_API_KEY` — the
+  pipeline's native `google_search` grounding path (`providers._gemini`) is built and tested for
+  that. H1–H3 are evaluated on the 2 arms that passed verification; gemini is future work.

@@ -133,8 +133,12 @@ def _openai(model: ModelSpec, prompt: str) -> tuple[str, dict]:
         api_key=os.environ[env], base_url=model.base_url, timeout=REQUEST_TIMEOUT_SECONDS
     )
     if "web_search" in model.tools:
-        # native search uses the Responses API, not chat.completions; config.py guarantees
-        # base_url is unset here (no third-party host), so this hits OpenAI's own endpoint.
+        if model.base_url:
+            # OpenRouter (or another OpenAI-compatible host): web_search runs through
+            # chat.completions, and the host forwards it to the provider's NATIVE search.
+            # config.py guarantees the model family is one that host forwards natively.
+            return _openai_openrouter_search(client, model, prompt)
+        # native OpenAI: web_search uses the Responses API, not chat.completions.
         return _openai_responses_search(client, model, prompt)
     # OpenAI proper only accepts `max_completion_tokens`; OpenAI-compatible hosts
     # (base_url set: OpenRouter etc.) still take legacy `max_tokens`.
@@ -177,6 +181,43 @@ def _openai_responses_search(client: Any, model: ModelSpec, prompt: str) -> tupl
         )
     text = getattr(resp, "output_text", None) or ""
     return text, _openai_responses_usage(resp)
+
+
+def _openrouter_search_tool(model_slug: str) -> dict:
+    """The native-search tool block the OpenAI-compatible host forwards for this model family.
+    Anthropic models take Anthropic's own server-tool block (verbatim, forwarded to Claude's
+    native web_search); other forwarded families take the normalised ``{type: web_search}``.
+    config.py has already confirmed the family is one the host forwards natively."""
+    if model_slug.startswith("anthropic/"):
+        return WEB_SEARCH_TOOL
+    return OPENAI_WEB_SEARCH_TOOL
+
+
+def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tuple[str, dict]:
+    """Single-turn chat.completions call that carries a provider's NATIVE web search through an
+    OpenAI-compatible host (OpenRouter). Records provider-of-record, the server-tool search
+    count, and cited URLs into usage — the per-cell nativeness evidence #54 requires."""
+    resp = client.chat.completions.create(
+        model=model.model,
+        messages=[{"role": "user", "content": prompt}],
+        tools=[_openrouter_search_tool(model.model)],
+        max_tokens=model.max_tokens,
+        extra_body={"usage": {"include": True}},  # ask the host to return cost + server_tool_use
+        **sampling_kwargs(model),
+    )
+    choice = resp.choices[0]
+    # Only a finished turn carries a real answer. A truncated turn (finish_reason 'length') or
+    # an upstream error ('error') must never be committed as a partial quote nor retried
+    # in-call (re-billing the search) — fail loud so the cell stays pending for a clean re-run.
+    if choice.finish_reason != "stop":
+        raise ProviderError(
+            f"{model.id}: non-terminal finish_reason={choice.finish_reason!r} via "
+            f"{getattr(resp, 'provider', None)!r} — not committing a partial answer. "
+            f"For 'length', raise max_tokens ({model.max_tokens}); 'error' is an upstream "
+            "failure (re-run retries the pending cell)."
+        )
+    text = choice.message.content or ""
+    return text, _openrouter_usage(resp, choice)
 
 
 def _gemini(model: ModelSpec, prompt: str) -> tuple[str, dict]:
@@ -286,6 +327,35 @@ def _openai_responses_usage(resp: Any) -> dict:
                             citations.append(url)
     if searches:
         out["web_search_requests"] = searches
+    if citations:
+        out["citations"] = _dedupe(citations)
+    return out
+
+
+def _openrouter_usage(resp: Any, choice: Any) -> dict:
+    """Tokens + nativeness provenance from an OpenAI-compatible host (OpenRouter): the
+    provider-of-record, the server-tool web-search count (``server_tool_use_details``), and the
+    cited URLs (message ``annotations``). ``web_search_requests`` / ``citations`` keep the same
+    shape the native paths record. Best-effort and defensive."""
+    out: dict = {}
+    u = getattr(resp, "usage", None)
+    udump = u.model_dump() if (u is not None and hasattr(u, "model_dump")) else {}
+    out["in"] = udump.get("prompt_tokens", 0) or 0
+    out["out"] = udump.get("completion_tokens", 0) or 0
+    stu = udump.get("server_tool_use_details")
+    if isinstance(stu, dict) and stu.get("web_search_requests"):
+        out["web_search_requests"] = stu["web_search_requests"]
+    # provider-of-record (OpenRouter's upstream): part of the per-cell nativeness evidence
+    provider = getattr(resp, "provider", None)
+    if provider:
+        out["provider"] = provider
+    citations: list[str] = []
+    for ann in getattr(choice.message, "annotations", None) or []:
+        ad = ann.model_dump() if hasattr(ann, "model_dump") else (ann if isinstance(ann, dict) else {})
+        if ad.get("type") == "url_citation":
+            url = (ad.get("url_citation") or {}).get("url")
+            if url:
+                citations.append(url)
     if citations:
         out["citations"] = _dedupe(citations)
     return out

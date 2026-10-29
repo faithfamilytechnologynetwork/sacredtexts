@@ -17,7 +17,7 @@ from sacredbench.generate import load_questions, question_set_digest
 
 HERE = Path(__file__).resolve().parent
 EXPECTED_QUESTIONS = 56
-EXPECTED_CELLS = 336
+EXPECTED_CELLS = 224  # 56 questions x 4 entries (2 models x search on/off; gemini deferred)
 
 
 def main() -> None:
@@ -38,11 +38,11 @@ def main() -> None:
 
     print(f"question set digest: {question_set_digest(questions)}")
     print(f"questions: {len(questions)}  x  models: {len(cfg.models)}  =  {cells} cells\n")
-    print(f"{'id':<16}{'provider':<12}{'model':<18}{'search':<8}fingerprint")
+    print(f"{'id':<16}{'provider':<10}{'model':<30}{'search':<8}fingerprint")
     for m in cfg.models:
         search = "on" if "web_search" in m.tools else "off"
-        print(f"{m.id:<16}{m.provider:<12}{m.model:<18}{search:<8}{fps[m.id]}")
-    print("\nOK: harness validates keyless. Live collect needs ANTHROPIC/OPENAI/GEMINI keys.")
+        print(f"{m.id:<16}{m.provider:<10}{m.model:<30}{search:<8}{fps[m.id]}")
+    print("\nOK: harness validates keyless. Live collect needs OPENROUTER_API_KEY.")
 
 
 if __name__ == "__main__":

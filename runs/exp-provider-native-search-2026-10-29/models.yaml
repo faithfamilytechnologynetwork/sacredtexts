@@ -1,67 +1,62 @@
 # Provider-native search experiment panel (#54, 2026-10-29).
 #
-# Three models, each run BOTH WAYS — search-off and search-on — on each vendor's NATIVE
-# endpoint (no base_url), so the ONLY delta across an arm pair is search:
-#   - anthropic  claude-sonnet-5.5          -> Anthropic server-side web_search
-#   - openai     <current OpenAI model>     -> Responses-API native web_search
-#   - gemini     <current Gemini model>     -> Google-Search grounding
+# Two models, each run BOTH WAYS — search-off and search-on — through OpenRouter, which
+# forwards each model's request to that provider's NATIVE server-side search (verified per
+# arm; see README "Nativeness verification"). The ONLY delta within a model's arm pair is
+# search: same questions, same model slug, same host, temperature 0.
+#   - anthropic/claude-sonnet-5.5  -> Anthropic's native web_search (block forwarded verbatim)
+#   - openai/gpt-6.1-sol           -> OpenAI's native Responses web_search
 #
-# 6 entries x 56 questions = 336 cells. Temperature pinned to 0 (a controlled A/B; it
-# joins each entry's panel fingerprint). max_tokens 4096 is headroom: on the search arms
-# the answer, the search calls, and citation/grounding blocks share the budget, and an
-# incomplete turn fails loud rather than committing a truncated quote.
+# 4 entries x 56 questions = 224 cells. Panel matches the signed-off main panel + the
+# exp-arabic experiment (sonnet + sol) for comparability.
 #
-# NATIVE ONLY: web_search here requires each provider's own endpoint. A third-party
-# OpenAI-compatible host (OpenRouter :online / Exa) is rejected at config load — #54
-# considers it unrepresentative of the real product search experience.
+# GEMINI IS DROPPED from this run: google/gemini-3.8-flash does NOT reliably fire native
+# search through OpenRouter (routing-variance — Google AI Studio shared-pool 429s, Google
+# Vertex returns finish=error with no server-tool evidence; see README). It is deferred to a
+# native GEMINI_API_KEY, where the pipeline's google_search grounding path (built + tested)
+# runs it. A flaky arm is not experiment-grade.
 #
-# UNPRICED by design: web/grounding search is billed per request (not in in/out tokens),
-# so price_in/price_out are omitted and `score` reports token totals only, never a cost.
+# NATIVE ONLY: web_search here is each provider's own search, forwarded by OpenRouter — NOT
+# OpenRouter's :online / Exa layer. config.py rejects web_search on this host for any model
+# family it does not forward natively.
 #
-# Keys come from the ENVIRONMENT only (ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY).
+# UNPRICED by design: web search is billed per request (not in in/out tokens), so
+# price_in/price_out are omitted and `score` reports token totals only, never a cost. The
+# answer rows DO record per-cell cost + search-request counts from OpenRouter for provenance.
 #
-# Slug intents (architect-confirmed 2026-10-29): Claude = claude-sonnet-5-5, Gemini =
-# gemini-3.8-flash. OpenAI = the native flagship in the gpt-6.1-sol family (`gpt-6.1` below is
-# the right family; the EXACT native id validates at the first collect call — fail-fast by
-# design, no invented slug). Panel kept comparable with the signed-off main panel and the
-# exp-arabic experiment (sonnet + sol).
+# Key from the ENVIRONMENT only (OPENROUTER_API_KEY).
 concurrency: 4
 models:
-  # --- Anthropic (Claude) ---
+  # --- Anthropic (Claude) — native web_search forwarded by OpenRouter ---
   - id: sonnet-search
-    provider: anthropic
-    model: claude-sonnet-5-5
+    provider: openai
+    model: anthropic/claude-sonnet-5.5
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
     max_tokens: 4096
     temperature: 0
     tools: [web_search]
   - id: sonnet
-    provider: anthropic
-    model: claude-sonnet-5-5
+    provider: openai
+    model: anthropic/claude-sonnet-5.5
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
     max_tokens: 4096
     temperature: 0
 
-  # --- OpenAI (ChatGPT) — native Responses-API web_search ---
-  - id: gpt-search
+  # --- OpenAI (ChatGPT) — native Responses web_search forwarded by OpenRouter ---
+  - id: sol-search
     provider: openai
-    model: gpt-6.1              # (confirm) a current OpenAI model with Responses web_search
+    model: openai/gpt-6.1-sol
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
     max_tokens: 4096
     temperature: 0
     tools: [web_search]
-  - id: gpt
+  - id: sol
     provider: openai
-    model: gpt-6.1              # (confirm) same model, search off
-    max_tokens: 4096
-    temperature: 0
-
-  # --- Google (Gemini) — Google-Search grounding ---
-  - id: gemini-search
-    provider: gemini
-    model: gemini-3.8-flash     # (confirm) argon or 3.8-flash per #54
-    max_tokens: 4096
-    temperature: 0
-    tools: [web_search]
-  - id: gemini
-    provider: gemini
-    model: gemini-3.8-flash     # (confirm) same model, search off
+    model: openai/gpt-6.1-sol
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
     max_tokens: 4096
     temperature: 0
