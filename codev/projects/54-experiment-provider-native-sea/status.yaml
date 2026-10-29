@@ -1,7 +1,7 @@
 id: '54'
 title: experiment-provider-native-sea
 protocol: experiment
-phase: execute
+phase: analyze
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-10-29T17:11:28.046Z'
-updated_at: '2026-10-29T17:22:02.122Z'
+updated_at: '2026-10-29T22:44:29.852Z'
