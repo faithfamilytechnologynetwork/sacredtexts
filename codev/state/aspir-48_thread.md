@@ -103,3 +103,46 @@ Merge order (architect): I land FIRST, #52 rebases onto me. #52 later extends fo
 into classify_refusal → moves some Arabic refused-cells afterward (their witness, not mine).
 
 Plan revised; porch re-consult or advance next.
+
+### Implement phase_1 (2026-10-29) — classifier DONE, HOLDING on rebaseline
+
+outcomes.py: added asserts_delivery() — assertion-only (positive identity frame "the line/text/
+baraita … is/reads/starts : <script>"), negation-aware (apostrophe REQUIRED in n't so "segment"
+doesn't match), + a refusal-to-deliver disqualifier ("don't want to give/guess", "fabricat"). Integrated
+into classify_refusal text-retrieval branch (refused unless contains-ref OR asserts_delivery).
+test_outcomes.py extended: 34 tests green incl the whole-corpus blast-radius GATE.
+
+Gotchas banked:
+- _NEG bug: "n['’]?t" (optional apostrophe) matched the bare "nt" in "segment" → false negation that
+  stranded A cell d4c3bda0b400. Fixed to require the apostrophe.
+- Whole-corpus sweep caught a REAL surprise: original/complete_unit-9a54331ae425 (opus) — a genuine
+  Sahih Muslim refusal ("I don't want to give you a fabricated version") that my intro-regex caught via
+  "the text after X is most likely <ar>". Fixed with the refusal-to-deliver disqualifier (principled:
+  keyed on refusal-of-DELIVERY, not identity-disclaimers, so A cells unaffected). After fix: global
+  blast radius == exactly the 5 tutorial A cells, 0 elsewhere.
+
+BLOCKED-ish / HELD: surfaced to architect + awaiting go-ahead before touching committed evidence.
+- Phase boundary collapses: classifier-only can't pass the global re-score guard (test_tutorial_run),
+  so classifier + tutorial rebaseline must be ATOMIC. Only tutorial moves.
+- Confirmed numbers (regen→tmp): opus-search rq 0.9737→0.9250/0.76→0.80/24→20; haiku-search
+  0.80→0.7879/0.65→0.66/35→34. correct unchanged.
+- summary.json scar: naive score_file NULLS the panel; current score_file also emits extra
+  max_tokens/temperature panel keys (committed is 5-key, test_panel asserts it). PLAN: surgical splice
+  of moved aggregates into summary.json/summary.md, panel/usage/generated_at byte-verbatim; regen
+  scores.jsonl via score_file; add non-circular oracle (pre-change outcome/correct SHA) + re-pin
+  test_contains_reference_rebaseline constants.
+- first-run/original/arabic: 0 flips, byte-identical, facct untouched.
+
+### Implement phase_1 COMPLETE — atomic rebaseline done (architect GO'd, 2026-10-29)
+
+Executed exactly as surfaced + architect's 5 conditions:
+- Captured pre-change SHAs BEFORE any write: OUTCOME=99a724e1…, CORRECT=de342249…, SIMILARITY=ab970582…
+- Regenerated runs/tutorial-2026-10-11/scores.jsonl via score_file (5 cells refused→incorrect, correct unchanged).
+- Surgical summary.json: overlaid moved numeric leaves on opus-search/haiku-search only (48 leaf diffs, ALL search arms); panel/usage/generated_at/expected_n/missing byte-verbatim. summary.md: replaced only the 4 moved scoring rows; panel table byte-identical (renderer now emits extra max_tokens/temperature cols — would've broken test_committed_summary_md, so NOT regenerated via renderer).
+- jev_agreement.{json,md} UNTOUCHED (historical pre-fix evidence; post-fix agreement noted for review).
+- first-run/original/arabic: byte-identical (git confirms only 3 tutorial files changed). facct untouched.
+- Non-circular oracle: pipelines/tests/test_refusal_rebaseline.py (pre-change outcome+correct SHA; un-flip reproduces pre-change outcome projection → nothing else moved).
+- Re-pinned test_contains_reference_rebaseline.py: tutorial REFUSED_COUNTS (hs 35→34, os 24→20), EXPECTED_ACC (hs .80→.7879, os .9737→.9250), EXPECTED_COV (hs .65→.66, os .76→.80), REFUSED_SET_SHA256 2a560379….
+- Reframed my whole-corpus gate to the durable post-rebaseline form: no committed refusal asserts delivery (all 4 runs).
+
+FULL pipelines suite: 585 passed, 2 skipped. Numbers match Waleed-seen plan pins exactly.

@@ -318,6 +318,18 @@ Let `refusal_p` override the deterministic label.
 **Recommendation: Approach 1** (assertion signal), with Approach 2's cue audit used only as
 corroboration (confirming which cues fire on the 11), not as the mechanism.
 
+**Refusal-of-delivery disqualifier (implementation-discovered, architect-noted 2026-10-29).** The
+whole-corpus Phase-1 sweep surfaced one cell outside the 11 that a bare assertion-frame would wrongly
+flip: `original-2026-10-21` `opus/complete_unit-9a54331ae425`, a Sahih Muslim completion that shows a
+tentative "the text after … is most likely …" fragment but explicitly **refuses to deliver** ("I
+don't want to give you a fabricated version of hadith text"). This is a genuine refusal, so the
+assertion detector disqualifies any answer carrying an explicit refusal-to-deliver / fear-of-
+fabrication phrase ("I don't want to give/guess", "rather not guess", "fabricated"). The disqualifier
+is keyed on **refusal of delivery**, not on segment-identity hedges — so it does not strand the A
+cells (which legitimately say "I'm not sure which passage is segment 9" while still committing a
+reconstruction). This is consistent with the architect's taxonomy: a model that declines to provide
+the text did not purport to answer.
+
 ## Open Questions
 
 - **Critical** — Can the assertion signal (A vs B) be drawn by text alone across *all* committed

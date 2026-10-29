@@ -28,8 +28,17 @@ Both halves matter:
   genuine preamble ("I'm sorry, but I am unable…", "Let me try to get the segment. I couldn't…").
 - *reference not delivered* — a decline-prefixed answer that still contains the reference
   (word-bounded) IS a correct retrieval ("I can't be certain, but it's: <verse>"), so the containment
-  half keeps it out of the refused set. For ``cite_passage`` a leading decline alone is the refusal,
-  gated on ``not correct`` so a decline-prefixed but delivered citation stays an answer.
+  half keeps it out of the refused set. **Spec 48** adds a second escape for text-retrieval: an answer
+  that does not byte-contain the reference but POSITIVELY ASSERTS the delivered original-script
+  payload is the requested passage ("from memory the text of 4:176 is: …", "my best reconstruction …
+  is: …", "that baraita starts: …") is an answer with an orthography disclaimer (class A), not a
+  refusal — see ``asserts_delivery``. A declined-with-a-substitute answer (class B — "the closest I
+  got was a different line", "the daf begins with …", "I can't say it's segment X") carries no such
+  assertion and stays refused. This is **assertion-only**, not "assertion and no disclaimer" (an A
+  answer can disclaim the *segment number* in a separate clause), and it is the paper-facing refusal
+  definition that deliberately diverges from the looser Jev rubric criterion (re-aligned in a future
+  ``sacredbench-jev-2``). For ``cite_passage`` a leading decline alone is the refusal, gated on
+  ``not correct`` so a decline-prefixed but delivered citation stays an answer.
   ``verify_source`` is **not** classified here (Spec 26): its "answer" is the verdict itself, so its
   refusal is ``parsed is None`` (no leading Yes/No committed), decided in ``score._with_outcome`` — a
   committed leading verdict is graded even with a trailing disclaimer, and a negation-evasion with no
@@ -42,6 +51,7 @@ live in ``score.py`` and are imported lazily so there is no import cycle (``scor
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 
 # The leading segment (in normalized characters) a decline cue must fall within to count as a
@@ -91,6 +101,93 @@ _DECLINE_CUES_RAW: tuple[str, ...] = (
 
 _TEXT_RETRIEVAL = ("retrieve_quote", "complete_unit")
 
+# ── Delivery-assertion test (Spec 48) ────────────────────────────────────────────────────────────
+# A web-search answer may OPEN with a decline cue ("I couldn't find the exact edition…") and then
+# either (A) deliver the requested passage as its answer, however hedged ("from memory the text of
+# 4:176 IS: …", "my best reconstruction … IS: …", "that baraita STARTS: …"), or (B) offer a
+# DIFFERENT / unconfirmed span and explicitly disclaim it as the requested one ("the closest I got
+# was a different line", "the daf begins with …", "I can't say it's segment X", "I'm not sure which
+# part counts as segment 3"). (A) purported to answer → scored on its merits; (B) declined → refused.
+#
+# The test is **assertion-only**, not "assertion AND no disclaimer": an A answer can itself carry a
+# disclaimer in a *different* clause ("I'm not sure which passage is segment 9. What follows is my
+# best reconstruction …"), so a global no-disclaimer gate would wrongly strand it as refused. We
+# instead look for a POSITIVE delivery assertion and reject it only if the negation sits inside the
+# assertion's own clause. It is also frame-anchored and negation-aware so a bare "from memory" under
+# a decline ("I can't reliably reproduce … from memory") does not count as a delivery.
+
+# Target-script run (Hebrew, Arabic incl. presentation forms, Greek) — a delivered scripture payload.
+# A positive delivery must introduce actual original-script text (conservative: an English-only
+# gloss is not a delivery), which is also what keeps delivery *volume* from being the signal.
+_SCRIPT = (
+    "֐-׿؀-ۿݐ-ݿࢠ-ࣿ"
+    "יִ-﷿ﹰ-﻿Ͱ-Ͽἀ-῿"
+)
+_SCRIPT_CHAR = re.compile(f"[{_SCRIPT}]")
+
+# Nouns a positive assertion is ABOUT: the requested unit itself. Deliberately EXCLUDES "segment",
+# "daf", "page" — the B answers describe *those* ("the daf begins with…", "which part is segment 3"),
+# not the requested line.
+_UNIT = r"(?:line|text|verse|passage|baraita|baraisa|mishnah|mishna|gemara|reading|wording)"
+# Positive delivery verbs introducing the payload. Deliberately EXCLUDES "begins"/"opens", which the
+# B answers use for the surrounding daf ("the daf begins/opens with…").
+_VERB = r"(?:is|are|reads?|starts?|goes?)"
+_HEDGE = r"(?:\s+(?:probably|likely|most\s+likely|roughly|approximately|essentially))?"
+
+# (a) "(the|that|this) <unit> … <verb> [hedge] [:–] <script>" — the requested unit IS/READS/STARTS
+#     the payload. The gap excludes sentence enders so verb and payload share one clause.
+_ASSERT_INTRO = re.compile(
+    r"(?P<clause>(?:the|that|this)\s+(?:\w+\s+){0,3}?" + _UNIT + r"\b"
+    r"[^.\n]{0,48}?\b" + _VERB + r"\b" + _HEDGE + r")"
+    r"\s*[:\-–—]?\s*[\"'«»“”‘’־]*\s*"
+    r"(?=[" + _SCRIPT + r"])",
+    re.IGNORECASE,
+)
+# (b) "my best reconstruction/guess/rendering of … <wording/unit>" with a payload present elsewhere —
+#     the model commits a rendering of the requested wording (its disclaimer about the segment number
+#     lives in another clause).
+_ASSERT_RECON = re.compile(
+    r"\bmy\s+best\s+(?:reconstruction|guess|rendering|rendition)\s+of\s+[^.\n]{0,48}?" + _UNIT,
+    re.IGNORECASE,
+)
+# First-person inability / uncertainty that, when it sits inside the assertion clause, negates it.
+# A leading-stance negation; the apostrophe in the contraction is REQUIRED so a bare "nt" inside
+# "segment"/"moment" is not read as "n't".
+_NEG = re.compile(r"(?:\bnot\b|n['’]t\b|\bcannot\b|\bnever\b|\bno\b|\bunsure\b|\bunable\b)", re.IGNORECASE)
+
+# An explicit REFUSAL TO DELIVER / fear of fabrication anywhere in the answer disqualifies a
+# delivery assertion outright: the model declined to answer, so a tentative "the text … is most
+# likely …" fragment it shows is not a purported answer. This is narrow and keyed on refusal-of-
+# delivery (unwillingness to provide / guess / risk a fabricated text) — NOT on the segment-identity
+# hedges ("I'm not sure which passage is segment 9") that a class-A answer legitimately carries, so
+# it does not strand the A cells. (Spec 48; surfaced by the Phase-1 whole-corpus sweep on a Sahih
+# Muslim completion in original-2026-10-21.)
+_REFUSE_DELIVER = re.compile(
+    r"(?:do\s?n['’]?t\s+want\s+to\s+(?:give|guess|provide)"
+    r"|do\s+not\s+want\s+to\s+(?:give|guess|provide)"
+    r"|(?:would\s+)?rather\s+not\s+guess"
+    r"|wo\s?n['’]?t\s+guess|will\s+not\s+guess"
+    r"|fabricat)",
+    re.IGNORECASE,
+)
+
+
+def asserts_delivery(answer: str) -> bool:
+    """True iff the answer makes a POSITIVE assertion that a delivered original-script payload IS the
+    requested passage (Spec 48, class A). Assertion-only + negation-scoped-to-the-clause; see the
+    block comment above for why a global no-disclaimer gate is wrong."""
+    if not _SCRIPT_CHAR.search(answer):
+        return False  # no delivered payload → cannot be a positive delivery
+    if _REFUSE_DELIVER.search(answer):
+        return False  # an explicit refusal to deliver overrides any tentative assertion fragment
+    for m in _ASSERT_INTRO.finditer(answer):
+        if not _NEG.search(m.group("clause")):  # negation in the assertion's own clause disqualifies
+            return True
+    for m in _ASSERT_RECON.finditer(answer):
+        if not _NEG.search(answer[max(0, m.start() - 24) : m.start()]):
+            return True
+    return False
+
 
 @lru_cache(maxsize=1)
 def _normalized_cues() -> frozenset[str]:
@@ -130,7 +227,13 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
         # `--evaluator strict` a contained-but-not-normalized answer scores correct=0, so only this
         # check stops a decline-prefixed correct retrieval from being mislabelled `refused`. Keep it.
         target = expected.get("text", "")
-        return not (target and bounded_contains(answer, target))
+        if target and bounded_contains(answer, target):
+            return False
+        # Spec 48: a decline-prefixed answer that still POSITIVELY asserts the delivered passage is
+        # the requested one (class A — orthography variant containment can't fold) is an answer with
+        # a disclaimer, not a refusal. A declined-with-a-substitute answer (class B) carries no such
+        # assertion and stays refused.
+        return not asserts_delivery(answer)
     # cite_passage (and any future provenance task that routes here): a leading decline cue IS the
     # refusal — the model declined to answer — gated in `_with_outcome` on `not correct` so a
     # decline-prefixed but DELIVERED-correct answer stays an answer. (verify_source no longer reaches
