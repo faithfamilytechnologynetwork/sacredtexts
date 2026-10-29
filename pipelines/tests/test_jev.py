@@ -8,6 +8,7 @@ live-only failures).
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -719,7 +720,12 @@ def test_judge_cli_equivalence_index_requires_questions(tmp_path, monkeypatch):
     r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl"),
                                  "--equivalence-index", str(INDEX_FIXTURE)])
     assert r.exit_code != 0
-    assert "requires --questions" in r.output
+    # Typer draws the BadParameter in a wrapped box, so the phrase is not one contiguous
+    # substring of r.output. Strip the box and collapse whitespace before matching.
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", r.output)
+    plain = re.sub(r"[\u2500-\u257F]", " ", plain)
+    plain = re.sub(r"\s+", " ", plain)
+    assert "requires --questions" in plain
 
 
 def test_judge_cli_corpus_hash_mismatch_fails_fast(tmp_path, monkeypatch):
