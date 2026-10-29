@@ -259,3 +259,19 @@ then REVIEW doc.
   https://github.com/faithfamilytechnologynetwork/sacredtexts/pull/55
 - NEXT: run checks via `porch done 48`, signal PR_READY, notify architect, then WAIT for the `pr`
   human-approval gate (do NOT self-approve/merge). After merge → verify phase.
+
+### PR consult + pr GATE reached (2026-10-29)
+
+- 2-way PR consult (`type pr`): **claude APPROVE (HIGH)** (reproduced oracle SHAs, 5-cell delta, Jev,
+  both lanes; minor notes), **codex REQUEST_CHANGES (HIGH)** — real robustness gap: `asserts_delivery`
+  RECON path checked negation only through the claim's end, so a disqualifier BETWEEN the claim and a
+  later payload ("…is not reliable; the adjacent text is: «script»") slipped through.
+- **Folded** (commit 26ec480): widened RECON span to the payload start; committed A cell d4c3bda0b400
+  still flips (verified); regression case added. Also folded claude minors — removed dead
+  `ANSWER_FILES`, re-paired the Arabic gate to `answers-ar-normalized.jsonl`, documented the
+  post-payload-disclaimer limitation as a 3rd #52 handoff. Both lanes green. Rebaseline artifacts
+  UNTOUCHED (classifier-only sharpening).
+- Wrote the review/PR rebuttal; `porch done 48` → **GATE REQUIRED: pr**. Ran `porch gate 48` (opens
+  the review for the human; NOT approval). Review doc updated with the PR round + follow-up.
+- **STOPPED — waiting for architect to approve the `pr` gate.** Do NOT run `porch approve 48 pr` or
+  merge until an explicit human decision arrives. PR #55: Closes #48.
