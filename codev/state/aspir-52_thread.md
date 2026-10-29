@@ -224,4 +224,26 @@ Both confirmed the pivot is correct + corpus-validated. Fixes:
   _normalize(text,*,fold,plene); all delegate. Extended invariance test to plene form.
 
 Full suite: 577 passed, 2 skipped. Guards + ANCHOR_DIGEST unchanged.
-Next: commit P1 iter3, porch done. If porch force-advances at max_iter(3) verify it's clean.
+
+## Phase 1 COMPLETE (2026-10-29). Phase 2 BLOCKED on #48 merge-order.
+
+porch advanced to phase_2. BUT architect decision stands: **#48 lands FIRST, then I rebase onto it
+and do Phase 2 atomically**. Checked: #48 (aspir-48) has NO PR yet / not merged (its phase_1
+rebaseline is done locally, 585 passed, but still in implement). So Phase 2's rebaseline is blocked —
+the scorer wiring moves committed contains_reference, can't go green without the rebaseline, and the
+rebaseline must happen ONCE over the post-#48 baseline.
+
+**Intel from aspir-48's thread (critical for my Phase 2):**
+- #48 moves ONLY tutorial (5 cells refused→incorrect; correct unchanged). first-run/original/arabic
+  byte-identical; facct untouched; jev_agreement untouched.
+- #48 re-pinned test_contains_reference_rebaseline.py tutorial constants (REFUSED_COUNTS hs35→34
+  os24→20, EXPECTED_ACC hs.80→.7879 os.9737→.9250, EXPECTED_COV, REFUSED_SET_SHA256) + added
+  test_refusal_rebaseline.py. So after I rebase, those tutorial pins are #48's values; MY orthography
+  changes layer on top.
+- **SUMMARY SCAR**: naive score_file/renderer regen NULLS the panel AND emits extra
+  max_tokens/temperature cols → breaks test_committed_summary_md/test_panel. Must SURGICALLY SPLICE
+  moved numeric leaves into summary.json/md, panel/usage/generated_at byte-verbatim. #48 already
+  spliced tutorial's summary → my tutorial splice lands on #48's file. (Folded into plan Phase 2.)
+
+ACTION: surfaced block to architect; holding for #48 merge + their go. porch "Refresh your context"
+task is pending — reasonable to refresh when resuming Phase 2 fresh.
