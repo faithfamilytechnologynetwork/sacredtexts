@@ -67,14 +67,20 @@ Seeded from Spec 1 (Phase 1 benchmark).
   diluted by an English caveat lands ~0.45). Caveat: containment has **no anti-hedge rule** (unlike
   `cite_passage`/`identify_source`), so a verse that is the model's secondary hedge guess still
   counts correct — document the few such cells rather than special-casing them.
-- **Web retrieval surfaces real orthographic variance the normaliser can't fold.** A
-  correct āyah can come back in a *different* Uthmani Unicode encoding (U+06E1 vs U+0652,
-  Arabic Extended-A tanwīn U+08F0–08F2, U+0657, yeh/alef-maksura) that `normalize()` does
-  not fold to exact equality (token_f1 up to 0.95, `correct`=0) — present in search-OFF
-  answers too, so it is *not* a tool artifact. Spec 15 shipped the additive `contains_reference`
-  submetric rather than folding these encodings (folding risked the Latin byte-for-byte invariance);
-  the encoding near-miss stays visible as a `normalized=0` / `contains_reference=0` / high-`token_f1`
-  **incorrect** cell.
+- **Real orthographic variance needed a fold — but in the containment predicate, not `normalize()`.**
+  A correct āyah comes back in a *different* orthography (Uthmani↔Imla'i: dagger-alif ـٰ vs full
+  alef, dotless ى vs dotted ي, standalone hamza ء, hamzat-wasl ٱ; plus pure Unicode-encoding
+  variance U+06E1 vs U+0652, tanwīn codepoints) — present in search-OFF answers too, so *not* a tool
+  artifact. Spec 15 first shipped the additive `contains_reference` submetric rather than touch
+  `normalize()`. **Spec 52** then made the Uthmani↔Imla'i equivalence real by folding it inside the
+  containment predicate (`fold_aware_contains`/`score_normalize`), NOT in `normalize()` — the long-ā
+  alef is matched as OPTIONAL (`ا?`) because Imla'i writes it for the plene class (الكتاب) but omits
+  it for the defective class (هذا/ذلك/الرحمن), so a context-free `dagger→alef` fold is provably wrong
+  (it un-credits the defective class — the trap a competing #52 PR fell into). `normalize()` and every
+  equality submetric stay byte-stable (Latin invariance, the generation ANCHOR digest, and the
+  copyright audit untouched); only `contains_reference`/`correct`/`outcome` move, via a sanctioned
+  oracle-witnessed rebaseline. Residual not folded: word-initial hamza-alef ءَا ↔ alef-madda آ
+  (e.g. Q14:34), logged as a known limitation.
 - **A scoring-contract change is a SANCTIONED, evidenced rebaseline — not a forbidden re-score.**
   The byte-for-byte re-score guards exist to catch an *accidental* disturbance of committed numbers;
   a deliberate contract change (containment headline, refused outcome) reshapes `scores.jsonl` on

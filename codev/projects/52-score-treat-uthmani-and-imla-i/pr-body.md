@@ -32,8 +32,37 @@ cell is pre-registered and hand-verified.
 
 ## Rebaseline (moved numbers)
 
-_Filled after Phase 2 — per-run accuracy/coverage deltas for tutorial / original /
-exp-arabic-prompts, and the pre-registered flip set. Surfaced to the architect before merge._
+A **sanctioned, oracle-witnessed rebaseline**: **58 cells move, every one `incorrect → correct`
+(`contains_reference`/`correct`/`outcome`); zero losses, zero coverage change, zero similarity
+drift** (the `(exact, normalized, token_f1)` projection SHA is byte-identical on all five committed
+score files). Every moved cell was hand-verified against its verse (shortest reference 8 words,
+median 17) — the same text in Imla'i orthography, never a different text.
+
+| Run | accuracy before → after | coverage | moved |
+|---|---|---|---|
+| tutorial-2026-10-11 (retrieve_quote) | 86.0% → 93.2% | 69.5% (unchanged) | 20 |
+| original-2026-10-21 (overall) | 47.7% → 49.1% | 76.6% (unchanged) | 15 |
+| first-run-2026-10-11 | unchanged | unchanged | 0 |
+| exp-arabic-prompts (en, both models) | 80.4% → **96.4%** | 100% | 9 |
+| exp-arabic-prompts (ar, both models) | 71.4% → **96.4%** | 100% | 14 |
+
+The exp A/B is the proof: pre-fold, Arabic-prompted answers dropped ~8–11 pts and 5 cells flipped
+en→ar — **entirely a scorer artifact**; post-fold en and ar are identical at 96.4% with **0
+cross-condition flips**, clearing the #39 prerequisite. Witnessed by `test_orthography_rebaseline.py`
+(SIM frozen on all 5 files + superset + per-run mover counts + exp recovery) and the re-pinned
+`test_contains_reference_rebaseline.py` / `test_refusal_rebaseline.py`.
+
+## Reconciliation with the competing #57
+
+A competing #52 (PR #57) folded the orthography inside `normalize()`, materialising dagger-alif →
+full alef. That un-credits the defective-spelling class — its own test asserted
+`normalize("2:2") == "ذالك الكتاب…"` (Uthmani ذٰلك → **ذالك**) while Imla'i writes **ذلك**, so it
+would score the defective class *wrong* — and it moves the `normalized` tier, the generation ANCHOR
+digest, and the audit path. This PR converges on the reviewed **containment-only** design (the
+long-ā alef is OPTIONAL, `normalize()` frozen) as the single source of truth, and **keeps Jonathan
+Karr's unrelated `outcomes.py` `_INTRODUCER` regex-escape fix**. One tutorial cell
+(`e2d74279aaf0`) composes cleanly across both rebaselines: `refused` (pre-#48) → `incorrect` (#48)
+→ `correct` (#52, a verbatim-Imla'i delivery).
 
 ## Known limitation
 
@@ -43,8 +72,9 @@ at verse-length references.
 
 ## Coordination
 
-Built after #48 (refusal decline-cues) per the architect's merge order; rebased onto it and the
-orthography witness re-run over the post-#48 baseline.
+Stacks on #48 (refusal decline-cues, PR #55) and the SGGS corpus (PR #51); rebased onto current
+`main` (including #57/#58, see Reconciliation) and the orthography witness re-run byte-identically
+over that base.
 
 ## Tests
 

@@ -342,11 +342,16 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
     an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern built from
     the reference matches the answer. Being a superset keeps ``normalized=1 ⇒ contains=1`` and
-    guarantees the fold only ADDS credit. DIRECTION-INDEPENDENT: the pattern (optional ``ا?`` at each
-    reference dagger/``ىٰ``) is matched against the answer in BOTH its default (dagger-deleted) and
-    plene (dagger→alef) forms, so an Imla'i reference ↔ Uthmani answer also matches — per-position
-    optionality, which handles a mixed verse (defective ``هذا`` + plene ``الكتاب``) that a uniform
-    plene/defective fold cannot. Empty reference never matches."""
+    guarantees the fold only ADDS credit. The per-position optionality lives in the PATTERN (``ا?``
+    at each REFERENCE dagger/``ىٰ``), and the answer is matched in BOTH its default (dagger-deleted)
+    and plene (dagger→alef) forms — so any answer orthography (plene, defective, or mixed) matches a
+    reference, in either reproduction direction, and the dual answer form is load-bearing (it credits
+    answers that write a dagger where the reference wrote a full alef). LIMITATION: because the
+    per-position optionality is carried by the reference's daggers, a reference that is itself written
+    in MIXED Imla'i (e.g. defective ``هذا`` + plene ``الكتاب``, no daggers to mark) is NOT fully
+    matched — the two global answer forms cannot reproduce a per-word mix. This never arises on the
+    committed corpora (references are the corpus orthography — Uthmani for the Qur'an, carrying the
+    daggers); see the Spec 52 review's residuals. Empty reference never matches."""
     if not normalize(expected):
         return False
     if bounded_contains(answer, expected):          # today's contract — superset floor

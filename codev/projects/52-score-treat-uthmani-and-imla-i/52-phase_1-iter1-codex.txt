@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core fold logic is sound, but the containment helper is unsafe outside Arabic and the corpus collision diagnostic does not fulfill the phase plan.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `arabic_ws_insensitive_contains()` (`score.py:224-232`) removes whitespace for every script and drops containment boundaries. For example, it equates Latin `"the rapist"` with `"therapist"` and Arabic `"كتاب"` with `"الكتاب"`. This contradicts the Arabic-only scope and could introduce wrong credit when wired in Phase 2. Add Arabic-script gating, preserve containment boundaries, and test non-Arabic and intra-word negatives.
+- The corpus diagnostic (`test_arabic_orthography_fold.py:149-183`) does not deliver the planned classification/list of genuine distinct-word merges. Its “skeleton” repeats the fold’s own mappings, so known semantic collisions such as the accepted `نبى`/`نبّئ` class pass as “genuine orthographic variants.” The `<150` bound also does not establish that same-word reunions dominate. Pin or otherwise durably classify the introduced buckets, explicitly identifying distinct-word residues for Phase-2 hand verification.

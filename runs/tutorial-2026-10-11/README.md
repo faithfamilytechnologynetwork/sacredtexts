@@ -111,12 +111,15 @@ rather than hidden beneath it.
   Its full journey `refused → incorrect → correct` is the tutorial's clearest single illustration of
   why both fixes were needed; the four analogous opus-search Talmud deliveries stay `incorrect`
   (genuinely not the reference text, no orthographic match). **The refusal set is clean: all 122
-  refused cells sit below `token_f1` 0.13** — no delivered-but-refused outlier remains. The Jev
-  cross-check (`jev_agreement.{json,md}`) was computed against the *pre-fix* classifier and is
-  retained as historical evidence; its deterministic-refusal column and its "11 disagreements" figure
-  are superseded by this rebaseline
-  (post-fix: 6 disagreements, agreement 0.985) — read refusal counts from `summary.json`, not from
-  `jev_agreement`.
+  refused cells sit below `token_f1` 0.13** — no delivered-but-refused outlier remains.
+- **The Jev cross-check independently corroborates the orthography fold.** `jev_agreement.{json,md}`
+  is regenerated against the current (post-Spec-52) scores. On the **containment** column (judge
+  `matches_requested_p` vs deterministic `contains_reference`) agreement rose **0.9325 → 0.9825**
+  (both 239 → 259, **judge-only 27 → 7**, **deterministic-only 0** throughout): the Jev judge had
+  already marked 20 of the fold's newly-credited cells as matches, and the fold credited **nothing**
+  the judge thought was a non-match — independent no-wrong-credit evidence, exactly the 27
+  orthographic near-misses this fold targeted. The **refusal** column is unchanged by Spec 52
+  (agreement 0.985, 6 deterministic-only — the delivered-not-refused cells Spec 48 reclassified).
 
 ## Copyright / licensing
 

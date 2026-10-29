@@ -262,3 +262,92 @@ Architect said hold, use the time to pre-draft. Done (all committed):
 
 STATE: Phase 1 complete & committed; Phase 2 fully scripted & ready. HOLDING for architect's
 "#48 merged" ping, then execute the runbook as one motion. Nothing else to do until then.
+
+## Phase 2 GO — rebase + dry-run witness (2026-10-29)
+
+Architect pinged: #48 (PR #55) + jasbir's SGGS PR #51 merged externally; also a cli.py canary gate
+(generate only, no scoring contact). Rebased builder/aspir-52 onto origin/main — CLEAN, no
+conflicts (Phase 1 was additive/unwired). Suite 612 passed / 2 skipped on the merged baseline
+(pre-wiring). PR #51 moved ANCHOR_CORPUS_HASH/ANCHOR_DIGEST (SGGS in corpus); generation untouched
+by me so the digest is whatever #51 set — my witness must compute over this corpus state.
+
+WIRED (working tree, not committed): 5 call-sites bounded_contains→fold_aware_contains —
+score.py contains_reference (:486) + cite verdict (:457), outcomes.classify_refusal (:348),
+facct.py (:291), probes.py (:203). cite_passage/facct/probes are Latin-only no-ops on committed
+data (0 Arabic citations; facct skips non-Bible) — swapped anyway per plan's "one shared contract"
+(prevents future divergence). Updated the adjacent docstrings/comments.
+
+DRY-RUN WITNESS (re-scored every committed run's answers with the wired scorer, wrote NOTHING to
+runs/): SIM (exact/normalized/token_f1) projection SHA byte-identical on all 5 score files — frozen
+oracle holds. 58 moved cells, ALL 0->1 / incorrect->correct, zero losses, zero coverage change:
+- tutorial 86.0->93.2% (+20), original 47.7->49.1% (+15: cu +6, rq +9), first-run 0.
+- exp via its analyze.py (path-patched to worktree scorer, scratch dir): pre-fold en 82.1/78.6 ar
+  71.4/71.4 w/ 5 en->ar flips -> POST-FOLD all four 96.4%, 0 flips. Artifact eliminated. (en 9, ar 14.)
+GOTCHA found: my first exp dry-run scored RAW answers-ar.jsonl and showed 14 bogus verify_source
+correct->refused flips — because exp scores the NORMALIZED copy (answers-ar-normalized.jsonl, نعم/لا
+-> Yes/No). Using analyze.py's real path, those 14 stay correct. Lesson: exp has a bespoke scoring
+path; don't lens it through generic score_answer.
+HAND-VERIFIED all 58: each the same verse/hadith word-for-word in Imla'i; shortest ref 8 words
+(median 17) -> no short-fragment collision.
+
+SURFACED packet to architect (held in mailbox) with ONE decision: exp is EXPERIMENT evidence —
+(A) regenerate its scores in place + README pre/post sections, or (B) keep committed scores as the
+pre-fold record + README-only post-fold proof. Recommended (A) + fix analyze.py:14 hardcoded
+main-checkout import path. HOLDING the runs/ commit for the architect's ack on exp treatment.
+Review doc moved-numbers table filled. Next: write test_orthography_rebaseline.py witness + re-pin
+oracles while waiting; do the atomic commit after ack.
+
+## URGENT HOLD — competing #57 merged (2026-10-29)
+
+Architect URGENT HOLD mid-Phase-2: Jonathan Karr merged PR #57 (karr/issue-52-arabic-orthography,
+154e0ef) directly to main — a COMPETING implementation of #52 — outside review, while I was
+executing the rebaseline. Do NOT commit, do NOT open PR, until the architect reconciles with Waleed.
+
+Stopped cleanly after the md-splice step. WORKTREE STATE at hold:
+- NO commit / push / PR. HEAD = f9561e0 (rebased hold-prep). Branch does NOT contain #57 (I rebased
+  onto 59fc3eb = main+#48+#51, pre-#57).
+- Done in working tree (uncommitted, reversible): wired 5 call-sites; regenerated
+  tutorial/original scores.jsonl (+20/+15) + spliced summary.json/md (panel/usage byte-identical);
+  first-run scores byte-identical; exp scores-ar/en (+14/+9) + analyze.py path fix + Option-A
+  README rewrite (pre/post sections); test_facct re-pin.
+- NOT done: original facct regen, tutorial jev_agreement regen, oracle re-pins,
+  test_orthography_rebaseline.py, viewer re-pin, dispatcher both-lanes, commit.
+- Witness validated: 58 cells all 0->1, SIM frozen, coverage frozen, exp all-four 96.4% / 0 flips.
+  Found + documented a residual: Q14:34 word-initial hamza-alef ءَا ↔ alef-madda آ NOT folded
+  (1 cell, identical both conditions, not a content error) — logged in exp README, NOT fixed
+  (scope discipline; a ءَا↔آ rule needs its own collision analysis).
+
+HOLDING. No commit, no revert, no further writes. Asked architect whether to keep tree as-is for a
+diff vs #57, reset to clean, or proceed to commit if the reviewed/witnessed path prevails.
+
+## Reconciliation + Phase 2 COMPLETE (2026-10-29)
+
+Waleed greenlit reconciliation of the competing #57/#58. Rebased branch+tree onto origin/main
+(b93e881, post #57/#58/#51/canary) — CLEAN (my Phase-1 commits patch-skipped via #58).
+BIG FINDING: `08f43b8` ("fix double code branch") had ALREADY converged to MY design — frozen
+normalize(), my symmetric fold_arabic_orthography, score_normalize/fold_aware_contains/optional-ā
+pattern, original skeleton test_normalize_nonlatin (his materialise-fold + ذالك asserts reverted),
+kept his outcomes _INTRODUCER escape fix. Only wiring (contains_reference still bounded) remained →
+my WIP supplied it. His approach was the REJECTED one (materialises dagger→alef; his own test
+asserted normalize('2:2')=='ذالك...' = the defective-class defect).
+
+Re-regenerated everything on the new base + re-ran witness: IDENTICAL to the 58-cell packet (SIM
+frozen all 5 files, coverage frozen, exp all-four 96.4%/0 flips) → no re-surface needed.
+
+Phase-2 done (all in working tree, uncommitted):
+- scores regen: tutorial +20, original +15, first-run 0, exp ar+14/en+9.
+- summary.json/md surgical splices (panel/usage/generated_at byte-identical both runs).
+- original facct regen (embedded outcomes moved; counterfactual unchanged). jev_agreement LEFT
+  historical per #48 precedent (README already directs to summary.json); README note extended.
+- analyze.py import path fixed (repo-relative); exp README Option-A rewrite (post-fold current,
+  pre-fold historical, the Q14:34 hamza-alef↔madda residual documented).
+- oracle re-pins: test_contains_reference_rebaseline[tutorial] FLIP_SET 20→40 + ACC;
+  test_refusal_rebaseline re-pinned to current-state invariants (A, architect-approved, docstring
+  cites PR#55/review/pre-#52 b93e881); test_facct literal; NEW test_orthography_rebaseline.py (SIM
+  frozen all 5 + superset + mover counts + exp recovery). Viewer tutorialRun.test.ts re-pinned.
+- run READMEs (tutorial + original) updated for moved numbers + orthography narrative;
+  lessons-learned.md orthography lesson updated.
+- e2d74279aaf0 triple-penalty (refused→incorrect→correct) pinned + documented.
+
+Suites: pipelines 625 pass / 2 skip; viewer 187 pass; copyright audit OK. NOTHING committed yet.
+NEXT: update pr-body, stage explicitly, ONE atomic commit, push, open PR via normal pr gate.

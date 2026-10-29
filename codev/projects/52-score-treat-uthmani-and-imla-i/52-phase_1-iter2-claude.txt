@@ -1,0 +1,89 @@
+I'll start by reading the implementation files.Now let me verify the default path is truly unchanged and run the suite.Let me verify the corpus diagnostic's claims empirically (read-only, via stdin — no files written).Let me check whether the QUL corpus carries a paired Imla'i rendering — that would be a direct empirical validation of the fold.Found something important — the fold appears to **lose** credit on some cells. Let me investigate.This is a real defect. Let me quantify its blast radius on the committed runs that Phase 2 will rebaseline.Let me pin down exactly why the third cell lost containment — that contradicts the "strict superset" expectation.The file changed during my review — the builder appears to be editing live. Let me re-check state and re-verify.The builder refined the containment helper live. Let me re-run my measurements against the current disk state.One more check — whether the Phase-1 corpus diagnostic could have caught this (it only looks for merges, never splits).I have enough to report. Let me confirm the two lost cells are perfect matches today.## Review — Spec 52, Phase 1 (`score_normalize` fold capability)
+
+**Note on tree state:** `pipelines/sacredbench/score.py` and `test_arabic_orthography_fold.py` have **uncommitted modifications** on top of the reviewed commit (`3ddd958`) — the builder refined the containment helper mid-review (digit-separator handling). I reviewed the **current disk state** and re-ran all measurements against it. I made no changes to the tree.
+
+### What's solid
+
+- **`normalize()` is genuinely untouched.** The `_normalize(text, *, fold)` refactor is a faithful extraction — I diffed it against `git show $(git merge-base main HEAD):score.py` and the `fold=False` path is step-for-step identical. Suite: **578 passed / 2 skipped**; all four committed-run guards pass *unmodified*; `ANCHOR_DIGEST` stable. The "unwired" discipline the plan insisted on is real.
+- **The collision residue is verified, not asserted.** I independently re-ran the sweep: 19,002 corpus words → 65 introduced merges → **exactly the 9 pre-registered buckets**, and the annotations are accurate. Two of the nine (`شىء/شيـٔا`, `برىء/بريـٔا`) are inflections of one lexeme rather than distinct words, and the allow-list labels them honestly. The `strict_skeleton` over-reports rather than under-reports (it folds the digraph context-free, so word-final digraph cases get flagged) — the safe direction.
+- `_skips_to_arabic_letter` is correct: end-of-string → word-final, non-letter → word-final, and the `وَعَلَىٰٓ` stacked-mark case holds. Containment performance is fine (1,208-char verse: 1.8 ms; no backtracking blowup).
+- The live digit-separator refinement (`_is_arabic_letter` gating on category `L`) is a real improvement over the committed version and fixes one containment loss I had measured against `3ddd958`.
+
+### Blocking issue: the dagger→alef rule makes the dagger diacritic load-bearing, and un-credits perfect answers
+
+`fold_arabic_orthography` promotes U+0670 (category Mn) to the **letter** ا. But `strip_script_marks` documents the opposite contract — *"applied to BOTH the answer and the expected text, so the direction of vocalisation does not matter."* Applying the fold to both sides is **not** the same as being insensitive to whether a side *carries* the mark. Measured on the corpus:
+
+```
+corpus words containing U+0670:                                   2648
+  of those, score_normalize(w) != score_normalize(w minus dagger): 2276
+  (today: normalize(w) == normalize(w minus dagger) for all 2648)
+```
+
+So for 2,276 word-forms, an answer that reproduces the consonantal skeleton **without** the Uthmani dagger — the overwhelmingly common model output style — stops matching. This is not theoretical. On the committed tutorial run:
+
+```
+tutorial-2026-10-11   arabic retrieval cells=132   gained=20   LOST=2
+  haiku / retrieve_quote-07ca676a80ab   committed: normalized=1 contains_reference=1 correct=1
+  haiku / retrieve_quote-5c645a8301ad   committed: normalized=1 contains_reference=1 correct=1
+```
+
+Both are answers where `normalize(answer) == normalize(expected)` **exactly** — perfect retrievals. Under the fold both go to `normalized=0, contains_reference=0, correct=0`. The sole diff is an alef the fold *inserted into the expected text*:
+
+```
+expected new: ... ان كنت من الصادقين      (ٱلصَّٰدِقِينَ → dagger became ا)
+answer   new: ... ان كنت من الصدقين       (model omitted the dagger)
+```
+
+A benchmark whose stated purpose is "don't penalise a content-correct answer for presentation" would, after this change, mark two verbatim-correct Qur'an retrievals wrong. That's the spec's own harm, inverted.
+
+**Root cause, and why it's the same class the spec already ruled on.** The dagger spells long ā, but standard Imla'i *also* omits the alef for the defective-spelling (رسم ناقص) class — `هذا`, `ذلك`, `الله`, `الرحمن`, `لكن`, `أولئك`, `إله` — while writing it for `الكتاب`, `سبحان`, `الصادقين`. Verified:
+
+```
+ذَٰلِكَ      vs ذلك      old=1 new=0   (ذالك vs ذلك)      <== LOST
+هَٰذَا       vs هذا      old=1 new=0   (هاذا vs هذا)      <== LOST
+ٱلرَّحْمَٰنِ vs الرحمن   old=1 new=0   (الرحمان vs الرحمن) <== LOST
+ٱلْكِتَٰبِ   vs الكتاب   old=0 new=1   gained
+سُبْحَٰنَ    vs سبحان    old=0 new=1   gained
+```
+
+A context-free `dagger → ا` is wrong in exactly the way the spec proved a context-free `ىٰ → ا` is wrong — and here the split is **lexical, not positional**, so no position predicate fixes it. The medial-digraph rule inherits the same defect (`أَتَىٰكُمْ`→`اتاكم` but `أَتَىكُمْ`→`اتيكم`).
+
+The direction I'd suggest exploring: make the long-ā alef **optional in the containment predicate** (where the whitespace-flex machinery already lives) while leaving `normalized` on today's dagger deletion. Since the default headline is `normalized OR contains_reference`, that is a strict superset — it keeps all 35 gains and loses nothing. I sketched this but did **not** get a working implementation, so treat it as a direction, not a validated fix. Options to weigh with the architect: this, versus accepting and pre-registering the losses (contradicts SC "credits every content-correct cell that can be credited"), versus narrowing the dagger rule.
+
+Be aware the split direction isn't uniformly harmful — of 137 fold-induced splits, some are genuine *disambiguations* (`أَبْصَـٰرُ` "sights" vs `أَبْصَرَ` "he saw" are correctly separated). This needs judgment, not a blanket revert.
+
+### Secondary: the Phase-1 corpus diagnostic is merge-only, so it structurally cannot see this
+
+`test_corpus_collision_diagnostic` enumerates only *introduced merges*. It has no split/loss direction, which is why a 2,276-word-form regression passed silently through two review iterations. Recommend adding the dual assertion — for every corpus word pair sharing a `normalize()` value, pin the set whose `score_normalize()` values diverge (currently 137 classes, and 2,276 dagger-presence pairs). That check fails loudly on exactly this defect and belongs in Phase 1, before Phase 2's witness freezes the behaviour.
+
+### Minor
+
+- `test_dagger_alef_folds_to_full_alef` compares `ذَٰلِكَ` to **`ذالك`**, which isn't the standard Imla'i spelling (`ذلك` is) — the chosen target is what hides the defect. Use the real Imla'i form.
+- The spec/`score.py` known-limitation text documents the 9 merge buckets but says nothing about the loss direction; it needs the dagger-presence sensitivity named, with the number.
+- Please commit the in-flight edits so the review, the witness, and the Phase-2 rebaseline refer to the same bytes.
+
+For scope discipline: everything above is Phase-1 fold logic. I'm not asking for Phase-2 wiring, rebaselining, or artifact regeneration — but this must be settled *before* Phase 2, because the plan's witness pre-registers "every Arabic cell that moves," which would freeze these two un-creditings as intended behaviour.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Fold logic, residue allow-list, and unwired discipline all verify, but the dagger→alef rule makes the U+0670 diacritic load-bearing (2,276 of 2,648 corpus word-forms) and un-credits two verbatim-correct committed tutorial cells, and the merge-only corpus diagnostic cannot see that class.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `fold_arabic_orthography` promotes U+0670 (Mn) to the letter ا, breaking `strip_script_marks`'s documented vocalisation-direction independence: for 2,276 of 2,648 dagger-bearing corpus words, an answer omitting the dagger no longer matches (today all 2,648 match).
+- Two committed tutorial cells (`haiku/retrieve_quote-07ca676a80ab`, `haiku/retrieve_quote-5c645a8301ad`) are exact matches today (`normalized=1, contains_reference=1, correct=1`) and go to 0/0/0 under the fold — content-correct retrievals marked wrong, the inverse of the spec's purpose.
+- A context-free `dagger → ا` is wrong for the defective-spelling class (`هذا`, `ذلك`, `الله`, `الرحمن`, `لكن`, `أولئك`, `إله` — where Imla'i also omits the alef) while being required for `الكتاب`/`سبحان`; the split is lexical, not positional, so no position predicate fixes it. Same root cause affects the medial `ىٰ` rule (`أَتَىٰكُمْ`→`اتاكم` vs `أَتَىكُمْ`→`اتيكم`).
+- `test_corpus_collision_diagnostic` enumerates only introduced *merges* and has no *split* direction, so it cannot detect fold-induced credit losses; add a dual pinned assertion over corpus words sharing a `normalize()` value (currently 137 diverging classes).
+- `test_dagger_alef_folds_to_full_alef` tests `ذَٰلِكَ` against `ذالك` rather than the real Imla'i `ذلك`; the test pair conceals the defect.
+- Uncommitted modifications to `score.py` and the test file were present during review — commit before Phase 2 so the witness pins the reviewed bytes.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 2 paths changed while this lane was running:
+  - pipelines/sacredbench/score.py
+  - pipelines/tests/test_arabic_orthography_fold.py
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

@@ -1,0 +1,10 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The plan is well structured, but it replaces the specification’s mandatory zero-collision gate with a weaker hand-review process and underspecifies the rebaseline oracle.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The plan directly violates the approved non-collision requirement. It permits “genuine distinct-word merges” if enumerated and bounded, then hand-verifies only cells that currently flip. The spec requires rejecting any rule that creates a distinct-word collision, even if that leaves residual cells. The recorded prototype already found `نبى`/`نبّئ`; the rule must be refined or rejected rather than accepted through scoring-level review.
+- The rebaseline witness pins only headline flips for Arabic cells. The spec requires an exact before/after projection delta: all Arabic changes to `normalized`, `token_f1`, `contains_reference`, and headline results must be pre-registered, including submetric changes that do not flip `correct`.
+- The experiment run does not have the generic `scores.jsonl` and `summary.*` layout named by Phase 2; it has separate `scores-en.jsonl`/`scores-ar.jsonl`, custom `analyze.py`, and no summaries. The plan must explicitly describe how both conditions and their derived summaries will be regenerated and tested.
+- Add an end-to-end word-boundary contract test through `score_answer`, explicitly asserting that `exact`, `normalized`, and tokenization semantics remain unchanged while only `contains_reference` supplies the match. Helper-only tests do not fully protect the Spec-15 contract.

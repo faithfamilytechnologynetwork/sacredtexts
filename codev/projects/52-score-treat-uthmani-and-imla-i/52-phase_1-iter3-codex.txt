@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The revised containment is safe for QUL-as-reference scoring, but it violates the explicit direction-independent contract.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `fold_aware_contains` only makes long-ā optional when the **expected/reference** contains a dagger. Reverse matches fail: `fold_aware_contains("ٱلْكِتَٰبِ", "الكتاب")`, `fold_aware_contains("أَتَىٰكُمْ", "أتاكم")`, and `fold_aware_contains("يَـٰبُنَىَّ", "يَا بُنَيَّ")` all return `False`. This conflicts with the specification’s “both match directions” and “Direction-independent” requirements and Phase 1’s direction-independent deliverable. The test comment explicitly declares Imla'i references out of scope despite the spec’s future-Imla'i-corpus assumption. Make the equivalence symmetric and add reverse-direction tests for plene long-ā, the `ىٰ` digraph, and the word-boundary example.

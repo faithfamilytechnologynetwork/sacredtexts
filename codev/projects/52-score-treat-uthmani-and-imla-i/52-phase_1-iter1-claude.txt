@@ -1,0 +1,74 @@
+I'll start by reading the implementation files.I read the implementation, verified the fold empirically against the committed QUL corpus, and ran the suite. I did not modify anything in the tree.
+
+## What's solid
+
+**The fold logic is right, and I verified it independently rather than trusting the tests.**
+
+- `normalize()` is untouched — the score.py diff is purely additive (96 lines), so the default path and `ANCHOR_DIGEST` are safe. Plan decision 1 honored exactly.
+- Ordering is correct and load-bearing as specified: NFKD → quote/dash → `fold_arabic_orthography` → `strip_script_marks` → punct → ws, interleaved rather than wrapped. The U+FEEF test genuinely proves the NFKD-first ordering.
+- The mark-skipping boundary detector is the right call, and I confirmed the corpus pressure behind it: **211 medial digraph words** (all genuine long-ā: `ءَاتَىٰكُمْ`, etc.), **400 word-final**, and **15 bare-medial maqsura** — all of which are the `ىْء`/`ىٓء` ya-seat spelling (`شَىْءٍ`, `بَرِىٓءٌ`), where → ya is correct. No corpus word has a dagger non-adjacent to its maqsura (0 cases), so the strict `text[i+1]` adjacency check is safe on this corpus.
+- Suite green: `577 passed, 2 skipped`; all four committed-run regression guards unmodified and passing.
+
+## Issue 1 — the containment helper cannot be wired as planned (Phase-1 deliverable defect)
+
+`arabic_ws_insensitive_contains` (score.py:224) deletes **all** whitespace from both sides, which is script-blind and destroys word-boundedness. Measured:
+
+```
+bounded_contains("Jude 1:30 says...", "Jude 1:3")        -> False
+arabic_ws_insensitive_contains(same)                     -> True   # regression
+arabic_ws_insensitive_contains("وقال المهديون كلاما","هدي") -> True   # sub-word Arabic credit
+```
+
+The first case is precisely what `bounded_contains`'s own docstring promises never happens ("so `Jude 1:3` does not match `Jude 1:30`"). Phase 2's plan makes this the *single shared* containment contract across `score_answer`, `outcomes.classify_refusal`, `facct.py:277`, and `probes.py:203` — wiring this version would break the Latin contract and the non-Arabic projection freeze, and would let a short Arabic reference be credited inside a longer word.
+
+Fix is cheap and strictly dominates the current version — permit optional whitespace instead of deleting it, keeping the anchors:
+
+```python
+ne = score_normalize(expected).replace(" ", "")
+if not ne:
+    return False
+pat = r"(?<!\w)" + r"\s*".join(re.escape(c) for c in ne) + r"(?!\w)"
+return re.search(pat, score_normalize(answer)) is not None
+```
+
+I ran this against the cases: `Jude 1:3`↛`1:30` ✓, `هدي`↛`المهديون` ✓, Latin containment unchanged ✓, and **both** directions of the headline compound (`يَـٰبُنَىَّ` ↔ `يَا بُنَيَّ`) still credited ✓. Please also add the missing negative tests — the helper currently has three asserts and no boundedness or non-match case.
+
+## Issue 2 — the corpus diagnostic asserts something it cannot see, and drops the list Phase 2 needs
+
+The `skeleton()` helper neutralises ء→ا, ى→ي, dagger→ا, ىٰ→ا — i.e. exactly the fold's own alphabet. So `len(skels) == 1` is structurally blind to the one collision class this fold actually introduces. It passed while admitting **7 genuine distinct-word merges** I enumerated from the 65:
+
+| Merge | Words |
+|---|---|
+| `سواا` | `سَوَآءً` (equal) / `سُوٓءًا` (evil) |
+| `جزاا` | `جَزَآءً` (recompense) / `جُزْءًا` (a part) |
+| `وراا` | `وَرَءَا` (and he saw) / `وَرَآءَ` (behind) |
+| `ملا` | `مَلَأٌ` (chiefs) / `مِّلْءُ` (fill) |
+| `قري` | `قُرًى` (towns) / `قُرِئَ` (was recited) |
+| `امري` | `أَمْرِى` (my affair) / `ٱمْرِئٍ` (a man) |
+| `نبي` | `نَبِىٍّ` / `نَبِّئْ` (the documented case) |
+
+Four of these come from the **standalone-hamza ء→ا rule**, not the maqsura rule — and the spec's known-limitation paragraph only documents the maqsura `نبى`-class. `سواء`/`سوء` is frequent Qur'anic vocabulary. I agree ء→ا is the only coherent target (given the pre-existing أ→ا fold, "drop" fails `أَرَءَيْتُمْ↔أَرَأَيْتُمْ`), so these are the same accepted-limitation class — but they need to be *documented*, not invisible.
+
+The plan's Phase-1 deliverable says: "list any genuine distinct-word merges **for Phase-2 hand-verification**." The test computes `introduced` and throws it away. Please (a) pin the distinct-word merges as a named, hand-annotated allow-list computed with a stricter skeleton that does *not* neutralise ء/ى — so a **new** collision fails the test and Phase 2 inherits the list; (b) soften the comment's "Every introduced merge must be between genuine orthographic variants" to what it actually proves; (c) extend the `score.py` limitation comment to name the hamza class, and surface it in the Phase-3 architect packet.
+
+Also: `assert len(introduced) < 150` is one-sided — a fold that silently no-op'd would yield 0 and pass. A lower bound (or the allow-list pin) closes that.
+
+## Minor (COMMENT)
+
+- `score_normalize` duplicates `normalize`'s body verbatim. A future edit to `normalize` silently diverges, and the only guard is four hard-coded Latin strings. Prefer one private `_normalize(text, *, fold: bool)` with both public functions delegating — drift becomes impossible by construction.
+- `_folds_equal` (test:31-32) asserts `sn(a)==sn(b) and sn(b)==sn(a)`. String equality is symmetric; the "both directions" claim is vacuous. Direction-independence only has teeth for the containment predicate, which the helper test does cover correctly.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The position-aware fold is correct and corpus-verified, but the whitespace-insensitive containment helper loses word-boundedness (Jude 1:3 matches 1:30) and so can't be wired in Phase 2, and the corpus diagnostic is blind to the 7 distinct-word merges it was meant to list.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `arabic_ws_insensitive_contains` strips all whitespace: script-blind and unbounded — `("Jude 1:30 says...", "Jude 1:3")` returns True where `bounded_contains` returns False, and `هدي` matches inside `المهديون`. Use an anchored pattern with `\s*` between characters (verified to satisfy every in-scope case).
+- Containment helper has no negative tests (no boundedness case, no non-match case).
+- `test_corpus_collision_diagnostic`'s `skeleton()` neutralises the fold's own alphabet, so its variant-only assertion cannot see the ء→ا / ى→ي collisions; 7 genuine distinct-word merges pass silently (سواء/سوءا, جزاء/جزءا, وراء/ورءا, ملأ/ملء, قرى/قرئ, أمرى/امرئ, نبى/نبّئ).
+- Plan deliverable "list any genuine distinct-word merges for Phase-2 hand-verification" not met — the list is computed and discarded; pin it as a hand-annotated allow-list so new collisions fail.
+- The standalone-hamza collision class is undocumented (spec only names the maqsura `نبى`-class); add it to the `score.py` limitation comment and the architect packet.
+- `assert len(introduced) < 150` is one-sided: a no-op fold would pass the diagnostic.
+- `score_normalize` duplicates `normalize`'s pipeline — drift risk; parameterise a single private implementation (minor).
