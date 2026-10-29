@@ -293,3 +293,24 @@ Architect reviewed PR #55 (fresh clone green), endorsed codex's 2 findings as re
   **Set still EXACTLY 5 → committed runs byte-UNCHANGED** (only outcomes.py + test_outcomes.py moved).
 - commit e95d1fe. Both lanes green (viewer 187, pipelines 587/2 skipped). Pushed to PR #55.
 - Surfaced the sweep result to architect. STILL WAITING on the pr gate — no merge, no self-approve.
+
+### External merge — gate left pending for human to regularize (2026-10-29)
+
+Architect FYI: **PR #55 was merged to main by Jonathan Karr (external collaborator) at 21:29:43Z —
+NOT via the porch `pr` gate**, which Waleed had not yet approved. Merge content == the reviewed
+branch (no redo needed). Per architect: do NOT self-approve the porch gate; project 48 stays at
+**gate-pending** and Waleed will regularize the gate record when back. Treating the protocol as
+functionally post-merge.
+- Did NOT run `porch approve 48 pr`, `porch done 48 --pr`, or `porch done 48 --merged` — the gate
+  record is the human's to reconcile; a builder never advances a human gate on an external action.
+- Review doc + thread are complete and committed; archival done so cleanup is possible later.
+- Branch `builder/aspir-48` is the merged content. Nothing further for the builder until Waleed
+  regularizes the gate (then: the normal `porch done --pr 55 --merged 55` bookkeeping + verify).
+
+### Protocol complete — verified (2026-10-29)
+
+Waleed approved both gates retroactively (pr, then verify-approval), architect ran the approvals.
+porch bookkeeping done: PR #55 recorded + marked merged; review checks green; verify confirmed the
+fix is live on `main` (51/51 core #48 tests pass in-worktree). **porch phase = `verified` (terminal).**
+Worktree is now cleanup-eligible — NOT removing anything myself; cleanup is a separate human-approved
+step. Builder work on #48 is done.
