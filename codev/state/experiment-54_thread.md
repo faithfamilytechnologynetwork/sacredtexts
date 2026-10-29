@@ -73,3 +73,26 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   (c) HOLD the PR — ship code + live evidence together; if keys haven't landed within ~24h
   (≈2026-10-30 17:30Z) architect will have me open a deferred code+harness PR (Refs #54, live
   run deferred). (a) keys with Waleed. STILL WAITING on keys; nothing to advance.
+- 2026-10-29 (later): architect UNBLOCK — run on the EXISTING OpenRouter key; native search
+  *transported* through OpenRouter (NOT the :online/Exa layer). Directed: adapt harness to
+  OpenRouter (one provider=openai, base_url=openrouter, per-model tool shape; config map keyed
+  on model FAMILY not native host). REQUIRED per-arm nativeness verification in README before
+  the paid run; STOP+surface any arm that looks like a generic Exa layer. Live run GO once
+  dry-run passes; <$10, temp 0.
+- 2026-10-29: ran the REQUIRED verification myself (3 live OpenRouter probes, ~$0.09; raw in
+  scratchpad/probe_results.json). VERDICT:
+  - anthropic/claude-sonnet-5.5 (Anthropic native block): provider "Claude Platform on AWS",
+    server_tool_use_details.web_search_requests=1, 3 url_citations WITH content snippets →
+    NATIVE ✓
+  - openai/gpt-6.1-sol ({"type":"web_search"}): provider OpenAI, web_search_requests=2, 1
+    url_citation WITH char start/end_index (no content) → NATIVE ✓
+  - google/gemini-3.8-flash ({"type":"web_search"}): finish_reason=ERROR, NO
+    server_tool_use_details, 0 citations, cost 0 → FAILS. Contradicts the architect's probe
+    claim. Does NOT go native through OpenRouter.
+  KEY EVIDENCE it's not a uniform Exa layer: the anthropic vs openai annotation structures
+  DIFFER per provider (content-snippet vs char-offset) — a single OpenRouter/Exa layer would
+  return identical shapes. So sonnet+sol are genuinely each provider's native search.
+  → STOPPED the gemini arm, surfaced to architect. Recommending: 2-model OpenRouter run now
+  (sonnet+sol, matches exp-arabic comparability), defer gemini to a native GEMINI_API_KEY (my
+  native grounding path is built+tested). Awaiting scope confirm before rework + paid run.
+  Did NOT do the code rework or paid run yet (money + scope-down are the architect's call).
