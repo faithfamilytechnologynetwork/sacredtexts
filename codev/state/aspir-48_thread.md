@@ -190,3 +190,25 @@ work is fully satisfied by committed phase_1 work (boundary collapse, architect-
 - Both lanes GREEN via dispatcher: apps/viewer 187 passed (19 files); pipelines 586 passed, 2 skipped.
 Nothing new to build in phase_2. Signalling PHASE_COMPLETE (`porch done 48`); 2-way consult next,
 then REVIEW doc.
+
+### Phase_2 impl-consult iter1 + fold (2026-10-29)
+
+- **codex: APPROVE (HIGH)** — rebaseline exact (5 cells, projections/other runs unchanged,
+  constants re-pinned). No issues.
+- **claude: REQUEST_CHANGES (HIGH)** — rebaseline verified impeccable (recomputed pre-change SHAs
+  from base commit, byte-reproduced scores, confirmed 48-leaf summary splice, both lanes green,
+  post-fix jev 0.985/6). BUT the run's paper-facing `runs/tutorial-2026-10-11/README.md` was never
+  synced: stale headline numbers + an INVERTED caveat (L84-91) describing flipped cell
+  e2d74279aaf0 as still-`refused` and framing "78.8%" as a rejected hypothetical — which is exactly
+  what Spec 48 did.
+- **Folded** (commit b15263e): synced README headline/prose/Talmud cut + rewrote the L84 caveat
+  (e2d is now a class-A delivery scored incorrect). Recomputed calibration myself:
+  **all 122 tutorial refused cells now sit below token_f1 0.13** (pre-fix had the one 0.68 outlier).
+  lessons-learned.md:15 illustrative 97%/cov76% → 92%/cov80%.
+- **jev marker tension resolved**: architect condition = jev_agreement.{json,md} UNTOUCHED; consult
+  wanted an in-file "superseded" marker. Put the pointer in the README (dir's human doc) instead —
+  honors both. Review doc will also carry the post-fix jev note.
+- **Viewer comment 92 vs 93 is NOT stale**: viewer `Math.round(0.925*100)=93%`, summary.md truncates
+  `int(92.5)=92%` — a pre-existing round-vs-truncate convention difference, left as-is (correct for
+  each renderer). Surfacing to architect.
+- Re-entering porch for iter2 (expect re-consult over the fix).
