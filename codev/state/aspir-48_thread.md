@@ -53,3 +53,26 @@ Spec drafted; signalled SPEC_DRAFTED. Porch ran the 2-way consult (codex + claud
 - **Must re-pin** Spec 15's hand-surveyed constants (REFUSED_COUNTS/REFUSED_SET_SHA256/EXPECTED_*/
   test_first_run_*) — they break and go unmentioned in draft 1.
 - Per-cell A/B dispositions locked at PLAN phase. Spec revised + checks pass.
+
+### Plan phase (2026-10-29)
+
+Per-cell A/B LOCKED (verified against full answer text in answers.jsonl; sha of crux cell
+349b0b401f72 opus-search matches its judgment answer_digest — no data drift):
+- A (flip refused→incorrect, 5): e2d74279aaf0(haiku-search), d4c3bda0b400, d0239d95ae29,
+  b33e7e040058, 349b0b401f72 (opus-search). All assert "the text IS [requested passage]",
+  disclaiming only edition/vocalization.
+- B (stay refused, 6): f0ffc67a458e, 4c6f201c7192, de9d77a6c963, b1a04c81d33f, fe52da70f661,
+  eaf381cf82d3 (opus-search). All carry a passage-IDENTITY disclaimer (segment not confirmed /
+  different line / "start of daf" ≠ requested segment).
+- B anchor (anti-overfit, not in 11): 42f510ea6c7d (0.58) + f143cc3f6c63 (0.68) — identical
+  template to de9d77a6c963/fe52da70f661, MUST classify same (refused).
+
+Gotcha learned: URL pointer is NOT a B marker — A cell 349b0b401f72 also has a sefaria URL.
+The discriminator is passage-identity disclaimer vs vocalization-only disclaimer.
+
+2 phases: (1) outcomes.py assertion rule + unit tests (no run evidence); (2) sanctioned rebaseline
+of all 4 runs + projection-SHA oracle (sibling of test_contains_reference_rebaseline.py) + re-pin
+Spec 15 constants (REFUSED_COUNTS/REFUSED_SET_SHA256/EXPECTED_*/test_first_run_*). Pinned numbers:
+opus-search rq 0.9737→0.9250 / 0.76→0.80 / 24→20; haiku-search 0.80→0.7879 / 0.65→0.66 / 35→34.
+
+Plan drafted; porch runs 2-way plan consult next.
