@@ -228,3 +228,19 @@ then REVIEW doc.
 - **Folded** (commit 206692f): reworded both — Talmud bullet "Spec 48 newly exposed 4 … other 2 were
   already incorrect"; lessons-learned "unless a positive delivery assertion fires". Both lanes green.
 - Re-entering porch (iter3 expected: re-consult over the two-line fix).
+
+### Phase_2 impl-consult iter3 — CLEAN PASS (2026-10-29)
+
+- **codex: APPROVE (HIGH)** — rebaseline + docs accurate, prior factual issues resolved, projections
+  unchanged. No issues.
+- **claude: APPROVE (HIGH)** — re-verified exact (SHAs reproduce from merge base, 5 outcome-only
+  moves, splice preserves provenance, Jev 0.985/6, no survivor <0.25); both prior doc findings
+  correctly resolved.
+- Clean APPROVE/APPROVE at iter3 (NOT a force-advance — genuine pass; verified per lessons-critical).
+- claude optional note: `codev/reviews/15-scoring-contract-contains-exac.md:22` still cites the old
+  illustrative 97%/cov76%. DELIBERATELY LEFT — it's a CLOSED spec's review doc (historical record of
+  Spec 15's review; 97% was accurate then), out of this PR's scope; same preserve-the-record
+  principle as the untouched jev files. Both reviewers non-blocking.
+- phase_2 (final implement phase) complete. Next: REVIEW phase — write codev/reviews/48-*.md
+  (per-run moved-cell enumeration + before/after numbers + post-fix jev note + moved means, all
+  banked above), then open PR.
