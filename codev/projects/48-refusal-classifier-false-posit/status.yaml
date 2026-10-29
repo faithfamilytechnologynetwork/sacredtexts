@@ -1,22 +1,22 @@
 id: '48'
 title: refusal-classifier-false-posit
 protocol: aspir
-phase: implement
+phase: review
 plan_phases:
   - id: phase_1
     title: Assertion-based refusal rule in outcomes.py
     status: complete
   - id: phase_2
     title: Sanctioned rebaseline, projection-SHA oracle, and Spec 15 re-pin
-    status: in_progress
-current_plan_phase: phase_2
+    status: complete
+current_plan_phase: null
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_1
@@ -79,7 +79,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_2-iter2-claude.txt
 started_at: '2026-10-29T16:57:00.818Z'
-updated_at: '2026-10-29T19:02:15.133Z'
+updated_at: '2026-10-29T19:07:16.997Z'
 force_advanced:
   phase: phase_1
   iteration: 3
@@ -90,3 +90,5 @@ context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-10-29T18:37:22.777Z'
     acknowledged_at: '2026-10-29T18:37:56.773Z'
+  - boundary: enter:review
+    at: '2026-10-29T19:07:16.997Z'
