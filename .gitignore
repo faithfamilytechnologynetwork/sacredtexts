@@ -42,6 +42,7 @@ runs/*
 configs/models.yaml
 
 # Python
+.venv/
 pipelines/.venv/
 __pycache__/
 *.pyc
