@@ -140,15 +140,16 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(tasks).toEqual(["retrieve_quote"]);
     // Four rows, ranked by overall accuracy desc with model_id as the tiebreak. Under the Spec 15
     // phase-3 refused outcome, accuracy = correct/(correct+incorrect) (refusals excluded), so the
-    // order is: opus 100% (cov 66%), opus-search 93% (cov 80%), haiku-search 79% (cov 66%),
-    // haiku 71% (cov 66%) — the Spec-48 rebaseline lowered the two search arms (opus-search
-    // 97%→93%, haiku-search 80%→79%) but did not change the ranking. opus never answers wrong — it
+    // order is: opus 100% (cov 66%), opus-search 93% (cov 80%), haiku-search 92% (cov 66%),
+    // haiku 88% (cov 66%) — the Spec-52 orthography fold lifted the two haiku arms (haiku-search
+    // 79%→92%, haiku 71%→88%, crediting Imla'i-spelled Qur'an answers) but did NOT change the
+    // ranking (opus-search 93% still edges haiku-search 92%). opus never answers wrong — it
     // answers or declines — so it tops accuracy while covering least; coverage tells that story.
     expect(rows.map((r) => r.modelId)).toEqual(["opus", "opus-search", "haiku-search", "haiku"]);
     const acc = rows.map((r) => r.overall?.accuracy ?? -1);
     expect(acc).toEqual([...acc].sort((a, b) => b - a)); // non-increasing
     expect(rows[0]!.overall?.accuracy).toBeCloseTo(1.0, 5);
-    expect(rows[3]!.overall?.accuracy).toBeCloseTo(0.7121, 4);
+    expect(rows[3]!.overall?.accuracy).toBeCloseTo(0.8788, 4);
     // Each row carries its per-model token totals (the leaderboard's token column).
     expect(rows.every((r) => r.tokens && r.tokens.calls === 100)).toBe(true);
 
@@ -171,19 +172,20 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     if (!run.ok) return;
 
     // Drill into one search-on model: its 100 roster questions, no missing cells, and the
-    // headline-`correct` count matching summary.md (haiku-search = 52/100 under Spec 15's
-    // contains_reference headline — up from 40 as the 12 wrapped-exact Qur'an cells now pass).
+    // headline-`correct` count matching summary.md (haiku-search = 61/100 under the Spec-52
+    // orthography fold — up from 52 as 9 Imla'i-spelled Qur'an answers now pass containment).
     const hs = modelQuestions(run.results, "haiku-search");
     expect(hs).toHaveLength(100);
     const stats = questionStats(hs);
     expect(stats.total).toBe(100);
     expect(stats.missing).toBe(0);
-    expect(stats.correct).toBe(52);
-    // Spec 48: 1 haiku-search decline ("from memory, the Uthmani text of 4:176 is: …") is a
-    // delivered-as-answer and reclassified refused→incorrect, so declines 35→34, wrong 13→14
-    // (52+14+34+0 = 100). correct is unchanged.
+    expect(stats.correct).toBe(61);
+    // Spec 52: 9 haiku-search Qur'an answers written in Imla'i orthography are now credited
+    // (incorrect→correct), so wrong 14→5 with refused unchanged (61+5+34+0 = 100). One of the 9 is
+    // retrieve_quote-e2d74279aaf0, which Spec 48 had moved refused→incorrect (delivered-not-refusal)
+    // and the fold now credits as a verbatim Imla'i answer.
     expect(stats.refused).toBe(34);
-    expect(stats.wrong).toBe(14);
+    expect(stats.wrong).toBe(5);
     expect(stats.correct + stats.wrong + stats.refused + stats.missing).toBe(100);
 
     // The tradition filter composes: all three traditions present, Sunni Islam is 33 of them.
@@ -201,7 +203,7 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(pairs.map((p) => p.base)).toEqual(["claude-haiku-5-5", "claude-opus-5-5"]);
     const haiku = pairs.find((p) => p.base === "claude-haiku-5-5")!;
     expect([haiku.off.modelId, haiku.on.modelId]).toEqual(["haiku", "haiku-search"]);
-    // search lifts haiku's accuracy (71% → 79% after the Spec-48 rebaseline)
+    // search lifts haiku's accuracy (haiku 88% → haiku-search 92% under the Spec-52 fold)
     expect(haiku.on.overall!.accuracy!).toBeGreaterThan(haiku.off.overall!.accuracy!);
     // opus: search trades a little accuracy (100% → 93%) for more coverage (66% → 80%) — exactly the
     // story coverage exists to tell, now visible from the paired rows without a README.

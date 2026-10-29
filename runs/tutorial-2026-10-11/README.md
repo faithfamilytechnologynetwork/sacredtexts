@@ -42,13 +42,16 @@ excluded from accuracy rather than counted wrong. So each model has two headline
 |--------------|----------|----------|---------|-----------|---------|
 | opus         | 100%     | 66%      | 66      | 0         | 34      |
 | opus-search  | 92%      | 80%      | 74      | 6         | 20      |
-| haiku-search | 79%      | 66%      | 52      | 14        | 34      |
-| haiku        | 71%      | 66%      | 47      | 19        | 34      |
+| haiku-search | 92%      | 66%      | 61      | 5         | 34      |
+| haiku        | 88%      | 66%      | 58      | 8         | 34      |
 
-(Numbers reflect the **Spec 48** refusal-classifier rebaseline: five leading-decline cells that
-positively assert a delivered original-script payload — four opus-search Talmud reconstructions and
-one haiku-search Qur'an reconstruction — moved `refused → incorrect`; `correct` is unchanged. The
-pre-fix figures were opus-search 97% / cov 76% / 74·2·24 and haiku-search 80% / cov 65% / 52·13·35.)
+(Numbers reflect the **Spec 52** Uthmani↔Imla'i orthography rebaseline on top of the **Spec 48**
+refusal-classifier rebaseline. Spec 52 credits 20 Qur'an answers written in standard Imla'i
+orthography that strict normalisation missed (haiku +11, haiku-search +9; `incorrect → correct`,
+coverage unchanged) — this is what lifts the two haiku arms. The pre-Spec-52 figures were
+haiku-search 79% / 52·14·34 and haiku 71% / 47·19·34; opus and opus-search carry no orthographic
+movers. Spec 48 had earlier moved five leading-decline-but-delivering cells `refused → incorrect`;
+one of those — haiku-search's Qur'an reconstruction — is now `correct` under the fold, see below.)
 
 **Read together, accuracy and coverage tell the search story a single number would hide.**
 `opus` answers only 66% of the time but is never wrong when it does — reported as accuracy
@@ -58,10 +61,11 @@ at 92% accuracy** — web search mostly converts refusals into correct retrieval
 lifting a strict-match rate, though under the Spec 48 rule four of the newly-answered Talmud
 cells are confident deliveries that are *wrong* (now scored `incorrect`, not hidden as `refused`),
 which is why accuracy is 92% and not the 97% an earlier refusal rule reported. `haiku`: web search
-lifts accuracy **71% → 79%** while holding coverage (~66%).
+lifts accuracy **88% → 92%** while holding coverage (~66%) — both arms now near-ceiling once the
+Spec-52 orthography fold credits their Imla'i-spelled Qur'an retrievals.
 
-Two per-tradition cuts show where the retrieval comes from (contains-exact counts, unchanged
-from the original analysis):
+Two per-tradition cuts show where the retrieval comes from (containment counts under the Spec-52
+fold):
 
 - **Talmud (Aramaic).** opus-search contains the exact reference in **8 of 34** cells (~24%)
   vs. **0 of 34** for opus-off — web search lifted Aramaic Talmud retrieval from *nothing*.
@@ -70,15 +74,20 @@ from the original analysis):
   20 refused** — 57% accuracy at 41% coverage: search converted a total abstention into 8 correct
   retrievals and 6 wrong deliveries, of which **Spec 48 newly exposed 4** that the pre-fix rule had
   hidden as refusals (the other 2 were already scored `incorrect` before the fix).
-- **Qur'an.** haiku-search contains the exact reference in **24 of 33** cells vs. **19 of 33**
-  for haiku-off — more correct retrieval with search. The remaining Qur'an misses are
-  **orthographic/encoding variants** (the correct āyah in a different Uthmani encoding that
-  `normalize` does not fold to exact equality), *not* wrong scripture and *not* a web-search
-  artifact: haiku-*off*'s own Qur'an misses are the same non-exact encoding variants.
+- **Qur'an.** Under the Spec-52 orthography fold haiku-search now scores **33 of 33** Qur'an cells
+  and haiku-off **30 of 33** — up from 24 and 19 under strict containment. The cells the fold newly
+  credits are **Uthmani↔Imla'i orthographic variants**: the correct āyah written in standard modern
+  (Imla'i) orthography — plain alef for hamzat-wasl ٱ, a full alef or none for the dagger alif ـٰ,
+  dotted ي for dotless ى — which `normalize` (deliberately) does not fold to exact equality, so the
+  equivalence lives in the containment predicate (`fold_aware_contains`). These were never wrong
+  scripture and never a web-search artifact — haiku-*off*'s own misses were the same variants, which
+  is why the fold lifts both arms. (The 3 haiku-off cells still missing are genuine content errors.)
 
 Before the adopted headline, these wrapped-but-verbatim retrievals scored 0 under the strict
-"the quote and nothing else" rule; the contract revision (Spec 15) makes containment the
-headline, so the lift above is now in the accuracy column rather than hidden beneath it.
+"the quote and nothing else" rule; the contract revision (Spec 15) makes containment the headline,
+and **Spec 52** extends that containment to treat Uthmani and Imla'i orthographies as equivalent, so
+both the wrapping lift (Spec 15) and the orthography lift (Spec 52) are now in the accuracy column
+rather than hidden beneath it.
 
 ## Reading the scores (caveats)
 
@@ -91,19 +100,21 @@ headline, so the lift above is now in the accuracy column rather than hidden ben
   verse is the model's **secondary** guess; containment counts it correct (~1 pt on
   opus-search's accuracy). `cite_passage`/`identify_source` have an anti-hedge rule;
   text-retrieval does not.
-- **A from-memory reconstruction is now scored, not excluded (Spec 48).** haiku-search
-  `retrieve_quote-e2d74279aaf0` declined ("I couldn't retrieve the full QUL text to verify")
-  then delivered a from-memory Uthmani reconstruction *as its answer* ("From memory, the Uthmani
-  text of 4:176 is: …"). The pre-fix deterministic rule read the opening decline and marked the
-  cell `refused`; **Spec 48** reclassifies a leading-decline answer that positively asserts a
-  delivered original-script payload as a delivery (class A), so this cell — and four analogous
-  opus-search Talmud deliveries — are now scored (`incorrect` here, since the reconstruction is not
-  the exact text). This is what moves haiku-search to 79% (from the 80% the pre-fix rule reported)
-  and opus-search to 92%. **After the reclassification the refusal set is clean: all 122 refused
-  cells in this run sit below `token_f1` 0.13** — no delivered-but-refused outlier remains (the
-  pre-fix set had exactly this one, at `token_f1` 0.68). The Jev cross-check (`jev_agreement.{json,md}`)
-  was computed against the *pre-fix* classifier and is retained as historical evidence; its
-  deterministic-refusal column and its "11 disagreements" figure are superseded by this rebaseline
+- **A from-memory reconstruction, scored then credited (Spec 48 → Spec 52).** haiku-search
+  `retrieve_quote-e2d74279aaf0` declined ("I couldn't retrieve the full QUL text to verify") then
+  delivered a from-memory reconstruction *as its answer* ("From memory, the Uthmani text of 4:176
+  is: …"). The pre-fix deterministic rule read the opening decline and marked the cell `refused`;
+  **Spec 48** reclassified a leading-decline answer that positively asserts a delivered
+  original-script payload as a delivery (`incorrect` at the time, since the reconstruction was not
+  byte-exact). **Spec 52** then found the reconstruction IS the verse, word-for-word, in a near-Imla'i
+  orthography (dotted ي, plene alef) that strict normalisation misses — so the cell is now `correct`.
+  Its full journey `refused → incorrect → correct` is the tutorial's clearest single illustration of
+  why both fixes were needed; the four analogous opus-search Talmud deliveries stay `incorrect`
+  (genuinely not the reference text, no orthographic match). **The refusal set is clean: all 122
+  refused cells sit below `token_f1` 0.13** — no delivered-but-refused outlier remains. The Jev
+  cross-check (`jev_agreement.{json,md}`) was computed against the *pre-fix* classifier and is
+  retained as historical evidence; its deterministic-refusal column and its "11 disagreements" figure
+  are superseded by this rebaseline
   (post-fix: 6 disagreements, agreement 0.985) — read refusal counts from `summary.json`, not from
   `jev_agreement`.
 

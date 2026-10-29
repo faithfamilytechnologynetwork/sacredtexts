@@ -57,12 +57,15 @@ Under the adopted scoring contract (Spec 15) a text-retrieval answer is **correc
 *contains* the exact (normalised) reference; a model that **declines** is scored **refused** and
 excluded from accuracy. So each model has two headline numbers: **accuracy** = correct /
 (correct + incorrect) — right *when it answers*; **coverage** = (correct + incorrect) / n — how
-often it answers.
+often it answers. Numbers reflect the **Spec 52** Uthmani↔Imla'i orthography rebaseline: 15 Qur'an
+and hadith answers written in Imla'i orthography are now credited (opus +8, haiku +7;
+`incorrect → correct`, coverage unchanged). Pre-Spec-52 the headline was opus 69% / 280·128·68 and
+haiku 49% / 178·188·110.
 
 | model | overall accuracy | coverage | correct | incorrect | refused |
 |---|---|---|---|---|---|
-| opus | **69%** | 86% | 280 | 128 | 68 |
-| haiku | **49%** | 77% | 178 | 188 | 110 |
+| opus | **71%** | 86% | 288 | 120 | 68 |
+| haiku | **51%** | 77% | 185 | 181 | 110 |
 | gpt-oss-20b | **20%** | 67% | 64 | 256 | 156 |
 
 The benchmark discriminates cleanly — **opus > haiku > gpt-oss-20b** — and the structure is the
@@ -70,9 +73,10 @@ point of Phase 1:
 
 - **English texts are far easier; original-language scripture is hard.** On the **KJV**, opus is
   at **100%**, haiku **86%**, and the small `gpt-oss-20b` only **12%**; opus scores **89–100%** on
-  every English text, but Arabic/Aramaic recall collapses (opus Qur'an ~86%, Talmud ~32%; haiku
-  Talmud ~29%). This is the recall gap the benchmark exists to measure.
-- **`retrieve_quote` is hardest** (exact original-language recall; opus 68% acc at only 53%
+  every English text, but Arabic/Aramaic recall is lower (opus Qur'an ~96% under the Spec-52
+  orthography fold, Talmud ~32%; haiku Talmud ~29%). This is the recall gap the benchmark exists to
+  measure (the Qur'an gap largely closes once orthographic variants are credited; Talmud remains).
+- **`retrieve_quote` is hardest** (exact original-language recall; opus 75% acc at only 53%
   coverage — it refuses roughly half the Arabic/Aramaic roster rather than guess), **`verify_source`
   easiest** (opus 99%, haiku 95%).
 - **`gpt-oss-20b` is weak and terse:** 0% on `retrieve_quote`/`complete_unit` for original-

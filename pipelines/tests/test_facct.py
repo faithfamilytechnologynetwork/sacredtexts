@@ -501,10 +501,13 @@ def test_no_fabrication_label_in_output(tmp_path):
 
 def test_module_defines_no_private_containment_or_normalizer():
     src = inspect.getsource(facct_mod)
-    # facct.py must reuse score's predicate, not define its own containment/normalization
-    assert "score.bounded_contains" in src
+    # facct.py must reuse score's predicate, not define its own containment/normalization.
+    # Spec 52: the one shared containment contract is fold_aware_contains (a strict superset of
+    # bounded_contains that also credits Uthmani<->Imla'i orthographic matches).
+    assert "score.fold_aware_contains" in src
     assert "def normalize" not in src
     assert "def bounded_contains" not in src  # does not redefine it
+    assert "def fold_aware_contains" not in src  # does not redefine it
 
 
 # --- markdown card (Phase 3) -------------------------------------------------

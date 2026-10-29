@@ -511,7 +511,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
-    return int(bounded_contains(answer, expected_citation)), n
+    return int(fold_aware_contains(answer, expected_citation)), n
 
 
 def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None) -> dict:
@@ -532,15 +532,16 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             raise GraderError("empty grader list passed to score_answer")
         target = expected["text"]
         # all primitives are computed; only the selected graders' fields (+ always-on token_f1)
-        # are emitted. contains_reference reuses bounded_contains (word-bounded normalised
-        # containment); the bool(normalize(target)) guard stops an empty reference (whose escaped
-        # regex matches everywhere) from scoring 1. Containment is confined to these two
-        # text-retrieval tasks — the provenance branches below never see it.
+        # are emitted. contains_reference uses fold_aware_contains (Spec 52) — a strict SUPERSET
+        # of bounded_contains that also credits an Uthmani↔Imla'i orthographic match; the
+        # bool(normalize(target)) guard stops an empty reference (whose escaped regex matches
+        # everywhere) from scoring 1. Containment is confined to these two text-retrieval tasks —
+        # the provenance branches below never see it.
         computed = {
             "exact": int(answer.strip() == target.strip()),
             "normalized": int(normalize(answer) == normalize(target)),
             "token_f1": round(token_f1(answer, target), 4),
-            "contains_reference": int(bool(normalize(target)) and bounded_contains(answer, target)),
+            "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
