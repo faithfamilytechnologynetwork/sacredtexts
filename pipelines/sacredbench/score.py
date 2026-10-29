@@ -360,6 +360,15 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     )
 
 
+def gurmukhi_scoring_unaware() -> bool:
+    """True while ``normalize()`` collapses Gurmukhi vowel signs (ਕਰਤਾ == ਕਰਤੀ) — the
+    Spec 50 part-1 canary (PR #51 review): the punctuation pass turns dependent vowel
+    signs into spaces, so every downstream metric on a Gurmukhi text is silently
+    corrupt. Issue #50 part 2 makes ``normalize()`` keep Indic vowel signs, and the
+    collect/score gates keyed on this canary open by themselves."""
+    return normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ")
+
+
 def token_f1(answer: str, expected: str) -> float:
     a, e = normalize(answer).split(), normalize(expected).split()
     if not a or not e:

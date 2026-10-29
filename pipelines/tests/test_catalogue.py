@@ -579,47 +579,40 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         assert _check_ignored(rel), f"restricted/standardized path must be ignored: {rel}"
 
 
-def test_cli_generate_refuses_gurmukhi_while_normalize_is_unaware(tmp_path):
-    """Spec 50 part-1 canary gate: a pa text in the pool is refused for exactly as long
-    as normalize() collapses Gurmukhi vowel signs (ਕਰਤਾ == ਕਰਤੀ). When issue #50 part 2
-    lands and the collision disappears, the gate opens by itself and this test still
-    passes — both branches are asserted against the live normalize()."""
-    from sacredbench.score import normalize
+def test_canary_gates_collect_and_score_while_normalize_is_gurmukhi_unaware(tmp_path):
+    """Spec 50 part-1 canary (PR #51 review): generation stays open, but the PAID step
+    (collect) and the metric-writing step (score) refuse Gurmukhi rows for exactly as
+    long as normalize() collapses Gurmukhi vowel signs. Both branches are asserted
+    against the live normalize(), so when issue #50 part 2 lands the gates must open."""
+    from sacredbench.score import gurmukhi_scoring_unaware, normalize
 
-    raw = tmp_path / "texts" / "raw"
-    _write(
-        raw / "Sikhism" / "source.yaml",
-        PROV
-        + "targets:\n"
-        "  - payload: sggs.json\n"
-        "    converter: bible_flat\n"
-        "    work: Sri Guru Granth Sahib\n"
-        "    version: Test\n"
-        "    language: pa\n"
-        "    document_type: scripture\n"
-        "    tradition: [Sikhism]\n"
-        "    license: public-domain\n"
-        "    license_detail: public domain\n"
-        "    requested_as: [the Guru Granth Sahib]\n"
-        "    canonical_language: pa\n",
+    assert gurmukhi_scoring_unaware() == (normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ"))
+    q = {
+        "id": "retrieve_quote-000000000000", "task": "retrieve_quote",
+        "prompt": "What is the text of the Guru Granth Sahib Ang 1:1?",
+        "expected": {"text": "ਆਦਿ ਸਚੁ", "citation": "Ang 1:1"},
+        "source": {"tradition": ["Sikhism"], "work": "Sri Guru Granth Sahib",
+                   "version": "Test", "language": "pa", "document_type": "scripture"},
+    }
+    questions = tmp_path / "questions.jsonl"
+    questions.write_text(json.dumps(q) + "\n", encoding="utf-8")
+    cfg = tmp_path / "models.yaml"
+    cfg.write_text(
+        "concurrency: 1\nmodels:\n  - id: m\n    provider: openai\n"
+        "    model: test/m\n    base_url: https://example.invalid/v1\n"
+        "    api_key_env: SACREDBENCH_TEST_KEY\n",
+        encoding="utf-8",
     )
-    _write(raw / "Sikhism" / "sggs.json", json.dumps([]))
-    sources = cat.discover_catalogue(raw)
-    std = tmp_path / "texts" / "standardized"
-    target = next(t for t in cat.all_targets(sources))
-    doc_path = target.standardized_dir(std) / "doc.json"
-    _std_doc(doc_path, work="Sri Guru Granth Sahib")
-    body = json.loads(doc_path.read_text(encoding="utf-8"))
-    body["source"]["language"] = "pa"
-    body["source"]["version"] = "Test"
-    body["source"]["tradition"] = ["Sikhism"]
-    doc_path.write_text(json.dumps(body), encoding="utf-8")
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text(json.dumps({"question_id": q["id"], "model_id": "m", "task": q["task"],
+                                   "answer": "ਆਦਿ ਸਚੁ", "question": q}) + "\n", encoding="utf-8")
 
-    r = runner.invoke(
-        app, ["generate", str(std), "--raw-root", str(raw), "--standardized-root", str(std)]
-    )
-    if normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ"):  # Gurmukhi-unaware: gate must be CLOSED
-        assert r.exit_code != 0
-        assert "Gurmukhi" in r.output and "#50" in r.output
-    else:  # part 2 landed: gate must be OPEN (failures, if any, come later and differ)
-        assert "Gurmukhi text selected but normalize()" not in r.output
+    r_collect = runner.invoke(app, ["collect", str(questions), str(cfg), "--out", str(tmp_path / "a.jsonl")])
+    r_score = runner.invoke(app, ["score", str(answers), "--scores-out", str(tmp_path / "s.jsonl"),
+                                  "--summary-out", str(tmp_path / "s.json")])
+    if gurmukhi_scoring_unaware():  # gates CLOSED
+        assert r_collect.exit_code != 0 and "Gurmukhi" in r_collect.output and "#50" in r_collect.output
+        assert r_score.exit_code != 0 and "Gurmukhi" in r_score.output and "#50" in r_score.output
+    else:  # part 2 landed: gates OPEN (collect may then fail on the fake host — different error)
+        assert "Gurmukhi" not in r_collect.output
+        assert "Gurmukhi" not in r_score.output

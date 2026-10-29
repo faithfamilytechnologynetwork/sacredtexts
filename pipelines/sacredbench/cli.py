@@ -297,18 +297,6 @@ def generate(
             )
         text_meta[key] = tm
         docs.append(doc)
-    # Spec 50 part-1 canary gate (PR #51 review): refuse Gurmukhi texts while normalize()
-    # is Gurmukhi-unaware — the punctuation pass turns vowel signs into spaces, so every
-    # downstream score (normalized/token_f1/containment) is silently corrupt. Part 2 of
-    # issue #50 makes normalize() keep Indic vowel signs; this gate then opens by itself.
-    from .score import normalize as _canary_norm
-
-    if any(d.language == "pa" for d in docs) and _canary_norm("ਕਰਤਾ") == _canary_norm("ਕਰਤੀ"):
-        raise typer.BadParameter(
-            "Gurmukhi text selected but normalize() is not Gurmukhi-aware (issue #50 part 2 "
-            "has not landed): scoring would be silently wrong. Wait for part 2, or pass "
-            "explicit input directories that exclude texts/standardized/Sikhism."
-        )
     questions, excluded = run_generate(
         docs, text_meta, per_text=per_text, seed=seed, negatives_share=negatives_share,
         tasks=task_subset,
@@ -335,6 +323,18 @@ def collect(
 ) -> None:
     """Fan questions out to the configured model panel (resumable; exits non-zero on failed cells)."""
     qs = load_questions(questions)
+    # Spec 50 part-1 canary gate (PR #51 review): collecting Gurmukhi questions while
+    # normalize() is Gurmukhi-unaware spends money on answers that cannot be scored.
+    # Generation stays open (questions are verbatim text); the PAID step is gated.
+    from .score import gurmukhi_scoring_unaware
+
+    if any(q.source.get("language") == "pa" for q in qs) and gurmukhi_scoring_unaware():
+        raise typer.BadParameter(
+            "questions include a Gurmukhi (pa) text but normalize() is not Gurmukhi-aware "
+            "(issue #50 part 2 has not landed): answers could not be scored honestly. "
+            "Wait for part 2, or regenerate questions from inputs excluding "
+            "texts/standardized/Sikhism."
+        )
     cfg = load_config(config)
     typer.echo(f"{len(qs)} questions x {len(cfg.models)} models (concurrency {cfg.concurrency})")
     done, failed, messages = run_collect(
@@ -372,6 +372,20 @@ def score(
 ) -> None:
     """Score all answers and write the per-model summary. Graders are selectable via --evaluator."""
     from .graders import GraderError, resolve_evaluators
+    from .score import gurmukhi_scoring_unaware
+
+    # Spec 50 part-1 canary gate (PR #51 review): scoring a Gurmukhi answer while
+    # normalize() is Gurmukhi-unaware writes silently corrupt metrics (vowel signs
+    # become word splits). Opens by itself when issue #50 part 2 lands.
+    if gurmukhi_scoring_unaware():
+        with open(answers, encoding="utf-8") as f:
+            for line in f:
+                if line.strip() and json.loads(line).get("question", {}).get("source", {}).get("language") == "pa":
+                    raise typer.BadParameter(
+                        f"{answers}: contains a Gurmukhi (pa) answer row but normalize() is not "
+                        "Gurmukhi-aware (issue #50 part 2 has not landed) — the metrics would be "
+                        "silently wrong. Wait for part 2 before scoring this run."
+                    )
 
     try:
         resolve_evaluators(evaluator or None)  # fail fast on an unknown/empty/non-inline selection

@@ -26,7 +26,9 @@ DOC = REPO_ROOT / "CODE_WALKTHROUGH.md"
 _POINTER_RE = re.compile(
     r"`([\w./-]+\.(?:py|ts|tsx|md|yaml|yml|sh|json)):(\d+)`"
 )
-_SKIP_DIRS = {".git", "node_modules", "dist", "build", ".venv", "__pycache__", ".codev"}
+_SKIP_DIRS = {".git", "node_modules", "dist", "build", ".venv", "__pycache__", ".codev",
+              ".builders"}  # builder worktrees are full repo copies; without this, every
+#                             bare-basename pointer is "ambiguous" on an architect checkout
 
 
 def _doc_text() -> str:
