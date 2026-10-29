@@ -99,9 +99,9 @@ are not touched by the new Arabic-specific rules.
       pass/fail — see the known limitation below.
 
 **Known limitation (accepted — architect 2026-10-29, not a blocker).** A literal word-level
-zero-collision gate is infeasible: the two symmetric letter folds each merge a few rare
-consonantal-skeleton minimal pairs that are genuinely distinct words. Enumerated against the QUL
-corpus (9 word-buckets, pre-registered in `test_arabic_orthography_fold.py`):
+zero-collision gate is infeasible: the fold rules each merge a few rare consonantal-skeleton
+minimal pairs that are genuinely distinct words. Enumerated against the QUL corpus (10 word-buckets,
+pre-registered in `test_arabic_orthography_fold.py` over both answer canonicalisations):
 
 - **maqsura (ى→ي)** — rescues the largest class (`هدى↔هدي`, `بُنَىَّ↔بُنَيَّ`) but merges
   `نبى`(prophet)/`نبّئ`(inform!), `قرى`(towns)/`قرئ`(was recited), `أمرى`(my affair)/`امرئ`(a man).
@@ -109,6 +109,7 @@ corpus (9 word-buckets, pre-registered in `test_arabic_orthography_fold.py`):
 - **standalone hamza (ء→ا)** — the only coherent target (dropping it is asymmetric and fails
   `أَرَءَيْتُمْ↔أَرَأَيْتُمْ`) but merges `سواء`(equal)/`سوء`(evil), `جزاء`(recompense)/`جزء`(a part),
   `وراء`(behind)/`ورءا`, `ملأ`(chiefs)/`ملء`(fill), `شىء`/`شيـٔا`, `برىء`/`بريـٔا`.
+- **optional long-ā (the plene/defective match branch)** — merges `رَأَىٰ`(he saw)/`رَءَا`.
 
 These are documented and accepted because (a) rejecting either rule would abandon the fix, and
 (b) the no-wrong-credit gate at scoring granularity catches any case that would actually mis-credit

@@ -16,6 +16,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from sacredbench.score import (
+    _answer_plene_form,
     bounded_contains,
     fold_aware_contains,
     normalize,
@@ -72,12 +73,29 @@ def test_fold_contains_credits_long_aa_either_spelling():
 
 
 def test_fold_contains_credits_word_boundary_compound():
-    # The reference is the Uthmani corpus form (one orthographic word, يَـٰبُنَىَّ). The ANSWER may be
-    # Imla'i (two words, يَا بُنَيَّ) or Uthmani — both are credited inside a verse. (The optional long-ā
-    # is anchored to the reference's dagger, so a plene-Imla'i *reference* is out of scope — the QUL
-    # corpus is always the ground truth, never Imla'i.)
+    # Uthmani one-word يَـٰبُنَىَّ ↔ Imla'i two-word يَا بُنَيَّ, inside a verse, either answer style:
     assert fold_aware_contains("قال السعي يَا بُنَيَّ وقال", "يَـٰبُنَىَّ")   # Imla'i two-word answer
     assert fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يَـٰبُنَىَّ")   # Uthmani one-word answer
+
+
+def test_fold_contains_is_direction_independent():
+    # Spec requires equivalence in BOTH directions. The common case is Uthmani reference (QUL) vs an
+    # Imla'i answer; the reverse (Imla'i reference ↔ Uthmani answer) must also hold — matched by also
+    # trying the answer's plene (dagger→alef) form.
+    assert fold_aware_contains("ٱلْكِتَٰبِ", "الكتاب")          # rev, plene long-ā
+    assert fold_aware_contains("هَٰذَا", "هذا")                 # rev, defective long-ā
+    assert fold_aware_contains("أَتَىٰكُمْ", "أتاكم")           # rev, ىٰ digraph
+    assert fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يَا بُنَيَّ")  # rev, word boundary
+    # per-position optionality handles a MIXED verse (defective هذا + plene الكتاب in one reference):
+    assert fold_aware_contains("قال هذا الكتاب لقومه", "هَٰذَا ٱلْكِتَٰبَ")
+
+
+def test_fold_contains_handles_multiline_reference():
+    # A reference with a newline/tab (hadith chains in original-2026-10-21) must still take the fold
+    # branch — the pattern builder collapses whitespace like normalize() does, so `\n` ≠ a required
+    # literal newline the (space-collapsed) answer could never contain.
+    assert fold_aware_contains("قال الكتاب سبحان ربنا", "ٱلْكِتَٰبِ\nسُبْحَٰنَ")
+    assert fold_aware_contains("a the quick\tbrown fox", "quick brown")
 
 
 def test_fold_contains_is_a_superset_of_bounded_contains():
@@ -116,19 +134,24 @@ def test_fold_applies_after_nfkd_decomposition():
 
 
 def test_latin_and_hebrew_invariant():
-    for s in ("Hello, World!", "In the beginning God created the heavens.", "Jude 1:3", "café"):
-        assert score_normalize(s) == normalize(s)
+    for s in ("Hello, World!", "In the beginning God created the heavens.", "Jude 1:3", "café",
+              "soft­hyphen", "“curly” ‘quotes’"):
+        assert score_normalize(s) == normalize(s)        # the fold path leaves non-Arabic unchanged
+        assert _answer_plene_form(s) == normalize(s)     # ...and so does the plene path
     heb = "בְּרֵאשִׁית בָּרָא אֱלֹהִים"
     assert score_normalize(heb) == normalize(heb)
+    assert _answer_plene_form(heb) == normalize(heb)
 
 
 # --- corpus collision diagnostic: the symmetric folds' distinct-word residue, pinned ----------
 
 # The ACCEPTED distinct-word collision residue on the QUL corpus (Spec 52 known limitation,
-# architect-approved). Each `score_normalize` bucket below merges words that are NOT the same word —
-# they share a consonantal skeleton only after the bare-maqsura→ya or standalone-hamza→alef rule.
-# Pinned at the STRICT-SKELETON level (the distinct bare skeletons in the bucket), so a NEW distinct
-# word entering a bucket — or a new bucket — fails the test, while a harmless new spelling does not.
+# architect-approved). Each bucket merges words that are NOT the same word — they share a consonantal
+# skeleton only after one of the fold rules. Computed over BOTH answer canonicalisations that
+# `fold_aware_contains` tries (`score_normalize` = dagger-deleted, and `_answer_plene_form` = long-ā
+# materialised), so it covers the optional-ā/plene branch too, not just the symmetric folds. Pinned at
+# the STRICT-SKELETON level, so a NEW distinct word entering a bucket — or a new bucket — fails the
+# test, while a harmless new spelling does not.
 _ACCEPTED_DISTINCT_WORD_MERGES = {
     # hamza class (ء→ا)
     "سواا": {"سواء", "سوءا"},   # equal / evil
@@ -141,6 +164,8 @@ _ACCEPTED_DISTINCT_WORD_MERGES = {
     "نبي": {"نبى", "نبي"},      # prophet / inform!
     "قري": {"قرى", "قري"},      # towns / was recited
     "امري": {"امرى", "امري"},   # my affair / a man
+    # optional-long-ā (plene) branch only
+    "راا": {"راا", "رءا"},      # he saw (رَأَىٰ) / رَءَا
 }
 
 
@@ -156,36 +181,38 @@ def _iter_texts(obj):
             yield from _iter_texts(x)
 
 
+def _strict_skeleton(w: str) -> str:
+    # Fold ONLY the zero-risk orthography (dagger/digraph→alef, wasl, marks) but KEEP standalone hamza
+    # ء and alef-maqsura ى distinct from ا/ي, so it SEES the collisions the fold rules introduce.
+    s = unicodedata.normalize("NFKD", w)
+    s = s.replace("ىٰ", "ا").replace("ٰ", "ا")  # ىٰ digraph + lone dagger → alef
+    s = strip_script_marks(s)  # Mn marks + editorial (tatweel/annotation), wasl ٱ→ا
+    return s.replace(" ", "")
+
+
 def test_corpus_collision_diagnostic():
     words = {w for t in _iter_texts(json.loads(QUL.read_text(encoding="utf-8"))) for w in t.split()}
     assert len(words) > 10000  # sanity: the sweep actually read the corpus
 
-    buckets: dict[str, set[str]] = defaultdict(set)
-    for w in words:
-        nw = score_normalize(w)
-        if nw:
-            buckets[nw].add(w)
-    introduced = {
-        k: v for k, v in buckets.items()
-        if len(v) > 1 and len({normalize(w) for w in v}) > 1
-    }
+    # Sweep BOTH answer canonicalisations that fold_aware_contains tries: the dagger-deleted
+    # score_normalize AND the long-ā-materialised plene form — so the diagnostic covers the
+    # optional-ā/plene branch, not only the symmetric folds. A distinct-word merge is a bucket whose
+    # members today's normalize() keeps apart AND whose strict skeletons still differ.
+    residue: dict[str, set[str]] = {}
+    for form in (score_normalize, _answer_plene_form):
+        buckets: dict[str, set[str]] = defaultdict(set)
+        for w in words:
+            k = form(w)
+            if k:
+                buckets[k].add(w)
+        for k, v in buckets.items():
+            if len(v) > 1 and len({normalize(w) for w in v}) > 1:
+                skels = {_strict_skeleton(w) for w in v}
+                if len(skels) > 1:
+                    residue.setdefault(k, set()).update(skels)
     # Two-sided bound: a no-op fold yields 0 (lower bound catches it); an explosion signals a bad
-    # rule (upper bound). Measured 9.
-    assert 3 < len(introduced) < 40, f"introduced merge count {len(introduced)} out of range"
-
-    # STRICT skeleton: fold ONLY the zero-risk orthography (dagger/digraph→alef, wasl, marks) but KEEP
-    # standalone hamza ء and alef-maqsura ى distinct from ا/ي, so it SEES the collisions the symmetric
-    # folds introduce.
-    def strict_skeleton(w: str) -> str:
-        s = unicodedata.normalize("NFKD", w)
-        s = s.replace("ىٰ", "ا").replace("ٰ", "ا")  # ىٰ digraph + lone dagger → alef
-        s = strip_script_marks(s)  # Mn marks + editorial (tatweel/annotation), wasl ٱ→ا
-        return s.replace(" ", "")
-
-    residue = {
-        k: {strict_skeleton(w) for w in v}
-        for k, v in introduced.items() if len({strict_skeleton(w) for w in v}) > 1
-    }
+    # rule (upper bound). Measured 10 (9 symmetric + 1 plene-only, راا).
+    assert 4 < len(residue) < 40, f"distinct-word merge count {len(residue)} out of range"
     # The residue keys must be EXACTLY the pre-registered allow-list (new/vanished bucket fails):
     assert set(residue) == set(_ACCEPTED_DISTINCT_WORD_MERGES), (
         "distinct-word collision residue changed; new="
@@ -198,6 +225,3 @@ def test_corpus_collision_diagnostic():
         assert skels == _ACCEPTED_DISTINCT_WORD_MERGES[k], (
             f"bucket {k!r} membership changed: {sorted(skels)} vs {sorted(_ACCEPTED_DISTINCT_WORD_MERGES[k])}"
         )
-    # Under the symmetric-only fold every introduced merge IS a residue bucket (the dagger — the
-    # source of same-word plene/defective reunions — is deleted, not folded, in this path):
-    assert set(introduced) == set(residue)

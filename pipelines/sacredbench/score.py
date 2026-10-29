@@ -132,15 +132,19 @@ def normalize(text: str) -> str:
     return _normalize(text, fold=False)
 
 
-def _normalize(text: str, *, fold: bool) -> str:
-    """Shared normalisation pipeline. ``fold=False`` is the historical ``normalize()`` behaviour,
-    byte-for-byte; ``fold=True`` interleaves the Arabic orthography fold at the one correct point —
-    after NFKD + quote/dash folding, BEFORE the Mn-mark deletion (the dagger-alif is itself a mark).
-    One implementation so the two public entry points cannot diverge (iter-2 review)."""
+def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
+    """Shared normalisation pipeline — ONE implementation so the entry points cannot drift (iter-2/3).
+    ``fold=False`` is the historical ``normalize()`` behaviour, byte-for-byte. ``fold=True`` adds the
+    symmetric Arabic folds (ء→ا, bare ى→ي) after NFKD + quote/dash and BEFORE the Mn-mark deletion.
+    ``plene=True`` (only with ``fold``) additionally MATERIALISES every long ā — the ``ىٰ`` digraph and
+    the lone dagger-alif → full alef — instead of letting the mark pass delete the dagger; used for
+    the direction-independent answer form in ``fold_aware_contains``."""
     text = unicodedata.normalize("NFKD", text)
     text = text.replace("‘", "'").replace("’", "'")
     text = text.replace("“", '"').replace("”", '"')
     text = text.replace("–", "-").replace("—", "-")
+    if plene:  # long ā → alef, BEFORE the mark pass that would otherwise delete the dagger
+        text = text.replace(_ALEF_MAQSURA + _DAGGER_ALEF, _ALEF).replace(_DAGGER_ALEF, _ALEF)
     if fold:
         text = fold_arabic_orthography(text)
     text = strip_script_marks(text)  # Arabic/Hebrew marks BEFORE the punctuation pass,
@@ -173,13 +177,14 @@ def _normalize(text: str, *, fold: bool) -> str:
 # contains=1` is preserved, non-Arabic and all similarity submetrics are frozen, and generation's
 # `normalize()` (hence the question-set digest) and the copyright audit are untouched.
 #
-# ACCEPTED COLLISION RESIDUE (known limitation, architect-approved). The symmetric ى→ي and ء→ا folds
-# merge a few rare distinct-word minimal pairs sharing a consonantal skeleton (9 QUL buckets):
+# ACCEPTED COLLISION RESIDUE (known limitation, architect-approved). The fold rules merge a few rare
+# distinct-word minimal pairs sharing a consonantal skeleton (10 QUL buckets):
 #   - hamza (ء→ا): سواء/سوء, جزاء/جزء, وراء/ورء, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا
 #   - maqsura (ى→ي): نبى/نبّئ, قرى/قرئ, أمرى/امرئ
+#   - optional-long-ā (plene branch only): رأىٰ "he saw" / رءا
 # The no-wrong-credit gate is at scoring granularity (every rebaselined cell hand-verified; see
-# `test_arabic_orthography_fold.py` and the Spec 52 review). Verse-length references make a one-word
-# ambiguity essentially never flip a cell.
+# `test_arabic_orthography_fold.py`, which pins all 10 over BOTH answer canonicalisations, and the
+# Spec 52 review). Verse-length references make a one-word ambiguity essentially never flip a cell.
 _DAGGER_ALEF = "ٰ"   # ARABIC LETTER SUPERSCRIPT ALEF (category Mn) — the long-ā diacritic
 _ALEF_MAQSURA = "ى"  # ARABIC LETTER ALEF MAKSURA
 _YA = "ي"            # ARABIC LETTER YEH
@@ -245,8 +250,10 @@ def _fold_containment_pattern(expected: str) -> str:
             atoms.append(_YA); i += 1; continue             # symmetric → ya
         if _in_script_blocks(ch) and (unicodedata.category(ch) == "Mn" or ch in _SCRIPT_EDITORIAL):
             i += 1; continue                                # drop marks/editorial
-        # fold punctuation to a space and casefold, mirroring normalize()'s final passes
-        atoms.append(" " if _PUNCT_RE.match(ch) else ch.casefold())
+        # fold punctuation AND any whitespace (newline/tab) to a single space and casefold, mirroring
+        # normalize()'s final passes incl. the _WS_RE collapse — else a `\n` in a reference compiles
+        # to a required literal newline the (space-collapsed) answer can never contain.
+        atoms.append(" " if (_PUNCT_RE.match(ch) or ch.isspace()) else ch.casefold())
         i += 1
     # collapse space runs; drop spaces flanked by Arabic letters / the AA marker (the compound
     # boundary); strip ends.
@@ -274,19 +281,35 @@ def _fold_containment_pattern(expected: str) -> str:
     return r"(?<!\w)" + "".join(parts) + r"(?!\w)"
 
 
+def _answer_plene_form(text: str) -> str:
+    """The answer normalised with every long ā MATERIALISED as a full alef (``ىٰ``/dagger → ا) plus the
+    symmetric folds — ``_normalize(fold=True, plene=True)``. Used alongside the default (dagger-deleted)
+    ``score_normalize`` so matching is DIRECTION-INDEPENDENT: it lets an Imla'i *reference* (written
+    alef) match an Uthmani *answer* (dagger), the reverse of the common case."""
+    return _normalize(text, fold=True, plene=True)
+
+
 def fold_aware_contains(answer: str, expected: str) -> bool:
     """Containment that credits an Uthmani↔Imla'i orthographic match (Spec 52), as a strict SUPERSET
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
-    an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern matches the
-    fold-normalised answer. Being a superset keeps ``normalized=1 ⇒ contains=1`` and guarantees the
-    fold only ADDS credit. Empty reference never matches."""
+    an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern built from
+    the reference matches the answer. Being a superset keeps ``normalized=1 ⇒ contains=1`` and
+    guarantees the fold only ADDS credit. DIRECTION-INDEPENDENT: the pattern (optional ``ا?`` at each
+    reference dagger/``ىٰ``) is matched against the answer in BOTH its default (dagger-deleted) and
+    plene (dagger→alef) forms, so an Imla'i reference ↔ Uthmani answer also matches — per-position
+    optionality, which handles a mixed verse (defective ``هذا`` + plene ``الكتاب``) that a uniform
+    plene/defective fold cannot. Empty reference never matches."""
     if not normalize(expected):
         return False
     if bounded_contains(answer, expected):          # today's contract — superset floor
         return True
     if not any(_is_arabic_letter(c) for c in expected):
         return False                                 # non-Arabic refs get only today's behaviour
-    return re.search(_fold_containment_pattern(expected), score_normalize(answer)) is not None
+    pattern = _fold_containment_pattern(expected)
+    return any(
+        re.search(pattern, na) is not None
+        for na in (score_normalize(answer), _answer_plene_form(answer))
+    )
 
 
 def token_f1(answer: str, expected: str) -> float:

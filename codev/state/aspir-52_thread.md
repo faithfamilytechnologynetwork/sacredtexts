@@ -207,4 +207,21 @@ ws-flex (١ ٣ matched ١٣) → gate flex on Arabic LETTERS (cat L, excl digits
 only bucket keys → now pins per-bucket strict-skeleton SETS.
 
 Full suite: 575 passed, 2 skipped. normalize() byte-identical, ANCHOR_DIGEST stable.
-Next: commit P1 iter2, porch done, Phase 2 (the actual rebaseline).
+
+## Phase 1 impl consult iter3 (2026-10-29) — pivot verified correct; 1 blocking bug + fixes
+
+Both confirmed the pivot is correct + corpus-validated. Fixes:
+- codex: **direction-independence** — fold only made long-ā optional when the REFERENCE had a
+  dagger. Now match the ref pattern against BOTH score_normalize(answer) AND _answer_plene_form
+  (dagger→ا), so Imla'i-ref↔Uthmani-ans works. Kept per-position ا? (mixed verse هذا الكتاب).
+- claude BLOCKING: _fold_containment_pattern dropped normalize's whitespace collapse → a `\n` in a
+  ref became a required literal newline → fold branch DEAD for 23 hadith refs in original-2026-10-21
+  (#39 is hadith-heavy). Fixed: fold any ch.isspace()→" ". Added multiline test.
+- claude: diagnostic swept only score_normalize equality → blind to ا?/plene branch. Now sweeps BOTH
+  answer forms; residue = 10 buckets (9 + plene-only راا رَأَىٰ/رَءَا), all pinned. Named the optional-ā
+  class in score.py comment + spec.
+- claude: _answer_plene_form was a 3rd pipeline copy (caused the ws bug). Parameterized
+  _normalize(text,*,fold,plene); all delegate. Extended invariance test to plene form.
+
+Full suite: 577 passed, 2 skipped. Guards + ANCHOR_DIGEST unchanged.
+Next: commit P1 iter3, porch done. If porch force-advances at max_iter(3) verify it's clean.
