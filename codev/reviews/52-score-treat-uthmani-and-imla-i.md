@@ -76,6 +76,20 @@ corpora — references are always the corpus orthography (Uthmani QUL for the Qu
 daggers), and #39's Arabic subset scores against the same corpus — so the earlier "direction-
 independent" phrasing is narrowed to this accurate statement. (codex phase-2 consult, folded.)
 
+**Digraph vs bare maqsura (conservative, flagged for #39).** A reference `ىٰ` digraph compiles to the
+optional long-ā alef (`ا?`) only, so a *reference* long-ā written as a digraph does not match an
+*answer* that wrote a bare maqsura/ya there (`علىٰ` ref vs `على`/`علي` answer). Conservative (only
+ever withholds credit, never grants a wrong one), affects **0 committed cells**, but could
+under-credit at #39's scale; logged and not widened now (broadening the digraph atom risks new
+collisions — its own analysis). (claude phase-2 consult.)
+
+**Phase-2 "Arabic-cell partition count" deliverable.** It landed as BOTH the exact per-cell
+mover-identity sets (strictly stronger for moved cells) AND an explicit
+`test_arabic_cell_partition_pinned` (letters-only `_is_arabic_letter`, pinning arabic-expected and
+arabic-either counts per run) — the latter catches a corpus/question-set change that alters the
+fold's domain even when no cell moves. (codex phase-2 consult asked for the count; claude noted the
+mover-sets subsumed it — kept both.)
+
 ## Consult trail (Phase 1)
 
 Spec: 1 iteration (codex + claude, both REQUEST_CHANGES → folded). Plan: 2 iterations. Implement

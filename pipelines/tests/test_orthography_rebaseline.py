@@ -34,7 +34,7 @@ from pathlib import Path
 
 import pytest
 
-from sacredbench.score import bounded_contains, fold_aware_contains, normalize
+from sacredbench.score import _is_arabic_letter, bounded_contains, fold_aware_contains, normalize
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -95,6 +95,19 @@ ORTHO_MOVERS = {
 }
 
 _TEXT_TASKS = ("retrieve_quote", "complete_unit")
+
+# Arabic-cell partition pin (drift guard, Phase-2 deliverable). An "Arabic cell" is one whose ANSWER
+# or EXPECTED text carries an Arabic-script LETTER (``_is_arabic_letter``: category L in the Arabic
+# blocks — NOT Arabic-Indic digits, NOT Arabic punctuation, so the count is stable and unambiguous).
+# Pinned per run as (arabic_expected, arabic_either); guards a corpus/question-set change that would
+# alter the fold's potential domain even if no cell happens to move. Keyed by (scores, answers).
+ARABIC_CELLS = {
+    "tutorial": ("tutorial-2026-10-11/answers.jsonl", (132, 132)),
+    "original": ("original-2026-10-21/answers.jsonl", (420, 459)),
+    "first-run": ("first-run-2026-10-11/answers.jsonl", (0, 2)),
+    "exp-ar": ("exp-arabic-prompts-2026-10-29/answers-ar-normalized.jsonl", (28, 28)),
+    "exp-en": ("exp-arabic-prompts-2026-10-29/answers-en.jsonl", (28, 29)),
+}
 
 
 def _rows(path: str):
@@ -177,15 +190,41 @@ def test_summary_agrees_with_scores(run):
         c = agg.setdefault((r["model_id"], r["task"]), [0, 0, 0])  # correct, incorrect, refused
         o = r["metrics"]["outcome"]
         c[0 if o == "correct" else 1 if o == "incorrect" else 2] += 1
-    for (mid, task), (corr, inc, ref) in agg.items():
-        leaf = summary["models"][mid][task]
+    # also roll up each model's _overall (sum across its tasks)
+    overall: dict = {}
+    for (mid, _task), c in agg.items():
+        o = overall.setdefault(mid, [0, 0, 0])
+        for i in range(3):
+            o[i] += c[i]
+
+    def _check(leaf, corr, inc, ref, where):
         n = corr + inc + ref
         acc = None if (corr + inc) == 0 else round(corr / (corr + inc), 4)
         cov = round((corr + inc) / n, 4)
         assert leaf["correct"] == corr and leaf["incorrect"] == inc and leaf["refused"] == ref, \
-            f"{run} {mid}/{task}: summary counts disagree with scores"
+            f"{where}: summary counts disagree with scores"
         assert leaf["accuracy"] == acc and leaf["coverage"] == cov, \
-            f"{run} {mid}/{task}: summary accuracy/coverage disagree with scores"
+            f"{where}: summary accuracy/coverage disagree with scores"
+
+    for (mid, task), (corr, inc, ref) in agg.items():
+        _check(summary["models"][mid][task], corr, inc, ref, f"{run} {mid}/{task}")
+    for mid, (corr, inc, ref) in overall.items():
+        _check(summary["models"][mid]["_overall"], corr, inc, ref, f"{run} {mid}/_overall")
+
+
+@pytest.mark.parametrize("run", list(ARABIC_CELLS))
+def test_arabic_cell_partition_pinned(run):
+    answers, (exp_arabic, either_arabic) = ARABIC_CELLS[run]
+    rows = _answers(answers)
+    n_exp = n_either = 0
+    for _key, (answer, expected) in rows.items():
+        et = expected.get("text") or expected.get("citation") or ""
+        a = any(_is_arabic_letter(c) for c in answer)
+        e = any(_is_arabic_letter(c) for c in et)
+        n_exp += int(e)
+        n_either += int(a or e)
+    assert n_exp == exp_arabic, f"{run}: arabic-expected cells = {n_exp}, pinned {exp_arabic}"
+    assert n_either == either_arabic, f"{run}: arabic-either cells = {n_either}, pinned {either_arabic}"
 
 
 def test_exp_arabic_prompt_artifact_is_resolved():
