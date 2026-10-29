@@ -1,0 +1,38 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pipelines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install into .venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+      - name: pytest
+        run: .venv/bin/python -m pytest pipelines -q
+
+  viewer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: apps/viewer/pnpm-lock.yaml
+      - name: vitest
+        working-directory: apps/viewer
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test
