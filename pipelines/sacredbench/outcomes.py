@@ -52,6 +52,7 @@ live in ``score.py`` and are imported lazily so there is no import cycle (``scor
 from __future__ import annotations
 
 import re
+import unicodedata
 from functools import lru_cache
 
 # The leading segment (in normalized characters) a decline cue must fall within to count as a
@@ -116,24 +117,75 @@ _TEXT_RETRIEVAL = ("retrieve_quote", "complete_unit")
 # assertion's own clause. It is also frame-anchored and negation-aware so a bare "from memory" under
 # a decline ("I can't reliably reproduce … from memory") does not count as a delivery.
 
-# Target-script run (Hebrew, Arabic incl. presentation forms, Greek) — a delivered scripture payload.
-# A positive delivery must introduce actual original-script text (conservative: an English-only
-# gloss is not a delivery), which is also what keeps delivery *volume* from being the signal.
-#
-# LIMITATION (Spec 48): this is a Hebrew/Arabic/Greek ALLOWLIST. A hedged-but-delivering answer in
-# any other script — including **Latin** (a confabulated non-containing English/Latin delivery) —
-# is not recognised as a payload and stays `refused`, so the original false-`refused` bug survives
-# on that axis for a Latin-script tradition. Adding such a tradition would require EXTENDING this
-# range (the one spot where a new tradition touches core pipeline code — cf. arch-critical). The
-# ranges are approximate letter blocks; the Arabic block also admits harakat / Arabic-Indic digits,
-# which is harmless because `_ASSERT_INTRO`/`_ASSERT_RECON` still require a positive assertion frame.
-# The presentation-forms-B range stops at U+FEFE so the BOM (U+FEFF) is excluded, and the Hebrew
-# range starts at the alef (U+05D0) so lone cantillation/punctuation marks do not read as a payload.
-_SCRIPT = (
-    "א-תׯ-״ؠ-ۿݐ-ݿࢠ-ࣿ"
-    "יִ-﷿ﹰ-﻾Ͱ-Ͽἀ-῿"
-)
-_SCRIPT_CHAR = re.compile(f"[{_SCRIPT}]")
+# A delivered scripture payload is a run of text in the REFERENCE'S OWN script — derived per question
+# from the expected text (`asserts_delivery(answer, reference)`), NOT a hardcoded allowlist. This is
+# the arch invariant ("traditions are drop-in data; core code must not need per-script edits", cf.
+# arch-critical / the #50 Gurmukhi gap): a new tradition in any script — Latin (KJV, LDS), Gurmukhi,
+# Cyrillic, … — is recognised with zero code change, because the target script comes from the
+# question's reference and `unicodedata` names each character's script family. A positive delivery
+# must introduce text in that script (so for a Hebrew/Arabic reference an English-only gloss is not a
+# delivery, and delivery *volume* is not the signal), AND carry a positive assertion frame.
+
+
+def _script_families(text: str) -> frozenset[str]:
+    """The Unicode script families present among a string's LETTERS, from ``unicodedata`` — e.g.
+    ``{"HEBREW"}``, ``{"ARABIC"}``, ``{"GREEK"}``, ``{"LATIN"}``, ``{"GURMUKHI"}``. Allowlist-free, so
+    a new tradition needs no code edit. Digits, combining marks, punctuation and whitespace do not
+    contribute (only ``str.isalpha`` characters), so a reference's script is its letters' script."""
+    fams: set[str] = set()
+    for ch in text:
+        if not ch.isalpha():
+            continue
+        if ch.isascii():
+            fams.add("LATIN")
+            continue
+        try:
+            fams.add(unicodedata.name(ch).split(" ", 1)[0])
+        except ValueError:
+            continue
+    return frozenset(fams)
+
+
+def _payload_pos(answer: str, start: int, families: frozenset[str]) -> int | None:
+    """Index of the first letter at/after ``start`` whose script family is in ``families`` — the first
+    delivered-payload character in the reference's own script; ``None`` if there is none. ASCII letters
+    are Latin, so they short-circuit (qualify iff the reference is Latin) without a ``unicodedata``
+    lookup; only non-ASCII letters are named."""
+    if not families:
+        return None
+    latin = "LATIN" in families
+    for i in range(start, len(answer)):
+        ch = answer[i]
+        if not ch.isalpha():
+            continue
+        if ch.isascii():
+            if latin:
+                return i
+            continue
+        try:
+            if unicodedata.name(ch).split(" ", 1)[0] in families:
+                return i
+        except ValueError:
+            continue
+    return None
+
+
+# Characters that INTRODUCE a delivered payload: a colon/dash or an opening quote.
+_INTRODUCER = ":\-–—\"'«»“”‘’"
+
+
+def _introduced(answer: str, pos: int) -> bool:
+    """True iff the payload at ``pos`` is immediately preceded (ignoring whitespace) by a delivery
+    INTRODUCER — a colon/dash or an opening quote. Required only for a **same-script-as-prose
+    (Latin/ASCII) payload**: there is no script shift to mark "here is the delivered text", so a bare
+    "the line is about…" / "the text is also available…" is continuation prose, not a delivery, unless
+    an explicit introducer sets the passage off ("the verse reads: For God so loved…"). A non-Latin
+    payload needs no introducer — the script shift itself is the signal."""
+    j = pos - 1
+    while j >= 0 and answer[j].isspace():
+        j -= 1
+    return j >= 0 and answer[j] in _INTRODUCER
+
 
 # Nouns a positive assertion is ABOUT: the requested unit itself. Deliberately EXCLUDES "segment",
 # "daf", "page" — the B answers describe *those* ("the daf begins with…", "which part is segment 3"),
@@ -144,13 +196,14 @@ _UNIT = r"(?:line|text|verse|passage|baraita|baraisa|mishnah|mishna|gemara|readi
 _VERB = r"(?:is|are|reads?|starts?|goes?)"
 _HEDGE = r"(?:\s+(?:probably|likely|most\s+likely|roughly|approximately|essentially))?"
 
-# (a) "(the|that|this) <unit> … <verb> [hedge] [:–] <script>" — the requested unit IS/READS/STARTS
-#     the payload. The gap excludes sentence enders so verb and payload share one clause.
+# (a) "(the|that|this) <unit> … <verb> [hedge] [:–]" — the requested unit IS/READS/STARTS the
+#     payload. The frame ends after the optional colon/quotes; the delivered payload (in the
+#     reference's own script) is located separately, so detection is script-neutral. The gap excludes
+#     sentence enders so verb and the delivered payload share one clause.
 _ASSERT_INTRO = re.compile(
-    r"(?P<clause>(?:the|that|this)\s+(?:\w+\s+){0,3}?" + _UNIT + r"\b"
-    r"[^.\n]{0,48}?\b" + _VERB + r"\b" + _HEDGE + r")"
-    r"\s*[:\-–—]?\s*[\"'«»“”‘’־]*\s*"
-    r"(?=[" + _SCRIPT + r"])",
+    r"(?:the|that|this)\s+(?:\w+\s+){0,3}?" + _UNIT + r"\b"
+    r"[^.\n]{0,48}?\b" + _VERB + r"\b" + _HEDGE +
+    r"\s*[:\-–—]?\s*[\"'«»“”‘’־]*\s*",
     re.IGNORECASE,
 )
 # (b) "my best reconstruction/guess/rendering of … <wording/unit>" with a payload present elsewhere —
@@ -189,13 +242,14 @@ _REFUSE_DELIVER = re.compile(
 # article "a different line", an accident this makes principled). It is deliberately conservative:
 # a genuine identity assertion that happens to contain one of these words ("the OPENING line of
 # Psalm 1 is: …", "the verse BEGINS: …") is stranded as `refused` — the spec-sanctioned fallback
-# (favour `refused` when unsure), and no committed cell is affected. A B answer whose disclaimer
-# sits in a SEPARATE sentence from the assertion is still read as a delivery (intrinsic to the
-# locked assertion-only form — the A cell d4c3bda0b400 disclaims its segment in a separate clause);
-# and a disclaimer that trails the payload within the same sentence ("the line is: <script>, but
-# that is a different line") is also still read as a delivery, since the checked span ends at the
-# payload start — no committed cell is affected (claude PR review). All three limitations are
-# recorded for #52, which builds on this function.
+# (favour `refused` when unsure), and no committed cell is affected. The disqualifier window runs
+# from the assertion frame THROUGH the payload's sentence (`_guard_span`), so a disclaimer between
+# the claim and a later payload ("…is not reliable; the adjacent text is: <payload>") OR trailing it
+# within the same sentence ("the line is: <payload>, but that is a different line") both disqualify
+# (codex + architect PR review). The remaining limitation: a disclaimer in a SEPARATE sentence —
+# before the frame's sentence or after the payload's — is not consulted (intrinsic to the sentence
+# scoping that lets A cell d4c3bda0b400 decline in a prior sentence and still deliver); recorded for
+# #52, which builds on this function.
 _NON_IDENTITY = re.compile(
     r"\b(?:different|closest|other|another|next|previous|preceding|following|"
     r"surrounding|nearby|adjacent|opening|opens?|begins?|neighbou?ring)\b",
@@ -206,43 +260,50 @@ _NON_IDENTITY = re.compile(
 _SENTENCE_BOUNDARY = ".!?\n"
 
 
-def _assertion_sentence(answer: str, start: int, end: int) -> str:
-    """The sentence the assertion sits in: from the last sentence boundary before ``start`` to
-    ``end``. Negation / non-identity modifiers are checked over THIS span, not the whole answer — so
-    a class-A cell whose LEADING DECLINE sits in an earlier sentence ("I couldn't find it. … the
-    line is: …") still reads as a delivery, while a disclaimer *within* the assertion's own sentence
-    ("reconstruction of what is probably NOT the requested line is: …") disqualifies it."""
-    b = max(answer.rfind(c, 0, start) for c in _SENTENCE_BOUNDARY)
-    return answer[b + 1 : end]
+def _guard_span(answer: str, frame_start: int, payload_pos: int) -> str:
+    """The span over which negation / non-identity disqualifiers are checked: from the sentence
+    boundary before the assertion frame THROUGH the end of the payload's sentence. This covers a
+    disqualifier in the claim's own clause, one sitting BETWEEN the claim and a later payload
+    ("…is not reliable; the adjacent text is: <payload>"), and one TRAILING the payload within its
+    sentence ("the line is: <payload>, but that is a different line") — while still excluding an
+    earlier leading-decline sentence, so a class-A cell that declines in a prior sentence and then
+    delivers still reads as a delivery."""
+    start = max(answer.rfind(c, 0, frame_start) for c in _SENTENCE_BOUNDARY) + 1
+    ends = [e for e in (answer.find(c, payload_pos) for c in _SENTENCE_BOUNDARY) if e != -1]
+    end = min(ends) if ends else len(answer)
+    return answer[start:end]
 
 
-def asserts_delivery(answer: str) -> bool:
-    """True iff the answer makes a POSITIVE assertion that a delivered original-script payload IS the
-    requested passage (Spec 48, class A). Assertion-only + negation/modifier scoped to the assertion's
-    own sentence; see the block comment above for why a global no-disclaimer gate is wrong."""
-    if not _SCRIPT_CHAR.search(answer):
-        return False  # no delivered payload → cannot be a positive delivery
+def asserts_delivery(answer: str, reference: str) -> bool:
+    """True iff the answer makes a POSITIVE assertion that a delivered payload IN THE REFERENCE'S OWN
+    SCRIPT is the requested passage (Spec 48, class A). Assertion-only; the target script is derived
+    from ``reference`` (no allowlist — a new tradition in any script is handled with no code edit);
+    negation / non-identity disqualifiers are checked from the assertion frame through the payload's
+    sentence. See the block comments for why a global no-disclaimer gate is wrong."""
+    families = _script_families(reference)
+    if not families:
+        return False  # no reference script to deliver in → cannot judge a positive delivery
     if _REFUSE_DELIVER.search(answer):
         return False  # an explicit refusal to deliver overrides any tentative assertion fragment
-    for m in _ASSERT_INTRO.finditer(answer):
-        sentence = _assertion_sentence(answer, m.start(), m.end())
-        if not _NEG.search(sentence) and not _NON_IDENTITY.search(sentence):
-            return True
-    for m in _ASSERT_RECON.finditer(answer):
-        # The reconstruction claim commits to a payload that may sit in a LATER clause, so (a) require
-        # an actual script payload after the claim and (b) scope the negation / non-identity check
-        # through to that payload's start — not just to the end of the claim. Otherwise a disqualifier
-        # BETWEEN the claim and the payload ("…is not reliable; the adjacent text is: <script>") sits
-        # past `m.end()` and is missed, mis-reading a class-B substitute as a delivery (codex PR
-        # review). The committed A cell d4c3bda0b400 ("my best reconstruction of the standard Vilna
-        # wording … Please check it on Sefaria: <script>") carries no negation / non-identity in that
-        # widened span, so it still reads as a delivery.
-        payload = _SCRIPT_CHAR.search(answer, m.end())
-        if not payload:
-            continue
-        span = _assertion_sentence(answer, m.start(), payload.start())
-        if not _NEG.search(span) and not _NON_IDENTITY.search(span):
-            return True
+    # INTRO requires the payload in the frame's OWN sentence (adjacent, like the old lookahead); RECON
+    # commits to a payload that may sit in a later clause, so it is allowed elsewhere in the answer.
+    for frame, adjacent in ((_ASSERT_INTRO, True), (_ASSERT_RECON, False)):
+        for m in frame.finditer(answer):
+            p = _payload_pos(answer, m.end(), families)
+            if p is None:
+                continue  # the assertion commits to no payload in the reference's script
+            if answer[p].isascii() and not _introduced(answer, p):
+                continue  # a Latin/ASCII payload (no script shift) needs an explicit introducer,
+                # else "the line is about…" / "the text is also available…" is continuation prose
+            if adjacent and any(c.isalpha() for c in answer[m.end() : p]):
+                continue  # INTRO: the payload must IMMEDIATELY follow the frame (only spaces /
+                # punctuation / quotes between) — as the old script lookahead required. Intervening
+                # WORDS mean the delivered payload is not what the frame introduces (e.g. "…segment 7
+                # is probably either X or the follow-up question, «script»" — a B description, not a
+                # delivery of the requested line).
+            span = _guard_span(answer, m.start(), p)
+            if not _NEG.search(span) and not _NON_IDENTITY.search(span):
+                return True
     return False
 
 
@@ -289,8 +350,8 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
         # Spec 48: a decline-prefixed answer that still POSITIVELY asserts the delivered passage is
         # the requested one (class A — orthography variant containment can't fold) is an answer with
         # a disclaimer, not a refusal. A declined-with-a-substitute answer (class B) carries no such
-        # assertion and stays refused.
-        return not asserts_delivery(answer)
+        # assertion and stays refused. The reference text supplies the target script (no allowlist).
+        return not asserts_delivery(answer, target)
     # cite_passage (and any future provenance task that routes here): a leading decline cue IS the
     # refusal — the model declined to answer — gated in `_with_outcome` on `not correct` so a
     # decline-prefixed but DELIVERED-correct answer stays an answer. (verify_source no longer reaches

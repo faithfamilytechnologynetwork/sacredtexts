@@ -176,8 +176,9 @@ def _load_expected_text(run_dir: Path, fname: str) -> dict:
 @pytest.mark.parametrize("key", A_CELLS)
 def test_spec48_delivered_as_answer_flips_out_of_refused(key):
     ans = _load_answers(TUTORIAL)[key]
-    exp = {"text": _load_expected_text(TUTORIAL, "questions.jsonl").get(key[1], "")}
-    assert asserts_delivery(ans) is True
+    ref = _load_expected_text(TUTORIAL, "questions.jsonl").get(key[1], "")
+    exp = {"text": ref}
+    assert asserts_delivery(ans, ref) is True
     # with the real expected text (orthography variant => not bounded-contained), the assertion
     # escape — not the containment half — is what keeps these out of `refused`
     assert classify_refusal(ans, "retrieve_quote", exp) is False
@@ -187,7 +188,8 @@ def test_spec48_reworded_class_b_does_not_overfire():
     # A one-word rewording must not defeat the B exclusions: "closest/opening ... is: <script>" is a
     # DIFFERENT/adjacent span, not the requested unit, so it stays refused (guards every future run).
     he = "בראשית ברא אלהים"
-    EXP_B = {"text": "an unrelated reference phrase"}
+    REF_B = "שלום עולם אחר"  # a Hebrew reference (so target script = Hebrew) NOT contained in the answers
+    EXP_B = {"text": REF_B}
     for ans in (
         f"I couldn't find Ketubot 63b:19. The closest line I found is: {he}, but unconfirmed.",
         f"I couldn't find the exact segment. The opening text of the daf is: {he}",
@@ -200,25 +202,30 @@ def test_spec48_reworded_class_b_does_not_overfire():
         # ...and a disqualifier BETWEEN the reconstruction claim and a LATER payload (codex PR review):
         # the negation/non-identity sits past the claim's end but before the delivered script.
         f"I couldn't find it. My best reconstruction of the requested line is not reliable; the adjacent text is: {he}",
+        # ...and a disclaimer TRAILING the payload within the same sentence (architect PR review).
+        f"I couldn't find it. The line is: {he}, but that is a different line, not the requested one.",
     ):
-        assert asserts_delivery(ans) is False
+        assert asserts_delivery(ans, REF_B) is False
         assert classify_refusal(ans, "retrieve_quote", EXP_B) is True
 
 
 @pytest.mark.parametrize("key", B_CELLS)
 def test_spec48_declined_with_substitute_stays_refused(key):
     ans = _load_answers(TUTORIAL)[key]
-    assert asserts_delivery(ans) is False
-    assert classify_refusal(ans, "retrieve_quote", {"text": ""}) is True
+    ref = _load_expected_text(TUTORIAL, "questions.jsonl").get(key[1], "")
+    # pass the REAL reference (Hebrew) so the guard logic — not an empty target script — is exercised
+    assert asserts_delivery(ans, ref) is False
+    assert classify_refusal(ans, "retrieve_quote", {"text": ref}) is True
 
 
 def test_spec48_anti_overfit_anchor_matches_its_twins():
     # The 0.58/0.68 agreed refusals must be classified EXACTLY like their textually-identical B twins
     # de9d77a6c963 (0.45) / fe52da70f661 (0.47). Asserting them together is the anti-overfit guard.
     ans = _load_answers(TUTORIAL)
+    exp = _load_expected_text(TUTORIAL, "questions.jsonl")
     for key in ANCHOR_CELLS + [("opus-search", "retrieve_quote-de9d77a6c963"),
                                ("opus-search", "retrieve_quote-fe52da70f661")]:
-        assert classify_refusal(ans[key], "retrieve_quote", {"text": ""}) is True, key
+        assert classify_refusal(ans[key], "retrieve_quote", {"text": exp.get(key[1], "")}) is True, key
 
 
 def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
@@ -228,7 +235,7 @@ def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
     # COMMITTED-REFUSED cell containing "from memory" must stay a non-delivery; assert the over-fire
     # complement is empty (a lower bound would let 144 of 147 over-fire silently).
     candidates, overfired = 0, []
-    for run, sfile, afile, _q in TRIPLES:
+    for run, sfile, afile, qfile in TRIPLES:
         run_dir = REPO_ROOT / "runs" / run
         spath = run_dir / sfile
         if not spath.exists():
@@ -239,10 +246,12 @@ def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
             if r.get("task") in _TEXT_RETRIEVAL and r.get("metrics", {}).get("outcome") == "refused"
         }
         answers = _load_answers(run_dir, afile)
+        expected = _load_expected_text(run_dir, qfile)
         for key in refused:
             if "from memory" in answers.get(key, "").lower():
                 candidates += 1
-                if asserts_delivery(answers[key]) is not False:
+                # pass the reference so the target script is the one the answer would have to deliver
+                if asserts_delivery(answers[key], expected.get(key[1], "")) is not False:
                     overfired.append((run, key))
     assert candidates >= 3, f"expected >=3 committed-refused 'from memory' cells, saw {candidates}"
     assert overfired == [], f"committed refusals wrongly read as deliveries: {overfired}"
@@ -250,15 +259,42 @@ def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
 
 def test_spec48_edge_pointer_only_and_citation_echo_stay_refused():
     he = "בראשית"  # a Hebrew word, so a payload exists on the page
-    exp_edge = {"text": "some unrelated reference"}
+    ref_he = "שלום עולם אחר"  # Hebrew reference (target script), not contained in the answer
+    exp_edge = {"text": ref_he}
     # hedge + pointer only (no assertion that the delivered text IS the passage) -> refused
     ans = f"I couldn't find the exact line. You can see it at sefaria.org/X. The daf begins with {he}."
-    assert asserts_delivery(ans) is False
+    assert asserts_delivery(ans, ref_he) is False
     assert classify_refusal(ans, "retrieve_quote", exp_edge) is True
     # hedge + citation echo, no payload asserted as the answer -> refused
     ans2 = "I couldn't find Genesis 1:1. I can't give you that verse."
-    assert asserts_delivery(ans2) is False
+    assert asserts_delivery(ans2, ref_he) is False
     assert classify_refusal(ans2, "retrieve_quote", exp_edge) is True
+
+
+def test_spec48_hedged_english_delivery_is_script_neutral():
+    # Spec 48 / arch invariant (architect PR review): payload detection is NOT a Hebrew/Arabic/Greek
+    # allowlist — the target script comes from the question's reference. A canonical LATIN-script
+    # tradition (KJV, LDS) must be handled with no code edit. A hedged-then-DELIVERED English verse
+    # that does not byte-contain the reference is a class-A delivery (scored, not refused); a genuine
+    # English decline that points elsewhere is still refused.
+    ref_en = "For God so loved the world, that he gave his only begotten Son"
+    delivered = (
+        "I couldn't find the exact KJV wording to verify. From memory, the verse reads: "
+        "For God so loved the world, that he gave his one and only Son, so whoever believes."
+    )
+    assert asserts_delivery(delivered, ref_en) is True
+    assert classify_refusal(delivered, "retrieve_quote", {"text": ref_en}) is False
+    # a genuine English decline (no delivery frame, points to a source) stays refused
+    decline = (
+        "I can't reliably reproduce that verse from memory, and I don't want to give you a "
+        "misquotation. You can find the official KJV text at biblegateway.com."
+    )
+    assert asserts_delivery(decline, ref_en) is False
+    assert classify_refusal(decline, "retrieve_quote", {"text": ref_en}) is True
+    # a true delivery that DOES byte-contain the reference is already correct (containment half),
+    # so classify_refusal returns False via containment regardless of the assertion escape
+    contained = f"I wasn't fully sure, but the verse reads: {ref_en}."
+    assert classify_refusal(contained, "retrieve_quote", {"text": ref_en}) is False
 
 
 @pytest.mark.parametrize("run,sfile,afile,qfile", TRIPLES)

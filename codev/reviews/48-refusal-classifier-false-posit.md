@@ -161,6 +161,26 @@ correctly describes the renderer it documents; "fixing" it would make it lie. Su
   widened the RECON span to the payload's start; the only committed RECON A cell `d4c3bda0b400` still
   flips; regression case added. Rebaseline artifacts untouched (classifier-only sharpening).
 
+### Architect Integration Review (PR #55, round 1) — two BLOCKING findings, both folded
+- **(1) BLOCKING — disclaimer-after-payload.** `asserts_delivery` scanned only through the payload
+  *start*, so a trailing "…but that is a different line" still classified as delivery. → **Addressed**:
+  the negation/non-identity guard (`_guard_span`) now runs from the frame THROUGH the payload's
+  sentence; regression case added.
+- **(2) BLOCKING — script allowlist violated the multi-faith invariant.** The `_SCRIPT`
+  Hebrew/Arabic/Greek allowlist made Latin/English (KJV, LDS) delivery undetectable and would need a
+  per-tradition code edit (the #50-Gurmukhi class). → **Addressed**: payload detection is now
+  script-neutral — the target script is derived from the question's expected text via `unicodedata`
+  (`_script_families`/`_payload_pos`), so any script is handled with zero core-code edits. A Latin
+  payload (no script shift) additionally requires an explicit introducer (colon/quote) to separate a
+  real delivery from continuation prose; a hedged-English-delivery test was added.
+- **Re-ran the whole-corpus sweep** with the script-neutral detector, as instructed, **before** any
+  change to committed runs: **575** refused text-retrieval cells swept (195 Latin-expected); **0 new
+  flips** — the two first-run candidates (`74d14c70efb0`, `34d9c7670904`) surfaced as *false
+  positives* ("the line is about…", "the text is also available…"), now correctly refused by the
+  introducer guard. The committed flip set is **still exactly 5**, so the rebaselined runs are
+  **unchanged** (only `outcomes.py` + `test_outcomes.py` moved). Both lanes green (viewer 187,
+  pipelines 587/2 skipped).
+
 ## Lessons Learned
 
 ### What Went Well
@@ -228,11 +248,10 @@ locally), not flakes.
   Arabic refused cells afterward (its witness, not this PR). Per the architect, this PR lands first
   and #52 rebases onto it.
 - **`_NON_IDENTITY` is conservative** — it can strand a genuine A cell as `refused` rather than
-  risk flipping a B cell; cross-sentence governing negation is not handled; a disclaimer that
-  **trails the payload** within the same sentence ("the line is: «script», but that is a different
-  line") still reads as a delivery (the checked span ends at the payload start — no committed cell
-  affected); `_SCRIPT` is Hebrew/Arabic/Greek only (a Latin-script hedged delivery stays `refused`).
-  Handoff to #52.
+  risk flipping a B cell; a disclaimer in a SEPARATE sentence (before the frame's sentence or after
+  the payload's) is not consulted (the guard spans the frame→payload sentence only). Handoff to #52.
+  *(The payload-script allowlist and the trailing-disclaimer gap, originally listed here, were made
+  blocking at architect review and are now FIXED — see the Architect Integration round below.)*
 - **Jev rubric divergence** is intentional this PR (#47's recorded grader identity); re-align the
   deterministic refusal rule with the rubric in a future `sacredbench-jev-2`.
 - The `test.sh` `runs/|texts/` → both-lanes mapping requires the pnpm toolchain for a pipelines-only

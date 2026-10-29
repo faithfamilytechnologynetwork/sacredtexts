@@ -9,18 +9,29 @@ Seeded from Spec 1 (Phase 1 benchmark).
   false-positive fix: a leading-decline text-retrieval answer that then *delivers* the passage in an
   unfoldable vocalization ("I couldn't find the exact edition… from memory it is: «script»") is an
   answer, not a refusal. The rule is **assertion-only** — a positive identity frame ("the <unit>
-  is/reads/starts: <Hebrew/Arabic/Greek>" or "my best reconstruction … is: …") flips `refused →
-  incorrect`; it is NOT conjunctive ("assertion AND no disclaimer" is falsified by an A cell that
-  disclaims only the *segment number*). Footguns banked: (1) a bare "from memory" substring appears
-  in 147 genuinely-refused cells — match the positive frame under negation-awareness, never a bare
-  substring; (2) the negation + non-identity guard must be scoped to the assertion's **own sentence**
-  (a cross-clause "…probably NOT the requested line is:" must not strand a real A cell); (3) a
-  global **refusal-to-deliver** disqualifier ("don't want to give/guess", "fabricat") keyed on
-  refusal-of-delivery (not identity-disclaimers) stops the intro regex catching a genuine "I won't
-  give a fabricated version" refusal. The discriminator for A-vs-B is a *vocalization/edition-only*
-  disclaimer (A) vs a *passage-identity* disclaimer (B); a URL pointer is NOT a B marker. The A/B
-  taxonomy deliberately diverges from the Jev rubric (#47 grader identity) — re-align in
-  `sacredbench-jev-2`.
+  is/reads/starts: <payload>" or "my best reconstruction … is: …") flips `refused → incorrect`; it is
+  NOT conjunctive ("assertion AND no disclaimer" is falsified by an A cell that disclaims only the
+  *segment number*). **Payload detection is script-NEUTRAL** — the target script is derived from the
+  question's expected text via `unicodedata` (`_script_families`), NOT a Hebrew/Arabic/Greek allowlist:
+  a canonical Latin tradition (KJV, LDS) or any new script (Gurmukhi, Cyrillic) is handled with zero
+  core-code edits, honouring the "traditions are drop-in data" invariant (the allowlist was an
+  invariant violation of the #50-Gurmukhi class, caught at PR review). A **non-Latin** payload is
+  self-signalling (the script shift from English prose IS the "here is the text" marker); a
+  **Latin/ASCII** payload has no shift, so it additionally requires an explicit introducer (colon /
+  dash / quote) — else "the line is about…" / "the text is also available at…" is continuation prose,
+  not a delivery (this over-fire bit two first-run cells before the introducer guard). Footguns
+  banked: (1) a bare "from memory" substring appears in 147 genuinely-refused cells — match the
+  positive frame, never a bare substring; (2) the negation + non-identity guard must span from the
+  assertion frame THROUGH the payload's sentence (catches "…is not reliable; the adjacent text is:"
+  BEFORE the payload and "the line is: <payload>, but a different line" AFTER it), while excluding an
+  earlier leading-decline sentence; (3) INTRO requires the payload to IMMEDIATELY follow the frame (no
+  intervening words), else a distant same-sentence script run ("…segment 7 is probably either X or
+  the follow-up question, «script»") over-fires; (4) a global **refusal-to-deliver** disqualifier
+  ("don't want to give/guess", "fabricat") keyed on refusal-of-delivery (not identity-disclaimers)
+  stops the intro regex catching a genuine "I won't give a fabricated version" refusal. The
+  discriminator for A-vs-B is a *vocalization/edition-only* disclaimer (A) vs a *passage-identity*
+  disclaimer (B); a URL pointer is NOT a B marker. The A/B taxonomy deliberately diverges from the Jev
+  rubric (#47 grader identity) — re-align in `sacredbench-jev-2`.
 
 - **Refusal is an OUTCOME, not a wrong answer — don't let a strict headline conflate it
   with fabrication.** `correct = normalize(answer) == normalize(expected)` alone marks both an
