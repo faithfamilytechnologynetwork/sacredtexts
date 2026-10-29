@@ -57,13 +57,24 @@ skeleton; pinned in `test_arabic_orthography_fold.py`:
 Benign at verse-length references; the no-wrong-credit gate catches any that would mis-credit a
 committed answer.
 
-**Under-credit residual (distinct from the collisions above).** The fold does NOT cover one real
-Uthmani↔Imla'i equivalence: word-initial **hamza-alef ءَا (Uthmani) ↔ alef-madda آ (Imla'i)** — e.g.
-Q14:34 «وَءَاتَىٰكُم» ↔ «وَآتَاكُم». `score_normalize` renders these `وااتىكم` vs `واتاكم` (the
-`ء→ا` rule yields two alefs where madda yields one), so they do not match. It surfaces as exactly
-one committed cell (`exp` `retrieve_quote-8c4ce779621f`), identical in both prompt languages, so it
-does not bias any comparison. NOT fixed here — a `ءَا↔آ` rule needs its own collision analysis and
-consult; logged for a follow-up. This is the honest boundary of the fold.
+**Under-credit residual (distinct from the collisions above) — [#60].** The fold does NOT cover the
+word-initial **hamza-alef ءَا (Uthmani) ↔ alef-madda آ (Imla'i)** equivalence: `score_normalize`
+renders e.g. Q14:34 «وَءَاتَىٰكُم» vs «وَآتَاكُم» as `وااتىكم` vs `واتاكم` (the `ء→ا` rule yields two
+alefs where madda yields one), so they do not match. **This is 8 committed cells, not one** (a
+census-corrected count — the earlier "one cell / no bias" claim was wrong; caught by the claude
+phase-2 iter-3 consult and self-corrected). Pre-registered by exact id in
+`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`:
+- tutorial: `haiku/retrieve_quote-1d74fc87541b` (8:52), `haiku/retrieve_quote-a8df3e43d35d` (2:285)
+- original: `haiku` & `opus` `/retrieve_quote-8c4ce779621f` (14:34)
+- exp-ar & exp-en: `sonnet` & `sol` `/retrieve_quote-8c4ce779621f` (14:34)
+
+All are under-credits (the answer IS the correct verse; the committed rebaseline stays a strict
+superset — nothing is wrongly credited). But the two tutorial cells are **asymmetric**: on the same
+verse `haiku-search` wrote «ءَا» (credited) while `haiku` wrote «آ» (uncredited), so **~2–3 pts of the
+committed haiku 88% → haiku-search 92% "search lift" is this orthography residual, not retrieval, and
+`haiku` is slightly under-credited.** NOT fixed here — the `ءَا↔آ` (and `ىٰ`↔maqsura) extension needs
+its own collision analysis; deferred to **[#60]** with the pinned set as its ready-made oracle
+(architect-approved defer 2026-10-29). This is the honest boundary of the fold.
 
 **Directionality boundary.** The per-position optional-ā is carried by the *reference's* daggers, so
 the fold matches any answer orthography (plene/defective/mixed) against a reference in either

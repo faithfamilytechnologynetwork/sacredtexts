@@ -36,7 +36,13 @@ _AUTH_RE = re.compile(
 
 
 def fold_arabic_letters(text: str) -> str:
-    """normalize(), then map leftover alef, ya, and ta marbuta forms together."""
+    """normalize(), then map leftover alef, ya, and ta marbuta forms together.
+
+    This is a LOOSER, probe-only diagnostic fold — deliberately NOT the Spec-52 scoring contract.
+    Unlike the scorer's `fold_aware_contains`/`score_normalize` (which keep the long-ā OPTIONAL in the
+    containment predicate and do NOT collapse `آ` in equality), `_LETTER_FOLD` collapses `آ → ا` (and
+    `ة → ه`) outright for clustering/visual grouping in the stored-run probes. It never feeds a
+    headline score, so its over-folding is fine here; do not reuse it as the scoring fold."""
     return normalize(text).translate(_LETTER_FOLD)
 
 

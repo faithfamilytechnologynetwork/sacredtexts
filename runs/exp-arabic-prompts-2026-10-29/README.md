@@ -48,9 +48,12 @@ content error.** Both models reproduce the verse word-for-word; the only differe
 word-initial orthography pair the fold deliberately does not cover: Uthmani writes the glottal
 stop + long-ā as **hamza-then-alef** «وَءَاتَىٰكُم», Imla'i as **alef-madda** «وَآتَاكُم»
 (`ءَا` ↔ `آ`). `score_normalize` renders these as `وااتىكم` vs `واتاكم` — a one-alef difference
-the hamza→alef rule doesn't bridge. It is logged as a known residual (see the spec/review), not
-fixed here: adding a `ءَا`↔`آ` rule needs its own collision analysis, and the cell is identical
-across prompt languages, so it does not bias the en/ar comparison this experiment is about.
+the hamza→alef rule doesn't bridge. It is pre-registered in the witness
+(`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`) as one of 8 committed cells with this
+pattern, and deferred to the fold-extension follow-up **#60** (needs its own collision analysis).
+Here it is identical across prompt languages (both models, both conditions miss it), so it does
+**not** bias the en/ar comparison this experiment is about — unlike the tutorial run, where the same
+pattern is asymmetric between haiku and haiku-search (see that run's README and #60).
 
 ## Pre-fold finding (historical — the motivation for Spec 52)
 
@@ -89,8 +92,9 @@ these scored incorrect. Spec 52 moves exactly that equivalence into the containm
 3. **Implication for #39 (Arabic-instruction subset)**: the scorer fix this experiment called for
    has landed (Spec 52). Arabic-prompted runs are no longer systematically under-credited for
    orthography, so #39 can run at scale without that bias. One narrow residual remains
-   (word-initial `ءَا`↔`آ`, §Results), identical across prompt languages, so it does not skew the
-   en/ar comparison.
+   (word-initial `ءَا`↔`آ`, §Results), identical across prompt languages here so it does not skew the
+   en/ar comparison — but #39 should land the fold extension (**#60**) first, since the same pattern
+   is asymmetric on the tutorial run's haiku vs haiku-search contrast.
 
 **Caveats**: n=7 per task per model, one seed, temperature 0, two models, scaffold translation
 written by the architect (not a native-speaker-reviewed instrument). Directional evidence only.

@@ -64,11 +64,19 @@ Karr's unrelated `outcomes.py` `_INTRODUCER` regex-escape fix**. One tutorial ce
 (`e2d74279aaf0`) composes cleanly across both rebaselines: `refused` (pre-#48) → `incorrect` (#48)
 → `correct` (#52, a verbatim-Imla'i delivery).
 
-## Known limitation
+## Known limitations
 
-10 rare distinct-word minimal pairs share a skeleton after a necessary fold (see the review doc and
-`test_arabic_orthography_fold.py`); accepted, pinned as a drift-detecting allow-list, and harmless
-at verse-length references.
+- **10 rare collision buckets** — distinct-word minimal pairs sharing a skeleton after a necessary
+  fold (see the review and `test_arabic_orthography_fold.py`); accepted, pinned as a drift-detecting
+  allow-list, harmless at verse-length references.
+- **Hamza-alef ءَا ↔ alef-madda آ under-credit (8 cells) — deferred to #60.** The fold does not yet
+  equate word-initial «ءَا» (Uthmani) with «آ» (Imla'i), so 8 committed cells where the answer is the
+  correct verse are left under-credited (strict superset preserved — never a wrong credit). Pinned by
+  exact id in `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL` as the follow-up's ready-made
+  oracle. **It is asymmetric on the tutorial run**: for two verses haiku-search wrote «ءَا» (credited)
+  and haiku wrote «آ» (uncredited), so ~2–3 pts of the committed haiku 88%→haiku-search 92% "search
+  lift" is this residual rather than retrieval — documented in that run's README. The fold extension
+  (plus the `ىٰ`↔maqsura case) needs its own collision analysis; filed as **#60**.
 
 ## Coordination
 

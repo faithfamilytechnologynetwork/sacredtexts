@@ -516,6 +516,12 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
+    # NOTE (Spec 52): the shared containment contract now flows through fold_aware_contains here too.
+    # On all committed evidence this is a no-op — cite_passage citations are Latin/numeric (0 Arabic),
+    # so the non-Arabic floor applies. If #39 introduces Arabic-script citations, the whitespace-flex
+    # / optional-alef branch is looser than a citation match wants (citations are short, where the
+    # collision residue bites hardest); revisit the citation predicate then rather than inheriting the
+    # verse-length fold wholesale.
     return int(fold_aware_contains(answer, expected_citation)), n
 
 

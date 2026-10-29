@@ -61,8 +61,12 @@ at 92% accuracy** — web search mostly converts refusals into correct retrieval
 lifting a strict-match rate, though under the Spec 48 rule four of the newly-answered Talmud
 cells are confident deliveries that are *wrong* (now scored `incorrect`, not hidden as `refused`),
 which is why accuracy is 92% and not the 97% an earlier refusal rule reported. `haiku`: web search
-lifts accuracy **88% → 92%** while holding coverage (~66%) — both arms now near-ceiling once the
-Spec-52 orthography fold credits their Imla'i-spelled Qur'an retrievals.
+appears to lift accuracy **88% → 92%** while holding coverage (~66%) — but **~2–3 pts of that gap is
+a scorer residual, not retrieval**: on two Qur'an verses (8:52, 2:285) haiku-off wrote the correct
+āyah with alef-madda «آ» while haiku-search wrote hamza-alef «ءَا», and the Spec-52 fold credits the
+latter but not the former (`آ`↔`ءَا` is the one Uthmani↔Imla'i pair the fold does not yet equate).
+So haiku is under-credited here; the true search lift is smaller. Tracked for the fold extension in
+**#60** (pre-registered in `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`).
 
 Two per-tradition cuts show where the retrieval comes from (containment counts under the Spec-52
 fold):
@@ -81,7 +85,9 @@ fold):
   dotted ي for dotless ى — which `normalize` (deliberately) does not fold to exact equality, so the
   equivalence lives in the containment predicate (`fold_aware_contains`). These were never wrong
   scripture and never a web-search artifact — haiku-*off*'s own misses were the same variants, which
-  is why the fold lifts both arms. (The 3 haiku-off cells still missing are genuine content errors.)
+  is why the fold lifts both arms. Of haiku-off's 3 remaining Qur'an misses, **2 are the `آ`↔`ءَا`
+  residual** (8:52, 2:285 — correct verse, under-credited; see #60 and the note above), not content
+  errors; only 1 is a genuine miss.
 
 Before the adopted headline, these wrapped-but-verbatim retrievals scored 0 under the strict
 "the quote and nothing else" rule; the contract revision (Spec 15) makes containment the headline,

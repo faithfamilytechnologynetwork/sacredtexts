@@ -96,6 +96,31 @@ ORTHO_MOVERS = {
 
 _TEXT_TASKS = ("retrieve_quote", "complete_unit")
 
+# PRE-REGISTERED known-residual set (Spec 52, architect-approved defer 2026-10-29): committed cells
+# the fold leaves UNDER-credited because word-initial hamza-alef «ءَا» (Uthmani) ≠ alef-madda «آ»
+# (Imla'i) — the answer is the correct verse, in an orthography the containment fold does not yet
+# equate. All are `contains_reference == 0` today; the follow-up fold extension (collapse «ء+ا»↔«آ»)
+# inherits this as its ready-made oracle (these flip to credited when it lands). Tracked in the
+# follow-up issue referenced from the PR body and run READMEs. NOTE the tutorial asymmetry: on the
+# SAME verse, haiku-search wrote «ءَا» (credited) while haiku wrote «آ» (here, uncredited) — so part
+# of the committed haiku→haiku-search "search lift" is this orthography residual, not retrieval.
+HAMZA_ALEF_RESIDUAL = {
+    "tutorial-2026-10-11/scores.jsonl": {
+        ("haiku", "retrieve_quote-1d74fc87541b"),   # 8:52 «ءَالِ» vs haiku «آلِ» (haiku-search credited)
+        ("haiku", "retrieve_quote-a8df3e43d35d"),   # 2:285 «ءَامَنَ» vs haiku «آمَنَ» (haiku-search credited)
+    },
+    "original-2026-10-21/scores.jsonl": {
+        ("haiku", "retrieve_quote-8c4ce779621f"),   # 14:34 «وَءَاتَىٰكُم» vs «وَآتَاكُم»
+        ("opus", "retrieve_quote-8c4ce779621f"),
+    },
+    "exp-arabic-prompts-2026-10-29/scores-ar.jsonl": {
+        ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
+    },
+    "exp-arabic-prompts-2026-10-29/scores-en.jsonl": {
+        ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
+    },
+}
+
 # Arabic-cell partition pin (drift guard, Phase-2 deliverable). An "Arabic cell" is one whose ANSWER
 # or EXPECTED text carries an Arabic-script LETTER (``_is_arabic_letter``: category L in the Arabic
 # blocks — NOT Arabic-Indic digits, NOT Arabic punctuation, so the count is stable and unambiguous).
@@ -225,6 +250,20 @@ def test_arabic_cell_partition_pinned(run):
         n_either += int(a or e)
     assert n_exp == exp_arabic, f"{run}: arabic-expected cells = {n_exp}, pinned {exp_arabic}"
     assert n_either == either_arabic, f"{run}: arabic-either cells = {n_either}, pinned {either_arabic}"
+
+
+@pytest.mark.parametrize("path", list(HAMZA_ALEF_RESIDUAL))
+def test_hamza_alef_residual_is_pre_registered_and_uncredited(path):
+    # The 8 known hamza-alef↔madda under-credits are pinned by identity and are all currently
+    # uncredited (contains_reference == 0). This is the follow-up fold's ready-made oracle: when the
+    # «ء+ا»↔«آ» extension lands, these flip to 1 and this assertion is updated, cell-for-cell.
+    by_key = {(r["model_id"], r["question_id"]): r["metrics"] for r in _rows(path)}
+    for key in HAMZA_ALEF_RESIDUAL[path]:
+        assert key in by_key, f"{path}: residual cell {key} absent"
+        assert by_key[key].get("contains_reference") == 0, (
+            f"{path}: residual cell {key} is now credited — if the hamza-alef fold extension landed, "
+            "move it out of HAMZA_ALEF_RESIDUAL and into the credited sets"
+        )
 
 
 def test_exp_arabic_prompt_artifact_is_resolved():

@@ -351,3 +351,38 @@ Phase-2 done (all in working tree, uncommitted):
 
 Suites: pipelines 625 pass / 2 skip; viewer 187 pass; copyright audit OK. NOTHING committed yet.
 NEXT: update pr-body, stage explicitly, ONE atomic commit, push, open PR via normal pr gate.
+
+## Phase_2 consult rounds + iter3 HOLD (2026-10-29)
+
+iter1 (codex+claude REQUEST_CHANGES): folded — regenerated jev_agreement (containment 0.9325→0.9825,
+judge-only 27→7, det-only 0 = independent no-wrong-credit corroboration); strengthened witness to
+exact mover-identity sets + summary↔scores self-consistency; narrowed the directionality claim.
+Commits 185b40c.
+iter2 (claude APPROVE; codex RC on the Arabic-cell partition pin): folded — added
+test_arabic_cell_partition_pinned (letters-only predicate, arabic-expected + arabic-either per run)
++ _overall summary guard + digraph/maqsura doc. Commit e49ff5a.
+iter3 (codex APPROVE clean; claude REQUEST_CHANGES HIGH): claude caught a REAL error — the ءَا↔آ
+residual I'd called '1 harmless cell, no bias' is ~8 cells (verified ≥3 by hand) and ASYMMETRIC:
+on tutorial, same-verse, haiku-search wrote ءَال/ءَامَنَ (credited) vs haiku آل/آمَنَ (not) → ~2pts
+of the haiku 88%→92% 'search lift' is an orthography artifact; haiku is under-credited (conservative,
+never wrong-credited). Verified cells: tutorial a8df3e43d35d, 1d74fc87541b, e2d74279aaf0 (haiku).
+
+HOLDING porch at iter3 (NOT advancing to pr gate). Surfaced to architect with options:
+(A) fix the fold now (collapse ءا↔آ) = ~full Phase-2 redo (re-rebaseline + re-consult); or
+(B) document honestly + pin residual + surface in packet + defer fold to #39 (claude explicitly
+endorses B). Recommended B. Awaiting architect decision. Then fold claude's 2 minor comments
+(probes _LETTER_FOLD divergence doc; cite_passage fold-branch looseness for #39) either way.
+
+## iter3 resolved — architect chose (B); advancing to pr gate (2026-10-29)
+
+Architect: (B) document+pin+defer. Done:
+- Exact 8-cell ءَا↔آ residual set found (proper detector: delete hamza-before-alef + existing
+  optional-ā → matches claude's 8). Pinned in test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL
+  + test asserting all 8 contains_reference=0 (ready-made oracle for the follow-up).
+- Filed issue #60 (fold extension ءَا↔آ + ىٰ↔maqsura, pinned set, asymmetry evidence).
+- Corrected review residual section (8 cells not 1, asymmetry, #60). Tutorial README: quantified
+  ~2-3pt artifact (haiku under-credited; 2 of 3 "missing" are residual not content errors), #60.
+  exp README: #60 ref + noted exp's 4 cells are symmetric (no en/ar skew). PR body known-limitations.
+- Folded claude minors: probes _LETTER_FOLD divergence doc; cite_passage fold-branch #39 note.
+Suite 638 pass / 2 skip; viewer 187; audit OK. Committing, then porch → pr gate (HUMAN approval;
+I do NOT self-approve). Packet to architect at the gate includes the residual census.
