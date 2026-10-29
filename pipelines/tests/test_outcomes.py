@@ -137,16 +137,11 @@ TRIPLES = [
     ("first-run-2026-10-11", "scores.jsonl", "answers.jsonl", "questions.jsonl"),
     ("original-2026-10-21", "scores.jsonl", "answers.jsonl", "questions.jsonl"),
     ("exp-arabic-prompts-2026-10-29", "scores-en.jsonl", "answers-en.jsonl", "questions-en.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "scores-ar.jsonl", "answers-ar.jsonl", "questions-ar.jsonl"),
-]
-# Every committed answer file (incl. the Arabic normalized fold) for the lighter over-fire sweep.
-ANSWER_FILES = [
-    ("tutorial-2026-10-11", "answers.jsonl"),
-    ("first-run-2026-10-11", "answers.jsonl"),
-    ("original-2026-10-21", "answers.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "answers-en.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "answers-ar.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "answers-ar-normalized.jsonl"),
+    # scores-ar.jsonl was produced from answers-ar-normalized.jsonl by the run's own analyze.py
+    # (the orthography fold), so the gate must recompute over THAT file, not the un-normalized
+    # answers-ar.jsonl (claude PR review). Inert today — the Arabic run has no refusals — but pairing
+    # the score file with the answers it was actually scored from keeps the gate honest if it gains any.
+    ("exp-arabic-prompts-2026-10-29", "scores-ar.jsonl", "answers-ar-normalized.jsonl", "questions-ar.jsonl"),
 ]
 
 
@@ -202,6 +197,9 @@ def test_spec48_reworded_class_b_does_not_overfire():
         f"I couldn't confirm it. My best reconstruction of the closest passage is: {he}",
         # ...and a negation INSIDE the reconstruction claim, not just before it (codex iter-3)
         f"I couldn't find it. My best reconstruction of what is probably not the requested line is: {he}",
+        # ...and a disqualifier BETWEEN the reconstruction claim and a LATER payload (codex PR review):
+        # the negation/non-identity sits past the claim's end but before the delivered script.
+        f"I couldn't find it. My best reconstruction of the requested line is not reliable; the adjacent text is: {he}",
     ):
         assert asserts_delivery(ans) is False
         assert classify_refusal(ans, "retrieve_quote", EXP_B) is True

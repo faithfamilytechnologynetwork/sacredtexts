@@ -192,7 +192,10 @@ _REFUSE_DELIVER = re.compile(
 # (favour `refused` when unsure), and no committed cell is affected. A B answer whose disclaimer
 # sits in a SEPARATE sentence from the assertion is still read as a delivery (intrinsic to the
 # locked assertion-only form — the A cell d4c3bda0b400 disclaims its segment in a separate clause);
-# both limitations are recorded for #52, which builds on this function.
+# and a disclaimer that trails the payload within the same sentence ("the line is: <script>, but
+# that is a different line") is also still read as a delivery, since the checked span ends at the
+# payload start — no committed cell is affected (claude PR review). All three limitations are
+# recorded for #52, which builds on this function.
 _NON_IDENTITY = re.compile(
     r"\b(?:different|closest|other|another|next|previous|preceding|following|"
     r"surrounding|nearby|adjacent|opening|opens?|begins?|neighbou?ring)\b",
@@ -226,11 +229,19 @@ def asserts_delivery(answer: str) -> bool:
         if not _NEG.search(sentence) and not _NON_IDENTITY.search(sentence):
             return True
     for m in _ASSERT_RECON.finditer(answer):
-        # also require an actual payload after the claim
-        if not _SCRIPT_CHAR.search(answer, m.end()):
+        # The reconstruction claim commits to a payload that may sit in a LATER clause, so (a) require
+        # an actual script payload after the claim and (b) scope the negation / non-identity check
+        # through to that payload's start — not just to the end of the claim. Otherwise a disqualifier
+        # BETWEEN the claim and the payload ("…is not reliable; the adjacent text is: <script>") sits
+        # past `m.end()` and is missed, mis-reading a class-B substitute as a delivery (codex PR
+        # review). The committed A cell d4c3bda0b400 ("my best reconstruction of the standard Vilna
+        # wording … Please check it on Sefaria: <script>") carries no negation / non-identity in that
+        # widened span, so it still reads as a delivery.
+        payload = _SCRIPT_CHAR.search(answer, m.end())
+        if not payload:
             continue
-        sentence = _assertion_sentence(answer, m.start(), m.end())
-        if not _NEG.search(sentence) and not _NON_IDENTITY.search(sentence):
+        span = _assertion_sentence(answer, m.start(), payload.start())
+        if not _NEG.search(span) and not _NON_IDENTITY.search(span):
             return True
     return False
 
