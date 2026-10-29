@@ -1,0 +1,1052 @@
+{
+ "models": {
+  "sol": {
+   "cite_passage": {
+    "n": 14,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "complete_unit": {
+    "n": 14,
+    "accuracy": 0.6429,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 5,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.3571,
+    "normalized": 0.6429,
+    "token_f1": 0.89,
+    "contains_reference": 0.6429,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "retrieve_quote": {
+    "n": 14,
+    "accuracy": 0.1429,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 12,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0714,
+    "normalized": 0.1429,
+    "token_f1": 0.4545,
+    "contains_reference": 0.1429,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "verify_source": {
+    "n": 14,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 14,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "_overall": {
+    "n": 56,
+    "accuracy": 0.5714,
+    "coverage": 1.0,
+    "correct": 32,
+    "incorrect": 24,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 56,
+    "missing": 0
+   }
+  },
+  "sol-search": {
+   "cite_passage": {
+    "n": 14,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "complete_unit": {
+    "n": 14,
+    "accuracy": 0.9286,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.5714,
+    "normalized": 0.7857,
+    "token_f1": 0.9494,
+    "contains_reference": 0.9286,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "retrieve_quote": {
+    "n": 14,
+    "accuracy": 0.2143,
+    "coverage": 1.0,
+    "correct": 3,
+    "incorrect": 11,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0714,
+    "token_f1": 0.4219,
+    "contains_reference": 0.2143,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "verify_source": {
+    "n": 14,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 14,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "_overall": {
+    "n": 56,
+    "accuracy": 0.6607,
+    "coverage": 1.0,
+    "correct": 37,
+    "incorrect": 19,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 56,
+    "missing": 0
+   }
+  },
+  "sonnet": {
+   "cite_passage": {
+    "n": 14,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "complete_unit": {
+    "n": 14,
+    "accuracy": 0.6429,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 5,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.5,
+    "token_f1": 0.7619,
+    "contains_reference": 0.6429,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "retrieve_quote": {
+    "n": 14,
+    "accuracy": 0.0,
+    "coverage": 0.5714,
+    "correct": 0,
+    "incorrect": 8,
+    "refused": 6,
+    "refused_rate": 0.4286,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.5988,
+    "contains_reference": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "verify_source": {
+    "n": 14,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 14,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "_overall": {
+    "n": 56,
+    "accuracy": 0.6,
+    "coverage": 0.8929,
+    "correct": 30,
+    "incorrect": 20,
+    "refused": 6,
+    "refused_rate": 0.1071,
+    "expected_n": 56,
+    "missing": 0
+   }
+  },
+  "sonnet-search": {
+   "cite_passage": {
+    "n": 14,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "complete_unit": {
+    "n": 14,
+    "accuracy": 0.5714,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 6,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.5714,
+    "token_f1": 0.776,
+    "contains_reference": 0.5714,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "retrieve_quote": {
+    "n": 14,
+    "accuracy": 0.0,
+    "coverage": 0.7143,
+    "correct": 0,
+    "incorrect": 10,
+    "refused": 4,
+    "refused_rate": 0.2857,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.5684,
+    "contains_reference": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "verify_source": {
+    "n": 14,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 14,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "expected_n": 14,
+    "missing": 0
+   },
+   "_overall": {
+    "n": 56,
+    "accuracy": 0.5577,
+    "coverage": 0.9286,
+    "correct": 29,
+    "incorrect": 23,
+    "refused": 4,
+    "refused_rate": 0.0714,
+    "expected_n": 56,
+    "missing": 0
+   }
+  }
+ },
+ "by_tradition": {
+  "sol": {
+   "Sunni Islam": {
+    "cite_passage": {
+     "n": 14,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 14,
+     "accuracy": 0.6429,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 14,
+     "accuracy": 0.1429,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 12,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 14,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 56,
+     "accuracy": 0.5714,
+     "coverage": 1.0,
+     "correct": 32,
+     "incorrect": 24,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 56,
+     "missing": 0
+    }
+   }
+  },
+  "sol-search": {
+   "Sunni Islam": {
+    "cite_passage": {
+     "n": 14,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 14,
+     "accuracy": 0.9286,
+     "coverage": 1.0,
+     "correct": 13,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 14,
+     "accuracy": 0.2143,
+     "coverage": 1.0,
+     "correct": 3,
+     "incorrect": 11,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 14,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 56,
+     "accuracy": 0.6607,
+     "coverage": 1.0,
+     "correct": 37,
+     "incorrect": 19,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 56,
+     "missing": 0
+    }
+   }
+  },
+  "sonnet": {
+   "Sunni Islam": {
+    "cite_passage": {
+     "n": 14,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 14,
+     "accuracy": 0.6429,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 14,
+     "accuracy": 0.0,
+     "coverage": 0.5714,
+     "correct": 0,
+     "incorrect": 8,
+     "refused": 6,
+     "refused_rate": 0.4286,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 14,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 56,
+     "accuracy": 0.6,
+     "coverage": 0.8929,
+     "correct": 30,
+     "incorrect": 20,
+     "refused": 6,
+     "refused_rate": 0.1071,
+     "expected_n": 56,
+     "missing": 0
+    }
+   }
+  },
+  "sonnet-search": {
+   "Sunni Islam": {
+    "cite_passage": {
+     "n": 14,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 14,
+     "accuracy": 0.5714,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 14,
+     "accuracy": 0.0,
+     "coverage": 0.7143,
+     "correct": 0,
+     "incorrect": 10,
+     "refused": 4,
+     "refused_rate": 0.2857,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 14,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 14,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 56,
+     "accuracy": 0.5577,
+     "coverage": 0.9286,
+     "correct": 29,
+     "incorrect": 23,
+     "refused": 4,
+     "refused_rate": 0.0714,
+     "expected_n": 56,
+     "missing": 0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sol": {
+   "Sahih al-Bukhari\u0000sunnah.com Arabic\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 0.4286,
+     "coverage": 1.0,
+     "correct": 3,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.3571,
+     "coverage": 1.0,
+     "correct": 10,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   },
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 0.8571,
+     "coverage": 1.0,
+     "correct": 6,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.2857,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.7857,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   }
+  },
+  "sol-search": {
+   "Sahih al-Bukhari\u0000sunnah.com Arabic\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 0.8571,
+     "coverage": 1.0,
+     "correct": 6,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.4643,
+     "coverage": 1.0,
+     "correct": 13,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   },
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.4286,
+     "coverage": 1.0,
+     "correct": 3,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.8571,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   }
+  },
+  "sonnet": {
+   "Sahih al-Bukhari\u0000sunnah.com Arabic\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 0.2857,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 0.1429,
+     "correct": 0,
+     "incorrect": 1,
+     "refused": 6,
+     "refused_rate": 0.8571,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.4091,
+     "coverage": 0.7857,
+     "correct": 9,
+     "incorrect": 13,
+     "refused": 6,
+     "refused_rate": 0.2143,
+     "expected_n": 28,
+     "missing": 0
+    }
+   },
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.75,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   }
+  },
+  "sonnet-search": {
+   "Sahih al-Bukhari\u0000sunnah.com Arabic\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 0.1429,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 0.4286,
+     "correct": 0,
+     "incorrect": 3,
+     "refused": 4,
+     "refused_rate": 0.5714,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.3333,
+     "coverage": 0.8571,
+     "correct": 8,
+     "incorrect": 16,
+     "refused": 4,
+     "refused_rate": 0.1429,
+     "expected_n": 28,
+     "missing": 0
+    }
+   },
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "complete_unit": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "retrieve_quote": {
+     "n": 7,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "verify_source": {
+     "n": 7,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 7,
+     "missing": 0
+    },
+    "_overall": {
+     "n": 28,
+     "accuracy": 0.75,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "expected_n": 28,
+     "missing": 0
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sol": {
+    "calls": 56,
+    "in": 9540,
+    "out": 23610
+   },
+   "sol-search": {
+    "calls": 56,
+    "in": 502026,
+    "out": 9755
+   },
+   "sonnet": {
+    "calls": 56,
+    "in": 14694,
+    "out": 26167
+   },
+   "sonnet-search": {
+    "calls": 56,
+    "in": 674282,
+    "out": 28834
+   }
+  },
+  "total": {
+   "calls": 224,
+   "in": 1200542,
+   "out": 88366
+  }
+ },
+ "panel": {
+  "sol": {
+   "provider": "openai",
+   "model": "openai/gpt-6.1-sol",
+   "tools": [],
+   "endpoint": "openrouter.ai",
+   "max_tokens": 4096,
+   "temperature": 0.0,
+   "served_by": [
+    "OpenAI"
+   ]
+  },
+  "sol-search": {
+   "provider": "openai",
+   "model": "openai/gpt-6.1-sol",
+   "tools": [
+    "web_search"
+   ],
+   "endpoint": "openrouter.ai",
+   "max_tokens": 4096,
+   "temperature": 0.0,
+   "served_by": [
+    "OpenAI"
+   ]
+  },
+  "sonnet": {
+   "provider": "openai",
+   "model": "anthropic/claude-sonnet-5.5",
+   "tools": [],
+   "endpoint": "openrouter.ai",
+   "max_tokens": 4096,
+   "temperature": 0.0,
+   "served_by": [
+    "Claude Platform on AWS"
+   ]
+  },
+  "sonnet-search": {
+   "provider": "openai",
+   "model": "anthropic/claude-sonnet-5.5",
+   "tools": [
+    "web_search"
+   ],
+   "endpoint": "openrouter.ai",
+   "max_tokens": 4096,
+   "temperature": 0.0,
+   "served_by": [
+    "Claude Platform on AWS"
+   ]
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-10-29T22:39:58.974686+00:00"
+}

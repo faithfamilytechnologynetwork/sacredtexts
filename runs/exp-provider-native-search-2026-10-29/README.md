@@ -94,11 +94,12 @@ uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/dry
 # 1. (re)build the questions if needed
 uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/build_questions.py
 
-# 2. collect (224 cells) — OPENROUTER_API_KEY must be in the environment
+# 2. collect (224 cells) — OPENROUTER_API_KEY must be in the environment.
+#    `questions` and `config` are POSITIONAL args; the answers path is --out.
 uv --project pipelines run python -m sacredbench collect \
   runs/exp-provider-native-search-2026-10-29/questions.jsonl \
-  --config runs/exp-provider-native-search-2026-10-29/models.yaml \
-  --out    runs/exp-provider-native-search-2026-10-29/answers.jsonl
+  runs/exp-provider-native-search-2026-10-29/models.yaml \
+  --out runs/exp-provider-native-search-2026-10-29/answers.jsonl
 
 # 3. score with --config (cross-checks panel identity against the collected fingerprints)
 uv --project pipelines run python -m sacredbench score \
@@ -113,7 +114,59 @@ Failed cells stay pending and make `collect` exit non-zero; re-running retries e
 missing cells. Provenance (search-request count + cited URLs) lands in each answer row's
 `usage`.
 
-## Results
+## Results (collected 2026-10-29, OpenRouter; dated snapshot)
 
-**Pending (run in progress).** Conclusions and the hypothesis verdicts will be filled in here
-and in `codev/reviews/54-experiment-provider-native-sea.md` once the run completes.
+224/224 cells, zero failures. Nativeness re-proven per cell: every `sonnet*` row's
+provider-of-record is **Claude Platform on AWS**, every `sol*` row's is **OpenAI**. Scored with
+the committed deterministic scorer (`strict`+`containment`), untouched. `analyze.py` →
+`analysis.json`. **n = 28 per text per arm — directional pilot signals, not significance-tested.**
+
+**Search actually fired** (native server-tool, from `usage`): sonnet 14/56 cells, sol **49/56**.
+A real per-provider difference in search *propensity* (not pre-registered): sol searches
+readily, sonnet mostly answers from parametric memory.
+
+### Overall & by text — accuracy (coverage), off → on
+
+| model | overall | Qur'an | Sahih al-Bukhari |
+|-------|---------|--------|------------------|
+| sonnet | 60.0% → 55.8%  (cov 89.3→92.9) | 75.0% → 75.0% | 40.9% → 33.3%  (cov 78.6→**85.7**) |
+| sol    | 57.1% → **66.1%**  (cov 100→100) | 78.6% → 85.7% | 35.7% → **46.4%**  (cov 100) |
+
+### By task — accuracy, off → on
+
+| task | sonnet | sol |
+|------|--------|-----|
+| retrieve_quote | 0% → 0% | 14.3% → 21.4% |
+| complete_unit | 64.3% → 57.1% | 64.3% → **92.9%** |
+| cite_passage | 50% → 50% | 50% → 50% |
+| verify_source | 100% → 100% | 100% → 100% |
+
+### Pre-registered hypothesis verdicts
+
+- **H1 (refusals fall / coverage up on hadith): CONFIRMED, narrowly.** sonnet's Bukhari coverage
+  rose 78.6→85.7% (refusals 6→4). sol never refused (floor — nothing to reduce). **Caveat**: the
+  cells sonnet stopped refusing were mostly answered *wrong*, so its Bukhari accuracy *fell*
+  (40.9→33.3%) — search buys coverage at an accuracy cost here.
+- **H2 (wrong_locus / citation errors fall): DISCONFIRMED.** `cite_passage` is flat — 7 correct /
+  7 incorrect, all 7 incorrect classified `wrong_locus`, in **every** arm. Even with sol
+  searching 49/56, locus/citation-form accuracy did not move at all.
+- **H3 (other-edition / orthography mismatches rise): MIXED → mostly DISCONFIRMED.** The
+  orthography prediction fails: `other_script` on `retrieve_quote` did **not** rise — sol *fell*
+  7→4, sonnet flat 3→3. Only the "other-edition" half gets weak support: sol's `retrieve_quote`
+  gained 3 `wrong_passage` on-arm (0→3) — the model quoting a different passage it fetched.
+
+### Unregistered but clearest finding
+
+**Native search helps the model that uses it and barely moves the one that doesn't.** sol
+(49/56 searches): +9pp overall, +11pp Bukhari, **+29pp complete_unit** (64.3→92.9%). sonnet
+(14/56): −4pp overall (within noise for n=56), concentrated where it searched least. Provider
+search-*propensity*, not just search *quality*, drives the scripture-fidelity delta.
+
+### Cost / latency note
+
+Search injects fetched pages as prompt tokens: `sol-search` used **502k** input tokens vs
+`sol`'s 9.5k (≈53×); `sonnet-search` 674k vs 14.7k. Token totals in `summary.md`; the run stayed
+well under the $10 cap (per-cell OpenRouter costs from the verification probes ⇒ ≈$5–7 total).
+UNPRICED by design, so `score` reports tokens only.
+
+Full discussion, limitations, and next steps: `codev/reviews/54-experiment-provider-native-sea.md`.
