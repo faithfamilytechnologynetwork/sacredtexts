@@ -1,0 +1,20 @@
+# Prompt-language experiment panel (2026-10-29): does asking the Qur'an questions in
+# Arabic change answers? Two mainstream models, temperature pinned to 0 for a
+# controlled A/B (joins the panel fingerprint). OpenRouter, search-OFF, UNPRICED.
+# Keys from the environment only (OPENROUTER_API_KEY).
+concurrency: 4
+models:
+  - id: sonnet
+    provider: openai
+    model: anthropic/claude-sonnet-5.5
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0
+  - id: sol
+    provider: openai
+    model: openai/gpt-6.1-sol
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0

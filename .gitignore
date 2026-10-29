@@ -36,6 +36,7 @@ runs/*
 !runs/first-run-2026-10-11/
 !runs/tutorial-2026-10-11/
 !runs/original-2026-10-21/
+!runs/exp-arabic-prompts-2026-10-29/
 
 # Live model panel (keys come from env, panel is per-user)
 configs/models.yaml
