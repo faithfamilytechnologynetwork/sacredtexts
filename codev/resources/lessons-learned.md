@@ -5,6 +5,23 @@ Seeded from Spec 1 (Phase 1 benchmark).
 
 ## Scoring & evaluation
 
+- **Refusal is decided by ASSERTION, not by the presence of a disclaimer (Spec 48).** The search-arm
+  false-positive fix: a leading-decline text-retrieval answer that then *delivers* the passage in an
+  unfoldable vocalization ("I couldn't find the exact edition… from memory it is: «script»") is an
+  answer, not a refusal. The rule is **assertion-only** — a positive identity frame ("the <unit>
+  is/reads/starts: <Hebrew/Arabic/Greek>" or "my best reconstruction … is: …") flips `refused →
+  incorrect`; it is NOT conjunctive ("assertion AND no disclaimer" is falsified by an A cell that
+  disclaims only the *segment number*). Footguns banked: (1) a bare "from memory" substring appears
+  in 147 genuinely-refused cells — match the positive frame under negation-awareness, never a bare
+  substring; (2) the negation + non-identity guard must be scoped to the assertion's **own sentence**
+  (a cross-clause "…probably NOT the requested line is:" must not strand a real A cell); (3) a
+  global **refusal-to-deliver** disqualifier ("don't want to give/guess", "fabricat") keyed on
+  refusal-of-delivery (not identity-disclaimers) stops the intro regex catching a genuine "I won't
+  give a fabricated version" refusal. The discriminator for A-vs-B is a *vocalization/edition-only*
+  disclaimer (A) vs a *passage-identity* disclaimer (B); a URL pointer is NOT a B marker. The A/B
+  taxonomy deliberately diverges from the Jev rubric (#47 grader identity) — re-align in
+  `sacredbench-jev-2`.
+
 - **Refusal is an OUTCOME, not a wrong answer — don't let a strict headline conflate it
   with fabrication.** `correct = normalize(answer) == normalize(expected)` alone marks both an
   honest refusal and a confident fabrication 0 (first run: gpt-oss-20b mostly refuses, gemma/llama
@@ -122,6 +139,13 @@ Seeded from Spec 1 (Phase 1 benchmark).
   including non-blocking COMMENTs, so nothing is silently dropped between iterations.
 - **Derive formats from the real reference data, not its docs** (BoM heading-as-verse,
   encyclical `paragraph: null`, Talmud daf offsets).
+- **A sanctioned rebaseline's deliverable includes every HUMAN-READABLE figure in the run dir**, not
+  only the machine artifacts (Spec 48: two full phase_2 consult rounds were spent on the run
+  `README.md` publishing pre-fix numbers + an *inverted* caveat after `summary.json`/`scores.jsonl`
+  moved). Enumerate and diff the README, `facct.{json,md}`, and any prose against the regenerated
+  summary, and sync them in the **same commit** as the rebaseline. (Keep deliberately-pre-fix
+  evidence like `jev_agreement.{json,md}` untouched, but add a "superseded — read counts from
+  `summary.json`" pointer in the dir's README so the stale figure isn't cited as current.)
 - **`porch rollback <id> plan` REPLAYS the old plan's iteration history — it does not reset the
   counter.** After a rollback, each `porch done` bumps the iteration (2→3…) and `porch next` returns
   "Fix issues from iteration N" with **no consult task**, because the old plan's iterN review files
