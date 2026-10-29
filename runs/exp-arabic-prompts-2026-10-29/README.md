@@ -63,3 +63,25 @@ marks but cannot equate dagger-alef ↔ full alef or ى ↔ ي, so these score i
 **Caveats**: n=7 per task per model, one seed, temperature 0, two models, scaffold
 translation written by the architect (not a native-speaker-reviewed instrument).
 Directional evidence only.
+
+## Follow-up: orthography-fold re-score (2026-10-29)
+
+Re-scoring both conditions under a small Uthmani↔Imla'i fold applied **before**
+`normalize()` (dagger alif → full alif, hamzat al-wasl → alif, alif madda → alif,
+standalone hamza dropped, ى → ي, whitespace removed; containment match) is decisive:
+
+- **en: 45 strict-correct + 7 fold-recovered = 52/56**
+- **ar: 40 strict-correct + 12 fold-recovered = 52/56**
+
+Identical scores, and the **identical four residual cells** (two verses ×
+both models × both conditions): retrieve_quote-5d482247f058 (10:50) and
+retrieve_quote-8c4ce779621f (14:34). By hand inspection those four are the same
+phenomenon via two rules the quick fold leaves out — hamza seating
+(أَرَءَيْتُمْ ↔ أَرَأَيْتُمْ) and the ى+dagger-alif digraph (أَتَىٰكُمْ ↔ أَتَاكُمْ).
+So every one of the 112 answers contains the content-correct verse; no
+content-level difference between prompt languages survives orthographic
+equivalence. Note the fold rescues **English-prompted** cells too (7), i.e. even
+en-condition strict accuracy is partly orthographic luck — the production fix
+(#39 prerequisite) belongs in the scorer, not in prompt engineering.
+(Ordering gotcha for implementers: `normalize()` deletes the dagger alif as a
+combining mark, so the dagger-alif → full-alif fold must run before it.)
