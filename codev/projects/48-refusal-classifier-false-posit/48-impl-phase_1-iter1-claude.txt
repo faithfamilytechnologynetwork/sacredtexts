@@ -1,0 +1,41 @@
+I'll start by reading the implementation files.I read every changed file, independently recomputed the blast radius, re-derived the pinned SHAs from the base commit, re-derived the spliced summary aggregates, and ran the suite read-only. I made no changes to the tree.
+
+## What I verified independently
+
+**The rule's blast radius is exactly the locked flip set.** I re-ran `asserts_delivery` over every committed-`refused` text-retrieval cell in all four runs (using `git show 9e4fbdf:…scores.jsonl` for tutorial, since its committed copy is now post-change):
+
+| run | refused text-retrieval cells | would flip |
+|---|---|---|
+| tutorial (pre-change) | 127 | **5** — exactly the locked A set, all with `correct == 0` |
+| first-run | 141 | 0 |
+| original (incl. 89 `complete_unit`) | 312 | 0 |
+| exp-arabic `-en` / `-ar` | 0 / 0 | 0 |
+
+**The pinned pre-change SHAs are genuine, not circular.** Recomputed from base commit `9e4fbdf` with the test's own projection function: outcome `99a724e1…`, correct `de342249…`, similarity `ab970582…` — all three match the pins. Post-change `correct` and `(exact, normalized, token_f1)` projections are byte-identical to pre-change, as claimed.
+
+**The hand-spliced `summary.json` is arithmetically exact.** I rebuilt every `models` / `by_tradition` cell (including `_overall` and the submetric means) from the regenerated `scores.jsonl` via the project's own `_outcome_cell`: **zero mismatches**. (`by_text` is absent from this run's summary — pre-existing, predates Spec 26, not a splice omission.) The JSON diff touches only 49 numeric leaves under `accuracy/coverage/incorrect/refused/refused_rate/exact/normalized/token_f1`; `panel`, `usage`, `generated_at`, `n`, `correct`, `expected_n`, `missing` are untouched. Numbers match the plan pins exactly: opus-search `0.9737→0.9250`, cov `0.76→0.80`, refused `24→20`; haiku-search `0.80→0.7879`, cov `0.65→0.66`, refused `35→34`.
+
+**A/B adjudication.** I read all 13 answer texts and concur with every disposition. The hard pair separates for a principled reason, not a hand-fit: `d0239d95ae29` commits ("the plain text …, which most likely matches this line, is: «he»") while `eaf381cf82d3` both disclaims the segment *and* refuses to deliver ("I'd rather not guess at an exact line"). The anchors `42f510ea6c7d` (0.58) and `f143cc3f6c63` (0.68) stay `refused` alongside their 0.45/0.47 twins — and notably `f143cc3f6c63` ("I'm not going to guess") is *not* caught by `_REFUSE_DELIVER`, so it is held B by the assertion frame itself. Surviving judge disagreements are all `refusal_p ≥ 0.36`, clearing the `< 0.25` criterion.
+
+**Only logic change in `outcomes.py`** is `return not (target and bounded_contains(...))` → contains-escape plus `return not asserts_delivery(answer)`. Cue list unchanged, `verify_source`/`cite_passage` untouched — Approach 2 correctly not used as the mechanism.
+
+**Suite**: `585 passed, 2 skipped` from the repo root with the project venv (the 4 failures I first saw were my own cwd error, not the code).
+
+## Notes for phase 2 (not blockers)
+
+1. **Phase boundary collapsed, with cause.** Phase 1's own criterion ("diff is `outcomes.py` + the test file only; no `runs/` artifact") is not met: the tutorial rebaseline, the oracle, and the Spec-15 re-pins landed in this commit. The reason is real — `test_tutorial_run`'s byte-for-byte re-score guard makes classifier-and-rebaseline inseparable — and the thread records that it was surfaced and the architect approved. Worth updating the plan/`status.yaml` so the *residual* phase_2 (jev_agreement, per-run enumeration in the review doc, confirming the three byte-identical runs) isn't quietly lost now that most of it is done.
+2. **`jev_agreement.{json,md}` deliberately left stale.** The plan's phase_2 says regenerate it; the builder kept it as pre-fix historical evidence. As committed, that artifact reports `deterministic_only = 11` against a `scores.jsonl` where 5 of those 11 are now `incorrect`, and nothing in the suite guards the inconsistency. Either regenerate in phase 2 or add an explicit in-file staleness note with the post-fix agreement numbers.
+3. **The gate reframe is sound but its soundness is implicit.** "No committed refusal asserts delivery" is equivalent to the plan's "global refused-delta == flip set" *only because* this change is a pure widening of the escape (a cell can only leave `refused`). If someone later adds a decline cue, this gate won't see it — the byte-for-byte re-score guards would. Worth one line in the test docstring. Also note the two `exp-arabic` parametrizations are vacuous today (0 refused text-retrieval cells) — harmless, but not the coverage the name suggests.
+4. **`test_spec48_from_memory_under_a_decline_is_not_a_delivery` is a lower bound (`found >= 3`).** With 147 candidate cells, 144 could over-fire and it would still pass; the real guard is the committed-scores gate. Asserting the complement is empty would make it a standalone blast-radius test.
+5. **Micro:** `_SCRIPT` spans `U+FE70–FEFF` (includes the BOM) and Hebrew punctuation-only codepoints, so "a payload exists" is slightly over-broad. Harmless for `_ASSERT_INTRO` (a positive frame is still required) but `_ASSERT_RECON` needs only *any* script char plus a 24-char negation lookback — the one path where a false fire is theoretically reachable. Low risk and fail-safe in practice; no action needed now.
+
+---
+VERDICT: APPROVE
+SUMMARY: Assertion rule is principled, non-overfit, and independently verified to move exactly the 5 locked cells; the rebaseline's SHAs and spliced aggregates all reconcile.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Phase-2 follow-ups: stale `jev_agreement.{json,md}` (plan says regenerate; nothing guards the inconsistency with the new scores); plan/`status.yaml` should record the architect-approved phase-boundary collapse and the narrowed residual phase_2.
+- Test-tightening suggestions: make the "from memory" test assert an empty complement rather than `found >= 3`; document in the gate's docstring why "no committed refusal asserts delivery" is equivalent to the planned refused-delta check (relies on the rule being a pure escape-widening).
+- Minor robustness: `_SCRIPT` includes the BOM and Hebrew punctuation-only codepoints, and `_ASSERT_RECON` requires only a script char anywhere plus a 24-char negation lookback — the one path where a false fire is reachable; fail-safe today (whole-corpus sweep shows 0).

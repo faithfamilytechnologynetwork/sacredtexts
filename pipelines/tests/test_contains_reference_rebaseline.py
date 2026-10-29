@@ -67,10 +67,12 @@ FLIP_SET = {
 EXPECTED_ACCURACY = {
     "first-run-2026-10-11": {("claude-haiku", "retrieve_quote"): 0.5556},  # was 0.25 (correct/n)
     "tutorial-2026-10-11": {
-        ("haiku-search", "retrieve_quote"): 0.80,  # was 0.52
-        ("haiku", "retrieve_quote"): 0.7121,        # was 0.47
-        ("opus-search", "retrieve_quote"): 0.9737,  # was 0.74
-        ("opus", "retrieve_quote"): 1.0,            # was 0.66 — perfect WHEN it answers (cov 0.66)
+        # Spec 48 rebaseline: the search arms drop as 5 hedged-but-delivering cells re-enter the
+        # accuracy denominator as `incorrect` (opus-search 4 Judaism, haiku-search 1 Sunni Islam).
+        ("haiku-search", "retrieve_quote"): 0.7879,  # was 0.80 (Spec 48: refused 35->34)
+        ("haiku", "retrieve_quote"): 0.7121,         # unchanged (no search, no flips)
+        ("opus-search", "retrieve_quote"): 0.9250,   # was 0.9737 (Spec 48: refused 24->20)
+        ("opus", "retrieve_quote"): 1.0,             # unchanged — perfect WHEN it answers (cov 0.66)
     },
 }
 # Coverage pins (the honest companion that stops "opus 100%" from being misread as a clean sweep:
@@ -78,9 +80,9 @@ EXPECTED_ACCURACY = {
 EXPECTED_COVERAGE = {
     "first-run-2026-10-11": {("claude-haiku", "retrieve_quote"): 0.45},
     "tutorial-2026-10-11": {
-        ("haiku-search", "retrieve_quote"): 0.65,
+        ("haiku-search", "retrieve_quote"): 0.66,  # was 0.65 (Spec 48: +1 answered)
         ("haiku", "retrieve_quote"): 0.66,
-        ("opus-search", "retrieve_quote"): 0.76,
+        ("opus-search", "retrieve_quote"): 0.80,   # was 0.76 (Spec 48: +4 answered)
         ("opus", "retrieve_quote"): 0.66,
     },
 }
@@ -97,11 +99,15 @@ REFUSED_COUNTS = {
     # provide … nor …" declines (retrieve_quote-22fab64cec81, -74d14c70efb0) the first survey missed;
     # the cue was added and the set re-pinned (llama accuracy 0.0122→0.0125, coverage 0.82→0.80).
     "first-run-2026-10-11": {"claude-haiku": 55, "gpt-oss-20b": 66, "llama-3.1-8b": 20},
-    "tutorial-2026-10-11": {"haiku": 34, "opus": 34, "haiku-search": 35, "opus-search": 24},
+    # Spec 48: tutorial search arms drop (haiku-search 35->34, opus-search 24->20) as 5 hedged-but-
+    # delivering cells are reclassified from `refused` to `incorrect`. Non-search arms unchanged.
+    "tutorial-2026-10-11": {"haiku": 34, "opus": 34, "haiku-search": 34, "opus-search": 20},
 }
 REFUSED_SET_SHA256 = {
     "first-run-2026-10-11": "8f6a7dcc2157705029bf4f43c024b48807737bafbfdc33fed6d370bdf6db583b",
-    "tutorial-2026-10-11": "5d8856fa9a7c7c319e0fcc26d0eaf659af308d4397b9ff6d33b633fa1afee6dd",
+    # Spec 48 rebaseline (re-pinned from the regenerated scores; the non-circular witness that only
+    # the 5 registered cells moved is test_refusal_rebaseline.py, not this re-pin).
+    "tutorial-2026-10-11": "2a560379321408b4e9641fe49471ea8f3e13d6ee5bcb43d04108d3853c64e018",
 }
 
 

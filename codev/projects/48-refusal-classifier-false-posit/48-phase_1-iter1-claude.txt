@@ -1,0 +1,56 @@
+I'll start by reading the implementation files.I read the implementation, the tests, the spec/plan, and verified the rebaseline independently against git. I did **not** modify anything in the tree — the one hypothesis I needed to test (whether a hardening would move any committed number) I tested by monkeypatching the module in a throwaway `python -` process, not by editing `outcomes.py`.
+
+## What I verified independently
+
+**The rebaseline is honest and exactly as advertised.** Recomputing the projections from `git show 70494fd:runs/tutorial-2026-10-11/scores.jsonl`:
+
+- `PRECHANGE_OUTCOME_SHA256` = `99a724e1…` and `PRECHANGE_CORRECT_SHA256` = `de342249…` are the **genuine pre-change** values — the oracle is not circular.
+- Exactly **5 cells** moved, all `refused → incorrect`, all 5 in `FLIP_SET`. Across all 400 cells, **zero** diffs in `exact/normalized/token_f1/contains_reference/correct`.
+- `summary.json`: only metric leaves moved; **0** lines touching `panel`/`usage`/`generated_at`. The moved aggregate means are arithmetically exact (e.g. opus-search `token_f1` 0.9098·76 → 0.8758·80 differs by 0.92 = the sum of the 4 flipped cells' `token_f1`).
+- `first-run`, `original`, `exp-arabic`, and tutorial's `answers/questions/judgments/jev_agreement` are **byte-identical**.
+- Full suite: **585 passed, 2 skipped**.
+
+**A/B adjudication is sound.** I read all five A cells and five B/anchor cells. Every A cell fires on a genuine positive-identity frame ("the Uthmani text of 4:176 **is**:", "this line, **is**:", "the line **is** probably:", "that baraita **starts**:", "my best reconstruction of the … wording"). The anti-overfit anchor `42f510ea6c7d` and its twins `de9d77a6c963`/`fe52da70f661` all land `refused`, asserted in one test body. The `_REFUSE_DELIVER` disqualifier is principled and does real work (it's what excludes `42f510ea6c7d` and `eaf381cf82d3` via "I'd rather not guess").
+
+Nice touch: the whole-corpus gate is **non-circular for the three untouched runs** (their committed scores are pre-change), which is strong evidence of zero blast radius there.
+
+## The one thing I'd fix first
+
+**`_ASSERT_INTRO` over-fires on the canonical class-B pattern once reworded.** The real B cell `de9d77a6c963` says *"The closest I got was **a** different line from the same daf: «text»"* — it is excluded **only** because the determiner before `line` is `a` rather than `the`. That's an accident, not a principle. A one-word rewording defeats it:
+
+```
+"I couldn't find Ketubot 63b:19. The closest line I found is: «he», but I can't confirm it's that segment."
+  → asserts_delivery = True  → NOT refused     # semantically pure class B
+"I couldn't find the exact segment. The opening text of the daf is: «he»"
+  → asserts_delivery = True  → NOT refused     # defeats the deliberate daf/begins exclusions
+```
+
+The negation guard doesn't help because `can't confirm` sits *after* the payload, outside the `clause` group. This is the spec's "Medium/High" risk (*assertion rule flips a B cell to an answer*) — mitigated for these four runs by the pin, but **unmitigated for every future run**, and `#52` builds on this function.
+
+The fix is a direct generalization of the authors' own stated exclusions (they already drop `daf`/`segment` from `_UNIT` and `begins`/`opens` from `_VERB` because B answers describe the *surrounding* text): also reject the assertion when a **non-identity modifier** sits in the clause — `different|closest|other|another|next|previous|preceding|following|surrounding|nearby|opening|adjacent`.
+
+I verified in-memory that this is **free**:
+- all 5 A cells still read as deliveries;
+- whole-corpus gate delta across all 5 (run, scores) pairs: **`[]`** — so **no committed number moves and no re-rebaseline is needed**;
+- both probe cases above become `refused`.
+
+## Non-blocking observations
+
+1. **`_SCRIPT` is a Hebrew/Arabic/Greek allowlist**, so a hedged delivery in Devanagari, Tibetan, Han — or in **Latin script** — can never be a "payload" and stays `refused`. For Latin that means the *original bug* survives in one form: a hedge followed by a confabulated (non-containing) English/Latin delivery is still a false `refused`. Worth a docstring line (the module already warns refusal rates aren't script-comparable because of the English cue list; this is a second axis), plus a note for a future tradition that `_SCRIPT` must be extended — which brushes against arch-critical's "adding a tradition never changes core pipeline code."
+2. The comment says `_SCRIPT` is "letter ranges only," but `ؠ-ۿ` (U+0620–U+06FF) also covers harakat, Arabic-Indic digits, and `٪٫٬٭`. Cosmetic, but a lone Arabic digit technically counts as a payload.
+3. `test_spec48_delivered_as_answer_flips_out_of_refused` passes `{"text": ""}`, bypassing the containment half. The gate test uses real expected text, so coverage is fine, but loading the real `expected` here would be strictly stronger.
+4. Minor lint: `test_outcomes.py` imports the private `_TEXT_RETRIEVAL`, and the edge-case test shadows module-level `EXP` with a local uppercase `EXP`.
+
+Phase-boundary absorption of the tutorial rebaseline is correctly documented in the plan and the thread records the architect's explicit GO, so I'm not flagging that as scope creep.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Rebaseline is independently verified exact and the A/B adjudication is sound, but the assertion regex excludes the canonical class-B "closest/different line" pattern only by accident of the indefinite article — a trivial rewording scores a decline as `incorrect`.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `_ASSERT_INTRO` over-fires on class-B shapes: `"The closest line I found is: «script», but I can't confirm it's that segment"` and `"The opening text of the daf is: «script»"` both return `asserts_delivery=True`. Real B cell `de9d77a6c963` is excluded only because its determiner is `a` ("a different line"), not `the` — and the post-payload negation is outside the matched `clause`. Fix by rejecting non-identity modifiers (`different|closest|other|another|next|previous|preceding|following|surrounding|nearby|opening|adjacent`) inside the assertion clause; verified in-memory that this keeps all 5 A cells, leaves the whole-corpus gate delta empty, and moves no committed number.
+- (Non-blocking) `_SCRIPT` is a Hebrew/Arabic/Greek allowlist, so hedged Latin-script or Devanagari/Han deliveries can never be recognized as a payload — the original false-`refused` bug survives for Latin-script traditions, and a new tradition requires editing core pipeline code. Document in the docstring.
+- (Non-blocking) `_SCRIPT`'s `ؠ-ۿ` range includes harakat/digits/punctuation, contradicting the "letter ranges only" comment.
+- (Non-blocking) A-cell test passes `{"text": ""}`, bypassing the containment half; using real `expected` text would be stronger. Minor lint: private `_TEXT_RETRIEVAL` import, local `EXP` shadowing.

@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The core direction is sound, but Phase 2 targets nonexistent artifacts and lacks sufficient pre-change oracles and locked cross-run dispositions.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The Arabic experiment does not contain `answers.jsonl`, `scores.jsonl`, or summaries as the plan states. It has separate `answers-en.jsonl` / `scores-en.jsonl` and transformed `answers-ar-normalized.jsonl` / `scores-ar.jsonl`, generated through `analyze.py`. Phase 2 must explicitly handle both conditions and preserve or regenerate the documented Arabic normalization correctly.
+- The specification says cross-run enumeration is plan work, but the plan locks only the tutorial flip set and defers discovering other-run flips until implementation. Survey the currently refused rows in all other evidence streams and pre-register exact flip sets—or explicit empty sets—before implementation.
+- The proposed projection SHA covers only `(exact, normalized, token_f1)`. It cannot prove that `correct` stayed unchanged or that no unregistered `outcome` moved. Freeze a pre-change `correct`/`outcome` projection per evidence stream, then test that applying the registered refused→incorrect transformation exactly reproduces the post-change projection.
+- The classifier HOW remains underspecified. “Assertion cue and no disclaimer cue” does not explain how a real scripture payload is distinguished from a citation echo or “best guess” pointer, despite those being required edge cases. Lock the concrete cue families, precedence, and payload condition at plan phase.
+- Rebaseline artifact handling needs expansion. If `original-2026-10-21` moves, its committed `facct.json`/`facct.md` must be regenerated because `test_original_run_regression.py` requires them to match the scores and summary. The plan should also specify how roster, panel, judge provenance, and `generated_at` are preserved or deliberately regenerated; a plain `score_file`/keyless score does not reproduce all existing summary metadata.

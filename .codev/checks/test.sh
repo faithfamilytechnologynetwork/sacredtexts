@@ -43,6 +43,18 @@ if printf '%s\n' "$changed" | grep -qE '^fixtures/'; then
   touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
+# runs/** and texts/** are read by BOTH lanes: pipelines pytest asserts the committed-run numbers and
+# the corpus, and apps/viewer vitest asserts the SAME committed-run evidence (src/local/tutorialRun.
+# test.ts loads the real runs/tutorial-2026-10-11 and pins its counts). The sed above maps these to
+# the pipelines lane only, so a runs- or texts-only change (e.g. a sanctioned scoring rebaseline)
+# would silently skip vitest — the exact multi-app dispatcher trap in lessons-critical (same class as
+# the fixtures/ gap PR #44 closed; Spec 48's viewer break was the proof case). Map them to both lanes.
+# NOTE: this means a pipelines-only builder touching runs/ or texts/ needs the pnpm toolchain to pass
+# the gate (accepted on this machine).
+if printf '%s\n' "$changed" | grep -qE '^(runs|texts)/'; then
+  touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
 if [ -z "${touched//[$'\n']/}" ]; then
   echo "test-dispatcher: no app/pipeline changed vs ${base} — nothing to test."
   exit 0

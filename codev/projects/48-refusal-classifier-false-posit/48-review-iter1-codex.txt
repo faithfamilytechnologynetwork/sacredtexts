@@ -1,0 +1,22 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The reconstruction matcher can misclassify explicitly negated substitute answers as delivered.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `pipelines/sacredbench/outcomes.py:228-233` checks negation/non-identity only through the end of `_ASSERT_RECON`, while accepting any script payload later in the answer. Consequently, `"I couldn't find it. My best reconstruction of the requested line is not reliable; the adjacent text is: בראשית ברא"` produces `asserts_delivery=True` and `classify_refusal=False`, despite being class B. Extend the checked span through the payload/assertion clause and add this regression case.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds assertion-gated refusal classification so hedged answers that genuinely deliver original-script text are scored rather than excluded as refusals. It also rebaselines five tutorial outcomes and updates associated summaries and regression guards.
+
+  ## Key Changes
+  - Introduces `asserts_delivery` and integrates it into text-retrieval refusal classification.
+  - Reclassifies five tutorial cells from `refused` to `incorrect`.
+  - Adds projection-SHA and whole-corpus regression coverage.
+  - Updates viewer expectations, run documentation, and test dispatching.
+
+  ## Test Plan
+  - Run `bash .codev/checks/test.sh`.
+  - Add a regression test for negation occurring after `_ASSERT_RECON` but before a later substitute payload.
+  - Confirm all five registered A cells still flip while B cells and anti-overfit anchors remain refused.

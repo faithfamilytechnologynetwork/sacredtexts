@@ -1,0 +1,39 @@
+I'll start by reading the key implementation files to understand what was done.I verified the rebaseline against the evidence (read-only), including recomputing the oracle SHAs from the base commit and re-deriving the summary from the regenerated scores.
+
+## What I verified (phase_2 = the sanctioned rebaseline)
+
+**The rebaseline itself is exemplary.** Everything the plan claims, I confirmed independently:
+
+- `runs/tutorial-2026-10-11/scores.jsonl`: exactly **5 rows** differ from the base commit, all `outcome: refused → incorrect`, on exactly the registered cells. Keys, `correct`, and every submetric are identical on all 400 rows.
+- The oracle's frozen pre-change digests are **genuine**: I recomputed them from `git show 9e4fbdf:…scores.jsonl` — `99a724e1…` (outcome) and `de342249…` (correct) match `test_refusal_rebaseline.py` byte for byte. The post-change `correct` projection still hashes to `de342249…`.
+- `score_file` over the committed answers reproduces the new `scores.jsonl` **byte-identically**, and the live aggregator's `models` + `by_tradition` subtrees are **exactly equal** to the hand-spliced `summary.json` (48 leaf diffs, all in the two search arms / Judaism+Sunni-Islam cells; `panel`/`usage`/`generated_at`/`expected_n`/`missing` untouched; this run predates `by_text`, so no stale third table).
+- `summary.md`'s scoring rows are byte-identical to `summary_markdown()` output; the only renderer divergence is the pre-existing panel-column drift the builder correctly declined to touch.
+- Non-tutorial runs: `git diff base...HEAD -- runs/` touches **only the 3 tutorial files**. `test_spec48_classifier_reproduces_committed_refusals` recomputes refusals over all four runs incl. the Arabic `-en`/`-ar` layout and `complete_unit` — a stronger witness than byte-identity alone.
+- Both lanes green from the repo root: **pipelines 586 passed / 2 skipped** (incl. `test_audit`, `test_facct`, `test_original_run_regression`), **viewer 187 passed**.
+- Post-fix Jev cross-check, recomputed by me from `judgments.jsonl` × new `scores.jsonl`: agreement **0.985**, `deterministic_only` 11 → **6**, survivors at 0.36/0.45/0.45/0.46/0.47/0.49, **none < 0.25** — the retargeted criterion holds, and `42f510ea6c7d`/`f143cc3f6c63` stay refused alongside their twins.
+- Spot-checked the A/B calls against raw answer text: `d0239d95ae29` ("the plain text …, which most likely matches this line, is:"), `d4c3bda0b400` ("my best reconstruction of the standard Vilna wording"), `e2d74279aaf0` ("From memory, the Uthmani text of 4:176 is:") read as deliveries; `eaf381cf82d3`/`42f510ea6c7d` ("I'd rather not guess") and `de9d77a6c963` ("the closest I got was a different line") read as declines. The split is defensible.
+
+## The gap: paper-facing run doc left contradicting the regenerated evidence
+
+`runs/tutorial-2026-10-11/README.md` is not in the PR and is now **stale and self-contradicting** — it sits in the same directory as the files this phase regenerated. This is precisely the "stale paper-facing doc no test catches" risk the spec's own table calls out for `facct.{json,md}`, and Spec 15's rebaseline had a docs-sync pass for this exact file:
+
+- **Headline table (41–46)**: `opus-search 97% / 76% / 74/2/24` and `haiku-search 80% / 65% / 52/13/35` — now `92% / 80% / 74/6/20` and `79% / 66% / 52/14/34`. It directly contradicts `summary.md` next to it.
+- **Prose (48–54)**: "opus-search's 97%", "answers more (76%) at near-perfect accuracy (97%)", "lifts accuracy **71% → 80%**".
+- **Line 62**: "8 correct retrievals at 29% coverage" — Judaism coverage is now 41%.
+- **Lines 84–91 are now inverted.** That caveat paragraph is about `retrieve_quote-e2d74279aaf0` — *a flipped cell* — and says: "Under the deterministic refusal rule it is `refused`… counting it incorrect would put haiku-search at **78.8%** rather than 80%." Spec 48 did exactly that; haiku-search is 78.79%. The paragraph presents this PR's result as a rejected hypothetical. Its calibration claim is also obsolete: I recomputed — refused across both runs is **263** (not 268), and **zero** remain above `token_f1` 0.3, so "267 of the 268 … this is the only one above" no longer has an exception at all.
+
+Related, smaller: `jev_agreement.{json,md}` are deliberately kept as pre-fix evidence (architect condition — correct call) but carry **no in-file marker**, so a reader can cite "11 disagreements" against scores that now say 6; and `codev/resources/lessons-learned.md:15` still cites "opus-search 97%/cov76%".
+
+I did not touch the tree — these are reported, not fixed.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The rebaseline is impeccable and fully witnessed (5 cells, verified pre-change SHAs, byte-reproducible scores, faithful summary splice, both lanes green), but the run's own README still publishes the pre-fix numbers and an inverted caveat about one of the flipped cells.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `runs/tutorial-2026-10-11/README.md` is stale after the rebaseline and contradicts `summary.md` in the same dir: headline table (L41–46 → 92%/80%/74/6/20 and 79%/66%/52/14/34), prose L48–54 (97%, 76%, 71%→80%), L62 Talmud coverage 29% → 41%.
+- `README.md` L84–91 is now inverted: it describes flipped cell `retrieve_quote-e2d74279aaf0` as `refused` and frames "counting it incorrect would put haiku-search at 78.8%" as a hypothetical — that is what this PR did. Its calibration figures are also obsolete (refused across both runs 268 → 263; verified: no refused cell now exceeds `token_f1` 0.3, so the stated single exception is gone).
+- `jev_agreement.{json,md}` are intentionally pre-fix (sanctioned) but unmarked — add a one-line "superseded by the Spec 48 rebaseline; see summary.json" note so the 11-disagreement figure isn't cited as current.
+- Minor: `codev/resources/lessons-learned.md:15` still cites "opus-search 97%/cov76%"; the viewer test comment says "97%→93%" while `summary.md` renders 92%; the plan's phase-2 deliverable "per-run enumeration of moved cells with answer text + moved similarity means" still needs to land in `codev/reviews/48-*.md` (opus-search `token_f1` 0.9098→0.8758, `normalized` 0.8684→0.825, `exact` 0.4474→0.425).

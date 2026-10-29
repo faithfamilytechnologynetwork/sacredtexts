@@ -5,6 +5,34 @@ Seeded from Spec 1 (Phase 1 benchmark).
 
 ## Scoring & evaluation
 
+- **Refusal is decided by ASSERTION, not by the presence of a disclaimer (Spec 48).** The search-arm
+  false-positive fix: a leading-decline text-retrieval answer that then *delivers* the passage in an
+  unfoldable vocalization ("I couldn't find the exact edition… from memory it is: «script»") is an
+  answer, not a refusal. The rule is **assertion-only** — a positive identity frame ("the <unit>
+  is/reads/starts: <payload>" or "my best reconstruction … is: …") flips `refused → incorrect`; it is
+  NOT conjunctive ("assertion AND no disclaimer" is falsified by an A cell that disclaims only the
+  *segment number*). **Payload detection is script-NEUTRAL** — the target script is derived from the
+  question's expected text via `unicodedata` (`_script_families`), NOT a Hebrew/Arabic/Greek allowlist:
+  a canonical Latin tradition (KJV, LDS) or any new script (Gurmukhi, Cyrillic) is handled with zero
+  core-code edits, honouring the "traditions are drop-in data" invariant (the allowlist was an
+  invariant violation of the #50-Gurmukhi class, caught at PR review). A **non-Latin** payload is
+  self-signalling (the script shift from English prose IS the "here is the text" marker); a
+  **Latin/ASCII** payload has no shift, so it additionally requires an explicit introducer (colon /
+  dash / quote) — else "the line is about…" / "the text is also available at…" is continuation prose,
+  not a delivery (this over-fire bit two first-run cells before the introducer guard). Footguns
+  banked: (1) a bare "from memory" substring appears in 147 genuinely-refused cells — match the
+  positive frame, never a bare substring; (2) the negation + non-identity guard must span from the
+  assertion frame THROUGH the payload's sentence (catches "…is not reliable; the adjacent text is:"
+  BEFORE the payload and "the line is: <payload>, but a different line" AFTER it), while excluding an
+  earlier leading-decline sentence; (3) INTRO requires the payload to IMMEDIATELY follow the frame (no
+  intervening words), else a distant same-sentence script run ("…segment 7 is probably either X or
+  the follow-up question, «script»") over-fires; (4) a global **refusal-to-deliver** disqualifier
+  ("don't want to give/guess", "fabricat") keyed on refusal-of-delivery (not identity-disclaimers)
+  stops the intro regex catching a genuine "I won't give a fabricated version" refusal. The
+  discriminator for A-vs-B is a *vocalization/edition-only* disclaimer (A) vs a *passage-identity*
+  disclaimer (B); a URL pointer is NOT a B marker. The A/B taxonomy deliberately diverges from the Jev
+  rubric (#47 grader identity) — re-align in `sacredbench-jev-2`.
+
 - **Refusal is an OUTCOME, not a wrong answer — don't let a strict headline conflate it
   with fabrication.** `correct = normalize(answer) == normalize(expected)` alone marks both an
   honest refusal and a confident fabrication 0 (first run: gpt-oss-20b mostly refuses, gemma/llama
@@ -12,8 +40,10 @@ Seeded from Spec 1 (Phase 1 benchmark).
   correct/incorrect/refused: a declined cell is `refused` and **excluded from accuracy**
   (`accuracy = correct/(correct+incorrect)`), with **coverage** (how often it answered) reported
   beside every accuracy so a high-accuracy/low-coverage model isn't misread (opus 100%/cov66% vs
-  opus-search 97%/cov76%). Detection is deterministic (a leading decline cue AND the reference not
-  delivered); `token_f1` is a diagnostic, never the refusal detector.
+  opus-search 92%/cov80%). Detection is deterministic: a leading decline cue AND the reference not
+  delivered — **unless** a positive delivery assertion fires past the decline (Spec 48 escape, so a
+  from-memory / best-reconstruction delivery is scored, not refused). `token_f1` is a diagnostic,
+  never the refusal detector.
 - **Citation scoring must resist containment and false-negatives.** A single-candidate
   boundary-equality check (multi-candidate hedge → 0), with the extractor chosen by the
   ground-truth citation *shape*, and spans asserting the expected citation collapsed to
@@ -120,6 +150,13 @@ Seeded from Spec 1 (Phase 1 benchmark).
   including non-blocking COMMENTs, so nothing is silently dropped between iterations.
 - **Derive formats from the real reference data, not its docs** (BoM heading-as-verse,
   encyclical `paragraph: null`, Talmud daf offsets).
+- **A sanctioned rebaseline's deliverable includes every HUMAN-READABLE figure in the run dir**, not
+  only the machine artifacts (Spec 48: two full phase_2 consult rounds were spent on the run
+  `README.md` publishing pre-fix numbers + an *inverted* caveat after `summary.json`/`scores.jsonl`
+  moved). Enumerate and diff the README, `facct.{json,md}`, and any prose against the regenerated
+  summary, and sync them in the **same commit** as the rebaseline. (Keep deliberately-pre-fix
+  evidence like `jev_agreement.{json,md}` untouched, but add a "superseded — read counts from
+  `summary.json`" pointer in the dir's README so the stale figure isn't cited as current.)
 - **`porch rollback <id> plan` REPLAYS the old plan's iteration history — it does not reset the
   counter.** After a rollback, each `porch done` bumps the iteration (2→3…) and `porch next` returns
   "Fix issues from iteration N" with **no consult task**, because the old plan's iterN review files

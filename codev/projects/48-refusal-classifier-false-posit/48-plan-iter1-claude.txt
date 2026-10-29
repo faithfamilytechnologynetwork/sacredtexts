@@ -1,0 +1,70 @@
+I'll start by reading the actual files referenced in the plan to verify its claims.Now let me examine the actual answer texts for the cells the plan locks, and the existing rebaseline test pattern.Now the load-bearing question: can the A/B line be drawn by text cues? Let me read the actual answers.Let me measure the blast radius across all four runs — the rule is global, not tutorial-only."from memory" appears in 147 currently-refused cells. Let me check whether those are declines or deliveries.Two more checks: the fourth run's contents, and whether the plan's list of tests to reconcile is complete.I have what I need. Here's my review.
+
+## Review: Plan 48 — Refusal-classifier false positives
+
+I read `outcomes.py`, `test_contains_reference_rebaseline.py`, the three regression guards, all 13 locked answer texts, and probed all four run directories. The approach (spec-mandated Approach 1) is right, the two-phase seam is well-motivated, and the anti-overfit anchor is genuinely good design. But I found four concrete problems — one of which I think makes Phase 1 unsatisfiable as written.
+
+### 1. The stated rule is falsified by its own locked A set (blocking)
+
+Phase 1's deliverable: *"refused unless it carries a delivery-assertion cue **and** carries no passage-identity-disclaimer cue."*
+
+A-cell `d4c3bda0b400` opens:
+> "I couldn't confirm the exact Sefaria text, and **I'm not sure which passage is segment 9.**"
+
+B-cell `fe52da70f661` contains:
+> "**I'm not sure which part** of this Sefaria counts as segment 3."
+
+These are lexically near-identical. Any disclaimer family containing `"i'm not sure which"` fires on a locked **A** cell, so the conjunctive rule strands `d4c3bda0b400` as `refused` and the pinned numbers become unreachable. Same pattern elsewhere: A `349b0b401f72` says *"That's not the Davidson Edition's wording"* (a literal disclaimer of the delivered text); `"most likely"` appears in both A `d0239d95ae29` ("most likely matches this line, is:") and B `eaf381cf82d3` ("Segment 3 most likely falls somewhere in"); `"probably"` appears in A `b33e7e040058` and B `b1a04c81d33f`.
+
+The **disjunctive** form (refused unless an assertion cue fires; disclaimer not consulted, or consulted only when scoped to the delivered span) survives all 13 as far as I can read it. The plan should state that form explicitly, and pre-commit to the escape hatch: `d0239d95ae29` vs `eaf381cf82d3` may not separate without a single-cell cue, and the spec's sanctioned fallback is *stay refused + surface*. That makes Phase 2's `0.9250 / 0.80 / refused 20` **contingent**, not an acceptance criterion — right now a spec-legal outcome fails the plan's own gate.
+
+### 2. Blast radius is under-sized by ~30× (blocking)
+
+The plan names `"from memory"` as an A cue (it's `e2d74279aaf0`'s marker). I counted occurrences in **currently-refused** cells:
+
+| run | refused cells | contain "from memory" |
+|---|---|---|
+| tutorial-2026-10-11 | 127 | **38** |
+| first-run-2026-10-11 | 141 | **34** |
+| original-2026-10-21 | 334 | **75** |
+
+Nearly all are *declines*, not deliveries — `"I can't reliably reproduce … from memory"`, `"I'd rather not guess at an exact line from memory"`, `"I don't want to give you its exact wording from memory"`. A flat substring cue flips ~147 genuine refusals. The A-cell signal is the *positive frame* ("From memory, the text of 4:176 **is:**") and specifically **not under a negation**. A flat `_DECLINE_CUES_RAW`-style tuple is the wrong mechanism here — the plan should say the assertion test must be negation-aware and frame-anchored, not a bare substring set.
+
+### 3. Cross-run discovery is in the wrong phase
+
+The plan defers "which other runs have A-class cells" to Phase 2 — *after* the rule is committed. Given #2, the builder will commit a rule in Phase 1 and then discover in Phase 2 that 100+ cells move, forcing a re-open. **Move the whole-corpus check into Phase 1**: run the new `classify_refusal` read-only over all four runs' answers and assert `refused_set_pre − refused_set_post == locked flip set` globally. Costs nothing (no evidence written) and is the only thing that catches the "from memory" footgun before regeneration.
+
+Also: `_TEXT_RETRIEVAL` includes `complete_unit`, and `original-2026-10-21` has **89 refused `complete_unit` cells**. The plan's test plan is `retrieve_quote`-only.
+
+### 4. Three concrete artifact errors in Files to Create/Modify
+
+- **`runs/exp-arabic-prompts-2026-10-29/scores.jsonl` does not exist.** That run has `scores-ar.jsonl` / `scores-en.jsonl`, `answers-{ar,en}.jsonl`, a local `analyze.py`, and **no** `summary.json`/`summary.md`. The plan's stated path and "summary regenerates alongside" are both wrong for this run.
+- **`test_original_run_regression.py` is unlisted.** It's a byte-for-byte re-score guard over `original-2026-10-21` (223 refused `retrieve_quote` + 89 `complete_unit`), same class as the two guards the plan does name.
+- **`runs/original-2026-10-21/facct.{json,md}` are unlisted.** `facct.py` takes `refused`/`accuracy`/`coverage` verbatim from `metrics.outcome`. If original's outcomes move, these go **silently stale** — `test_facct.py` uses synthetic fixtures only, so nothing catches it. This is the *paper-facing* artifact the spec's problem statement is about.
+
+Worth noting `original-2026-10-21` is the current Spec-26 reference evidence per `arch-critical.md`, has no Jev oracle, and carries the largest refused population — yet the plan treats it as a parenthetical ("expected … to be confirmed, not assumed"). It deserves its own deliverable.
+
+### Smaller point
+
+The outcome flip set can't be witnessed from post-change data the way `contains_reference` could (there, `correct==1 and normalized==0` identified flips). Suggest pinning the **pre-change** refused-set SHA and asserting `sha256(sorted(post_refused ∪ flip_set)) == prechange_sha` — otherwise re-pinning `REFUSED_SET_SHA256` makes the witness circular.
+
+### What's good
+
+The A/B-by-assertion framing, the `42f510ea6c7d` anchor asserted in the same test body as its twins, the hard Phase-1/Phase-2 seam, the #52 rebase risk, and the porch force-advance risk are all well handled. I did not re-litigate the baked decision that B stays refused.
+
+I made no changes to the worktree — all checks were read-only.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Sound approach, but the stated conjunctive rule is falsified by its own locked A set, the cue blast radius is under-sized ~30×, and three committed artifacts/tests are missing from the file list.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Phase 1's conjunctive rule ("assertion AND no disclaimer") cannot produce the locked dispositions: A-cell `d4c3bda0b400` leads with "I'm not sure which passage is segment 9", lexically identical to B-cell `fe52da70f661`'s "I'm not sure which part". Switch to the assertion-only (disjunctive) form or scope the disclaimer to the delivered span.
+- `"from memory"` as an A cue would flip ~147 currently-refused cells (38 tutorial / 34 first-run / 75 original), nearly all genuine declines of the form "I can't reliably reproduce … from memory". The assertion test must be negation-aware and frame-anchored, not a flat substring family like `_DECLINE_CUES_RAW`.
+- Phase 2's pinned numbers (`0.9250 / 0.80 / refused 20`) are stated as acceptance criteria, but the spec's sanctioned fallback (strand an ambiguous A cell as `refused`) would change them. Make the numbers derived-and-contingent with an explicit re-derive-and-surface path; `d0239d95ae29` vs `eaf381cf82d3` ("most likely" on both sides) is the likely trigger.
+- Cross-run discovery belongs in Phase 1, not Phase 2: add a read-only whole-corpus assertion that the global refused-set delta equals the locked flip set, before any evidence is regenerated. Include `complete_unit` (89 refused cells on `original-2026-10-21`); the current test plan is `retrieve_quote`-only.
+- `runs/exp-arabic-prompts-2026-10-29/scores.jsonl` does not exist — that run has `scores-{ar,en}.jsonl`, `answers-{ar,en}.jsonl`, a local `analyze.py`, and no `summary.json`/`summary.md`.
+- Missing from Files to Create/Modify: `pipelines/tests/test_original_run_regression.py` (byte-for-byte re-score guard over `original-2026-10-21`) and `runs/original-2026-10-21/facct.{json,md}` (paper-facing, derives `refused`/`accuracy`/`coverage` verbatim from `metrics.outcome`; no test catches staleness).
+- The outcome-flip witness needs a pre-change refused-set SHA plus `sha256(sorted(post_refused ∪ flip_set)) == prechange_sha`; re-pinning `REFUSED_SET_SHA256` alone is circular.

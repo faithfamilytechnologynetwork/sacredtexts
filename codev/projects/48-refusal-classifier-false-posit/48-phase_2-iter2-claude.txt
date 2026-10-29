@@ -1,0 +1,43 @@
+I'll start by orienting myself in the worktree and reading the key artifacts.Let me verify the key claims independently.Now let me independently verify the rebaseline arithmetic and the oracle's frozen SHAs against the pre-change evidence.The rebaseline is exact. Now let me verify the doc-sync fix from iteration 1 and the remaining phase_2 deliverables.Let me verify the Jev cross-check figures the README now publishes, and that summary.json metadata was spliced verbatim.All claims verify. Now the Spec 15 re-pin, the disputed viewer test, and the test gate.Let me verify the builder's disputed round-vs-truncate claim and run both test lanes.The builder's round-vs-truncate dispute is empirically correct. Let me check the remaining phase_2 deliverable — the moved-cell enumeration and surfacing.One last integrity check on the hand-spliced summary.json — verifying no non-search arm leaf moved.I verified every load-bearing claim independently. Here is my assessment.
+
+## What I verified (not just read)
+
+**The rebaseline is exact.** Recomputing projections from the merge base (`9e4fbdf`) against the committed scores:
+
+- Exactly **5 cells** moved, all `refused → incorrect`, matching `FLIP_SET` cell-for-cell.
+- Field-level diff across all 400 cells: `{'outcome': 5}` — **no other metric moved anywhere**.
+- The oracle's frozen pre-change SHAs are genuine: my independent recomputation yields `99a724e1…` (outcome) and `de342249…` (correct), byte-matching the pinned constants. The `correct` and `(exact, normalized, token_f1)` projection SHAs are **identical pre/post**.
+
+**The oracle is genuinely non-circular.** It un-applies the registered flip and requires the result to reproduce a SHA captured from git *before* regeneration. A compensating pair of moves cannot pass it, and the re-pinned `REFUSED_SET_SHA256` correctly disclaims itself as the witness.
+
+**Phase 2's own deliverables hold.** `first-run`, `original`, and `exp-arabic-prompts` are **byte-identical** against the base (so `facct.{json,md}` is correctly untouched — no staleness). The spliced `summary.json` shows **48 leaf diffs, 100% on search-arm paths**, zero keyset or list-length drift, with `panel`/`usage`/`generated_at` verbatim.
+
+**The spec's hardest success criterion passes.** Recomputing Jev agreement post-fix: **6 disagreements, agreement 0.9850**, survivors at `refusal_p` 0.36–0.49 — all inside `[0.25, 0.75]`, **none below 0.25**.
+
+## Iteration 1's REQUEST_CHANGES is fully resolved
+
+The README now matches `summary.md` byte-for-byte (92%/80%/74·6·20 and 79%/66%/52·14·34), the Talmud cut matches the opus-search Judaism row (8/6/20, 57% at 41%), and the inverted caveat is rewritten to state that Spec 48 *is* the reclassification. The recomputed calibration is correct: **122 refused cells, max `token_f1` 0.1294** (< 0.13), and the pre-fix outlier was indeed **0.6806** (≈0.68). The `jev_agreement` supersession pointer lives in the README, honoring the architect's untouched-evidence condition.
+
+## The disputed item is a verified false positive
+
+The builder declined to "fix" the viewer comment's `93%`. That is correct — I confirmed empirically that the same stored `0.925` renders **92%** via Python `f"{0.925:.0%}"` and **93%** via JS `Math.round(0.925*100)`. The comment accurately describes the renderer it documents; making it say 92% would have made it lie. Surfacing rather than "fixing" was the right call.
+
+**Both lanes green** (I ran the gate read-only): viewer 187/187 across 19 files, pipelines 586 passed / 2 skipped — including `test_audit` (copyright gate), `test_facct`, all three regression guards, and both rebaseline oracles.
+
+## Non-blocking notes
+
+1. **Review-doc enumeration is a real carry-forward.** `codev/reviews/48-*.md` does not exist yet, so the Phase-2 deliverable "per-run enumeration of every moved cell with answer text" plus the moved-similarity means is genuinely undelivered. The builder's SPIR-sequencing argument is sound — but the numbers currently live only in the thread, so the review phase must actually write them, not inherit the assumption that they're done.
+2. **The `test.sh` dispatcher change is a good catch with a documented cost.** Mapping `runs/|texts/` to both lanes closes a real trap (a runs-only rebaseline silently skipping the vitest that pins those same counts — this PR was the proof case). The inline comment honestly flags that pipelines-only builders touching `runs/` now need the pnpm toolchain. Worth confirming that holds wherever else this gate runs.
+
+I made no modifications to the worktree.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2's witnessed rebaseline is independently verified exact — 5 registered cells, outcome-only, frozen SHAs reproduce, three runs byte-identical — and iteration 1's doc-staleness finding is fully resolved with the viewer-comment dispute confirmed a true false positive.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- Carry-forward (not phase_2-blocking): `codev/reviews/48-*.md` does not yet exist, so the per-run moved-cell enumeration with answer text and the moved-similarity means remain undelivered; they currently live only in the builder thread and must be written in the review phase.
+- Note: the `.codev/checks/test.sh` `runs/|texts/` → both-lanes mapping correctly closes a silent-skip trap, but imposes the pnpm toolchain on pipelines-only builders touching `runs/` — documented inline as accepted on this machine; confirm it holds in other environments.
