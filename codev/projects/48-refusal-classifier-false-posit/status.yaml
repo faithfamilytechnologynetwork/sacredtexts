@@ -1,16 +1,22 @@
 id: '48'
 title: refusal-classifier-false-posit
 protocol: aspir
-phase: plan
-plan_phases: []
-current_plan_phase: null
+phase: implement
+plan_phases:
+  - id: phase_1
+    title: Assertion-based refusal rule in outcomes.py
+    status: in_progress
+  - id: phase_2
+    title: Sanctioned rebaseline, projection-SHA oracle, and Spec 15 re-pin
+    status: pending
+current_plan_phase: phase_1
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-10-29T16:57:00.818Z'
-updated_at: '2026-10-29T17:21:17.675Z'
+updated_at: '2026-10-29T17:31:38.233Z'
