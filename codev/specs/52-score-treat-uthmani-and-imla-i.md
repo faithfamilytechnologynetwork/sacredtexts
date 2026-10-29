@@ -80,22 +80,28 @@ are not touched by the new Arabic-specific rules.
       distinct Arabic word, the two renderings normalise to the same string in both match
       directions. The gaps in scope: dagger-alif → ا, alef-maqsura ى → ي, the ىٰ digraph → ا,
       standalone hamza ء, and Arabic word-boundary equivalence.
-- [ ] **The fold is position/context-aware where a context-free rule is provably impossible.**
-      Specifically ىٰ must fold to ا in `أَتَىٰكُمْ↔أَتَاكُمْ` yet not turn `عَلَىٰ↔على` into a
-      mismatch; no single context-free character map does both, and the context-free map that
-      covers all pairs merges distinct words (see Assumptions). The implementation satisfies the
-      enumerated pairs **without** introducing any word-level collision.
+- [ ] **The long-ā alef is OPTIONAL (handled in containment, not a canonical fold).** The long ā
+      written in Uthmani as a dagger-alif ـٰ or the ىٰ digraph is written as a full alef by the
+      **plene** class (`ٱلْكِتَٰبِ→الكتاب`, `سُبْحَٰنَ→سبحان`) but **omitted** by the **defective-spelling
+      (رسم ناقص)** class (`هَٰذَا→هذا`, `ذَٰلِكَ→ذلك`, `ٱلرَّحْمَٰنِ→الرحمن`) — a **lexical**, not positional,
+      distinction. A context-free `dagger→ا` fold therefore un-credits the defective class (it would
+      mark `هذا`/`الرحمن` wrong — the inverse of this spec's purpose, and it broke two verbatim-correct
+      committed cells in prototyping). **So the equality-fold approach was abandoned**: the long-ā is
+      instead matched as an OPTIONAL alef (`ا?`) inside the containment predicate, while the symmetric
+      letter folds (alef-maqsura ى→ي, standalone hamza ء→ا) stay canonical. `normalize()` and the
+      equality submetrics (`exact`/`normalized`/`token_f1`) are **unchanged**.
 - [ ] **No-wrong-credit gate (operative).** The fold must not cause any committed answer to be
-      credited for a wrong word. This is enforced at **scoring granularity**: every Arabic cell
-      that moves under the rebaseline is hand-verified a true Uthmani↔Imla'i equivalence of the
-      same unit before it is pre-registered. A word-level corpus-vocabulary sweep is a supporting
-      diagnostic (it flags introduced non-variant merges for that review), not a standalone
+      credited for a wrong word. The containment predicate is a strict **superset** of today's
+      `bounded_contains` (so `normalized=1 ⇒ contains_reference=1` holds and the fold can only ADD
+      credit), and the no-wrong-credit gate is enforced at **scoring granularity**: every Arabic cell
+      that moves under the rebaseline is hand-verified a true Uthmani↔Imla'i equivalence before it is
+      pre-registered. A word-level corpus sweep is a supporting diagnostic, not a standalone
       pass/fail — see the known limitation below.
 
 **Known limitation (accepted — architect 2026-10-29, not a blocker).** A literal word-level
-zero-collision gate is infeasible: two necessary rules each merge a few rare consonantal-skeleton
-minimal pairs that are genuinely distinct words. Enumerated against the QUL corpus (9 word-buckets,
-pre-registered in `test_arabic_orthography_fold.py`):
+zero-collision gate is infeasible: the two symmetric letter folds each merge a few rare
+consonantal-skeleton minimal pairs that are genuinely distinct words. Enumerated against the QUL
+corpus (9 word-buckets, pre-registered in `test_arabic_orthography_fold.py`):
 
 - **maqsura (ى→ي)** — rescues the largest class (`هدى↔هدي`, `بُنَىَّ↔بُنَيَّ`) but merges
   `نبى`(prophet)/`نبّئ`(inform!), `قرى`(towns)/`قرئ`(was recited), `أمرى`(my affair)/`امرئ`(a man).
@@ -114,11 +120,11 @@ future rule change fails the test.
       the set of cells whose headline flips is pre-registered and reproduced exactly.
 - [ ] Latin output of `normalize()` is byte-for-byte unchanged (the existing Latin-invariance
       guard still passes); Hebrew/other-RTL regression coverage is added for the new rules.
-- [ ] The **Spec 15 four-submetric contract** is honored or its change is explicit: the spec
-      must state what the word-boundary rule does to Arabic `exact`, `normalized`, `token_f1`,
-      and `contains_reference` (stripping Arabic whitespace inside `normalize()` degenerates
-      Arabic `token_f1` toward a single token and changes the meaning of `exact`/`normalized`
-      for Arabic — a deliberate, documented consequence, not an accident).
+- [ ] The **Spec 15 four-submetric contract** is honored: because all orthographic flexibility
+      lives in the containment predicate, Arabic `exact`, `normalized`, and `token_f1` keep their
+      current meaning unchanged (no whitespace stripping inside `normalize()`); only
+      `contains_reference` — and the headline `correct`/`outcome` it drives — moves. This is the
+      minimal, deliberate change.
 - [ ] The change is executed as a **sanctioned, oracle-witnessed rebaseline** defined by a
       **before/after projection delta** (not the #15 containment signature): every committed run
       whose Arabic cells move — `tutorial-2026-10-11`, `original-2026-10-21`,

@@ -180,4 +180,31 @@ claude independently corpus-verified the fold (211 medial / 400 final / 15 bare-
   maqsura-only). Residue: hamza {سواء/سوء, جزاء/جزء, وراء/ورءا, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا},
   maqsura {نبى/نبّئ, قرى/قرئ, أمرى/امرئ}.
 
-Full suite: 578 passed, 2 skipped. Guards green. Next: commit P1 fixes, porch done, Phase 2.
+Full suite: 578 passed, 2 skipped. Guards green.
+
+## Phase 1 impl consult iter2 (2026-10-29) — BLOCKING defect → design PIVOT (architect-endorsed)
+
+claude found the big one: `dagger→alef` makes the U+0670 diacritic LOAD-BEARING. The
+defective-spelling class (هذا/ذلك/الرحمن) OMITS the long-ā alef in Imla'i (lexical, not positional),
+so forcing dagger→ا un-credits them — flipping 2 verbatim-correct committed tutorial cells to wrong.
+2276/2648 dagger words affected. Inverts the spec's own harm.
+
+**PIVOT (architect endorsed):** long-ā alef is OPTIONAL; ALL orthographic flex moves into the
+CONTAINMENT predicate; normalize()/exact/normalized/token_f1 UNCHANGED.
+- fold_arabic_orthography = symmetric folds only (ء→ا, BARE ى→ي; a ى carrying a dagger is left
+  alone — else ءَاتَىٰنَا "He gave us" collides with ءَاتَيْنَا "we gave").
+- fold_aware_contains = bounded_contains OR fold-match-with-optional-ā(ا?) + ws-flex + bounded.
+  STRICT SUPERSET → normalized=1⇒contains=1, only ADDS credit.
+Validated: 2 cells preserved, plene/defective/digraph/final/hamza/word-boundary credited, experiment
+converges, negatives rejected (therapist/Jude 1:30/digit-separators/sub-word), superset asserted.
+
+**Blast radius SHRANK**: rebaseline moves ONLY contains_reference/correct/outcome; ALL similarity
+submetrics (incl. non-Arabic) frozen. Witness simpler; #48 rebase simpler. Updated spec (kept
+هذا/الرحمن as the counterexample per architect), plan Phase-2 wiring, score.py docstring.
+
+codex iter2 (both fixed + carried into pivot): (1) Arabic-Indic digits were treated as Arabic in
+ws-flex (١ ٣ matched ١٣) → gate flex on Arabic LETTERS (cat L, excl digits); (2) allow-list froze
+only bucket keys → now pins per-bucket strict-skeleton SETS.
+
+Full suite: 575 passed, 2 skipped. normalize() byte-identical, ANCHOR_DIGEST stable.
+Next: commit P1 iter2, porch done, Phase 2 (the actual rebaseline).

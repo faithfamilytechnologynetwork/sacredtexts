@@ -42,15 +42,24 @@ whitespace in the normaliser — preserving the meaning of Arabic `exact`/`norma
    still passes. So `bounded_contains` uses `score_normalize` + whitespace-insensitive Arabic
    handling, and all four callers get the consistent folded contract.
 
-**Precise scorer wiring (iter-2 correction).** Of the four text-retrieval submetrics: `exact`
-stays **raw** `answer.strip()==target.strip()` (no normaliser — unchanged); `normalized` uses
-`score_normalize`; `token_f1` must be changed to call `score_normalize` internally (it calls
-`normalize()` today, so without this edit Arabic `token_f1` would NOT move as the spec requires);
-`contains_reference` goes through the fold-aware `bounded_contains`. For `cite_passage`, both the
-candidate dedup (`_citation_candidates` / the boundary regex over the expected citation,
-`score.py:247-276`) **and** the verdict (`bounded_contains`, `:281`) must move to `score_normalize`
-together — folding only the verdict would make `n_candidates` disagree with the credit (the same
-citation in two orthographies would count as two candidates → false hedge → 0).
+**Precise scorer wiring (REVISED after Phase-1 review — containment-only, architect-endorsed
+2026-10-29).** A Phase-1 consult proved the earlier plan (fold inside the equality path) WRONG: a
+context-free `dagger→ا` makes the long-ā diacritic load-bearing and un-credits the
+defective-spelling class (`هذا`/`الرحمن`, where Imla'i omits the alef — lexical, not positional),
+flipping two verbatim-correct committed cells to incorrect. The long ā must be **optional**, which
+a canonical string cannot express. So **all** orthographic flexibility moves into the containment
+predicate:
+- `normalize()`, `exact`, `normalized`, `token_f1` are **UNCHANGED** — zero movement on every
+  similarity submetric, Arabic included.
+- `bounded_contains` becomes `fold_aware_contains`: a strict **superset** of today's containment
+  (`today's bounded_contains OR` the fold match), so `normalized=1 ⇒ contains_reference=1` holds
+  and the fold can only ADD credit. The fold match uses the symmetric letter folds (ى→ي, ء→ا) plus
+  an OPTIONAL long-ā alef (`ا?`) at each dagger/ىٰ position plus whitespace-flex between Arabic
+  letters, all word-bounded (so `Jude 1:3`↛`1:30`, `١ ٣`≠`١٣`, no sub-word credit).
+- Consequently the rebaseline moves **only** `contains_reference`, the headline `correct`, and
+  `outcome` — never `exact`/`normalized`/`token_f1`. `cite_passage` gains only through the
+  `bounded_contains` verdict becoming fold-aware; `_citation_candidates` stays on `normalize`
+  (citation extraction is regex-shaped over digits/Latin).
 3. **Consequence — the flip set is NOT refusal-independent; correct the #48 reasoning.** Because
    `outcomes.classify_refusal` uses `bounded_contains`, an Arabic cell with a leading decline cue
    that *did* deliver the verse in Imla'i flips `refused` → scored (correctly — it delivered). So
@@ -177,28 +186,28 @@ committed-run guards confirm zero default-path drift.
 
 #### Objective
 
-Flip the default contract and perform the single atomic rebaseline: route scoring through
-`score_normalize`, make `bounded_contains` fold-aware (one shared containment contract across
-scoring/refusal/facct/probes), regenerate committed scores and every derived artifact for the four
-Arabic-bearing runs, freeze non-Arabic projections, and pin every Arabic change to a
-pre-registered, hand-verified set.
+Flip the default contract and perform the single atomic rebaseline: make the containment predicate
+`fold_aware_contains` (one shared containment contract across scoring/refusal/facct/probes) — a
+strict superset — regenerate committed scores and every derived artifact for the four Arabic-bearing
+runs, freeze ALL similarity submetrics, and pin every Arabic `contains_reference`/`correct`/`outcome`
+change to a pre-registered, hand-verified set.
 
 #### Files to Create / Modify
 
-- `pipelines/sacredbench/score.py` — wire per the "Precise scorer wiring" note above: `normalized`
-  → `score_normalize`; `token_f1` → change its internal `normalize()` calls to `score_normalize`
-  (else Arabic `token_f1` does not move); `exact` stays **raw** (unchanged); `bounded_contains` →
-  `score_normalize` + whitespace-insensitive Arabic containment; `cite_passage`'s
-  `_citation_candidates` + boundary regex **and** verdict both move to `score_normalize` together.
-  `normalize()` is left unchanged. Update the module docstring (the `score_normalize` vs `normalize`
-  split, ordering, the Arabic contract).
-- `pipelines/sacredbench/probes.py` — `probes.py:18-40` already holds a **looser, context-free**
-  Arabic fold (`fold_arabic_letters`: `ى→ي`, `ئ→ي`, `ة→ه` after `normalize()`) used by
-  `clustered_accuracy`. That is the exact fork the containment decision closes, in the analysis
-  layer. **Decision: re-express it over `score_normalize`** (so a probe cannot assert an
-  equivalence the scorer denies); update `test_probes.py`. Nothing committed depends on it (no probe
-  artifact in any `runs/`), so if re-expression proves non-trivial the fallback is to document the
-  divergence explicitly — but default to reconciling.
+- `pipelines/sacredbench/score.py` — wire per the REVISED "Precise scorer wiring" note above: the
+  ONLY scoring-logic change is routing `contains_reference` (and the `cite_passage` verdict,
+  `outcomes`, `facct`, `probes`) through `fold_aware_contains` in place of `bounded_contains`.
+  `normalize()`, `exact`, `normalized`, and `token_f1` are **unchanged** (the fold capability
+  `fold_aware_contains`/`score_normalize` already landed in Phase 1). The simplest wiring is to make
+  `contains_reference` call `fold_aware_contains`; the four callers of `bounded_contains`
+  (`score_answer` contains_reference + cite verdict, `outcomes.classify_refusal:133`,
+  `facct.py:277`, `probes.py:203`) move to it for one shared contract. Update the module docstring.
+- `pipelines/sacredbench/probes.py` — `:203` uses `bounded_contains` → move to `fold_aware_contains`
+  for the shared contract. Separately, `probes.py:18-40` holds a looser context-free
+  `fold_arabic_letters` (`ى→ي`, `ئ→ي`, `ة→ه` after `normalize()`) used by `clustered_accuracy`;
+  nothing committed depends on it (no probe artifact in any `runs/`), so **document the divergence**
+  (its purpose is coarse clustering, not scoring) and leave reconciliation to a follow-up — the
+  scoring contract is what this spec governs. Check `test_probes.py`.
 - Regenerate, for `first-run-2026-10-11`, `tutorial-2026-10-11`, `original-2026-10-21`:
   `scores.jsonl`, `summary.json`/`summary.md`; `original-2026-10-21/facct.json`/`.md`;
   `tutorial-2026-10-11/jev_agreement.json`/`.md`. (Panel/usage fed back verbatim; never re-run
@@ -219,21 +228,21 @@ pre-registered, hand-verified set.
   pipelines+runs PR would NOT run vitest and "full suite green" could hide a red viewer suite —
   Phase 2 must run `pnpm -C apps/viewer test` explicitly AND map `runs` to **both** lanes in the
   dispatcher (the treatment `fixtures/` already gets), so this can't silently regress again.
-- `pipelines/tests/test_contains_reference_rebaseline.py` — rescope its projection oracle to
-  **non-Arabic cells only** (the rescoped non-Arabic SHA computed from **pre-change `git show HEAD:`**
-  scores filtered to non-Arabic — NOT recomputed from the regenerated file, which would be
-  circular); re-pin `FLIP_SET` + `test_headline_flips_exactly_the_registered_cells` (the predicate
-  `correct==1 and normalized==0` now admits Arabic containment-credited cells — first-run's 2 Arabic
-  cells are under `gemma-3-4b`/`llama-3.1-8b`, outside the current claude-haiku-only set, so check
-  them); the `test_contains_reference_invariants` "`correct==normalized` except flipped" invariant;
-  `EXPECTED_ACCURACY`/`EXPECTED_COVERAGE` for tutorial `retrieve_quote` (all four models carry Arabic
-  cells); and the **refused** sets/counts for any Arabic cells that reclassify.
-- `pipelines/tests/test_orthography_rebaseline.py` (new) — the durable witness: (1) a SHA over the
-  **non-Arabic** projection frozen from pre-change committed scores (`git show HEAD:…`), proving
-  nothing non-Arabic moved; (2) the **full Arabic before/after delta** — every Arabic cell whose
-  `normalized`, `token_f1`, `contains_reference`, `correct`, **or** `outcome` changes is
-  pre-registered (not only headline flips); (3) pinned rebaselined headline accuracies/coverages;
-  (4) derived-artifact self-consistency (`summary` agrees with `scores.jsonl`).
+- `pipelines/tests/test_contains_reference_rebaseline.py` — its `(exact, normalized, token_f1)`
+  projection SHA is now **unchanged** (those submetrics don't move at all under containment-only) —
+  confirm it still passes as-is. Re-pin only what the containment change moves: `FLIP_SET` +
+  `test_headline_flips_exactly_the_registered_cells` (predicate `correct==1 and normalized==0` now
+  admits Arabic containment-credited cells — first-run's 2 Arabic cells are under
+  `gemma-3-4b`/`llama-3.1-8b`, outside the current claude-haiku-only set, so check them); the
+  `test_contains_reference_invariants` superset invariant still holds (fold_aware_contains ⊇
+  normalized); `EXPECTED_ACCURACY`/`EXPECTED_COVERAGE` for tutorial `retrieve_quote`; and the
+  **refused** sets/counts for any Arabic cells that reclassify.
+- `pipelines/tests/test_orthography_rebaseline.py` (new) — the durable witness, now simpler because
+  the blast radius shrank: (1) the FULL `(exact, normalized, token_f1)` projection SHA is frozen
+  from pre-change committed scores (`git show HEAD:…`) and must be **identical** (nothing similarity
+  moved, Arabic included); (2) the pre-registered set of Arabic cells whose `contains_reference`,
+  `correct`, or `outcome` changed (the only movers); (3) pinned rebaselined headline
+  accuracies/coverages; (4) derived-artifact self-consistency (`summary` agrees with `scores.jsonl`).
 - `pipelines/tests/test_first_run_regression.py`, `test_tutorial_run.py` — re-pin the byte-for-byte
   re-score asserts to the regenerated scores.
 - `pipelines/tests/test_original_run_regression.py` — re-pin the **re-score** assert and the
@@ -243,8 +252,9 @@ pre-registered, hand-verified set.
 
 #### Deliverables
 
-- [ ] Scoring routed through `score_normalize`; `bounded_contains` fold-aware; `normalize()`
-      unchanged; the four submetrics keep their defined meaning.
+- [ ] `contains_reference` (+ cite verdict, outcomes, facct, probes) routed through
+      `fold_aware_contains`; `normalize()`/`exact`/`normalized`/`token_f1` unchanged; the containment
+      superset property (`normalized=1 ⇒ contains=1`) verified.
 - [ ] All four runs regenerated (scores + summary + facct + jev_agreement / analyze outputs) and
       internally consistent.
 - [ ] "Arabic cell" defined precisely (a cell whose **answer or expected text** contains
