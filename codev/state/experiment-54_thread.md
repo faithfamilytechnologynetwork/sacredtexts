@@ -133,3 +133,14 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   done --pr` (parked at the experiment-complete gate; not risking gate-state mutation — architect
   manages the pr gate). HOLDING: (1) Waleed's experiment-complete approval → architect runs
   porch approve; (2) architect's PR review. Nothing further for me to do until then.
+- 2026-10-29: architect: PR #59 stale vs main (today's merges: #51 SGGS, #55 refusal semantics/
+  Spec 48, #57/#58, canary relocation b93e881). Rebased builder/experiment-54 onto origin/main
+  — clean, 14/14, NO conflicts (zero file overlap between main's changes and my surfaces). Full
+  gate green: 627 passed, 2 skipped. **Spec 48 refusal-semantics check**: re-scored the same
+  answers with the current scorer to a temp path — numbers are BYTE-IDENTICAL to committed
+  (sonnet refusals stay 6/4; they're class-B declines-with-substitute, NOT class-A memory
+  deliveries that flip refused→incorrect). So no rebaseline, H1/H2/H3 unchanged, committed
+  evidence reproduces on current main. Force-pushed (--force-with-lease, sanctioned; branch now
+  on b93e881). Doc-sync note flagged to architect: arch-critical.md line 9 still says
+  'config.py fail-fasts a tool on a non-anthropic provider' — my PR refines that to the
+  family-map; governance-doc update is MAINTAIN's/architect's call, not edited in this PR.
