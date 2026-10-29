@@ -5,9 +5,12 @@ Metrics emitted per answer:
 
 - ``exact``       raw string equality with the expected text (0/1)
 - ``normalized``  equality after normalisation: unicode quotes/dashes folded,
-                  Arabic/Hebrew combining marks + annotation symbols removed and
-                  alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
-                  matches), case-folded, punctuation stripped, whitespace collapsed
+                  Arabic/Hebrew combining marks + annotation symbols removed,
+                  Uthmani/Imla'i orthography folded (dagger alif → full alif, the
+                  ىٰ digraph → alif, alef maksura → yeh, standalone hamza seated
+                  on alif), and alef/maqaf variants folded (so vocalised ↔
+                  unvocalised and the two Qur'anic orthographies match), case-folded,
+                  punctuation stripped, whitespace collapsed
                   (0/1) — see ``strip_script_marks``
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
                   (0..1) — the v1 "semantic similarity" stand-in; embedding- or
@@ -98,14 +101,53 @@ def _in_script_blocks(ch: str) -> bool:
     return any(lo <= o <= hi for lo, hi in _SCRIPT_BLOCKS)
 
 
+# Precomposed seats, for callers that have not NFKD'd yet. After NFKD, أ إ آ ؤ ئ are
+# already a base letter plus a combining hamza, and the hamza mark is stripped later.
+_ARABIC_ORTHOGRAPHY = str.maketrans({
+    "أ": "ا", "إ": "ا", "آ": "ا", "ٱ": "ا",  # hamza-on-alif, madda, wasl
+    "ء": "ا",  # isolated hamza takes the alif seat (أَرَءَيْتُمْ ↔ أَرَأَيْتُمْ)
+    "ؤ": "و", "ئ": "ي",
+    "ٰ": "ا",  # dagger alif → the full alif Imla'i writes
+    "ى": "ي",  # leftover alef maksura → yeh
+})
+
+
+def fold_arabic_orthography(text: str) -> str:
+    """Fold Uthmani and Imla'i spellings of the same word (issue #52).
+
+    Must run BEFORE combining marks are deleted. The dagger alif (U+0670) is itself
+    category Mn; deleting it drops the long vowel that Imla'i writes as a full alif.
+
+    Alef maksura + dagger alif is one long vowel (أَتَىٰكُمْ ↔ أَتَاكُمْ), including
+    when a tatweel or a vowel mark sits between them. NFKD reorders by combining
+    class, and fatha (class 30) sorts before the dagger (class 35), so a typed
+    ``ىَٰ`` arrives as ``ى`` + fatha + dagger. Rewriting the dagger first would
+    leave ``يا``.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] == "ى":
+            j = i + 1
+            while j < n and text[j] != "ٰ" and (text[j] == "ـ" or unicodedata.combining(text[j])):
+                j += 1
+            if j < n and text[j] == "ٰ":
+                out.append("ا")
+                i = j + 1
+                continue
+        out.append(text[i])
+        i += 1
+    return "".join(out).translate(_ARABIC_ORTHOGRAPHY)
+
+
 def strip_script_marks(text: str) -> str:
     """Fold Arabic/Hebrew letter variants and remove their combining marks so quote
     scoring compares bare consonantal text. Latin (and every other script) is
     untouched. Applied to BOTH the answer and the expected text, so the direction of
     vocalisation does not matter (a vocalised model answer vs. an unvocalised expected
     scores the same as the reverse)."""
-    text = text.replace("ٱ", "ا")  # Arabic alef-wasla -> bare alef (atomic;
-    #                                           alef-madda/hamza fold via NFKD + marks)
+    text = fold_arabic_orthography(text)  # before the mark pass; see that function
     text = text.replace("־", " ")  # Hebrew maqaf -> word boundary (NOT deleted:
     #                                      it joins words, so it must stay a separator)
     # delete combining marks (Mn) + the non-Mn editorial code points, but only within

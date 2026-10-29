@@ -171,7 +171,7 @@ def _payload_pos(answer: str, start: int, families: frozenset[str]) -> int | Non
 
 
 # Characters that INTRODUCE a delivered payload: a colon/dash or an opening quote.
-_INTRODUCER = ":\-–—\"'«»“”‘’"
+_INTRODUCER = ":-–—\"'«»“”‘’"
 
 
 def _introduced(answer: str, pos: int) -> bool:
