@@ -419,3 +419,15 @@ Test gate (bash .codev/checks/test.sh, both lanes — branch touches runs/ + pip
 **640 pass / 2 skip**, viewer lane passed. Committing phase-3 docs, then porch done 52 → 3-way
 consult. Moved-numbers packet (incl. the 8-cell #60 residual census) goes to the architect at the
 pr gate per standing order; I do NOT self-approve any gate.
+
+### phase_3 iter1 consult: codex APPROVE, claude COMMENT (non-blocking)
+claude (HIGH) flagged two real cold-doc gaps from phase 2, both fixed:
+1. arch.md:162 + lessons-learned.md:183 still named `score.bounded_contains` for the FAccT
+   counterfactual → it's `score.fold_aware_contains` since phase 2 (facct.py:291). Fixed both.
+2. cold arch.md § score.py had NO record of the Spec-52 contract change while the hot bullet carried
+   the full rule enumeration (inverts the hot=behavior-changer / cold=reference split). Added the
+   full fold record to cold arch.md; trimmed the hot arch-critical bullet to a pointer.
+Rebutted: CODE_WALKTHROUGH file:line refs are the doc's own convention (guard requires ≥20, tolerates
+drift by design). N/A: lessons-critical at 11 (pre-existing, no growth — claude says leave it).
+Acknowledged: moved-numbers packet goes to architect at the pr gate (standing order; residual census
+included). Full dispositions in 52-phase_3-iter1-rebuttals.md. Suite 640/2, both lanes green.

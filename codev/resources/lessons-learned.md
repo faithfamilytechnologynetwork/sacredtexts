@@ -180,10 +180,11 @@ Seeded from Spec 1 (Phase 1 benchmark).
   real work before running the consult, so it reviews real code), but run porch one command at a
   time at a boundary and read each result (Spec 32).
 - **An analysis/visualisation stage reuses the scoring contract's own predicates, never a second
-  copy.** The FAccT card's edition counterfactual calls `score.bounded_contains` + `score.normalize`
-  (the public `contains_reference` predicate, promoted from the private `_bounded_equal`) rather than
-  a fresh `in` check — one containment definition, tested to agree with the scorer, so the card can't
-  drift from the headline (Spec 32, echoing Spec 15's single-refusal-definition discipline).
+  copy.** The FAccT card's edition counterfactual calls `score.fold_aware_contains` + `score.normalize`
+  (the public `contains_reference` predicate, promoted from the private `_bounded_equal`, fold-aware
+  since Spec 52) rather than a fresh `in` check — one containment definition, tested to agree with the
+  scorer, so the card can't drift from the headline (Spec 32, echoing Spec 15's
+  single-refusal-definition discipline).
 
 ## Map
 - (This cold archive pairs with `lessons-critical.md`'s hot tier; demote hot entries

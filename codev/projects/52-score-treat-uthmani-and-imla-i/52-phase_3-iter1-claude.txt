@@ -1,0 +1,41 @@
+I'll start by locating the worktree and reading the Phase 3 deliverables.I read the Phase-3 changes from disk, verified every refreshed number against the regenerated artifacts, checked the CODE_WALKTHROUGH claims against `score.py`, and ran the pipelines suite myself (read-only; tree untouched).
+
+## What I verified
+
+**Hot-tier docs (`arch-critical.md`, `lessons-critical.md`)** — the Spec-52 fact is appended to the existing scoring bullet rather than adding an 11th fact (count stays 10), and the lessons file made room by consolidating the two viewer gotchas before adding the fold-design lesson (net zero). Content is accurate: containment-path-only, strict superset, `normalize()` byte-stable, names `test_orthography_rebaseline.py`.
+
+**`TUTORIAL.md`** — 69% → 71% matches `runs/original-2026-10-21/summary.md` (opus overall **71%**). I also checked the rest of that paragraph, which the plan flagged as rot-prone: "about half the `retrieve_quote` roster" (opus cov 53%), KJV 100% / 86% / 12% — all still correct post-rebaseline. It's the only `%`-triplet in the file.
+
+**`CODE_WALKTHROUGH.md`** — the new paragraph is factually correct against the code: `fold_aware_contains` is at `score.py:340`, `score_normalize` at `:255`, `_fold_containment_pattern` exists, and "matches the answer in both its dagger-deleted and plene forms" matches `fold_aware_contains`'s body exactly. The sanctioned-exception note now cites Spec 52 + the new witness. `test_code_walkthrough.py` (79 tests) green.
+
+**Run READMEs** — original (opus 71% 288/120/68, haiku 51% 185/181/110, opus retrieve_quote 75%@53%, Qur'an ~96%) and tutorial (92/92/88 with 61/5/34, 58/8/34, 74/6/20) both reconcile exactly with the regenerated `summary.md`. The `#60` hamza-alef residual and the haiku/haiku-search asymmetry are disclosed honestly in both. `first-run` README deliberately carries no note (English-only, `scores.jsonl` untouched, 0 movers) — a documented, defensible deviation from the plan's "four runs".
+
+**Suite** — `640 passed, 2 skipped`, matching the builder's claim. `git status` clean afterwards.
+
+**Review doc** — moved-numbers table (58 cells, all `0→1`, coverage frozen, SIM projection byte-identical), hand-verification method with the shortest-reference backstop (8 words), the jev agreement 0.9325→0.9825 corroboration, and the #57/#58 reconciliation. This is the strongest part of the packet.
+
+## Findings
+
+**1. Two cold-doc references still name the pre-change containment primitive.** Phase 2 moved the FAccT counterfactual to `fold_aware_contains` (`facct.py:291`, docstring `:17`), but:
+- `codev/resources/arch.md:162` — "edition counterfactual (reusing `score.bounded_contains`)"
+- `codev/resources/lessons-learned.md:183` — "calls `score.bounded_contains` + `score.normalize`"
+
+`lessons-learned.md` is in this PR's diff (+53 lines), so the file was open. Two-word fix; the entry's whole point is "the analysis stage reuses the scorer's own predicate", so naming the superseded predicate undercuts it.
+
+**2. The cold architecture tier has no record of the contract change.** `arch.md` § score.py (74–95) still describes the headline as `normalized OR contains_reference` plus `normalize()`'s script-awareness, with no mention that `contains_reference` now routes through a fold-aware containment. Meanwhile ~900 characters of *reference* detail (rule specifics, the five call-sites, the test name) were appended to the always-on hot bullet. That inverts the `update-arch-docs` tier split the phase-3 deliverable invokes — hot = behavior-changers, cold = reference. One clause in `arch.md` § score.py would fix it and would let the hot bullet stay shorter.
+
+**3. Minor** — `lessons-critical.md` is at 11 entries against the skill's "≈10"; pre-existing and net-zero here, so I'd leave it, but the thread's "stays at cap" is really "stays at the same overrun". And `CODE_WALKTHROUGH.md` now cites absolute line numbers (`score.py:340`, `:255`) which rot silently — `test_code_walkthrough.py` guards symbol names only. Symbol-only references would be guarded.
+
+**4. Open deliverable** — the moved-numbers packet to the architect is not sent yet (thread: goes at the pr gate). Correct per the no-self-approval standing order, but it is the one phase-3 acceptance criterion I cannot verify, and the residual census (8 cells, #60) must be in it.
+
+---
+VERDICT: COMMENT
+SUMMARY: Phase-3 named deliverables are complete and the refreshed numbers all reconcile with the regenerated artifacts; two cold-doc references to the superseded `bounded_contains` and a missing cold-tier record of the new contract should be fixed before merge.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `codev/resources/arch.md:162` and `codev/resources/lessons-learned.md:183` still say the FAccT counterfactual uses `score.bounded_contains`; Phase 2 moved it to `score.fold_aware_contains` (`facct.py:291`). `lessons-learned.md` was edited in this PR.
+- `arch.md` § score.py (74–95) never mentions the Spec-52 fold, while reference-level detail was appended to the capped hot bullet — inverts the hot/cold tier discipline the phase-3 deliverable cites.
+- Moved-numbers packet to the architect (incl. the 8-cell #60 residual census) still pending at the pr gate — the one unverifiable phase-3 acceptance criterion.
+- Minor: `lessons-critical.md` at 11 entries vs the ≈10 cap (pre-existing, no growth); `CODE_WALKTHROUGH.md` absolute line refs (`score.py:340`/`:255`) are unguarded and will rot.
