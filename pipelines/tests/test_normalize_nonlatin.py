@@ -4,10 +4,10 @@
 combining marks (harakat / niqqud / cantillation), tatweel, and the Qur'anic annotation
 symbols are removed and letter variants folded, so a vocalised and an unvocalised spelling
 of the same text are equal — in BOTH directions (a vocalised answer vs. an unvocalised
-expected, and the reverse). Uthmani dagger alif folds to a full alif (issue #52), so it
-matches the Imla'i spelling rather than a skeleton that deletes the vowel. Latin output
-must be byte-for-byte unchanged, and the scoring contract (`_SUBMETRICS`, the
-`retrieve_quote` headline rule) must not move.
+expected, and the reverse). Equality still deletes a dagger alif (Spec 52 credits the
+Uthmani/Imla'i difference only in containment, because some words keep that alif and
+some do not). Latin output must be byte-for-byte unchanged, and the scoring contract
+(`_SUBMETRICS`, the `retrieve_quote` headline rule) must not move.
 
 Real fixtures are read from the committed, open-licensed corpora (the QUL Uthmani Qur'an and
 the Davidson VOCALISED Aramaic Shevuot file — the latter is deliberately excluded from the
@@ -35,10 +35,9 @@ SHEVUOT_VOCALIZED = (
 
 def _strip_combining(s: str) -> str:
     """An INDEPENDENT 'unvocalised' form (stdlib only, not the implementation's block
-    logic): NFKD then drop every category-Mn codepoint. This deletes a dagger alif
-    rather than rewriting it, so it is NOT the #52 orthography — Arabic equality
-    against this helper is no longer the contract. The maqaf is mapped to a space
-    to match the implementation's word-boundary rule."""
+    logic): NFKD then drop every category-Mn codepoint, which deletes a dagger alif.
+    That matches equality scoring. The maqaf is mapped to a space to match the
+    implementation's word-boundary rule."""
     s = unicodedata.normalize("NFKD", s).replace("־", " ")
     return "".join(c for c in s if unicodedata.category(c) != "Mn")
 
@@ -53,11 +52,11 @@ def _has_surviving_mark(s: str) -> bool:
 
 
 def test_arabic_vocalized_equals_plain_basmala():
-    # Real QUL 1:1: the dagger alif is written after a tatweel (مَـٰ), which Imla'i
-    # spells as a full alif. Deleting the dagger (it is category Mn) used to drop it.
+    # Equality deletes the dagger alif (الرحمن, not الرحمان). Spec 52 credits the
+    # Imla'i full alif in containment, not in normalize().
     vocal = json.loads(QUL.read_text(encoding="utf-8"))["1:1"]["text"]
     assert "ـٰ" in vocal
-    plain = "بسم الله الرحمان الرحيم"
+    plain = "بسم الله الرحمن الرحيم"
     assert normalize(vocal) == plain
     assert token_f1(vocal, plain) == 1.0
 
@@ -68,39 +67,18 @@ def test_arabic_folds_alef_variants_and_tatweel():
     assert normalize("مـحـمـد") == normalize("محمد")
 
 
-def test_uthmani_imlai_orthography_pairs():
-    # Issue #52. Targets are spelled out so this fails if the fold is removed
-    # (the two sides would still be unequal, and neither would equal the target).
-    assert normalize("أَرَءَيْتُمْ") == normalize("أَرَأَيْتُمْ") == "ارايتم"
-    assert normalize("أَتَىٰكُمْ") == normalize("أَتَاكُمْ") == "اتاكم"
-    # Tatweel, or a fatha that NFKD sorts in front of the dagger (class 30 < 35),
-    # is still one alif — not yeh + alif.
-    assert normalize("أتىـٰكم") == "اتاكم"
-    assert normalize("أَتَىَٰكُمْ") == "اتاكم"
-    assert normalize("موسى") == normalize("موسي") == "موسي"
-
-
-@pytest.mark.parametrize(
-    "verse_key,expected",
-    [
-        # 2:2 has U+06DB plus dagger alif written after tatweel (ٱلْكِتَـٰبُ → الكتاب)
-        ("2:2", "ذالك الكتاب لا ريب فيه هدي للمتقين"),
-        # 7:206 has the sajdah marker U+06E9, which must disappear rather than split a word
-        ("7:206", "ان الذين عند ربك لا يستكبرون عن عبادته ويسبحونه وله يسجدون"),
-        # 2:23 has the ىٰ digraph (عَلَىٰ → علا) and hamza seated in شُهَدَاءَكُم
-        ("2:23", "وان كنتم في ريب مما نزلنا علا عبدنا فاتوا بسورة من مثله وادعوا شهدااكم من دون الله ان كنتم صادقين"),
-    ],
-)
-def test_real_qul_ayah_marks_removed_without_splitting(verse_key, expected):
+@pytest.mark.parametrize("verse_key", ["2:2", "7:206"])  # 2:2 has U+06DB; 7:206 has sajdah U+06E9
+def test_real_qul_ayah_marks_removed_without_splitting(verse_key):
     data = json.loads(QUL.read_text(encoding="utf-8"))
     text = data[verse_key]["text"]
     assert _has_surviving_mark(text)  # the raw ayah really carries marks (guards the fixture)
     norm = normalize(text)
     assert not _has_surviving_mark(norm)  # nothing mark-like survives
-    # pinned Imla'i-side spelling: a mark turned into a space would add a word, and a
-    # deleted dagger alif would drop a letter (الكتب rather than الكتاب)
-    assert norm == expected
-    assert len(norm.split()) == len(expected.split())
+    # the stripped form scores equal AND is not split into extra tokens (the real bug:
+    # a mark turned into a space would make the vocalised form gain word tokens)
+    assert normalize(text) == normalize(_strip_combining(text))
+    assert token_f1(text, _strip_combining(text)) == 1.0
+    assert len(normalize(text).split()) == len(normalize(_strip_combining(text)).split())
 
 
 @pytest.mark.parametrize(
@@ -148,10 +126,10 @@ def test_hebrew_maqaf_becomes_word_boundary():
 
 
 def test_retrieve_quote_scores_equal_regardless_of_vocalisation_direction():
-    # Qur'an: expected is vocalised QUL (dagger alif after tatweel); the model answers
-    # in the Imla'i spelling that writes that vowel as a full alif.
+    # Qur'an: expected is vocalised (QUL). Equality compares the mark-stripped skeleton
+    # (dagger deleted). The Imla'i full alif is a containment credit, not this one.
     ayah_vocal = json.loads(QUL.read_text(encoding="utf-8"))["1:2"]["text"]
-    ayah_plain = "الحمد لله رب العالمين"
+    ayah_plain = _strip_combining(ayah_vocal)
     r = score_answer("retrieve_quote", ayah_plain, {"text": ayah_vocal})
     assert r["normalized"] == 1 and r["correct"] == 1 and r["token_f1"] == 1.0
     # Talmud: expected is unvocalised (catalogued Aramaic), a search-on model answers in

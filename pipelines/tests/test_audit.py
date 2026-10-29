@@ -100,11 +100,8 @@ def test_norm_handles_nonlatin_content_layer(tmp_path):
         "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ "
         "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ مَٰلِكِ يَوْمِ ٱلدِّينِ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ"
     )
-    # A mark-stripped copy (no hand-typed spelling) must fingerprint the same. The dagger
-    # alif is rewritten to a full alif first — deleting it (it sits in this range) is the
-    # orthography the scorer no longer uses.
-    plain = vocal.replace("ٰ", "ا")
-    plain = _re.sub("[ً-ٕـۖ-ۭ]", "", plain).replace("ٱ", "ا")
+    # a programmatically mark-stripped copy (no hand-typed spelling) must fingerprint the same
+    plain = _re.sub("[ً-ٰٕـۖ-ۭ]", "", vocal).replace("ٱ", "ا")
     assert _norm(vocal)  # not collapsed to '' (the old Latin-only bug)
     assert _norm(vocal) == _norm(plain)
     sources = cat.discover_catalogue(RAW)
