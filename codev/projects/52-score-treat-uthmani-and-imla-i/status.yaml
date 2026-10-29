@@ -1,0 +1,16 @@
+id: '52'
+title: score-treat-uthmani-and-imla-i
+protocol: aspir
+phase: specify
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-29T16:56:27.589Z'
+updated_at: '2026-10-29T16:56:27.589Z'
