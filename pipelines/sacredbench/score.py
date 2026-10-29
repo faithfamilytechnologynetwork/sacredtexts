@@ -126,10 +126,23 @@ _SUBMETRICS: dict[str, tuple[str, ...]] = {}
 
 
 def normalize(text: str) -> str:
+    """The shared normaliser (generation, scoring, audit-adjacent). Byte-stable by contract —
+    its Arabic behaviour must NOT change (Spec 52 keeps the orthography fold out of this path, in
+    ``score_normalize``). Thin delegate to ``_normalize`` so it cannot drift from it."""
+    return _normalize(text, fold=False)
+
+
+def _normalize(text: str, *, fold: bool) -> str:
+    """Shared normalisation pipeline. ``fold=False`` is the historical ``normalize()`` behaviour,
+    byte-for-byte; ``fold=True`` interleaves the Arabic orthography fold at the one correct point —
+    after NFKD + quote/dash folding, BEFORE the Mn-mark deletion (the dagger-alif is itself a mark).
+    One implementation so the two public entry points cannot diverge (iter-2 review)."""
     text = unicodedata.normalize("NFKD", text)
     text = text.replace("‘", "'").replace("’", "'")
     text = text.replace("“", '"').replace("”", '"')
     text = text.replace("–", "-").replace("—", "-")
+    if fold:
+        text = fold_arabic_orthography(text)
     text = strip_script_marks(text)  # Arabic/Hebrew marks BEFORE the punctuation pass,
     #                                  so they are removed, not turned into word splits
     text = _PUNCT_RE.sub(" ", text.casefold())
@@ -150,6 +163,18 @@ def normalize(text: str) -> str:
 #                                   (قَالَ≡قِيلَ, بَيْت≡بَات); hence the position-aware rule here.
 #   - standalone hamza ء (U+0621, category Lo: NOT decomposed by NFKD) -> ا  (equates
 #                                   أَرَءَيْتُمْ↔أَرَأَيْتُمْ; "drop" is asymmetric and fails that pair)
+#
+# ACCEPTED COLLISION RESIDUE (Spec 52 known limitation, architect-approved 2026-10-29). A literal
+# zero-collision fold is infeasible, so the maqsura→ya and standalone-hamza→alef rules each merge a
+# few rare minimal pairs that are distinct words sharing a consonantal skeleton. On the QUL corpus
+# this is 9 word-buckets, dominated by two classes:
+#   - hamza (ء→ا): سواء/سوء, جزاء/جزء, وراء/ورء, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا
+#   - maqsura (ى→ي): نبى/نبّئ, قرى/قرئ, أمرى/امرئ
+# These are an accepted, documented limitation — the no-wrong-credit gate operates at scoring
+# granularity (every rebaselined cell hand-verified; see `test_arabic_orthography_fold.py` and the
+# Spec 52 review). The benchmark scores verse-length references, where a one-word ambiguity
+# essentially never flips a cell.
+#
 # This is applied by `score_normalize()` AFTER NFKD and BEFORE `strip_script_marks` (the ordering
 # is load-bearing: the dagger is a mark). It is NOT wired into the shared `normalize()` — that
 # stays byte-identical so generation (`generate.py`) keeps the committed question-set digest and
@@ -211,25 +236,37 @@ def score_normalize(text: str) -> str:
     punctuation → whitespace — NOT wrapped around ``normalize()`` (that would run the fold before
     NFKD and let NFKD-decomposed presentation forms evade it). The shared ``normalize()`` is left
     untouched (Spec 52 plan, decision 1)."""
-    text = unicodedata.normalize("NFKD", text)
-    text = text.replace("‘", "'").replace("’", "'")
-    text = text.replace("“", '"').replace("”", '"')
-    text = text.replace("–", "-").replace("—", "-")
-    text = fold_arabic_orthography(text)  # BEFORE the mark pass: the dagger-alif is a mark
-    text = strip_script_marks(text)
-    text = _PUNCT_RE.sub(" ", text.casefold())
-    return _WS_RE.sub(" ", text).strip()
+    return _normalize(text, fold=True)
+
+
+# Arabic script proper (the blocks that carry our Qur'an text): the base block, the two Arabic
+# Supplement/Extended blocks, and Arabic presentation forms — deliberately NOT Hebrew/Syriac, so
+# the whitespace-flexing below gates on Arabic only.
+def _has_arabic(s: str) -> bool:
+    return any(
+        0x0600 <= ord(c) <= 0x06FF or 0x0750 <= ord(c) <= 0x077F
+        or 0x08A0 <= ord(c) <= 0x08FF or 0xFB50 <= ord(c) <= 0xFEFF
+        for c in s
+    )
 
 
 def arabic_ws_insensitive_contains(answer: str, expected: str) -> bool:
-    """Whitespace-insensitive, fold-aware containment for the word-boundary cases (Spec 52):
+    """Fold-aware containment that tolerates the Uthmani↔Imla'i WORD-BOUNDARY difference (Spec 52):
     Uthmani writes some compounds as one orthographic word (يَـٰبُنَىَّ) where Imla'i writes two
-    (يَا بُنَيَّ). Comparing ``score_normalize``d strings with all whitespace removed lets the
-    reference match across that boundary. Guard the empty case so an empty reference never matches.
-    (Phase 1 provides this helper; Phase 2 wires it into the containment predicate.)"""
-    na = score_normalize(answer).replace(" ", "")
-    ne = score_normalize(expected).replace(" ", "")
-    return bool(ne) and ne in na
+    (يَا بُنَيَّ). For an **Arabic** reference the normalised reference is matched with optional
+    whitespace between its characters, anchored on word boundaries so it stays a bounded containment
+    (``Jude 1:3`` must still not match ``1:30``, and a short word is not credited inside a longer
+    one); for a non-Arabic reference it is plain word-bounded containment, unchanged. Empty
+    reference never matches. (Phase 1 provides this; Phase 2 wires it into ``bounded_contains``.)"""
+    na, ne = score_normalize(answer), score_normalize(expected)
+    if not ne:
+        return False
+    if _has_arabic(ne):
+        # optional whitespace between characters, so one-word Uthmani ↔ two-word Imla'i matches in
+        # either direction, while the (?<!\w)/(?!\w) anchors keep it word-bounded.
+        pattern = r"(?<!\w)" + r"\s*".join(re.escape(c) for c in ne.replace(" ", "")) + r"(?!\w)"
+        return re.search(pattern, na) is not None
+    return re.search(r"(?<!\w)" + re.escape(ne) + r"(?!\w)", na) is not None
 
 
 def token_f1(answer: str, expected: str) -> float:

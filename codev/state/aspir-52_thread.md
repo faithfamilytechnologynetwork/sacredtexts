@@ -162,4 +162,22 @@ Caught 2 bugs in my own reference skeleton (dagger must fold→alef not delete; 
 stripped) — fold itself was correct.
 
 Full suite: 577 passed (564 + 13), 2 skipped. Committed-run guards green (byte-identical).
-Next: commit P1, porch done, /compact, Phase 2.
+
+## Phase 1 impl consult iter1 (2026-10-29) — both REQUEST_CHANGES, fold logic confirmed correct
+
+claude independently corpus-verified the fold (211 medial / 400 final / 15 bare-medial maqsura,
+0 non-adjacent daggers). Two defects fixed:
+- **Containment helper was script-blind + unbounded** (equated the rapist/therapist, Jude 1:3 in
+  1:30, هدي in المهديون). Fixed with Arabic-gated anchored `\s*`-between-chars pattern (claude's
+  approach); non-Arabic refs keep plain bounded containment. Added negative tests.
+- **Diagnostic blind to its own collision class**: skeleton neutralized ء/ى so the 9 distinct-word
+  merges passed silently; 4 are the hamza ء→ا class the spec hadn't named. Fixed: strict skeleton
+  that KEEPS ء/ى distinct → residue = exactly 9 buckets, pinned as hand-annotated allow-list
+  (_ACCEPTED_DISTINCT_WORD_MERGES); new collision fails. Two-sided bound (40<n<120) catches a no-op.
+- Minors: parameterized `_normalize(text,*,fold)` so normalize/score_normalize can't drift;
+  simplified vacuous _folds_equal.
+- Documented the hamza collision class in score.py comment AND spec known-limitation (was
+  maqsura-only). Residue: hamza {سواء/سوء, جزاء/جزء, وراء/ورءا, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا},
+  maqsura {نبى/نبّئ, قرى/قرئ, أمرى/امرئ}.
+
+Full suite: 578 passed, 2 skipped. Guards green. Next: commit P1 fixes, porch done, Phase 2.

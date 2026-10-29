@@ -29,7 +29,9 @@ QUL = REPO_ROOT / "texts" / "raw" / "Sunni Islam" / "quran_uthmani_from_qul.json
 
 
 def _folds_equal(a: str, b: str) -> bool:
-    return score_normalize(a) == score_normalize(b) and score_normalize(b) == score_normalize(a)
+    # score_normalize is a pure function and string equality is symmetric, so one comparison
+    # suffices; direction-independence has teeth only for the containment predicate (tested below).
+    return score_normalize(a) == score_normalize(b)
 
 
 def test_dagger_alef_folds_to_full_alef():
@@ -110,7 +112,18 @@ def test_word_boundary_contains_helper():
     assert score_normalize(uthmani) != score_normalize(imlaei)        # a space remains
     assert arabic_ws_insensitive_contains(imlaei, uthmani)            # but contained either way
     assert arabic_ws_insensitive_contains(uthmani, imlaei)
-    assert not arabic_ws_insensitive_contains("", uthmani)            # empty reference never matches
+    assert not arabic_ws_insensitive_contains(uthmani, "")            # empty reference never matches
+
+
+def test_word_boundary_contains_is_bounded_and_script_gated():
+    # Must stay word-bounded (the property bounded_contains guarantees) even with whitespace flex:
+    assert not arabic_ws_insensitive_contains("Jude 1:30 says ...", "Jude 1:3")   # not 1:30
+    assert not arabic_ws_insensitive_contains("وقال المهديون كلاما", "هدي")        # not sub-word
+    # A real Arabic reference IS credited when present across the word boundary (full containment):
+    assert arabic_ws_insensitive_contains("قال السعي يَـٰبُنَىَّ وقال", "يَا بُنَيَّ")
+    # Non-Arabic reference: plain word-bounded containment, no whitespace flexing (Latin contract):
+    assert arabic_ws_insensitive_contains("the beginning of wisdom", "beginning of")
+    assert not arabic_ws_insensitive_contains("therapist notes", "the rapist")
 
 
 # --- invariance: Latin byte-for-byte, Hebrew untouched by the Arabic rules -------------------
@@ -146,6 +159,26 @@ def _iter_texts(obj):
             yield from _iter_texts(x)
 
 
+# The ACCEPTED distinct-word collision residue on the QUL corpus (Spec 52 known limitation,
+# architect-approved). Each `score_normalize` bucket below merges words that are NOT the same word
+# — they share a consonantal skeleton only after the maqsura→ya or standalone-hamza→alef rule. This
+# is pre-registered so (a) Phase 2 hand-verifies exactly these when a committed cell touches one and
+# (b) any NEW distinct-word collision a future rule change introduces fails the test. Annotated:
+_ACCEPTED_DISTINCT_WORD_MERGES = {
+    # hamza class (ء→ا): the two members differ by a real standalone hamza
+    "سواا": "سواء (equal) / سوء (evil)",
+    "جزاا": "جزاء (recompense) / جزء (a part)",
+    "وراا": "وراء (behind) / ورءا (and he saw)",
+    "ملا": "ملأ (chiefs) / ملء (fill)",
+    "شيا": "شىء (thing) / شيـٔا (a thing, acc.)",
+    "بريا": "برىء (free of) / بريـٔا (acc.)",
+    # maqsura class (ى→ي): dotless-ya word ↔ a genuinely different ya/hamza word
+    "نبي": "نبى (prophet) / نبّئ (inform!)",
+    "قري": "قرى (towns) / قرئ (was recited)",
+    "امري": "أمرى (my affair) / امرئ (a man)",
+}
+
+
 def test_corpus_collision_diagnostic():
     words = {w for t in _iter_texts(json.loads(QUL.read_text(encoding="utf-8"))) for w in t.split()}
     assert len(words) > 10000  # sanity: the sweep actually read the corpus
@@ -157,27 +190,38 @@ def test_corpus_collision_diagnostic():
             new_buckets[nw].add(w)
 
     # merges the NEW fold introduces that the CURRENT normalize kept apart
-    introduced = [
-        (k, v) for k, v in new_buckets.items()
+    introduced = {
+        k: v for k, v in new_buckets.items()
         if len(v) > 1 and len({normalize(w) for w in v}) > 1
-    ]
-    # Bounded (measured ~65). A regression that explodes this is a signal to re-review the rules.
-    assert len(introduced) < 150, f"introduced merges jumped to {len(introduced)} — re-review rules"
+    }
+    # Two-sided bound: a no-op fold would yield 0 (lower bound catches it); an explosion signals a
+    # bad rule (upper bound). Measured 65.
+    assert 40 < len(introduced) < 120, f"introduced merge count {len(introduced)} out of range"
 
-    # Every introduced merge must be between genuine orthographic variants — i.e. the raw words
-    # coincide once the fold's OWN alphabet is neutralised to a bare consonantal skeleton. This
-    # neutralises exactly what the fold neutralises (so a true variant-merge passes) while still
-    # catching a bug that merged words differing in a real consonant (كتب vs كلب). The dagger and
-    # the ىٰ digraph fold to alef here (NOT deleted), matching the fold — otherwise an Uthmani
-    # dagger-form would look distinct from its plene spelling.
-    def skeleton(w: str) -> str:
+    # A STRICT skeleton that folds ONLY the zero-risk orthography (dagger/digraph→alef, wasl, marks,
+    # NFKD hamza-seats/madda) but KEEPS standalone hamza ء and alef-maqsura ى distinct from ا/ي — so
+    # it can SEE the collisions the fold's own alphabet would hide. Buckets whose members still
+    # differ under this skeleton are genuine distinct-word merges.
+    def strict_skeleton(w: str) -> str:
         s = unicodedata.normalize("NFKD", w)
-        s = s.replace("ىٰ", "ا").replace("ٰ", "ا")  # ىٰ digraph and lone dagger → alef
-        s = strip_script_marks(s)  # drop Mn marks + editorial (tatweel/annotation), fold wasl
-        for a, b in (("ى", "ي"), ("ء", "ا"), ("آ", "ا"), ("أ", "ا"), ("إ", "ا")):
-            s = s.replace(a, b)
+        s = s.replace("ىٰ", "ا").replace("ٰ", "ا")  # ىٰ digraph + lone dagger → alef
+        s = strip_script_marks(s)  # Mn marks + editorial (tatweel/annotation), wasl ٱ→ا
         return s.replace(" ", "")
 
-    for _, v in introduced:
-        skels = {skeleton(w) for w in v}
-        assert len(skels) == 1, f"fold merged non-variant words: {sorted(v)} (skeletons {skels})"
+    distinct_word_merges = {
+        k for k, v in introduced.items() if len({strict_skeleton(w) for w in v}) > 1
+    }
+    # The distinct-word residue must be EXACTLY the pre-registered, hand-annotated allow-list — a
+    # new collision (or a disappeared one) fails here and forces a re-review + architect sight.
+    assert distinct_word_merges == set(_ACCEPTED_DISTINCT_WORD_MERGES), (
+        "distinct-word collision residue changed; new="
+        f"{sorted(distinct_word_merges - set(_ACCEPTED_DISTINCT_WORD_MERGES))} "
+        f"gone={sorted(set(_ACCEPTED_DISTINCT_WORD_MERGES) - distinct_word_merges)}"
+    )
+
+    # Everything NOT in the residue is a pure same-word Uthmani↔plene reunion (zero-risk).
+    for k, v in introduced.items():
+        if k not in distinct_word_merges:
+            assert len({strict_skeleton(w) for w in v}) == 1, (
+                f"unexpected non-variant merge outside the allow-list: {sorted(v)}"
+            )

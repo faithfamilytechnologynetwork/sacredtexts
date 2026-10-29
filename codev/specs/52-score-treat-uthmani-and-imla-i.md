@@ -93,14 +93,22 @@ are not touched by the new Arabic-specific rules.
       pass/fail — see the known limitation below.
 
 **Known limitation (accepted — architect 2026-10-29, not a blocker).** A literal word-level
-zero-collision gate is infeasible: the core alef-maqsura→ya fold (which rescues the single
-largest class, e.g. `هدى↔هدي`, `بُنَىَّ↔بُنَيَّ`) necessarily merges a few rare consonantal-skeleton
-minimal pairs. The one the prototype surfaced — `نَبِىٍّ` (prophet) vs `نَبِّئْ` (inform) → `نبي` —
-is **mostly pre-existing** (`نَبِّئْ`→`نبي` already today via the ئ seat-fold). Such residual merges
-are documented and accepted because (a) rejecting the rule would abandon the fix, and (b) the
-no-wrong-credit gate at scoring granularity catches any case that would actually mis-credit a
-committed answer. The benchmark scores verse-length references, where a single-word ambiguity
-essentially never flips a cell.
+zero-collision gate is infeasible: two necessary rules each merge a few rare consonantal-skeleton
+minimal pairs that are genuinely distinct words. Enumerated against the QUL corpus (9 word-buckets,
+pre-registered in `test_arabic_orthography_fold.py`):
+
+- **maqsura (ى→ي)** — rescues the largest class (`هدى↔هدي`, `بُنَىَّ↔بُنَيَّ`) but merges
+  `نبى`(prophet)/`نبّئ`(inform!), `قرى`(towns)/`قرئ`(was recited), `أمرى`(my affair)/`امرئ`(a man).
+  `نبى`/`نبّئ` is **mostly pre-existing** (`نبّئ`→`نبي` already today via the ئ seat-fold).
+- **standalone hamza (ء→ا)** — the only coherent target (dropping it is asymmetric and fails
+  `أَرَءَيْتُمْ↔أَرَأَيْتُمْ`) but merges `سواء`(equal)/`سوء`(evil), `جزاء`(recompense)/`جزء`(a part),
+  `وراء`(behind)/`ورءا`, `ملأ`(chiefs)/`ملء`(fill), `شىء`/`شيـٔا`, `برىء`/`بريـٔا`.
+
+These are documented and accepted because (a) rejecting either rule would abandon the fix, and
+(b) the no-wrong-credit gate at scoring granularity catches any case that would actually mis-credit
+a committed answer. The benchmark scores verse-length references, where a single-word ambiguity
+essentially never flips a cell. The residue is a frozen allow-list, so a *new* collision from any
+future rule change fails the test.
 - [ ] On `runs/exp-arabic-prompts-2026-10-29`, re-scoring converges the two conditions and
       credits every content-correct cell that can be credited without a word-level collision;
       the set of cells whose headline flips is pre-registered and reproduced exactly.
