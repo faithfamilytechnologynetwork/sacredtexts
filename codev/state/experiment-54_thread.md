@@ -144,3 +144,19 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   on b93e881). Doc-sync note flagged to architect: arch-critical.md line 9 still says
   'config.py fail-fasts a tool on a non-anthropic provider' — my PR refines that to the
   family-map; governance-doc update is MAINTAIN's/architect's call, not edited in this PR.
+- 2026-10-29: PR #59 round-1 integration review — folded ALL 10 items (commit 993e5f0):
+  (1) host-pin guard (config._SEARCH_FORWARDING_HOST_NETLOCS=openrouter.ai + forwarded family;
+  arbitrary base_url rejected); (2) H3 → INCONCLUSIVE (other_script is Unicode-script, not
+  orthography; wrong_passage is overlap, not edition) in README+review; (3) corrected false
+  cost claim in models.yaml + ADDED cost capture to _openrouter_usage for future collects;
+  (4) mechanical nativeness gate providers._assert_native_arm (provider-of-record + citation
+  shape per family, fail-loud at collect) + citation_style in usage; (5) models.example.yaml
+  comment restated; (6) spec header→COMPLETE, dry_run docstring→4/224, PR body→630/190;
+  (7) arch-critical.md line 9 restated to the native-search rule; (8) native Responses/grounding
+  paths labelled seam-tested/awaiting-live-smoke; (9) single source of truth
+  providers.OPENROUTER_SEARCH_TOOL_BY_FAMILY (config derives allowlist via local import);
+  (10) viewer excludes exp-* from standings+default home (isExperimentRun/benchmarkRuns, openable
+  via ?run=) +tests. Both lanes green via dispatcher: pipelines 630, viewer 190. Committed run's
+  112 search-on rows all pass the new provider check (gate consistent with evidence). Findings
+  UNCHANGED (H3 relabel is wording). PR body refreshed. Pushed 993e5f0. Awaiting round-2 review
+  + Waleed's gate.
