@@ -35,4 +35,26 @@ outcomes, so the rebase stays clean.
 reproducible, belongs in scorer per the experiment's own conclusion]; (2) Jev equivalence
 adjudication [paid/non-default, non-deterministic]. Issue says "either, not both".
 
-Next: finish spec draft → `<signal>SPEC_DRAFTED</signal>` → porch runs 3-way consult.
+## Specify consult iter1 (2026-10-29) — both REQUEST_CHANGES, both excellent
+
+Empirically verified their claims in a REPL before revising (don't guess Unicode):
+
+- **NFKD already folds** madda آ, hamza-seats أ/إ→ا, ؤ→و, ئ→ي, wasl ٱ. I had wrongly listed
+  madda + seats as gaps. **Real gaps:** dagger-alif (deleted as Mn, not →ا), alef-maqsura ى→ي,
+  ىٰ digraph, standalone hamza ء, and a **word-boundary** diff (يا بني vs يٰبنى).
+- **CRITICAL (claude):** no context-free character fold works. ىٰ must →ا for أَتَىٰكُمْ↔أَتَاكُمْ
+  but →ى/ي for عَلَىٰ↔على; the full-collapse map that covers all pairs MERGES distinct words —
+  verified قال≡قيل, بيت≡بات, سأل≡سال. ⇒ fold MUST be **position-aware** + a **word-level
+  collision gate** (containment/token_f1 are substring/token-level, so the projection oracle
+  can't catch a word merge).
+- **Oracle signal corrected:** since we change normalize(), orthography flips `normalized` 0→1
+  — NOT the #15 containment signature. Oracle = before/after projection delta, non-Arabic frozen,
+  Arabic flips pre-registered. (Sent architect the correction.)
+- **Rebaseline scope widened:** must regenerate derived artifacts too — summary.json/md (all),
+  original-2026-10-21/facct.*, tutorial/jev_agreement.* (its judge_only:27 are this fold's target).
+  Named guards test_first_run_regression.py + test_tutorial_run.py (byte-for-byte) will break.
+- **"Arabic cell" defined** by answer-script (first-run's 2 Arabic answers count).
+- **Spec-15 submetric consequence** of any Arabic-whitespace rule made explicit (token_f1
+  degenerates) — left as a Critical open question for the plan to decide.
+
+Spec revised in place. Next: commit "with multi-agent review", `porch next` (likely iter2 consult).

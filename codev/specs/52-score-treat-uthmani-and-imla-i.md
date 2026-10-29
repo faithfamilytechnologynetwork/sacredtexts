@@ -10,49 +10,51 @@ out of the spec — those belong in codev/plans/XXXX-*.md.
 ## Problem Statement
 
 A Qur'anic verse can be written correctly in more than one orthography. The two that matter
-for this benchmark are **Uthmani** (the script of the QUL corpus the benchmark is built from,
-with hamzat-wasl ٱ, dagger-alif ـٰ, dotless ى) and standard modern **Imla'i** (plain alef ا,
-dotted ي, words like يا بني written out). A model that reproduces a verse *word-for-word and
-correct* but in the orthography the prompt elicited is being scored as if it got the verse
-wrong.
+for this benchmark are **Uthmani** (the script of the QUL corpus the benchmark is built from —
+hamzat-wasl ٱ, dagger-alif ـٰ, dotless alef-maqsura ى, and words like يٰبنى written as a single
+unit) and standard modern **Imla'i** (plain alef ا, dotted ya ي, يا بني written as two words).
+A model that reproduces a verse *word-for-word and correct* but in the orthography the prompt
+elicited is being scored as if it got the verse wrong.
 
 This matters because the benchmark's headline question is whether models can *retrieve and
 reproduce* sacred text. Penalizing a content-correct answer for its script turns a
 presentation choice into a measured accuracy gap, so the numbers stop meaning what the
 benchmark claims they mean.
 
-Affected: anyone reading Arabic (and specifically Qur'an) results today, and — acutely — the
+Affected: anyone reading Arabic (specifically Qur'an) results today, and — acutely — the
 planned **#39 Arabic-instruction subset**, which this issue is a declared prerequisite for.
 The 2026-10-29 Arabic-prompt experiment showed Arabic-scaffolded prompts switch both tested
-models to Imla'i output, so an unmodified scorer will systematically under-credit every
-Arabic-prompted run.
-
-Requested by Nancy in the working group (2026-10-29) after that experiment.
+models to Imla'i output, so an unmodified scorer systematically under-credits Arabic-prompted
+runs. Requested by Nancy in the working group (2026-10-29) after that experiment.
 
 ## Current State
 
 Scoring folds Arabic through a script-scoped normalisation pass (`strip_script_marks`, called
-from `normalize()` before the punctuation pass). Today it:
+from `normalize()` after NFKD and before the punctuation pass). What it does **today**,
+verified empirically against the code:
 
-- folds hamzat al-wasl ٱ → bare alef ا (atomic replacement),
-- deletes Arabic/Hebrew combining marks (category Mn) and the editorial code points (tatweel,
-  the U+06D6–U+06ED Qur'anic annotation block) **within the RTL Unicode blocks only**,
-- leaves Latin and every other script byte-for-byte unchanged (a pinned invariant).
+- NFKD decomposition followed by deletion of Arabic/Hebrew combining marks (category Mn) and
+  the editorial code points (tatweel, the U+06D6–U+06ED annotation block) **within the RTL
+  Unicode blocks U+0590–U+08FF and U+FB1D–U+FB4F only**. (That range also covers Syriac,
+  Thaana, N'Ko, Samaritan, Mandaic marks — their marks are stripped too; harmless for this
+  benchmark's corpora. **Latin and all non-RTL scripts are byte-for-byte untouched** — a pinned
+  invariant — but "every other script" is not: only non-RTL scripts are invariant.)
+- an atomic fold of hamzat al-wasl ٱ → bare alef ا, and Hebrew maqaf → space.
 
-What it **cannot** do, and the orthographic pairs that therefore score unequal:
+Consequently these pairs **already fold today** (do not re-list them as gaps): **alif madda**
+آ → ا, **hamza-on-alef** أ/إ → ا, **hamza-on-waw** ؤ → و, **hamza-on-ya** ئ → ي (all via NFKD
+decomposing to letter + Mn mark, then Mn deletion), and **wasl** ٱ → ا.
 
-- **dagger alif** ـٰ (U+0670) ↔ full alif ا. U+0670 is category Mn, so it is currently
-  *deleted* by the mark pass — never converted to a letter. (Ordering consequence: a
-  dagger→alif fold cannot sit after the mark deletion.)
-- **dotless ya / alef maqsura** ى ↔ dotted ya ي.
-- **hamza seating**: أَرَءَيْتُمْ ↔ أَرَأَيْتُمْ (seat of the hamza differs).
-- **ى + dagger-alif digraph** أَتَىٰكُمْ ↔ أَتَاكُمْ.
-- **alif madda** آ, **standalone hamza** ء.
+What does **not** fold today — the actual gaps, each confirmed by running `normalize()` on a
+minimal pair:
 
-Concrete example (37:102, from the experiment): the English-prompted answer reproduces the
-QUL form «ٱلسَّعْىَ … يَـٰبُنَىَّ» byte-exactly; the Arabic-prompted answer gives the correct
-«السَّعْيَ … يَا بُنَيَّ». `normalize()` folds the wasl and strips marks but cannot equate the
-dagger-alif or ى↔ي, so the second answer scores incorrect though it is the same verse.
+| Pair | `normalize()` today | Why |
+|------|---------------------|-----|
+| dagger-alif `يَـٰبُنَىَّ` vs `يَا بُنَيَّ` | `يبنى` vs `يا بني` → **DIFF** | U+0670 is category Mn, so it is **deleted**, not folded to ا (ordering: a dagger→alif fold must run *before* the Mn deletion) — and a word-boundary difference remains |
+| alef-maqsura `هدى` vs `هدي` | `هدى` vs `هدي` → **DIFF** | ى (U+0649) is a base letter, neither decomposed nor Mn |
+| ىٰ digraph `أَتَىٰكُمْ` vs `أَتَاكُمْ` | `اتىكم` vs `اتاكم` → **DIFF** | the ى+dagger digraph representing long ā is not equated with ا |
+| standalone hamza `أَرَءَيْتُمْ` vs `أَرَأَيْتُمْ` | `ارءيتم` vs `ارايتم` → **DIFF** | ء (U+0621, category Lo) is not decomposed and not Mn |
+| word boundary `يَـٰبُنَىَّ` vs `يَا بُنَيَّ` | one token vs two → **DIFF** | Uthmani writes some compounds as one orthographic word, Imla'i as two |
 
 Measured effect (`runs/exp-arabic-prompts-2026-10-29/`): strict scorer 82.1% / 78.6% (en,
 gpt-6.1-sol / claude-sonnet-5.5) vs 71.4% / 71.4% (ar) — an ~8–11 point drop that hand
@@ -62,176 +64,212 @@ direction. All movement is in `retrieve_quote`.
 ## Desired State
 
 Two content-identical renderings of the same Qur'anic passage — one Uthmani, one Imla'i —
-score the same. A model is credited for retrieving the verse regardless of which orthography
-it rendered it in, in either direction (answer vs expected), consistent with how
-`strip_script_marks` already treats vocalisation direction-independently.
+score the same wherever doing so does **not** also merge two genuinely different Arabic words.
+A model is credited for retrieving the verse regardless of orthography, in either direction
+(answer vs expected), consistent with how `strip_script_marks` already treats vocalisation
+direction-independently. The fix lives in the scorer, not in prompt engineering (the experiment
+showed the fold also rescues English-prompted cells, so strict accuracy is partly orthographic
+luck today for everyone).
 
-Concretely, on the experiment evidence: both prompt conditions converge (the fold recovers the
-Imla'i-rendered cells), no content-correct Qur'an answer is scored incorrect on orthography
-alone, and the #39 subset can be run at scale without the scorer artifact. The fix lives in the
-scorer, not in prompt engineering — the experiment showed the fold also rescues English-
-prompted cells, so strict accuracy is partly orthographic luck today for *everyone*.
-
-Non-Arabic scoring is unchanged: Latin stays byte-for-byte identical, and the fold is confined
-to Arabic script, so Hebrew and every other corpus are untouched.
+Non-RTL scoring is unchanged: Latin stays byte-for-byte identical. Hebrew and other RTL scripts
+are not touched by the new Arabic-specific rules.
 
 ## Success Criteria
 
-- [ ] Two renderings of the same Qur'anic unit that differ only in orthography (across the
-      pairs enumerated in Current State: dagger-alif, ى↔ي, hamza seating, ى+dagger digraph,
-      alif madda, standalone hamza, in addition to the wasl already handled) normalise to the
-      same string, in both match directions.
-- [ ] On `runs/exp-arabic-prompts-2026-10-29`, re-scoring under the contract converges the two
-      conditions and credits every content-correct cell; the set of cells whose headline flips
-      0→1 is pre-registered and reproduced exactly.
+- [ ] For each enumerated orthographic pair where equating the two does not collide with a
+      distinct Arabic word, the two renderings normalise to the same string in both match
+      directions. The gaps in scope: dagger-alif → ا, alef-maqsura ى → ي, the ىٰ digraph → ا,
+      standalone hamza ء, and Arabic word-boundary equivalence.
+- [ ] **The fold is position/context-aware where a context-free rule is provably impossible.**
+      Specifically ىٰ must fold to ا in `أَتَىٰكُمْ↔أَتَاكُمْ` yet not turn `عَلَىٰ↔على` into a
+      mismatch; no single context-free character map does both, and the context-free map that
+      covers all pairs merges distinct words (see Assumptions). The implementation satisfies the
+      enumerated pairs **without** introducing any word-level collision.
+- [ ] **Word-level non-collision gate.** No fold rule causes two distinct Arabic words in the
+      corpus vocabulary to normalise to the same string (checked at word granularity, not just
+      whole-benchmark-unit granularity, because `contains_reference` is substring-based and
+      `token_f1` is token-based — a word merge credits a wrong word inside an otherwise-correct
+      answer and the projection oracle cannot see it). Any rule that would introduce a collision
+      is rejected; the residual cell it would have rescued stays residual and is documented.
+- [ ] On `runs/exp-arabic-prompts-2026-10-29`, re-scoring converges the two conditions and
+      credits every content-correct cell that can be credited without a word-level collision;
+      the set of cells whose headline flips is pre-registered and reproduced exactly.
 - [ ] Latin output of `normalize()` is byte-for-byte unchanged (the existing Latin-invariance
-      guard still passes).
-- [ ] The change is executed as a **sanctioned, oracle-witnessed rebaseline**: every committed
-      run whose Arabic cells move (at minimum `tutorial-2026-10-11`, `original-2026-10-21`,
-      `first-run-2026-10-11`, plus the experiment run) has its oracle re-pinned, and the
-      rebaseline moves **only** Arabic cells — no non-Arabic `(exact, normalized, token_f1)`
-      projection value changes.
+      guard still passes); Hebrew/other-RTL regression coverage is added for the new rules.
+- [ ] The **Spec 15 four-submetric contract** is honored or its change is explicit: the spec
+      must state what the word-boundary rule does to Arabic `exact`, `normalized`, `token_f1`,
+      and `contains_reference` (stripping Arabic whitespace inside `normalize()` degenerates
+      Arabic `token_f1` toward a single token and changes the meaning of `exact`/`normalized`
+      for Arabic — a deliberate, documented consequence, not an accident).
+- [ ] The change is executed as a **sanctioned, oracle-witnessed rebaseline** defined by a
+      **before/after projection delta** (not the #15 containment signature): every committed run
+      whose Arabic cells move — `tutorial-2026-10-11`, `original-2026-10-21`,
+      `first-run-2026-10-11`, and the experiment run — has its oracle re-pinned so that **no
+      non-Arabic `(exact, normalized, token_f1)` projection value changes** and the Arabic cells
+      that move match a pre-registered set.
+- [ ] **All score-derived artifacts are regenerated** for every rebaselined run, not just
+      `scores.jsonl`: `summary.json`/`summary.md` (all runs), `original-2026-10-21/facct.*`
+      (Spec 32 FAccT card), and `tutorial-2026-10-11/jev_agreement.*` (whose `judge_only: 27`
+      orthographic near-misses are precisely this fold's target and will move). No run ships with
+      a `summary.md` disagreeing with its `scores.jsonl`.
+- [ ] **"Arabic cell" is defined** for the oracle allow-list (by answer-script: a cell is
+      "Arabic" iff its answer or expected text contains Arabic-script code points — so
+      `first-run-2026-10-11`'s 2 Arabic-bearing answers over English questions count as Arabic
+      and may move). The byte-for-byte re-score guards that will break are named and updated:
+      `test_first_run_regression.py` and `test_tutorial_run.py`, alongside
+      `test_contains_reference_rebaseline.py`.
 - [ ] The moved headline numbers are surfaced to the architect before merge.
-- [ ] The copyright audit gate and the full test suite pass; no run artifact derived from a
+- [ ] The copyright audit gate and the full test suite pass; no artifact derived from a
       `restricted` source is committed or altered.
 
 ## Constraints
 
-- **Scoring-contract change ⇒ sanctioned-rebaseline procedure.** This is a deliberate change to
-  what `correct` means, not a forbidden re-score. It follows the established procedure: a
-  durable projection-SHA oracle + a pre-registered flip set (`test_contains_reference_
-  rebaseline.py` is the pattern), committed scores regenerated once with panel/usage fed back
-  verbatim, moved numbers surfaced to the architect first. (arch-critical; lessons-critical
-  "Never re-run collect/score/generate over committed run evidence — Exception: a deliberate
-  scoring-contract change".)
-- **Ordering is load-bearing.** The orthography fold must run **before** the Mn-mark deletion,
-  because the dagger alif (U+0670) is itself a combining mark the current pass deletes. The
-  documented order "Arabic/Hebrew marks BEFORE the punctuation pass" must not be broken.
-- **Script-scoped only.** The fold applies to Arabic script; Latin must stay byte-for-byte
-  identical (pinned snapshot) and the fold must not reach Hebrew or other scripts.
-- **Direction-independent.** The fold is applied to both the answer and the expected text, so
-  neither the Uthmani-expected/Imla'i-answer nor the reverse case is privileged.
+- **Scoring-contract change ⇒ sanctioned-rebaseline procedure.** A deliberate change to what
+  `correct` means, following the established procedure: a durable projection-SHA oracle + a
+  pre-registered flip set, committed scores regenerated once with panel/usage fed back verbatim,
+  moved numbers surfaced to the architect first (arch-critical; lessons-critical).
+- **Oracle signal is a projection delta, NOT the #15 containment signature.** Because this
+  changes `normalize()` itself, orthography matches flip strict `normalized` 0→1 and move
+  `token_f1`. The oracle therefore pins before/after projections per cell; it must **not** reuse
+  the "`correct` flips while `normalized`==0" rule, which was specific to the #15 containment
+  rebaseline.
+- **Ordering is load-bearing.** The dagger-alif → ا fold must run **before** the Mn-mark
+  deletion (U+0670 is itself a mark the current pass deletes). The documented order
+  "Arabic/Hebrew marks BEFORE the punctuation pass" must not be broken.
+- **Script-scoped only.** New rules apply to Arabic script; Latin must stay byte-for-byte
+  identical and the rules must not reach Hebrew or other RTL scripts.
+- **Direction-independent.** Applied to both answer and expected text.
+- **No word-level collisions.** A fold rule that merges two distinct Arabic words is rejected
+  even if it would rescue a residual cell (non-collision beats convergence on conflict).
 - **Issue steer: one mechanism, not both** — a deterministic fold in the scorer *or* Jev
-  equivalence adjudication, not both.
+  equivalence adjudication, not both. Jev-as-default is excluded by #21.
 - **Native-speaker review is a #39 gate, not this one.** Nancy's caution (2026-10-29) that
   AI-translated prompts can miss religious subtleties applies to the Arabic *scaffolds* (#41)
-  before a scaled #39 run; it does not gate this scorer change, but the spec records it so #39
-  does not skip it.
-- **Parallel-work coordination.** builder-48 (#48, refusal decline-cues) is making a
-  concurrent scoring-contract rebaseline. This spec's oracle must define its flip set on the
-  orthography signal (headline `correct` flipping 0→1 while strict `normalized` stays 0),
-  independent of refusal outcomes, so a rebase onto #48 stays clean.
+  before a scaled #39 run; recorded here so #39 does not skip it.
+- **Parallel-work coordination.** builder-48 (#48, refusal decline-cues) is making a concurrent
+  scoring-contract rebaseline. This spec's oracle delta is defined on text-match projections
+  (`exact`/`normalized`/`token_f1`/`contains_reference`), **independent of refusal outcomes**, so
+  a rebase onto #48 stays clean. Merge-order resolution is the architect's call at PR time.
 
 ## Assumptions
 
 - The QUL Uthmani corpus is the ground-truth orthography; models may answer in either
-  orthography. (If a future corpus were natively Imla'i the fold still holds, being
-  direction-independent.)
-- The enumerated fold rules are sufficient for the observed phenomena: the experiment's quick
-  fold left 4 residual cells, and hand inspection attributed all 4 to exactly two further rules
-  (hamza seating, ى+dagger digraph) already listed here — so a fold covering all listed pairs
-  resolves every cell in the evidence.
-- Folding to a bare consonantal/orthography-neutral skeleton does not collapse two *distinct*
-  Qur'anic units into one within the benchmark's question set (to be checked against the corpus
-  during implementation; see Open Questions).
-- The committed non-experiment runs' Arabic cells are the only other scores that move; no
-  non-Arabic cell is affected (validated by the projection oracle).
+  orthography. The fold is direction-independent so a future natively-Imla'i corpus still holds.
+- **A context-free character fold is insufficient** (demoted from an earlier assumption that
+  "a fold covering all listed pairs resolves every cell"). Verified: the context-free full
+  collapse of {ا, ى, ي, ـٰ, ٱ} that covers all four residual pairs merges distinct words —
+  `قَالَ≡قِيلَ`, `بَيْت≡بَات`, `سَأَلَ≡سَالَ` — and a naive ىٰ→ا breaks the frequent `عَلَىٰ↔على`.
+  A position-aware rule set (e.g. medial ىٰ→ا, word-final ى→ي) is required and was confirmed to
+  fix the frequent cases without those collisions.
+- The word-boundary difference in the headline example cannot be resolved by any character rule;
+  it requires an Arabic word-segmentation/whitespace decision with the Spec-15 submetric
+  consequence noted in Success Criteria.
+- The committed runs' Arabic cells (`tutorial` 132, `original-2026-10-21` 840, `first-run` 2
+  Arabic-bearing answers) are the only scores that move; no non-Arabic cell is affected
+  (validated by the projection oracle).
 
 ## Solution Approaches
 
-### Approach 1: Deterministic Arabic orthography fold in the scorer (recommended)
+### Approach 1: Deterministic, position-aware Arabic orthography fold in the scorer (recommended)
 
-Extend the existing Arabic normalisation so the orthographic variants listed in Current State
-fold to a single canonical skeleton, with the fold ordered **before** the Mn-mark deletion.
-Applied symmetrically to answer and expected, confined to Arabic script.
+Extend the Arabic normalisation so the in-scope orthographic variants fold to a canonical
+skeleton, with (a) the dagger-alif fold ordered before the Mn deletion, (b) **position/context
+awareness** for the ى / ىٰ rules so distinct frequent words are not merged, (c) a decided
+word-boundary rule, and (d) a word-level collision gate that rejects any rule introducing a
+collision. Applied symmetrically, confined to Arabic script.
 
-- **Pros:** free (no extra model calls), fully deterministic and reproducible, lives exactly
-  where the experiment concluded the fix belongs, expressible as a durable contract with a
-  SHA-pinned oracle, and extends an existing, well-understood pass. Resolves 100% of the
-  evidence cells.
-- **Cons:** rules must be enumerated and justified; a careless rule could over-fold and collide
-  distinct units (mitigated by checking against the corpus and by the projection oracle, which
-  forbids any non-Arabic movement and pins Arabic movement to a registered set).
-- **Risk/complexity:** low-moderate. The main subtlety is the ordering constraint, which is
-  already documented in the code, and the rebaseline scope (several committed runs carry
-  Arabic).
+- **Pros:** free (no extra model calls), deterministic and reproducible, lives where the
+  experiment concluded the fix belongs, expressible as a SHA-pinned rebaseline oracle, extends an
+  existing well-understood pass.
+- **Cons:** the rules are context-dependent, so the implementation is more than a character map;
+  a careless rule over-folds (mitigated by the collision gate + projection oracle). The
+  word-boundary rule has a documented Spec-15 submetric cost.
+- **Risk/complexity:** moderate. Main subtleties: the ordering constraint, the context-dependence
+  (proven), the word-boundary/submetric decision, and the multi-run + derived-artifact rebaseline
+  scope.
 
 ### Approach 2: Jev equivalence adjudication
 
-Let the Jev judge adjudicate orthographic equivalence (it already flagged exactly this class —
-27 orthographic near-misses in the Spec 21 cross-check).
+Let the Jev judge adjudicate orthographic equivalence (it already flagged this class — the 27
+`judge_only` near-misses in the Spec 21 cross-check).
 
-- **Pros:** no rule enumeration; naturally absorbs variants the rule set might miss.
-- **Cons:** a paid, separate pass that is never the default grader (issue #21); non-
-  deterministic, so it cannot be the headline contract without an oracle problem; adds cost and
-  latency to every run; harder to surface as a reproducible, SHA-witnessed rebaseline. The
-  benchmark's default-grader honesty constraints argue against making provenance/retrieval
-  depend on a model judge.
-- **Risk/complexity:** higher for a default-path change; better suited as an optional
-  cross-check than as the production fix the #39 prerequisite needs.
+- **Pros:** no rule enumeration; absorbs context-dependence and variants a rule set might miss.
+- **Cons:** a paid, separate, non-deterministic pass that is never the default grader (#21); can't
+  be the headline contract without an oracle problem; adds cost/latency; harder to surface as a
+  reproducible SHA-witnessed rebaseline. Default-grader honesty constraints argue against making
+  retrieval depend on a model judge.
+- **Risk/complexity:** higher for a default-path change; better as an optional cross-check than the
+  production fix the #39 prerequisite needs.
 
-**Recommendation: Approach 1.** It is deterministic, free, reproducible, resolves every cell in
-the evidence, and is what the experiment's own conclusion calls for ("the production fix belongs
-in the scorer, not in prompt engineering"). Approach 2 remains available as an optional
-equivalence grader but should not be the default-path fix.
+**Recommendation: Approach 1**, position-aware and collision-gated. It is deterministic, free,
+reproducible, and what the experiment's own conclusion calls for. Approach 2 remains available as
+an optional equivalence grader and as a cross-check for residual cells the collision gate blocks,
+but is not the default-path fix (per "either, not both").
 
 ## Open Questions
 
-- **Important:** Does any fold rule collapse two *distinct* benchmark units into the same
-  skeleton? Must be checked against the Qur'an corpus during implementation; the projection
-  oracle plus a corpus-collision check bound the risk.
-- **Important:** Exact rebaseline scope — confirmed that `tutorial-2026-10-11`,
-  `original-2026-10-21`, and `first-run-2026-10-11` all carry Arabic answers (132 / 840 / 2
-  rows) and will move, alongside the experiment run. Each needs its oracle re-pinned; the plan
-  must enumerate them so none is missed.
-- **Important (coordination):** Merge order with #48 (builder-48). If #48 merges first, this
-  work rebases and re-runs its oracle. Flip set is kept orthography-defined and refusal-
-  independent to keep that rebase clean. Resolution is the architect's call at PR time.
-- **Nice-to-know:** Should the fold be exposed as a named/toggleable normaliser step, or folded
-  silently into the existing Arabic pass? Default: fold into the existing pass, since it is a
-  correctness fix to the same contract, not a new selectable grader.
-- **Nice-to-know:** Arabic-Indic digit folding and leading «نعم»/«لا» parsing surfaced in the
-  experiment's `analyze.py` as answer pre-normalisation — are they in scope here or deferred to
-  #39? Proposed: out of scope for #52 (this issue is orthography of retrieved *text*); record
-  for #39.
+- **Critical:** The exact position-aware rule for ى / ىٰ. Confirmed necessary; the precise
+  context predicate (medial vs word-final, and interaction with the dagger fold) is decided in the
+  plan and validated against corpus vocabulary. Blocks a correct implementation.
+- **Critical:** The word-boundary rule and its Spec-15 submetric consequence — strip Arabic
+  whitespace inside `normalize()` (degenerating Arabic `token_f1`), restrict whitespace handling to
+  the containment predicate, or leave the 2 whitespace-only cells as documented residuals? Shapes
+  the contract.
+- **Important:** The standalone-hamza rule's canonical target. "Dropped" is asymmetric (measured
+  `ارتم` vs `ارايتم` for the أَرَءَيْتُمْ↔أَرَأَيْتُمْ pair); a consistent target (e.g. ء → ا) is
+  needed and must pass the collision gate.
+- **Important:** Word-level collision-gate mechanics — the corpus vocabulary set checked against,
+  and the disposition when a rule collides (reject rule, keep residual, document).
+- **Important (coordination):** Merge order with #48; the oracle delta is refusal-independent so
+  the rebase is clean, but final order is the architect's call.
+- **Nice-to-know:** Arabic-Indic digit folding and leading «نعم»/«لا» parsing (from the
+  experiment's `analyze.py`) — proposed out of scope for #52, recorded for #39.
+- **Nice-to-know:** Expose the fold as a named/toggleable step vs fold silently into the existing
+  Arabic pass (default: fold in, it is a correctness fix to the same contract).
 
 ## Test Scenarios
 
-- **Happy path:** a verse rendered Uthmani and the same verse rendered Imla'i normalise equal;
-  `contains_reference` / `normalized` credit the retrieval in both directions.
-- **Per-pair unit coverage:** one minimal case per fold rule (dagger-alif, ى↔ي, hamza seating,
-  ى+dagger digraph, alif madda, standalone hamza) — each pair folds together; the existing
-  wasl case still folds.
-- **Latin invariance:** a representative Latin answer/expected pair normalises byte-for-byte as
-  before (regression guard).
-- **Non-collision:** two genuinely different Qur'anic units do **not** fold to the same
-  skeleton.
-- **Evidence replay:** re-scoring `exp-arabic-prompts-2026-10-29` converges the two conditions
-  and flips exactly the pre-registered cells; the 4 formerly-residual cells now credit.
-- **Rebaseline oracle:** for each committed run with Arabic, the non-Arabic
-  `(exact, normalized, token_f1)` projection hashes identically (nothing non-Arabic moved) and
-  Arabic headline flips match the pre-registered set.
-- **Audit/suite:** copyright audit gate passes; full test suite green.
+- **Per-gap unit coverage:** one minimal pair per in-scope rule (dagger-alif, alef-maqsura ى→ي,
+  ىٰ digraph, standalone hamza, word boundary) folds together; the already-folded cases (madda,
+  hamza-seats, wasl) still fold.
+- **Context-dependence (negative):** `أَتَىٰكُمْ↔أَتَاكُمْ` fold equal **and** `عَلَىٰ↔على` are not
+  broken by the ىٰ rule.
+- **Word-level non-collision:** `قَالَ`≠`قِيلَ`, `بَيْت`≠`بَات`, `سَأَلَ`≠`سَالَ` (and a broader
+  corpus-vocabulary sweep) do not collide after folding.
+- **Latin invariance:** a representative Latin pair normalises byte-for-byte as before.
+- **Hebrew/other-RTL regression:** a Hebrew pair is unaffected by the new Arabic rules.
+- **Submetric contract:** the Arabic `exact`/`normalized`/`token_f1`/`contains_reference` behaviour
+  under the word-boundary rule is asserted to the decided contract.
+- **Evidence replay:** re-scoring `exp-arabic-prompts-2026-10-29` converges the conditions and
+  flips exactly the pre-registered cells.
+- **Rebaseline oracle (per run):** non-Arabic projection hashes identically; Arabic flips match the
+  pre-registered set; `summary`/`facct`/`jev_agreement` regenerated and self-consistent;
+  `test_first_run_regression.py` and `test_tutorial_run.py` updated and green.
+- **Audit/suite:** copyright audit gate passes; full suite green.
 
 ## Risks and Mitigation
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Over-folding collides two distinct units | Low | High (false "correct") | Corpus-collision check; projection oracle forbids non-registered movement |
-| Fold ordered after mark deletion (dagger alif already gone) | Medium | High (silently no-ops) | Ordering constraint stated as a load-bearing contract + unit test on the dagger-alif pair |
-| Rebaseline misses a committed run with Arabic | Medium | Medium (stale/inconsistent evidence) | Scope enumerated (tutorial/original/first-run/experiment); oracle re-pin per run |
-| Latin/Hebrew accidentally affected | Low | High (breaks pinned snapshot) | Script-scoped fold; Latin-invariance guard; projection SHA |
-| Rebase churn vs #48 merging first | Medium | Low–Medium | Flip set defined on orthography signal, refusal-independent; coordinate merge order with architect |
-| Moved numbers merged without architect sight | Low | Medium | Surface moved headline numbers to architect before merge (hard gate in criteria) |
+| A fold rule merges two distinct Arabic words (false "correct") the oracle can't see | Medium | High | Word-level collision gate against corpus vocabulary; non-collision beats convergence |
+| Context-free fold used, breaking عَلَىٰ↔على or missing residual cells | Medium | High | Spec mandates position-aware rules; context-dependence negative tests |
+| Dagger fold ordered after mark deletion (silently no-ops) | Medium | High | Ordering stated as load-bearing + unit test on the dagger pair |
+| Word-boundary rule silently changes Arabic submetric meaning | Medium | Medium | Spec-15 consequence decided and asserted in tests |
+| Rebaseline misses a committed run or a derived artifact | Medium | Medium | Scope enumerated (4 runs) incl. summary/facct/jev_agreement; per-run oracle re-pin |
+| Latin/Hebrew accidentally affected | Low | High | Script-scoped rules; Latin-invariance guard; Hebrew regression; projection SHA |
+| Rebase churn vs #48 merging first | Medium | Low–Medium | Oracle delta refusal-independent; coordinate merge order with architect |
+| Moved numbers merged without architect sight | Low | Medium | Surface moved headline numbers before merge (hard gate) |
 
 ## References
 
 - Issue #52; related #39 (Arabic-instruction subset), #41 (independent rater / native-speaker
-  scaffold review), #48 (refusal cues), #21 (judge grader never default).
+  scaffold review), #48 (refusal cues), #21 (judge grader never default), #32 (FAccT card),
+  #15 (containment rebaseline — the oracle pattern, not the signal to reuse here).
 - `runs/exp-arabic-prompts-2026-10-29/` (README: full analysis + orthography-fold re-score).
 - `pipelines/sacredbench/score.py` (`normalize`, `strip_script_marks` — current Arabic pass and
   ordering contract).
-- `pipelines/tests/test_contains_reference_rebaseline.py` (the sanctioned-rebaseline oracle
-  pattern: projection SHA + pre-registered flip set).
-- arch-critical.md (scoring contract, sanctioned rebaseline); lessons-critical.md (never
-  re-score committed evidence except a deliberate contract change).
+- `pipelines/tests/test_contains_reference_rebaseline.py` (projection-SHA + pre-registered flip-set
+  oracle pattern); `pipelines/tests/test_first_run_regression.py`, `test_tutorial_run.py`
+  (byte-for-byte re-score guards that will be updated).
+- arch-critical.md (scoring contract, sanctioned rebaseline); lessons-critical.md (never re-score
+  committed evidence except a deliberate contract change).

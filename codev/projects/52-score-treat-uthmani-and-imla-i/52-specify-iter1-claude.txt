@@ -1,0 +1,74 @@
+I'll verify the spec's claims against the actual codebase before judging it.The README gives a concrete rule list the spec paraphrases. Let me test the enumerated fold rules against the actual evidence (read-only, no writes).I verified the spec's claims against the actual code and run evidence. All checks were read-only (python on stdin, no files written to the builder's tree).
+
+## What checks out
+
+- **Structure**: matches the installed skeleton template (`/opt/homebrew/lib/node_modules/@cluesmith/codev/skeleton/protocols/spir/templates/spec.md`) heading-for-heading, in order. Not a departure.
+- **Current State is accurate**: `strip_script_marks` (score.py:101–119) does exactly what the spec says — ٱ→ا atomic, maqaf→space, Mn + `_SCRIPT_EDITORIAL` deleted *within* `_SCRIPT_BLOCKS` only; `normalize()` calls it after NFKD and before `_PUNCT_RE` (score.py:128–136).
+- **The ordering constraint is real and load-bearing**: U+0670 is category Mn and inside the blocks, so it is deleted today. A dagger→alif fold placed after the mark pass silently no-ops. Correctly called out.
+- **Rebaseline row counts are exactly right**: tutorial 132, original 840, first-run 2 Arabic-bearing answers. I reproduced all three.
+- Baked steer honored: Approach 1 over Jev, consistent with #21.
+
+## Blocking issues
+
+**1. The enumerated rule set cannot jointly satisfy Success Criterion 1 and the non-collision scenario. The ا/ى/ي relation is context-dependent.**
+
+I implemented the spec's own list (digraph `ىٰ`→ا, then bare ى→ي, wasla→ا, ء dropped) and ran it:
+
+```
+عَلَىٰ → علا   vs  على → علي     NOT equal
+```
+
+`ىٰ` must fold to **ا** for أَتَىٰكُمْ↔أَتَاكُمْ (the spec's residual-cell rule) but to **ى/ي** for عَلَىٰ↔على — one of the most frequent words in the corpus. No context-free character mapping satisfies both. The only context-free fold that *does* satisfy all four enumerated pairs is collapsing {ا, ى, ي, ـٰ, ٱ} into one class, and that provably merges distinct words:
+
+```
+قَالَ ≡ قِيلَ    بَيْت ≡ بَات    سَأَلَ ≡ سَالَ
+```
+
+A position-aware digraph rule (medial `ىٰ`→ا, word-final → ي) fixes عَلَىٰ and ٱلصَّـٰبِرِينَ and avoids those collisions — I confirmed that direction works — but it is *not* what the spec enumerates. Please either state that the fold must be position/context-aware, or demote the Assumption ("a fold covering all listed pairs resolves every cell") to an Open Question.
+
+Relatedly, the collision Open Question is scoped too narrowly: it asks whether two distinct *benchmark units* collapse. But `contains_reference` is substring and `token_f1` is token-based, so a **word-level** merge credits a wrong word inside an otherwise-correct answer — and the projection oracle won't catch it, since it only pins Arabic flips to a registered set. Widen the non-collision criterion to word level against corpus vocabulary.
+
+**2. Word segmentation is an omitted fold dimension, and SC-2 is unreachable without it.**
+
+The spec's headline example (يَـٰبُنَىَّ ↔ يَا بُنَيَّ) is a *word-boundary* difference. It does not fold equal under any character rule — only with whitespace removed, which is exactly what the experiment's working fold did ("whitespace removed; containment match", run README:71). Measured on the 14 ar `retrieve_quote` cells under the most permissive character fold:
+
+```
+containment, whitespace stripped: 10/14
+containment, whitespace kept    :  8/14
+```
+
+The pair list and success criteria never mention it, so a builder implementing only the enumerated pairs misses 2 cells and cannot hit "credits every content-correct cell."
+
+This has a contract consequence the spec must decide: if Arabic whitespace is stripped inside `normalize()`, Arabic `token_f1` degenerates to a single token and `exact`/`normalized` change meaning for Arabic. Spec 15 requires text-retrieval to report all four submetrics — say what happens to them.
+
+**3. Rebaseline scope omits the derived artifacts.**
+
+Criteria cover "oracle re-pinned" but nothing requires regenerating what sits downstream of scores. Verified present and score-derived:
+- `summary.json`/`summary.md` in all three runs (per-task accuracy, coverage, exact, normalized, token_f1, contains_reference)
+- `original-2026-10-21/facct.json`/`.md` — the Spec 32 FAccT card
+- `tutorial-2026-10-11/jev_agreement.json`/`.md` — confusion matrix computed **against `contains_reference`**, with `judge_only: 27`. Those 27 are the orthographic near-misses this fold fixes, so that artifact's headline moves.
+
+Without a criterion, runs can ship with `summary.md` disagreeing with `scores.jsonl`.
+
+## Should fix
+
+**4. "Arabic cell" is undefined, which makes the oracle criterion unenforceable.** `first-run-2026-10-11` is 100% English *questions* but has 2 Arabic-bearing *answers*. Is that cell "Arabic" (may move) or "non-Arabic" (must not)? Pin the definition to answer-script or question-language. Also name the guards that will break: `test_first_run_regression.py` asserts re-scoring first-run reproduces `scores.jsonl` byte-for-byte, and `test_tutorial_run.py` pins tutorial — References cite only `test_contains_reference_rebaseline.py`.
+
+**5. "alif madda آ" is listed as an unequal pair, but it already folds.** NFKD decomposes آ/أ/إ to alef + Mn mark, which the existing pass deletes — the score.py:108 comment says exactly this. The real residue is the **standalone hamza ء** (U+0621, category Lo: not decomposed, not Mn): Uthmani ءَامَنُوا vs Imla'i آمنوا, and أَرَءَيْتُمْ vs أَرَأَيْتُمْ. Note the experiment's "standalone hamza dropped" rule is asymmetric and fails that pair — I measured `ارتم` vs `ارايتم`. Restate the hamza rule precisely.
+
+Security/copyright: nothing of concern; the audit-gate criterion is appropriate.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Well-grounded spec with accurate code analysis and verified rebaseline scope, but the enumerated fold rules are provably inconsistent (ىٰ→ا vs عَلَىٰ↔على) and omit word segmentation, so two success criteria are unreachable as written.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Enumerated fold rules cannot satisfy SC-1 and non-collision simultaneously: `ىٰ` must map to ا for أَتَىٰكُمْ↔أَتَاكُمْ but to ي for عَلَىٰ↔على; the context-free fold that covers all pairs merges قَالَ≡قِيلَ, بَيْت≡بَات. Requires a position-aware rule or a demoted assumption.
+- Collision risk is scoped to "distinct benchmark units" but `contains_reference`/`token_f1` are substring/token-level — needs word-level collision checking; the projection oracle cannot catch this class.
+- Word segmentation (يَـٰبُنَىَّ ↔ يَا بُنَيَّ) is an omitted fold dimension; measured 10/14 vs 8/14 containment with/without whitespace removal, so "credits every content-correct cell" is unreachable as specified.
+- Stripping Arabic whitespace inside `normalize()` degenerates Arabic `token_f1` to one token and changes `exact`/`normalized` semantics — unaddressed contract consequence under Spec 15.
+- Rebaseline criteria omit score-derived artifacts: `summary.json`/`md` (all runs), `facct.json`/`md` (original, Spec 32), `jev_agreement.json`/`md` (tutorial, whose 27 `judge_only` cells are precisely this fold's target).
+- "Arabic cell" undefined for the oracle allow-list (first-run has English questions with 2 Arabic answers); `test_first_run_regression.py` and `test_tutorial_run.py` byte-for-byte guards unnamed in scope.
+- Minor: آ/أ/إ already fold via NFKD + existing Mn deletion; the real gap is standalone hamza ء, and "hamza dropped" is asymmetric (ارتم vs ارايتم).
