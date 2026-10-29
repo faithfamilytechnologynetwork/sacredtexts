@@ -197,6 +197,9 @@ def test_spec48_reworded_class_b_does_not_overfire():
         f"I couldn't find Ketubot 63b:19. The closest line I found is: {he}, but unconfirmed.",
         f"I couldn't find the exact segment. The opening text of the daf is: {he}",
         f"I couldn't find it. The preceding passage reads: {he}",
+        # the reconstruction path must also reject a substitute modifier (codex iter-2)
+        f"I couldn't find it. My best reconstruction of a different line is: {he}",
+        f"I couldn't confirm it. My best reconstruction of the closest passage is: {he}",
     ):
         assert asserts_delivery(ans) is False
         assert classify_refusal(ans, "retrieve_quote", EXP_B) is True

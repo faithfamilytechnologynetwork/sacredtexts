@@ -186,7 +186,13 @@ _REFUSE_DELIVER = re.compile(
 # `daf`/`segment` (not in `_UNIT`) and `begins`/`opens` (not in `_VERB`) exclusions so a rewording
 # can't defeat them — e.g. "the closest line I found is: «script»" or "the opening text of the daf
 # is: «script»" (the real B cell `de9d77a6c963` is otherwise excluded only by its indefinite
-# article "a different line", an accident this makes principled).
+# article "a different line", an accident this makes principled). It is deliberately conservative:
+# a genuine identity assertion that happens to contain one of these words ("the OPENING line of
+# Psalm 1 is: …", "the verse BEGINS: …") is stranded as `refused` — the spec-sanctioned fallback
+# (favour `refused` when unsure), and no committed cell is affected. A B answer whose disclaimer
+# sits in a SEPARATE sentence from the assertion is still read as a delivery (intrinsic to the
+# locked assertion-only form — the A cell d4c3bda0b400 disclaims its segment in a separate clause);
+# both limitations are recorded for #52, which builds on this function.
 _NON_IDENTITY = re.compile(
     r"\b(?:different|closest|other|another|next|previous|preceding|following|"
     r"surrounding|nearby|adjacent|opening|opens?|begins?|neighbou?ring)\b",
@@ -208,9 +214,13 @@ def asserts_delivery(answer: str) -> bool:
         if not _NEG.search(clause) and not _NON_IDENTITY.search(clause):
             return True
     for m in _ASSERT_RECON.finditer(answer):
-        # require the reconstruction claim to be followed by an actual payload (script after the
-        # claim), and not be negated in its immediate lead-in
-        if _SCRIPT_CHAR.search(answer, m.end()) and not _NEG.search(answer[max(0, m.start() - 24) : m.start()]):
+        # require a payload after the claim, no negation in the immediate lead-in, and no non-identity
+        # modifier inside the claim itself ("my best reconstruction of a DIFFERENT/CLOSEST line is:")
+        if (
+            _SCRIPT_CHAR.search(answer, m.end())
+            and not _NEG.search(answer[max(0, m.start() - 24) : m.start()])
+            and not _NON_IDENTITY.search(m.group(0))
+        ):
             return True
     return False
 

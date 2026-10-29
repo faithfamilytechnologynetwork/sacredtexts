@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The committed rebaseline is sound, but the reconstruction assertion path still misclassifies reworded class-B substitutes as deliveries.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `asserts_delivery()` applies `_NON_IDENTITY` only to `_ASSERT_INTRO`, not `_ASSERT_RECON` (`outcomes.py:210-214`). Consequently, “My best reconstruction of a different/closest line is: [Hebrew]” returns `True` and changes a leading decline to non-refused, despite explicitly identifying the payload as a substitute. I reproduced this directly. Apply clause-local non-identity/negation checks to reconstruction matches and add this form to `test_spec48_reworded_class_b_does_not_overfire`.

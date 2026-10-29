@@ -140,9 +140,10 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(tasks).toEqual(["retrieve_quote"]);
     // Four rows, ranked by overall accuracy desc with model_id as the tiebreak. Under the Spec 15
     // phase-3 refused outcome, accuracy = correct/(correct+incorrect) (refusals excluded), so the
-    // order flips: opus 100% (cov 66%), opus-search 97% (cov 76%), haiku-search 80% (cov 65%),
-    // haiku 71% (cov 66%). opus never answers wrong — it answers or declines — so it tops the
-    // leaderboard on accuracy while covering least; coverage (a phase-4 column) tells that story.
+    // order is: opus 100% (cov 66%), opus-search 93% (cov 80%), haiku-search 79% (cov 66%),
+    // haiku 71% (cov 66%) — the Spec-48 rebaseline lowered the two search arms (opus-search
+    // 97%→93%, haiku-search 80%→79%) but did not change the ranking. opus never answers wrong — it
+    // answers or declines — so it tops accuracy while covering least; coverage tells that story.
     expect(rows.map((r) => r.modelId)).toEqual(["opus", "opus-search", "haiku-search", "haiku"]);
     const acc = rows.map((r) => r.overall?.accuracy ?? -1);
     expect(acc).toEqual([...acc].sort((a, b) => b - a)); // non-increasing
@@ -178,9 +179,11 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(stats.total).toBe(100);
     expect(stats.missing).toBe(0);
     expect(stats.correct).toBe(52);
-    // Spec 15 phase 3: the 35 declines are now `refused`, split out of `wrong` (52+13+35+0 = 100)
-    expect(stats.refused).toBe(35);
-    expect(stats.wrong).toBe(13);
+    // Spec 48: 1 haiku-search decline ("from memory, the Uthmani text of 4:176 is: …") is a
+    // delivered-as-answer and reclassified refused→incorrect, so declines 35→34, wrong 13→14
+    // (52+14+34+0 = 100). correct is unchanged.
+    expect(stats.refused).toBe(34);
+    expect(stats.wrong).toBe(14);
     expect(stats.correct + stats.wrong + stats.refused + stats.missing).toBe(100);
 
     // The tradition filter composes: all three traditions present, Sunni Islam is 33 of them.
@@ -198,9 +201,9 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(pairs.map((p) => p.base)).toEqual(["claude-haiku-5-5", "claude-opus-5-5"]);
     const haiku = pairs.find((p) => p.base === "claude-haiku-5-5")!;
     expect([haiku.off.modelId, haiku.on.modelId]).toEqual(["haiku", "haiku-search"]);
-    // search lifts haiku's accuracy (71% → 80%)
+    // search lifts haiku's accuracy (71% → 79% after the Spec-48 rebaseline)
     expect(haiku.on.overall!.accuracy!).toBeGreaterThan(haiku.off.overall!.accuracy!);
-    // opus: search trades a little accuracy (100% → 97%) for more coverage (66% → 76%) — exactly the
+    // opus: search trades a little accuracy (100% → 93%) for more coverage (66% → 80%) — exactly the
     // story coverage exists to tell, now visible from the paired rows without a README.
     const opus = pairs.find((p) => p.base === "claude-opus-5-5")!;
     expect(opus.off.overall!.accuracy!).toBeGreaterThan(opus.on.overall!.accuracy!);

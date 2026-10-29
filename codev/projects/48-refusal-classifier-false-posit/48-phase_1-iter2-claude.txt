@@ -1,0 +1,46 @@
+I'll review the implementation by reading the actual files.Now let me read the tests and iteration-2 context.Rebaseline independently verified exact. Now the test suite and probes of the new `_NON_IDENTITY` guard.Found a likely break outside the pipelines gate. Let me verify it precisely by reading the viewer's loader and stats code.I verified the rebaseline independently and probed the rule's boundaries. I ran only read-only commands and made no edits to the tree.
+
+## What I verified as correct
+
+**The rebaseline is exact.** I recomputed the projections from the pre-fix commit (`70494fd`) and diffed cell-by-cell against the regenerated `runs/tutorial-2026-10-11/scores.jsonl`:
+
+- pre-change outcome SHA `99a724e1…` and correct SHA `de342249…` reproduce **exactly** the constants frozen in `test_refusal_rebaseline.py:42-43`;
+- **5** outcome moves, all `refused → incorrect`, and the set is exactly `FLIP_SET`;
+- **0** `correct` moves, **0** per-cell `(exact, normalized, token_f1)` moves, **0** moves in any other metric field;
+- `summary.json`: `panel`, `usage`, `generated_at` byte-identical; every moved leaf is in the two search arms / Judaism+Sunni-Islam cells, arithmetically consistent (opus-search 74/2/24 → 74/6/20, haiku-search 52/13/35 → 52/14/34).
+
+**Iteration-1's blocking fix holds.** All three reworded class-B probes (`closest line … is:`, `opening text of the daf is:`, `preceding passage reads:`) now return `asserts_delivery=False` / `refused=True`; all 5 A cells still read as deliveries; 6 B cells + both anchors stay refused. Suite: **586 passed, 2 skipped** via `bash .codev/checks/test.sh`. Spec-15 constants re-pinned consistently with `summary.json`.
+
+## Blocking: the rebaseline breaks the viewer suite, and the dispatcher can't see it
+
+`apps/viewer/src/local/tutorialRun.test.ts` loads the **real committed** `runs/tutorial-2026-10-11` (not a fixture — `tutorialDir` at line 22, guarded only on `summary.json` existing, so it does not skip) and hard-pins the pre-rebaseline haiku-search split:
+
+```
+180  expect(stats.correct).toBe(52);     // still true
+182  expect(stats.refused).toBe(35);     // committed evidence is now 34
+183  expect(stats.wrong).toBe(13);       // committed evidence is now 14
+```
+
+`localResults.ts:325` sets `refused: s.metrics.outcome === "refused"`, and `explorer.ts:89-92` counts `wrong` as the not-correct/not-refused/not-missing remainder. Counting the regenerated `scores.jsonl` gives haiku-search = correct 52 / incorrect 14 / **refused 34**. So those two assertions fail.
+
+This is invisible to your gate by construction: `.codev/checks/test.sh` maps `runs/**` to the **pipelines lane only**, so a runs-only rebaseline never runs `pnpm -C apps/viewer test` — exactly the multi-app dispatcher trap in `lessons-critical.md`. I could not execute vitest to confirm (`apps/viewer/node_modules` is absent, and installing would mutate your tree), but the read-through is decisive: there is no indirection between `metrics.outcome` and `stats.refused`.
+
+Fix: re-pin 182-183 to 34/14 with a Spec-48 comment, and refresh the stale prose at lines 143 (`opus-search 97% cov 76%, haiku-search 80% cov 65%`), 181, and 199-201. Worth considering as the durable fix: map `runs/**` to both lanes in the dispatcher (cost: pipeline builders then need the pnpm toolchain — your call). `realRun.test.ts` reads only `first-run`, which is byte-identical, and `LeaderboardTable.test.tsx:109` is a synthetic fixture — both unaffected.
+
+## Non-blocking
+
+1. **Residual softness in the over-fire direction.** A B-shaped answer whose identity disclaimer sits in a *separate sentence* still reads as A: `"I couldn't find the exact segment. The text I located reads: «he». I cannot say whether this is segment 19."` → `asserts_delivery=True`. This is intrinsic to the plan's locked assertion-only form (A-cell `d4c3bda0b400` disclaims the segment in its own separate clause), so I'm not asking you to re-litigate it — but since #52 builds on `asserts_delivery`, it belongs in the review's limitations alongside the Latin-script note.
+2. **`_NON_IDENTITY` strands plausible A shapes.** `"the opening line of Psalm 1 is: «he»"`, `"From memory, the verse begins: «he»"`, `"My best reconstruction of the following verse is: «he»"` all → refused. Spec-sanctioned fallback and no committed cell is affected, but `opening|begins|following|other` can legitimately sit inside a genuine identity assertion. One line in the LIMITATION block would record it.
+3. **Moved aggregate means not in the surfaced numbers.** `summary.json` also moved `opus-search/retrieve_quote` `token_f1` 0.9098→0.8758, `normalized` 0.8684→0.825, `exact` 0.4474→0.425, `contains_reference` 0.9737→0.925 (and haiku-search likewise) — correct, since means are over answered cells and the per-cell SHAs are unchanged, but these are paper-citable figures that only accuracy/coverage/refused were surfaced for. Add them to the Phase-2 enumeration.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Rule and rebaseline are independently verified exact and the iteration-1 fix holds, but the regenerated tutorial evidence breaks two hard-pinned assertions in the viewer's committed-run test, which the runs/**→pipelines dispatcher mapping hides.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `apps/viewer/src/local/tutorialRun.test.ts:182-183` asserts haiku-search `refused=35`/`wrong=13` against the committed tutorial run, which the rebaseline moved to 34/14 — that suite is now red, and `.codev/checks/test.sh` maps `runs/**` to the pipelines lane only, so the gate never runs it. Re-pin the numbers (plus stale comments at 143/181/199-201); consider mapping `runs/**` to both lanes.
+- Non-blocking: a class-B answer whose identity disclaimer sits in a separate sentence still reads as a delivery (intrinsic to the locked assertion-only rule — document for #52, don't re-litigate).
+- Non-blocking: `_NON_IDENTITY` (`opening|begins|following|other`) strands plausible genuine deliveries into `refused`; spec-sanctioned conservatism, worth recording in the module LIMITATION block.
+- Non-blocking: moved `summary.json` similarity/containment means (opus-search `token_f1` 0.9098→0.8758, `normalized` 0.8684→0.825, `contains_reference` 0.9737→0.925) should be added to the numbers surfaced to the architect.
