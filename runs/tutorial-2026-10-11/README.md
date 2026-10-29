@@ -41,17 +41,24 @@ excluded from accuracy rather than counted wrong. So each model has two headline
 | model        | accuracy | coverage | correct | incorrect | refused |
 |--------------|----------|----------|---------|-----------|---------|
 | opus         | 100%     | 66%      | 66      | 0         | 34      |
-| opus-search  | 97%      | 76%      | 74      | 2         | 24      |
-| haiku-search | 80%      | 65%      | 52      | 13        | 35      |
+| opus-search  | 92%      | 80%      | 74      | 6         | 20      |
+| haiku-search | 79%      | 66%      | 52      | 14        | 34      |
 | haiku        | 71%      | 66%      | 47      | 19        | 34      |
+
+(Numbers reflect the **Spec 48** refusal-classifier rebaseline: five leading-decline cells that
+positively assert a delivered original-script payload — four opus-search Talmud reconstructions and
+one haiku-search Qur'an reconstruction — moved `refused → incorrect`; `correct` is unchanged. The
+pre-fix figures were opus-search 97% / cov 76% / 74·2·24 and haiku-search 80% / cov 65% / 52·13·35.)
 
 **Read together, accuracy and coverage tell the search story a single number would hide.**
 `opus` answers only 66% of the time but is never wrong when it does — reported as accuracy
-alone, its "100%" outranks opus-search's 97% while concealing that it stayed silent on a
-third of the roster. Coverage is why that reading is wrong: **opus-search answers more (76%)
-at near-perfect accuracy (97%)** — web search converts refusals into correct retrievals
-rather than lifting a strict-match rate. `haiku`: web search lifts accuracy **71% → 80%**
-while holding coverage (~66%).
+alone, its "100%" outranks opus-search's 92% while concealing that it stayed silent on a
+third of the roster. Coverage is why that reading is wrong: **opus-search answers more (80%)
+at 92% accuracy** — web search mostly converts refusals into correct retrievals rather than
+lifting a strict-match rate, though under the Spec 48 rule four of the newly-answered Talmud
+cells are confident deliveries that are *wrong* (now scored `incorrect`, not hidden as `refused`),
+which is why accuracy is 92% and not the 97% an earlier refusal rule reported. `haiku`: web search
+lifts accuracy **71% → 79%** while holding coverage (~66%).
 
 Two per-tradition cuts show where the retrieval comes from (contains-exact counts, unchanged
 from the original analysis):
@@ -59,7 +66,9 @@ from the original analysis):
 - **Talmud (Aramaic).** opus-search contains the exact reference in **8 of 34** cells (~24%)
   vs. **0 of 34** for opus-off — web search lifted Aramaic Talmud retrieval from *nothing*.
   (opus-off **refused all 34** Talmud cells rather than guess — Judaism accuracy `null`, coverage
-  0% — so search converted a total abstention into 8 correct retrievals at 29% coverage.)
+  0%.) Under the Spec 48 refusal rule opus-search's Talmud cells are **8 correct / 6 incorrect /
+  20 refused** — 57% accuracy at 41% coverage: search converted a total abstention into 8 correct
+  retrievals *plus* 6 confident-but-wrong deliveries that the pre-fix rule had hidden as refusals.
 - **Qur'an.** haiku-search contains the exact reference in **24 of 33** cells vs. **19 of 33**
   for haiku-off — more correct retrieval with search. The remaining Qur'an misses are
   **orthographic/encoding variants** (the correct āyah in a different Uthmani encoding that
@@ -81,14 +90,21 @@ headline, so the lift above is now in the accuracy column rather than hidden ben
   verse is the model's **secondary** guess; containment counts it correct (~1 pt on
   opus-search's accuracy). `cite_passage`/`identify_source` have an anti-hedge rule;
   text-retrieval does not.
-- **One refused cell is a from-memory reconstruction, not a clean decline.** haiku-search
+- **A from-memory reconstruction is now scored, not excluded (Spec 48).** haiku-search
   `retrieve_quote-e2d74279aaf0` declined ("I couldn't retrieve the full QUL text to verify")
-  then offered a from-memory Uthmani reconstruction (`token_f1` 0.68 — the only refused cell
-  above 0.5 across 268). Under the deterministic refusal rule it is `refused` (excluded from
-  accuracy); counting it incorrect would put haiku-search at 78.8% rather than 80%. The rule
-  is well-calibrated (**267 of the 268** refused cells across both runs sit below `token_f1` 0.3 —
-  this is the only one above), but it is a judgment call worth naming so the refusal exclusion isn't
-  read as perfectly clean.
+  then delivered a from-memory Uthmani reconstruction *as its answer* ("From memory, the Uthmani
+  text of 4:176 is: …"). The pre-fix deterministic rule read the opening decline and marked the
+  cell `refused`; **Spec 48** reclassifies a leading-decline answer that positively asserts a
+  delivered original-script payload as a delivery (class A), so this cell — and four analogous
+  opus-search Talmud deliveries — are now scored (`incorrect` here, since the reconstruction is not
+  the exact text). This is what moves haiku-search to 79% (from the 80% the pre-fix rule reported)
+  and opus-search to 92%. **After the reclassification the refusal set is clean: all 122 refused
+  cells in this run sit below `token_f1` 0.13** — no delivered-but-refused outlier remains (the
+  pre-fix set had exactly this one, at `token_f1` 0.68). The Jev cross-check (`jev_agreement.{json,md}`)
+  was computed against the *pre-fix* classifier and is retained as historical evidence; its
+  deterministic-refusal column and its "11 disagreements" figure are superseded by this rebaseline
+  (post-fix: 6 disagreements, agreement 0.985) — read refusal counts from `summary.json`, not from
+  `jev_agreement`.
 
 ## Copyright / licensing
 
