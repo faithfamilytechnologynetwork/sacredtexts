@@ -127,16 +127,26 @@ ANCHOR_CELLS = [
     ("opus-search", "retrieve_quote-f143cc3f6c63"),
 ]
 
-# Whole-corpus blast-radius gate: (run_dir, scores_file, answers_file) in each run's real on-disk
-# layout. Post-rebaseline invariant: NO cell committed as `refused` may assert delivery (else the
-# classifier is over-calling refused on an answer it now reads as a delivery). Expected == empty for
-# every run, because the committed scores already reflect the Spec-48 flips.
-SWEEP = [
-    ("tutorial-2026-10-11", "scores.jsonl", "answers.jsonl"),
-    ("first-run-2026-10-11", "scores.jsonl", "answers.jsonl"),
-    ("original-2026-10-21", "scores.jsonl", "answers.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "scores-en.jsonl", "answers-en.jsonl"),
-    ("exp-arabic-prompts-2026-10-29", "scores-ar.jsonl", "answers-ar.jsonl"),
+# Whole-corpus gate — each run's real on-disk layout as (run, scores, answers, questions). The
+# strong check (test_spec48_classifier_reproduces_committed_refusals) recomputes the refusal OUTCOME
+# from each answer + its expected text via the real classify_refusal and asserts it reproduces the
+# committed refused set EXACTLY — catching both over- and under-firing on every run, incl. the Arabic
+# run and complete_unit (which the byte re-score guards do not isolate on refusal).
+TRIPLES = [
+    ("tutorial-2026-10-11", "scores.jsonl", "answers.jsonl", "questions.jsonl"),
+    ("first-run-2026-10-11", "scores.jsonl", "answers.jsonl", "questions.jsonl"),
+    ("original-2026-10-21", "scores.jsonl", "answers.jsonl", "questions.jsonl"),
+    ("exp-arabic-prompts-2026-10-29", "scores-en.jsonl", "answers-en.jsonl", "questions-en.jsonl"),
+    ("exp-arabic-prompts-2026-10-29", "scores-ar.jsonl", "answers-ar.jsonl", "questions-ar.jsonl"),
+]
+# Every committed answer file (incl. the Arabic normalized fold) for the lighter over-fire sweep.
+ANSWER_FILES = [
+    ("tutorial-2026-10-11", "answers.jsonl"),
+    ("first-run-2026-10-11", "answers.jsonl"),
+    ("original-2026-10-21", "answers.jsonl"),
+    ("exp-arabic-prompts-2026-10-29", "answers-en.jsonl"),
+    ("exp-arabic-prompts-2026-10-29", "answers-ar.jsonl"),
+    ("exp-arabic-prompts-2026-10-29", "answers-ar-normalized.jsonl"),
 ]
 
 
@@ -151,6 +161,20 @@ def _load_answers(run_dir: Path, fname: str = "answers.jsonl") -> dict:
             continue
         r = json.loads(line)
         out[(r.get("model_id"), r.get("question_id"))] = r.get("answer") or ""
+    return out
+
+
+def _load_expected_text(run_dir: Path, fname: str) -> dict:
+    """Map question_id -> expected reference text from a run's questions file (read-only)."""
+    path = run_dir / fname
+    if not path.exists():
+        pytest.skip(f"{path} not present")
+    out = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        out[r.get("id")] = (r.get("expected") or {}).get("text") or ""
     return out
 
 
@@ -178,50 +202,77 @@ def test_spec48_anti_overfit_anchor_matches_its_twins():
         assert classify_refusal(ans[key], "retrieve_quote", {"text": ""}) is True, key
 
 
-def test_spec48_from_memory_under_a_decline_is_not_a_delivery():
-    # The blast-radius footgun: a bare "from memory" is NOT an assertion. These are genuine declines
-    # drawn from the committed runs; the negation-aware rule must keep them refused.
-    found = 0
-    for run, _sf, af in SWEEP:
-        answers = _load_answers(REPO_ROOT / "runs" / run, af)
-        for (_mid, _qid), ans in answers.items():
-            low = ans.lower()
-            if "from memory" in low and ("can't" in low or "cannot" in low or "couldn't" in low) \
-                    and leading_decline(ans):
-                # only count cells whose reference is not delivered verbatim (true declines)
-                if asserts_delivery(ans) is False:
-                    found += 1
-    assert found >= 3, f"expected >=3 'from memory' declines kept refused, saw {found}"
+def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
+    # The blast-radius footgun: "from memory" appears in ~147 currently-refused cells, almost all
+    # genuine declines ("I can't reliably reproduce ... from memory") — NOT the A-cell positive frame
+    # ("From memory, the text of 4:176 IS:", which is now `incorrect`, not `refused`). Every
+    # COMMITTED-REFUSED cell containing "from memory" must stay a non-delivery; assert the over-fire
+    # complement is empty (a lower bound would let 144 of 147 over-fire silently).
+    candidates, overfired = 0, []
+    for run, sfile, afile, _q in TRIPLES:
+        run_dir = REPO_ROOT / "runs" / run
+        spath = run_dir / sfile
+        if not spath.exists():
+            continue
+        refused = {
+            (r["model_id"], r["question_id"])
+            for r in (json.loads(l) for l in spath.read_text(encoding="utf-8").splitlines() if l.strip())
+            if r.get("task") in _TEXT_RETRIEVAL and r.get("metrics", {}).get("outcome") == "refused"
+        }
+        answers = _load_answers(run_dir, afile)
+        for key in refused:
+            if "from memory" in answers.get(key, "").lower():
+                candidates += 1
+                if asserts_delivery(answers[key]) is not False:
+                    overfired.append((run, key))
+    assert candidates >= 3, f"expected >=3 committed-refused 'from memory' cells, saw {candidates}"
+    assert overfired == [], f"committed refusals wrongly read as deliveries: {overfired}"
 
 
 def test_spec48_edge_pointer_only_and_citation_echo_stay_refused():
     he = "בראשית"  # a Hebrew word, so a payload exists on the page
-    # hedge + pointer only (no assertion that the delivered text IS the passage)
-    assert asserts_delivery(
-        f"I couldn't find the exact line. You can see it at sefaria.org/X. The daf begins with {he}."
-    ) is False
-    # hedge + citation echo, no payload asserted as the answer
-    assert asserts_delivery("I couldn't find Genesis 1:1. I can't give you that verse.") is False
+    EXP = {"text": "some unrelated reference"}
+    # hedge + pointer only (no assertion that the delivered text IS the passage) -> refused
+    ans = f"I couldn't find the exact line. You can see it at sefaria.org/X. The daf begins with {he}."
+    assert asserts_delivery(ans) is False
+    assert classify_refusal(ans, "retrieve_quote", EXP) is True
+    # hedge + citation echo, no payload asserted as the answer -> refused
+    ans2 = "I couldn't find Genesis 1:1. I can't give you that verse."
+    assert asserts_delivery(ans2) is False
+    assert classify_refusal(ans2, "retrieve_quote", EXP) is True
 
 
-@pytest.mark.parametrize("run,sfile,afile", SWEEP)
-def test_spec48_whole_corpus_no_committed_refusal_asserts_delivery(run, sfile, afile):
-    # THE GATE (durable, post-rebaseline form): across every run and every _TEXT_RETRIEVAL task, NO
-    # cell committed as `refused` may assert delivery. If one does, the classifier is over-calling
-    # `refused` on an answer it now reads as a delivery (the "from memory" / cue-over-fire footgun),
-    # and the committed evidence has drifted from the rule. Catches drift on ALL four runs, including
-    # the Arabic run and `complete_unit`, which the byte-for-byte re-score guards alone would miss.
+@pytest.mark.parametrize("run,sfile,afile,qfile", TRIPLES)
+def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfile):
+    # THE GATE: recompute the refusal OUTCOME from each answer + its expected text via the real
+    # classify_refusal (gated on `correct`, exactly as score._with_outcome does) and assert it
+    # reproduces the committed `refused` set for every _TEXT_RETRIEVAL cell. This catches BOTH
+    # over-firing (a committed answer now read as a delivery) and under-firing (a new refusal) — the
+    # strong form of the plan's "global refused-delta == flip set" gate, now that the committed
+    # scores are post-rebaseline. Covers the Arabic run and complete_unit, which the byte re-score
+    # guards do not isolate on the refusal dimension.
     run_dir = REPO_ROOT / "runs" / run
     spath = run_dir / sfile
     if not spath.exists():
         pytest.skip(f"{spath} not present")
-    refused = set()
+    answers = _load_answers(run_dir, afile)
+    expected = _load_expected_text(run_dir, qfile)
+    committed_refused, predicted_refused = set(), set()
     for line in spath.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         r = json.loads(line)
-        if r.get("task") in _TEXT_RETRIEVAL and r.get("metrics", {}).get("outcome") == "refused":
-            refused.add((r["model_id"], r["question_id"]))
-    answers = _load_answers(run_dir, afile)
-    asserting = {k for k in refused if asserts_delivery(answers.get(k, ""))}
-    assert asserting == set(), f"{run}/{sfile}: committed refusals that assert delivery: {asserting}"
+        if r.get("task") not in _TEXT_RETRIEVAL:
+            continue
+        key = (r["model_id"], r["question_id"])
+        m = r["metrics"]
+        if m.get("outcome") == "refused":
+            committed_refused.add(key)
+        exp = {"text": expected.get(r["question_id"], "")}
+        # mirrors score._with_outcome: refused = classify_refusal(...) AND not correct
+        if classify_refusal(answers.get(key, ""), r["task"], exp) and not m.get("correct"):
+            predicted_refused.add(key)
+    assert predicted_refused == committed_refused, (
+        f"{run}/{sfile}: classifier refusal set drifted from committed — "
+        f"over: {predicted_refused - committed_refused}; under: {committed_refused - predicted_refused}"
+    )

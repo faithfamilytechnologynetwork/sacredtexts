@@ -42,6 +42,22 @@ The work splits into two phases along a hard seam:
   regenerate `original`'s paper-facing `facct.{json,md}`): the evidence-moving half, done once under
   the witnessed-rebaseline discipline with the moved numbers surfaced to the architect before commit.
 
+**Phase-boundary note (reconciled at implement, architect-approved 2026-10-29).** The hard seam
+above did **not** survive the global re-score guard: `test_tutorial_run`'s byte-for-byte
+`score_file` reproduction fails the instant the classifier moves an outcome, so a classifier-only
+commit cannot go green and the tutorial rebaseline is **inseparable** from the classifier change.
+Phase 1 therefore absorbed the atomic, witnessed **tutorial** rebaseline (regenerate
+`scores.jsonl`; surgically splice `summary.json`/`.md` with `panel`/`usage`/`generated_at` verbatim;
+add the non-circular oracle `test_refusal_rebaseline.py`; re-pin the Spec-15 constants). This was
+surfaced to and approved by the architect before any write. Crucially, the whole-corpus sweep proved
+**only tutorial moves** — `first-run`/`original`/`exp-arabic` have **0 flips** and stay
+byte-identical, and `original`'s `facct.{json,md}` is therefore **untouched** (no regeneration
+needed). The committed tutorial `jev_agreement.{json,md}` are **deliberately left as historical
+pre-fix evidence** (architect condition, 2026-10-29), not regenerated. The residual **Phase 2** is
+thus narrowed to: the per-run enumeration + post-fix jev-agreement note in the review, and
+confirming the three byte-identical runs. `status.yaml` still lists two phases (only porch mutates
+it); this note records the actual split.
+
 Per-cell A/B dispositions are **locked here** (architect decision 2026-10-29; B stays refused):
 
 | disposition | cells (`retrieve_quote-…`, all `opus-search` unless noted) | why |

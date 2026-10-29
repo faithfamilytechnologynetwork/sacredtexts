@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The classifier logic is promising, but Phase 1’s required pre-rebaseline blast-radius gate was replaced with a weaker post-rebaseline check, and Phase 2 work was prematurely included.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `test_spec48_whole_corpus_no_committed_refusal_asserts_delivery` does not prove the required exact `refused_pre − refused_post` delta. It only examines already-committed refused rows and calls `asserts_delivery`, not `classify_refusal` with each cell’s expected text. It cannot detect newly introduced refusals or other classifier drift, and it omits `answers-ar-normalized.jsonl`.
+- Phase 1 explicitly requires no run evidence changes, but tutorial scores/summaries were regenerated and Phase 2’s oracle and constant re-pins were added while `status.yaml` still marks Phase 2 pending. Either restore the Phase 1 boundary or formally revise the plan/status and review the combined phase.
+- Edge tests for pointer-only and citation-echo answers assert only `asserts_delivery == False`; they should assert the required end behavior, `classify_refusal == True`.

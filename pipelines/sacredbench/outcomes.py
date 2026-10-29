@@ -119,9 +119,12 @@ _TEXT_RETRIEVAL = ("retrieve_quote", "complete_unit")
 # Target-script run (Hebrew, Arabic incl. presentation forms, Greek) — a delivered scripture payload.
 # A positive delivery must introduce actual original-script text (conservative: an English-only
 # gloss is not a delivery), which is also what keeps delivery *volume* from being the signal.
+# Letter ranges only; the Arabic presentation-forms-B range stops at U+FEFE so the BOM (U+FEFF) is
+# excluded, and the Hebrew range starts at the alef (U+05D0) so lone cantillation/punctuation marks
+# do not read as a "payload".
 _SCRIPT = (
-    "֐-׿؀-ۿݐ-ݿࢠ-ࣿ"
-    "יִ-﷿ﹰ-﻿Ͱ-Ͽἀ-῿"
+    "א-תׯ-״ؠ-ۿݐ-ݿࢠ-ࣿ"
+    "יִ-﷿ﹰ-﻾Ͱ-Ͽἀ-῿"
 )
 _SCRIPT_CHAR = re.compile(f"[{_SCRIPT}]")
 
@@ -184,7 +187,9 @@ def asserts_delivery(answer: str) -> bool:
         if not _NEG.search(m.group("clause")):  # negation in the assertion's own clause disqualifies
             return True
     for m in _ASSERT_RECON.finditer(answer):
-        if not _NEG.search(answer[max(0, m.start() - 24) : m.start()]):
+        # require the reconstruction claim to be followed by an actual payload (script after the
+        # claim), and not be negated in its immediate lead-in
+        if _SCRIPT_CHAR.search(answer, m.end()) and not _NEG.search(answer[max(0, m.start() - 24) : m.start()]):
             return True
     return False
 
