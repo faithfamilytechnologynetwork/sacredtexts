@@ -18,8 +18,8 @@ gates:
     status: pending
   verify-approval:
     status: pending
-iteration: 1
-build_complete: true
+iteration: 2
+build_complete: false
 history:
   - iteration: 1
     build_output: ''
@@ -68,8 +68,20 @@ history:
         verdict: REQUEST_CHANGES
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter3-claude.txt
+  - iteration: 1
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-claude.txt
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-29T22:49:15.520Z'
+updated_at: '2026-10-29T22:58:43.259Z'
 force_advanced:
   phase: phase_1
   iteration: 3
