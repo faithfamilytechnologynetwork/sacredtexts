@@ -177,3 +177,16 @@ contains_reference 0.9737→0.925 (haiku-search likewise).
 Phase_2 (residual, boundary collapsed into phase_1): per-run enumeration + post-fix jev note +
 moved means → REVIEW doc; confirm byte-identical runs. porch emitted a context-refresh at the
 phase_1→phase_2 boundary.
+
+### Phase_2 re-entry + confirmation (2026-10-29, post-refresh)
+
+Context refreshed; re-oriented from .builder-state.md + this thread. Confirmed phase_2's evidence
+work is fully satisfied by committed phase_1 work (boundary collapse, architect-approved):
+- Working tree clean; `git status --porcelain runs/` empty → committed runs byte-identical to HEAD.
+- Oracle present: `test_refusal_rebaseline.py` (2 passed). Spec-15 re-pin present:
+  `test_contains_reference_rebaseline.py` (13 passed). `test_facct.py` green.
+- `jev_agreement.{json,md}` untouched (standing order — historical pre-fix evidence).
+- `outcomes.py` module docstring already documents the A/B assertion rule + deliberate Jev divergence.
+- Both lanes GREEN via dispatcher: apps/viewer 187 passed (19 files); pipelines 586 passed, 2 skipped.
+Nothing new to build in phase_2. Signalling PHASE_COMPLETE (`porch done 48`); 2-way consult next,
+then REVIEW doc.
