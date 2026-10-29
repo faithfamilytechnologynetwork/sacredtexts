@@ -1,0 +1,63 @@
+# Provider-native search experiment panel (#54, 2026-10-29).
+#
+# Three models, each run BOTH WAYS — search-off and search-on — on each vendor's NATIVE
+# endpoint (no base_url), so the ONLY delta across an arm pair is search:
+#   - anthropic  claude-sonnet-5.5          -> Anthropic server-side web_search
+#   - openai     <current OpenAI model>     -> Responses-API native web_search
+#   - gemini     <current Gemini model>     -> Google-Search grounding
+#
+# 6 entries x 56 questions = 336 cells. Temperature pinned to 0 (a controlled A/B; it
+# joins each entry's panel fingerprint). max_tokens 4096 is headroom: on the search arms
+# the answer, the search calls, and citation/grounding blocks share the budget, and an
+# incomplete turn fails loud rather than committing a truncated quote.
+#
+# NATIVE ONLY: web_search here requires each provider's own endpoint. A third-party
+# OpenAI-compatible host (OpenRouter :online / Exa) is rejected at config load — #54
+# considers it unrepresentative of the real product search experience.
+#
+# UNPRICED by design: web/grounding search is billed per request (not in in/out tokens),
+# so price_in/price_out are omitted and `score` reports token totals only, never a cost.
+#
+# Keys come from the ENVIRONMENT only (ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY).
+# Model slugs marked (confirm) are finalised when keys are provisioned — the exact current
+# slug may differ; the experiment design is slug-independent.
+concurrency: 4
+models:
+  # --- Anthropic (Claude) ---
+  - id: sonnet-search
+    provider: anthropic
+    model: claude-sonnet-5-5
+    max_tokens: 4096
+    temperature: 0
+    tools: [web_search]
+  - id: sonnet
+    provider: anthropic
+    model: claude-sonnet-5-5
+    max_tokens: 4096
+    temperature: 0
+
+  # --- OpenAI (ChatGPT) — native Responses-API web_search ---
+  - id: gpt-search
+    provider: openai
+    model: gpt-6.1              # (confirm) a current OpenAI model with Responses web_search
+    max_tokens: 4096
+    temperature: 0
+    tools: [web_search]
+  - id: gpt
+    provider: openai
+    model: gpt-6.1              # (confirm) same model, search off
+    max_tokens: 4096
+    temperature: 0
+
+  # --- Google (Gemini) — Google-Search grounding ---
+  - id: gemini-search
+    provider: gemini
+    model: gemini-3.8-flash     # (confirm) argon or 3.8-flash per #54
+    max_tokens: 4096
+    temperature: 0
+    tools: [web_search]
+  - id: gemini
+    provider: gemini
+    model: gemini-3.8-flash     # (confirm) same model, search off
+    max_tokens: 4096
+    temperature: 0
