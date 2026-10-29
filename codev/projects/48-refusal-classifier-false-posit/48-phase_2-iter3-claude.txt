@@ -1,0 +1,55 @@
+I'll start by locating the worktree and reading the key files.Iteration 3. Both prior REQUEST_CHANGES were doc-precision issues. Let me verify the fixes landed and re-verify the rebaseline integrity.The oracle looks sound. Let me independently verify the frozen pre-change SHAs against the merge base, and confirm the iteration 2 doc fixes landed.Both frozen SHAs reproduce exactly from the merge base; exactly 5 outcome-only moves. Now the other runs and the summary splice.Splice preserved `panel`/`usage`/`generated_at`/`evaluators` verbatim. Now verifying the summary arithmetic is exactly consistent with 5 flips, and checking the iteration-2 doc fixes.Summary arithmetic exact and matches the plan's contingent targets precisely. Now the iteration-2 doc fixes.Both iteration-2 fixes landed correctly. Let me verify the README's new quantitative claims (122 refused / token_f1 < 0.13, and post-fix Jev 6 disagreements / 0.985).122 refused, max token_f1 0.1294 — the README claim is exact. Now the post-fix Jev cross-check.Exact match: agreement 0.985, 6 disagreements — all precisely the plan's locked B set, none below 0.25. Now the Spec 15 re-pin and the anti-overfit anchors.All anchors and B cells remain `refused`; re-pinned constants match my independent computation exactly. Now running both lanes.Both lanes green, matching the builder's claims. Let me check the viewer test change and the copyright audit gate.I changed directory earlier. Let me re-run from the worktree root.Audit gate passes. Let me verify the one remaining disputed item — the viewer's 93% vs summary.md's 92%.Confirmed — the viewer uses `Math.round`, summary.md truncates; the builder's dispute is valid. Let me check the remaining Phase-2 deliverables: architect surfacing and the review doc.The thread is thorough and honest. Two final checks: the README's Qur'an attribution, and that the committed scores are actually reproducible from the current code.Attribution exact: 4 Talmud + 1 Qur'an 4:176. Now the reproduction guards.All reproduction guards pass. Let me do one independent sweep for any *remaining* stale paper-facing numbers — the class of issue iteration 1 found.Tree clean — my review was read-only. I have everything I need.
+
+## Review: Phase 2 — Sanctioned rebaseline, projection-SHA oracle, Spec 15 re-pin
+
+I verified the rebaseline independently rather than trusting the builder's summary. Everything reconciles.
+
+### Rebaseline exactness (recomputed from merge base `9e4fbdf`)
+
+Both frozen constants in `test_refusal_rebaseline.py` reproduce byte-for-byte from the pre-change scores:
+
+| projection | pinned | recomputed |
+|---|---|---|
+| `PRECHANGE_OUTCOME_SHA256` | `99a724e1…` | `99a724e1…` ✅ |
+| `PRECHANGE_CORRECT_SHA256` | `de342249…` | `de342249…` ✅ |
+| similarity `(exact, normalized, token_f1)` | unchanged | pre == post ✅ |
+
+A full field-by-field diff of all 400 cells shows **exactly 5 changed, `outcome` only**, `refused → incorrect` — precisely the registered flip set, no compensating moves. The three other runs are untouched (no file in `runs/` outside `tutorial-2026-10-11` appears in the diff), and `answers*`/`questions*`/`judgments`/`jev_agreement`/`analyze.py`/`facct` are all byte-unchanged.
+
+**The oracle is genuinely non-circular.** It freezes pre-change SHAs captured before regeneration and asserts that *un*-applying the flip reproduces them — which the post-change re-pin of `REFUSED_SET_SHA256` cannot do. The test file says so explicitly rather than overstating its own guard.
+
+### Summary splice and arithmetic
+
+`panel`, `usage`, `generated_at`, `evaluators` are verbatim-identical. Only 8 metric leaves moved; every one is `refused−n / incorrect+n / correct+0`, and I recomputed `accuracy = c/(c+i)` and `coverage = (c+i)/n` for all 32 post-change leaves — **zero arithmetic errors**. The numbers hit the plan's contingent targets exactly (opus-search `0.9737→0.9250`, cov `0.76→0.80`, refused `24→20`; haiku-search `0.80→0.7879`, cov `0.65→0.66`, refused `35→34`), and the re-pinned Spec 15 constants match my independent computation.
+
+### Success criteria met
+
+Recomputing the Jev cross-check from `judgments.jsonl` against the new scores: **agreement 0.985, 6 disagreements, judge_only 0**. The six survivors are *precisely* the plan's locked B set, with `refusal_p` 0.36–0.49 — **none below 0.25, all inside [0.25, 0.75]**. Both anti-overfit anchors (`42f510ea6c7d` 0.58, `f143cc3f6c63` 0.68) remain `refused` alongside their textual twins, so the rule is not hand-fitted. The README's calibration claim is exact: 122 refused cells, max `token_f1` **0.1294**.
+
+### Prior iterations' findings are resolved
+
+Both earlier REQUEST_CHANGES were doc-precision issues in the builder's own sync, and both fixes are correct:
+
+- **Talmud bullet** now reads "6 wrong deliveries, of which Spec 48 newly exposed **4** … (the other 2 were already scored `incorrect`)" — confirmed against the data (Judaism `incorrect` 2→6, 4 cells moved).
+- **lessons-learned** now frames the assertion as an escape ("refused … **unless** a positive delivery assertion fires"), not an alternative detection condition.
+- Attribution verified from `questions.jsonl`: 4 Talmud (Judaism, opus-search) + 1 Qur'an 4:176 (Sunni Islam, haiku-search).
+
+I also independently confirmed the **viewer 93% vs summary.md 92% dispute is a true false positive**: `LeaderboardTable.tsx:18` uses `Math.round(0.925*100) = 93` while Python truncates `int(92.5) = 92`. Pre-existing convention difference, newly *visible* only because the value landed on a `.5` boundary. The builder was right to surface rather than "fix" it into disagreeing with the renderer it documents.
+
+### Verification
+Both lanes green, matching the claims: pipelines **586 passed / 2 skipped**, viewer **187 passed / 19 files**. Audit gate passes (14 tests). All regenerate-then-compare guards pass, so the committed evidence is genuinely reproducible from the current classifier. Tracked tree clean.
+
+### Non-blocking notes
+
+1. `codev/reviews/48-*.md` doesn't exist yet — the per-run moved-cell enumeration is a genuine review-phase artifact and the numbers are banked in the thread. Not a Phase-2 blocker (both prior reviewers agreed).
+2. **Optional:** `codev/reviews/15-scoring-contract-contains-exac.md:22` still cites the illustrative "opus-search 97%/cov76%". It's outside this PR's file list and defensible as a historical record of Spec 15's review; the live hot-tier `lessons-learned.md` was correctly updated. Mentioning only so it's a conscious choice.
+3. The `test.sh` `runs/|texts/` → both-lanes mapping imposes the pnpm toolchain on a pipelines-only builder. Documented inline as accepted on this machine; worth confirming in CI/other environments.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2's rebaseline is independently verified exact — frozen SHAs reproduce from the merge base, 5 outcome-only moves, splice preserves provenance, Jev criterion met at 0.985/6 with no survivor below 0.25 — and both prior iterations' doc findings are correctly resolved.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None (blocking). Carry-forwards: review-doc enumeration is a review-phase deliverable; optional stale illustrative figure in the out-of-scope Spec 15 review doc; `test.sh` both-lanes mapping needs the pnpm toolchain for pipelines-only builders touching `runs/`.

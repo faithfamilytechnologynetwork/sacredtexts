@@ -13,7 +13,12 @@ provenance:
   fetch_date: "2026-10-28"
 notes: >-
   William Davidson Edition (Koren Noe / Steinsaltz). Internal license CC-BY-NC,
-  recorded in license_detail and mapped to the "open" enum.
+  recorded in license_detail and mapped to the "open" enum. Attribution per
+  Sefaria's credit guidance (Daniel Slate, working group, 2026-10-29):
+  Koren Publishers, Koren Noé Talmud, William Davidson digital edition
+  (https://www.sefaria.org/william-davidson-talmud), with commentary by
+  Rabbi Adin Even-Israel Steinsaltz, CC-BY-NC 4.0
+  (https://creativecommons.org/licenses/by-nc/4.0/).
 targets:
   - payload: Talmud Bavli/**/*- en -*.json
     converter: sefaria_talmud
@@ -23,7 +28,7 @@ targets:
     document_type: talmud
     tradition: [Judaism]
     license: open
-    license_detail: CC-BY-NC — Sefaria, William Davidson Edition (Koren Noe / Steinsaltz)
+    license_detail: CC-BY-NC 4.0 — Koren Publishers, Koren Noé Talmud, William Davidson digital edition (via Sefaria), commentary by Rabbi Adin Even-Israel Steinsaltz
     requested_as: ["the Talmud", "the Babylonian Talmud", "the Talmud Bavli", "the Gemara"]
     canonical_language: he
   # Pin the edition name in the glob: canonical Aramaic only. The one
@@ -38,6 +43,6 @@ targets:
     document_type: talmud
     tradition: [Judaism]
     license: open
-    license_detail: CC-BY-NC — Sefaria, William Davidson Edition (Koren Noe / Steinsaltz)
+    license_detail: CC-BY-NC 4.0 — Koren Publishers, Koren Noé Talmud, William Davidson digital edition (via Sefaria), commentary by Rabbi Adin Even-Israel Steinsaltz
     requested_as: ["the Talmud", "the Babylonian Talmud", "the Talmud Bavli", "the Gemara"]
     canonical_language: he

@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Rebaseline and prior fixes are sound, but reconstruction assertions remain vulnerable to negated class-B wording.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `asserts_delivery()` is not fully negation-aware as required. In `outcomes.py:216-223`, `_ASSERT_RECON` checks `_NEG` only in the 24 characters before the match, not within `m.group(0)`. Additionally, `_ASSERT_INTRO` can match a nested positive-looking fragment while ignoring its governing negation. For example, “I couldn't find it. … My best reconstruction of what is probably not the requested line is: בראשית” returns `asserts_delivery=True` and `classify_refusal=False`, incorrectly scoring a clear class-B disclaimer. Check negation across the complete reconstruction/assertion context and add this case to `test_spec48_reworded_class_b_does_not_overfire`.

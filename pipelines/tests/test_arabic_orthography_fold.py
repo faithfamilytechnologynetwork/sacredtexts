@@ -70,6 +70,10 @@ def test_fold_contains_credits_long_aa_either_spelling():
     assert fold_aware_contains("هذا", "هَٰذَا")               # defective
     assert fold_aware_contains("أتاكم", "أَتَىٰكُمْ")          # ىٰ digraph, plene
     assert fold_aware_contains("على", "عَلَىٰ")               # ىٰ digraph, word-final
+    # NFKD puts fatha (class 30) before the dagger (class 35); tatweel can sit there too.
+    assert fold_aware_contains("أتاكم", "أَتَىَٰكُمْ")
+    assert fold_aware_contains("أَتَىَٰكُمْ", "أتاكم")
+    assert fold_aware_contains("أتاكم", "أتىـٰكم")
 
 
 def test_fold_contains_credits_word_boundary_compound():

@@ -1,0 +1,54 @@
+I'll start by reading the key implementation files.Now the tests and the latest context file.Let me verify the architect approval for the phase-boundary change and check the Jev survivor criterion.Let me independently verify the spliced `summary.json` is consistent with the regenerated scores, and probe the rule adversarially.Now let me probe the rule adversarially (read-only import, no tree changes).I verified everything independently. Here is my review.
+
+## What I verified (not just read)
+
+**Rebaseline is exact.** Recomputed the pre/post projections from `git show <base>:runs/tutorial-2026-10-11/scores.jsonl`:
+- Pre-change outcome SHA `99a724e1…` and correct SHA `de342249…` reproduce **exactly** the values pinned in `test_refusal_rebaseline.py` — so the oracle is genuinely non-circular, not a post-hoc re-pin.
+- Full row-by-row metric diff over 400 cells: **exactly 5 diffs**, all `outcome: refused → incorrect`, all five the locked A set. Nothing else moved.
+- `correct` projection SHA identical pre↔post; `(exact, normalized, token_f1)` SHA identical (`ab970582…`).
+
+**Summary splice is sound.** I recomputed every aggregate from the regenerated `scores.jsonl` (per-model/task, per-tradition, and `_overall`): **12 buckets, 0 inconsistencies**. `panel`, `usage`, `evaluators`, `generated_at` are byte-identical to base. Only 3 tutorial files changed under `runs/`; `first-run`/`original`/`exp-arabic` byte-identical, `facct.*` untouched — as the plan's phase-boundary note claims.
+
+**Spec success criterion the plan deferred is in fact already met.** Joining post-rebaseline `scores.jsonl` against `judgments.jsonl`: **0** still-`refused` cells with `refusal_p < 0.25`. The surviving disagreements are the six at 0.36–0.49, inside the judge's uncertain band.
+
+**Both lanes green**: pipelines `586 passed, 2 skipped`; viewer `19 files, 187 passed`. The iteration-2 dispatcher gap is closed for real — `runs/**`/`texts/**` now map to both lanes (test.sh:54-56), so a future runs-only rebaseline can't skip vitest.
+
+**Blast radius is correctly scoped.** Only three lines removed from `outcomes.py`: two docstring lines and the old one-line return. `_DECLINE_CUES_RAW`, `LEADING_WINDOW`, the `cite_passage` branch, and the `verify_source` parsed-based path are untouched; `score.py` isn't in the diff.
+
+**Iteration 1 & 2 blocking points genuinely fixed**: `_NON_IDENTITY` now guards both `_ASSERT_INTRO` (line 214) and `_ASSERT_RECON` (line 222), with both shapes pinned in `test_spec48_reworded_class_b_does_not_overfire`.
+
+## Residual: `_NON_IDENTITY` is still an enumeration, and the enumeration is still incomplete
+
+I probed `asserts_delivery` directly (read-only import, no tree changes). Four class-B rewordings using positional modifiers absent from the list still read as **deliveries**:
+
+| probe | result |
+|---|---|
+| `"The text that precedes it reads: «he»"` | DELIVERY |
+| `"The earlier line is: «he»"` | DELIVERY |
+| `"The nearest line I located is: «he»"` | DELIVERY |
+| `"The subsequent passage is: «he»"` | DELIVERY |
+| `"The line I found is: «he», but I can't say it's that segment."` | DELIVERY |
+
+Note `precedes` vs `preceding` and `earlier` vs `previous` — the list has one inflection of each concept but not the other. This is the *third* iteration where a reviewer found the gap by trying synonyms, which tells you the approach is enumeration-bound rather than principled; the two prior fixes added words, and more words remain addable.
+
+I'm **not** blocking on it, for three reasons I checked rather than assumed:
+1. The whole-corpus gate (`test_spec48_classifier_reproduces_committed_refusals`) proves no committed cell across all 5 score files / 6 answer files exhibits any of these shapes — so nothing in the paper's evidence is affected.
+2. The spec explicitly sanctions a "curated, conservative marker set (like `_DECLINE_CUES_RAW`)" and the stay-`refused` fallback.
+3. The last row is the separate-sentence softness that is *intrinsic* to the architect-locked assertion-only form — A cell `d4c3bda0b400` disclaims its segment number in a separate clause, so a disclaimer veto would strand a locked A cell. Re-litigating that is out of bounds.
+
+But the exposure is real for **future** runs: the gate asserts reproduction of the *committed* set, so when a new run is scored there is no guard at all, and the error direction is the one the architect explicitly cares about — scoring an honest decline as `incorrect`, which rewards confident confabulation.
+
+Concrete suggestion for the #52 handoff (not this phase): replace the word list with a structural test — require the assertion clause's unit noun to carry **no** comparative/positional/ordinal modifier (a POS-shaped or suffix-shaped class, e.g. `\w+(?:er|est|ing)\b` adjacent to the unit plus the ordinal family) rather than a fixed vocabulary. That converts "add another synonym" into "the clause must assert identity," which is what the spec actually means.
+
+Two smaller notes: the viewer prose says opus-search `97%→93%` while `summary.md` renders `92%` (0.925 rounding half-up in JS vs half-even in Python) — cosmetic, but the two comments now disagree; and the `fabricat` disqualifier is answer-global, so a genuine delivery that adds "I don't want to fabricate the vowel marks" is stranded as `refused` (conservative-fallback direction, worth a line in the review doc).
+
+---
+VERDICT: COMMENT
+SUMMARY: Rebaseline independently verified exact (5 flips, pre-change SHAs reproduce from the git base, summary splice consistent across all 12 aggregate buckets, both lanes green) and both prior blocking points are genuinely fixed; the remaining `_NON_IDENTITY` gaps are future-run-only and sanctioned by the spec's conservative-fallback, so they belong in the #52 handoff rather than a fourth iteration.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `_NON_IDENTITY` remains a word list with inflection gaps: `precedes`, `earlier`, `nearest`, `subsequent` still read class-B substitutes as deliveries (verified by direct probe). No committed cell is affected and the whole-corpus gate proves it, but new runs have no guard — recommend a structural modifier test in #52 instead of more synonyms.
+- The answer-global `fabricat` / refusal-to-deliver disqualifier can strand a genuine hedged delivery as `refused`; conservative direction and spec-sanctioned, but worth recording in the Phase-2 review doc alongside the `_SCRIPT` Latin-allowlist limitation.
+- Cosmetic inconsistency: `apps/viewer/src/local/tutorialRun.test.ts` comments say opus-search `97%→93%` while `runs/tutorial-2026-10-11/summary.md` renders `92%` (JS half-up vs Python half-even on 0.925). Assertions are unaffected.

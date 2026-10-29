@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The rebaseline is correct, but the documentation sync introduced two factual misstatements about the classifier and moved cells.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `runs/tutorial-2026-10-11/README.md:69-71` says all six opus-search Talmud incorrect deliveries were hidden as refusals pre-fix. Only four moved; two were already incorrect. Clarify that Spec 48 exposed four additional incorrect deliveries.
+- `codev/resources/lessons-learned.md:15-16` describes a positive delivery assertion as an alternative refusal-detection condition. It is actually an escape from refusal: leading decline plus missing containment is refused **unless** a positive delivery assertion fires.

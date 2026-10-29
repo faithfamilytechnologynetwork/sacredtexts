@@ -512,14 +512,14 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
     assert "disagree on canonical_language" in str(e.value)
 
 
-def test_real_catalogue_default_pool_is_seventeen():
-    """The committed corpus: 21 targets, default pool (language == canonical_language,
-    non-restricted) is exactly these 17 texts; every target carries both new fields; the two
+def test_real_catalogue_default_pool_is_eighteen():
+    """The committed corpus: 22 targets, default pool (language == canonical_language,
+    non-restricted) is exactly these 18 texts (Spec 50 added Sri Guru Granth Sahib); every target carries both new fields; the two
     LDS KJV targets are gone (issue #27 Q3). Pins membership, not just the count, so a
     canonical_language typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 21
+    assert len(targets) == 22
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language
@@ -546,6 +546,7 @@ def test_real_catalogue_default_pool_is_seventeen():
         ("The Bible", "KJV", "en"),
         ("The Bible", "ASV (1901)", "en"),
         ("The Bible", "WEB", "en"),
+        ("Sri Guru Granth Sahib", "Shabad OS (SGPC Shabadaarth)", "pa"),
     }
 
 
@@ -565,6 +566,8 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         "texts/raw/Roman Catholic/source.yaml",
         "texts/raw/Greek Orthodox/source.yaml",
         "texts/raw/The Church of Jesus Christ of Latter-Day Saints/source.yaml",
+        "texts/raw/Sikhism/source.yaml",
+        "texts/raw/Sikhism/sggs_shabados.json",
     ]:
         assert (REPO_ROOT / rel).exists(), f"missing committed catalogue file: {rel}"
         assert not _check_ignored(rel), f"source.yaml must be trackable: {rel}"
@@ -574,3 +577,49 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         "texts/standardized/Judaism/anything.json",
     ]:
         assert _check_ignored(rel), f"restricted/standardized path must be ignored: {rel}"
+
+
+def test_cli_generate_refuses_gurmukhi_while_normalize_is_unaware(tmp_path):
+    """Spec 50 part-1 canary gate: a pa text in the pool is refused for exactly as long
+    as normalize() collapses Gurmukhi vowel signs (ਕਰਤਾ == ਕਰਤੀ). When issue #50 part 2
+    lands and the collision disappears, the gate opens by itself and this test still
+    passes — both branches are asserted against the live normalize()."""
+    from sacredbench.score import normalize
+
+    raw = tmp_path / "texts" / "raw"
+    _write(
+        raw / "Sikhism" / "source.yaml",
+        PROV
+        + "targets:\n"
+        "  - payload: sggs.json\n"
+        "    converter: bible_flat\n"
+        "    work: Sri Guru Granth Sahib\n"
+        "    version: Test\n"
+        "    language: pa\n"
+        "    document_type: scripture\n"
+        "    tradition: [Sikhism]\n"
+        "    license: public-domain\n"
+        "    license_detail: public domain\n"
+        "    requested_as: [the Guru Granth Sahib]\n"
+        "    canonical_language: pa\n",
+    )
+    _write(raw / "Sikhism" / "sggs.json", json.dumps([]))
+    sources = cat.discover_catalogue(raw)
+    std = tmp_path / "texts" / "standardized"
+    target = next(t for t in cat.all_targets(sources))
+    doc_path = target.standardized_dir(std) / "doc.json"
+    _std_doc(doc_path, work="Sri Guru Granth Sahib")
+    body = json.loads(doc_path.read_text(encoding="utf-8"))
+    body["source"]["language"] = "pa"
+    body["source"]["version"] = "Test"
+    body["source"]["tradition"] = ["Sikhism"]
+    doc_path.write_text(json.dumps(body), encoding="utf-8")
+
+    r = runner.invoke(
+        app, ["generate", str(std), "--raw-root", str(raw), "--standardized-root", str(std)]
+    )
+    if normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ"):  # Gurmukhi-unaware: gate must be CLOSED
+        assert r.exit_code != 0
+        assert "Gurmukhi" in r.output and "#50" in r.output
+    else:  # part 2 landed: gate must be OPEN (failures, if any, come later and differ)
+        assert "Gurmukhi text selected but normalize()" not in r.output

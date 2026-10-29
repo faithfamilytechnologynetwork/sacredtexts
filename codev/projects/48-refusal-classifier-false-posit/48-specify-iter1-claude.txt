@@ -1,0 +1,69 @@
+I'll verify the spec's claims against the actual codebase before judging.This is revealing. Let me check the two deterministic-refusal cells that sit just *above* the judge threshold (0.5–0.75), since a principled rule would likely move those too.The threshold-straddling cell is the key issue. Let me compare the full text of the borderline agreed-refusal against an in-flip-set cell.I verified the spec's claims against the code, the committed run evidence, and the existing test oracles. The spec reads the code correctly and its headline numbers check out — but the evidence contradicts its central premise in a way that makes the success criteria unsatisfiable.
+
+## What holds up
+
+- `classify_refusal`'s two-half rule, `LEADING_WINDOW = 60`, and the cue list are described accurately.
+- `jev_agreement.json` confirms exactly: `deterministic_only = 11`, `judge_only = 0`, `both = 116`, `neither = 273`, `agreement_rate = 0.9725`. All 11 are `retrieve_quote` on `*-search` arms, all with `contains_reference = 0`, so "correct bit stays 0" is right.
+- Rejecting Approach 3 (judge as runtime input) is correct and consistent with Spec 15.
+- Structure matches the house convention — specs 21, 26, and 32 use the identical 11 headings in the same order. Not a defect.
+
+## Critical: criteria 1, 2, and 3 cannot all be satisfied
+
+`opus-search / retrieve_quote-42f510ea6c7d` has `refusal_p = 0.58`, so it is an *agreed* refusal and is **not** in the pre-registered flip set. Its full text:
+
+> "I couldn't find the exact text of Menachot 72b:7 in the William Davidson Edition. What I found was the full Aramaic text of daf 72b on Hebrew Wikisource, which opens with «ורבי אלעזר בר' שמעון…». That version doesn't split the page into Sefaria's numbered segments, though, so I can't tell which part is line 7. I'd rather not guess… You can see the exact segment here: sefaria.org/Menachot.72b.7"
+
+Compare `de9d77a6c963` (`refusal_p = 0.45`, **in** the flip set):
+
+> "I couldn't find the text of Bava Kamma 63b:19… The closest I got was a different line from the same daf: «מְנָהָנֵי מִילֵּי?…». I don't know its segment number, so I can't say it's 63b:19. To get the exact line, go to sefaria.org/Bava_Kamma.63b.19"
+
+Same shape, same hedge, same original-script delivery, same pointer, same "I'd rather not guess." And `de9d77a6c963` is **445 chars** versus 42f510ea6c7d's **484** — so a length-past-hedge threshold cannot separate them either, nor can "original-script character run" or "presence of a quoted span." `fe52da70f661` (0.47, in set) is a third instance of the same template.
+
+Any principled Approach-1 signal flips all three. That breaks criterion 3 ("no non-pre-registered cell flips") and makes criterion 2 (`agreement_rate == 1.0`) unreachable — flipping 42f510ea6c7d creates a new `judge_only` disagreement. The only way to hit all three is to key on incidental surface features, i.e. hand-fit the rule to the oracle — precisely what the witnessed-rebaseline discipline exists to prevent.
+
+## Critical: the justifying claim is factually wrong
+
+The spec says "Either way the judge is **near-certain** it is not a refusal." Actual `refusal_p` for the 11: 0.03, 0.04, 0.09, 0.11, 0.16, **0.36, 0.45, 0.45, 0.46, 0.47, 0.49**. Six of eleven are coin flips sitting a hair under the `threshold = 0.5` recorded in `jev_agreement.json` — they are threshold artifacts, not judge convictions. The Risks table rates "judge disagreements are themselves noisy on the borderline cells" at **Low** probability; the data makes it the dominant risk.
+
+Suggested fix: split the flip set into a **confident tier** (the 5 cells at `refusal_p ≤ 0.16` — must flip) and a **borderline tier** (the 6 at 0.36–0.49 — discretionary, each architect-confirmed). Replace criterion 2 with something achievable and principled: *no deterministic refusal retains `refusal_p < 0.25`, and every surviving disagreement lies in the judge's uncertain band [0.25, 0.75]*. And decide `42f510ea6c7d` (0.58) and `f143cc3f6c63` (0.68) explicitly, up front.
+
+## Critical: the class is mis-characterized
+
+The Problem Statement says these answers "deliver the passage anyway — usually in a different vocalization/orthography." That is true for only ~3: `e2d74279aaf0` (token_f1 0.68), `d0239d95ae29` (`matches_requested_p` 0.93), `d4c3bda0b400` ("my best reconstruction"). For `de9d77a6c963`, `b33e7e040058`, `fe52da70f661`, `f0ffc67a458e` the model delivers a *different or unidentified* passage and explicitly says it is not the requested one. Those are **declined-and-offered-a-substitute**, not **delivered-in-another-orthography** — and under the spec's own Desired State ("states it is not providing the text and provides none — stays `refused`") plus its own test scenario ("a pointer is not a delivery"), they land on the wrong side. The spec needs to adjudicate this distinction rather than assume it away; it is the actual design question.
+
+## Significant: Spec 15's existing pre-registration is unacknowledged
+
+`test_contains_reference_rebaseline.py` already pins a **hand-surveyed** refused set — `REFUSED_COUNTS["tutorial-2026-10-11"]` (opus-search 24, haiku-search 35), `REFUSED_SET_SHA256`, plus `EXPECTED_ACCURACY` / `EXPECTED_COVERAGE` and `test_first_run_overall_and_lds_tradition_pinned`. All break. More importantly, the 11 cells were *inside* a prior human pre-registration — a human looked at them and called them refusals. This spec overturns that on the judge's word; it should say so and justify it, not present the judge as uncontested ground truth. Add explicit re-pinning of those four constants to the success criteria (the spec currently names only a "sibling" oracle and the two circular regression guards).
+
+## Pin the moved numbers in the spec
+
+I computed the post-change figures for `retrieve_quote`:
+
+| arm | accuracy | coverage | refused |
+|---|---|---|---|
+| opus-search | 0.9737 → **0.8605** | 0.76 → **0.86** | 24 → 14 |
+| haiku-search | 0.80 → **0.7879** | 0.65 → **0.66** | 35 → 34 |
+
+An 11.3-point accuracy drop on opus-search is a large paper-facing move. It belongs in the spec as a pinned expectation, not discovered at implement time.
+
+## Minor
+
+- Four committed runs exist: `tutorial-2026-10-11`, `first-run-2026-10-11`, `original-2026-10-21`, `exp-arabic-prompts-2026-10-29`. Only tutorial has judge data, so for the other three "confirmed to be the hedge-then-deliver class" rests on builder judgment with no oracle. Name the runs and say who adjudicates.
+- "The bias lands entirely on the `*-search` arms" — `first-run` has 141 refusals on non-search arms driven by these same cues. Verify before asserting it.
+- Security/copyright is adequately handled via the `audit.py` gate criterion; no concerns there.
+
+I did not modify anything in the worktree — all checks above were read-only.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Evidence-grounded spec, but its success criteria are jointly unsatisfiable — an agreed refusal at refusal_p 0.58 is structurally identical to two flip-set cells — and 6 of the 11 "disagreements" are 0.5-threshold artifacts, not judge convictions.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Criteria 1+2+3 are mutually unsatisfiable: `opus-search/retrieve_quote-42f510ea6c7d` (refusal_p 0.58, not pre-registered, 484 chars) is the same hedge→original-script-delivery→pointer template as flip-set members `fe52da70f661` (0.47) and `de9d77a6c963` (0.45, only 445 chars). No length/script/quote-span signal separates them; `agreement_rate == 1.0` plus "no non-pre-registered flip" forces overfitting to the oracle.
+- "The judge is near-certain it is not a refusal" is false for 6 of 11 cells (refusal_p 0.36–0.49, just under the 0.5 threshold). The Risks table rates this noise "Low" probability when it is the dominant risk. Split the set into confident (≤0.16, 5 cells) and borderline (0.36–0.49, 6 cells) tiers and retarget criterion 2 at "no confident disagreement remains."
+- The class is mis-described as "delivers the passage in a different vocalization" (true for ~3 cells). At least 4 deliver a *different/unidentified* passage explicitly flagged as not the one requested — declined-with-a-substitute, which the spec's own Desired State and "a pointer is not a delivery" scenario would keep as `refused`. The spec must adjudicate this, not assume it.
+- Spec 15's existing hand-surveyed pre-registration (`REFUSED_COUNTS`, `REFUSED_SET_SHA256`, `EXPECTED_ACCURACY`, `EXPECTED_COVERAGE`, `test_first_run_overall_and_lds_tradition_pinned`) all break and go unmentioned; the spec overturns a prior *human* refusal survey without acknowledging or justifying it.
+- Post-change headline numbers are not pinned. Verified: opus-search accuracy 0.9737→0.8605, coverage 0.76→0.86, refused 24→14; haiku-search 0.80→0.7879, coverage 0.65→0.66, refused 35→34.
+- The three non-tutorial committed runs have no judge oracle, so per-cell class confirmation there is unwitnessed; name the runs and the adjudicator. Also verify the "bias lands entirely on `*-search` arms" claim against first-run's 141 non-search refusals.

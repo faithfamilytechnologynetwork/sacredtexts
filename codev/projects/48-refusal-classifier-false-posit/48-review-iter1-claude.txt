@@ -1,0 +1,83 @@
+I'll start by reading the diff and the key project files.Let me read the core implementation file and the spec/plan from disk.Now let me independently verify the oracle's pre-change SHA claims — the key non-circularity check.The pinned pre-change SHAs are genuine. Now let me verify the actual rebaseline delta on disk.Let me test one edge case I'm concerned about — post-payload disclaimers in the same sentence.I made no changes to the tree — all verification was read-only (git `show`/`log`, file reads, and pytest, which writes only to `tmp_path`).
+
+# Review: PR #55 — [Spec 48] refusal-classifier-false-posit
+
+I independently re-derived the load-bearing claims rather than trusting the review doc. **Everything reproduces exactly.**
+
+## Verification performed
+
+**The oracle is genuinely non-circular.** I recomputed both pinned pre-change SHAs from the merge base (`9e4fbdf`) using the same projection function:
+
+```
+pre outcome  99a724e178ed…b86075da4c8b0097cdb8a86ef   ✓ matches PRECHANGE_OUTCOME_SHA256
+pre correct  de3422497e2e…c106ebd5166af078ae5b46017c98 ✓ matches PRECHANGE_CORRECT_SHA256
+```
+
+This is the claim the whole rebaseline rests on, and it holds. The un-flip-then-compare construction in `test_outcome_transform_is_exactly_the_flip_set` is also the right shape — it defeats compensating moves that an aggregate count would hide.
+
+**The delta is exactly as advertised.** Diffing all 400 pre/post rows field-by-field: 5 cells moved, `outcome` only, zero other metric fields changed anywhere. The 5 are precisely `FLIP_SET`.
+
+**Numbers in the review/README reproduce:**
+- Post-fix Jev: 6 det-only survivors at `refusal_p` 0.36/0.45/0.45/0.46/0.47/0.49 — all in `[0.25, 0.75]`, none `< 0.25`; `judge_only = 0`; agreement **0.985**. Matches AC3 verbatim.
+- 122 refused cells, **max `token_f1` 0.1294** — the README's "all below 0.13" is exact.
+- opus-search Judaism `8/6/20` → 57% acc / 41% cov. Exact.
+
+**Tests:** pipelines **586 passed / 2 skipped**, viewer **187 passed / 19 files** — both as claimed. The 2 skips are correctly characterized; worth noting `test_original_run_regression.py`'s skip is only the *digest* test (line 113), so the byte-for-byte re-score guard for `original` **did** run. All 5 parametrizations of the whole-corpus gate ran (none skipped), covering `complete_unit` and the Arabic run — that's what actually proves the three other runs are both byte-identical *and* consistent with the new classifier, which the `git diff` alone could not.
+
+**Hygiene:** branch 0 commits behind `origin/main`; all 45 commits conform to `[Spec 48]…` / `chore(porch)`; no TODO/debug/stray markers in `outcomes.py`; `test.sh` correctly uses three-dot `${base}...HEAD`.
+
+## Non-blocking findings
+
+**1. Dead code — `ANSWER_FILES` (`test_outcomes.py:143`).** Defined, never referenced (confirmed by repo-wide grep). It's the only mention of `answers-ar-normalized.jsonl` in the tests, so that file ends up unswept. Delete it or wire it in.
+
+**2. Gate-test file mis-pairing (latent, inert today).** `TRIPLES` pairs `scores-ar.jsonl` with `answers-ar.jsonl`, but per that run's own `analyze.py:52`, `scores-ar.jsonl` was produced from **`answers-ar-normalized.jsonl`** (14 of 56 answers differ). Harmless now — the Arabic run has zero `refused` cells, so both sides are empty. But it will report spurious drift once that run gains a refusal, and the digit fold can strip Arabic-Indic digits that `_SCRIPT` deliberately counts as payload. One-line fix or an explicit comment.
+
+**3. Post-payload, same-sentence disclaimer reads as a delivery.** `_assertion_sentence` scopes the negation/non-identity guards to `answer[b+1 : m.end()]`, and `m.end()` sits at the payload's first character — so text *after* the payload in the same sentence is never checked. Confirmed by probe:
+
+```
+"I could not find Ketubot 63b:19. The line is: בראשית ברא אלהים, but that is a
+ different line, not the requested segment."   → asserts_delivery = True  (not refused)
+```
+
+No committed cell exhibits this (the gate proves it), but the direction is the *loose* one, against the spec's "favour `refused` when unsure" fallback. The module comment names the separate-sentence case but not the post-payload position — worth adding to the `#52` handoff alongside the cross-sentence-negation note already there.
+
+**4. AC3 has no automated guard.** `test_jev_agreement.py` is synthetic-fixture only, and `jev_agreement.json` is (correctly, per the architect) frozen pre-fix evidence — so nothing joins the real `judgments.jsonl` against the real `scores.jsonl`. Mitigated *transitively*: the whole-corpus gate pins the refused set exactly and the judge probabilities are frozen, so the criterion can't silently break. Noted for completeness, not a gap I'd block on.
+
+**5. Toolchain coupling** (already flagged in the PR): the `runs/|texts/` → both-lanes mapping means any pipelines-only builder touching `runs/` now needs pnpm. Worth confirming in CI.
+
+## Assessment
+
+The methodological discipline here is the standout: an unsatisfiable issue premise was withdrawn rather than force-fitted, the `42f510ea6c7d` anti-overfit anchor is asserted in the *same test body* as its twins, the conservative stranding cases (`"the opening line of Psalm 1 is:"` → stays `refused`) are deliberate and documented, and the oracle survives independent recomputation. The documented limitations (`_SCRIPT` as a Hebrew/Arabic/Greek allowlist; `_NON_IDENTITY`'s conservatism) are honest about leaving the original bug alive on the Latin axis rather than papering over it.
+
+---
+VERDICT: APPROVE
+SUMMARY: Rebaseline is exactly 5 cells, outcome-only; pre-change oracle SHAs independently reproduced from the merge base; all review numbers and both test lanes verified — only minor cleanliness/latent-trap notes.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- None blocking.
+- (minor) `ANSWER_FILES` at `test_outcomes.py:143` is dead code; leaves `answers-ar-normalized.jsonl` unswept.
+- (minor, latent) Gate test pairs `scores-ar.jsonl` with `answers-ar.jsonl`, but that score file was generated from `answers-ar-normalized.jsonl` per the run's `analyze.py` — inert while the Arabic run has no refusals.
+- (minor) A same-sentence disclaimer *after* the payload ("The line is: «script», but that is a different line") reads as a delivery, since `_assertion_sentence` ends at `m.end()`. No committed cell affected; add to the #52 handoff.
+- (note) AC3's "no survivor `refusal_p < 0.25`" is verified manually but guarded only transitively via the whole-corpus refused-set gate.
+
+PR_SUMMARY: |
+  ## Summary
+  Fixes the deterministic refusal classifier over-calling `refused` on `*-search` answers that hedge about the exact edition ("I couldn't find the exact William Davidson text…") and then **deliver** the passage in a vocalization `bounded_contains` cannot fold. Such confident-but-wrong deliveries were excluded from the accuracy denominator and counted in coverage, biasing both headline numbers the FAccT paper cites on exactly the arms the benchmark exists to compare. The fix adds an assertion-gated escape: a leading-decline text-retrieval cell stays `refused` **unless** it positively asserts the delivered original-script payload as the requested passage (class A → scored), while a declined-with-substitute answer stays `refused` (class B).
+
+  ## Key Changes
+  - **`pipelines/sacredbench/outcomes.py`** — new `asserts_delivery()`: assertion-only (not conjunctive, which an A cell disclaiming only its segment number falsifies), with sentence-scoped negation + non-identity guards, a Hebrew/Arabic/Greek payload requirement, and a global refusal-to-deliver disqualifier. Wired into `classify_refusal`'s text-retrieval branch; `verify_source`, `cite_passage`, and the Jev rubric are byte-unchanged.
+  - **Sanctioned rebaseline** — exactly **5** tutorial cells moved `refused → incorrect` (4 opus-search Talmud reconstructions + 1 haiku-search Qur'an); `correct` unchanged. opus-search 97%/cov76% → 92%/cov80%; haiku-search 80%/cov65% → 79%/cov66%. `first-run`, `original`, and `exp-arabic-prompts` are byte-identical (empty flip sets, confirmed not assumed); `facct.{json,md}` correctly untouched.
+  - **`pipelines/tests/test_refusal_rebaseline.py`** (new) — non-circular oracle freezing the pre-change outcome/`correct` projection SHAs captured via `git show HEAD:` before regeneration, plus an un-flip-then-compare transform that defeats compensating moves.
+  - **`pipelines/tests/test_outcomes.py`** — A/B cell pins, the `42f510ea6c7d`/`f143cc3f6c63` anti-overfit anchors asserted alongside their twins, the "from memory" blast-radius guard (147 refused cells), reworded-class-B cases, and a whole-corpus gate that recomputes the refusal set from answers across all four runs.
+  - **`.codev/checks/test.sh`** — `runs/**` and `texts/**` now map to BOTH lanes, closing a silent-skip trap that hid a viewer break (same class as PR #44's `fixtures/` gap).
+  - **Docs** — tutorial run `README.md` synced to the rebaselined numbers with a jev-supersession pointer; governance routed to `arch-critical.md` (HOT) and `lessons-learned.md` (COLD); review in `codev/reviews/48-*.md`.
+
+  ## Test Plan
+  - `bash .codev/checks/test.sh` — green both lanes: pipelines **586 passed / 2 skipped** (pre-existing absent-corpus guards), apps/viewer **187 passed** (19 files).
+  - Verify the oracle is non-circular: recompute the two pinned SHAs from the merge base —
+    `git show $(git merge-base HEAD origin/main):runs/tutorial-2026-10-11/scores.jsonl` and hash the canonical `(model_id, question_id) → outcome` / `→ correct` projections; both match `test_refusal_rebaseline.py`.
+  - Confirm the delta: diff pre/post `scores.jsonl` field-by-field — exactly 5 cells, `outcome` only, no other metric field moves in any of 400 rows.
+  - Post-fix Jev cross-check (`judgments.jsonl` ⋈ regenerated `scores.jsonl`): 6 disagreements, agreement 0.985, survivors at `refusal_p` 0.36–0.49, none `< 0.25`, `judge_only = 0`.
+  - Refusal-set calibration: all 122 remaining refused cells sit below `token_f1` 0.13 (max 0.1294); the pre-fix 0.68 outlier flipped out.
+  - Copyright `audit.py` gate passes over the regenerated artifacts.

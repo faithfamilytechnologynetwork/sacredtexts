@@ -4,8 +4,10 @@
 combining marks (harakat / niqqud / cantillation), tatweel, and the Qur'anic annotation
 symbols are removed and letter variants folded, so a vocalised and an unvocalised spelling
 of the same text are equal — in BOTH directions (a vocalised answer vs. an unvocalised
-expected, and the reverse). Latin output must be byte-for-byte unchanged, and the scoring
-contract (`_SUBMETRICS`, the `retrieve_quote` headline rule) must not move.
+expected, and the reverse). Equality still deletes a dagger alif (Spec 52 credits the
+Uthmani/Imla'i difference only in containment, because some words keep that alif and
+some do not). Latin output must be byte-for-byte unchanged, and the scoring contract
+(`_SUBMETRICS`, the `retrieve_quote` headline rule) must not move.
 
 Real fixtures are read from the committed, open-licensed corpora (the QUL Uthmani Qur'an and
 the Davidson VOCALISED Aramaic Shevuot file — the latter is deliberately excluded from the
@@ -33,10 +35,9 @@ SHEVUOT_VOCALIZED = (
 
 def _strip_combining(s: str) -> str:
     """An INDEPENDENT 'unvocalised' form (stdlib only, not the implementation's block
-    logic): NFKD then drop every category-Mn codepoint. Used to compare the real
-    vocalised text against its bare-consonant spelling without reusing the code under
-    test. The maqaf is mapped to a space to match the implementation's word-boundary
-    rule (fixtures contain none today, but this keeps the helper honest if one appears)."""
+    logic): NFKD then drop every category-Mn codepoint, which deletes a dagger alif.
+    That matches equality scoring. The maqaf is mapped to a space to match the
+    implementation's word-boundary rule."""
     s = unicodedata.normalize("NFKD", s).replace("־", " ")
     return "".join(c for c in s if unicodedata.category(c) != "Mn")
 
@@ -51,9 +52,12 @@ def _has_surviving_mark(s: str) -> bool:
 
 
 def test_arabic_vocalized_equals_plain_basmala():
-    vocal = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
+    # Equality deletes the dagger alif (الرحمن, not الرحمان). Spec 52 credits the
+    # Imla'i full alif in containment, not in normalize().
+    vocal = json.loads(QUL.read_text(encoding="utf-8"))["1:1"]["text"]
+    assert "ـٰ" in vocal
     plain = "بسم الله الرحمن الرحيم"
-    assert normalize(vocal) == normalize(plain)
+    assert normalize(vocal) == plain
     assert token_f1(vocal, plain) == 1.0
 
 
@@ -122,7 +126,8 @@ def test_hebrew_maqaf_becomes_word_boundary():
 
 
 def test_retrieve_quote_scores_equal_regardless_of_vocalisation_direction():
-    # Qur'an: expected is vocalised (QUL), a model answers in plain Arabic -> still correct
+    # Qur'an: expected is vocalised (QUL). Equality compares the mark-stripped skeleton
+    # (dagger deleted). The Imla'i full alif is a containment credit, not this one.
     ayah_vocal = json.loads(QUL.read_text(encoding="utf-8"))["1:2"]["text"]
     ayah_plain = _strip_combining(ayah_vocal)
     r = score_answer("retrieve_quote", ayah_plain, {"text": ayah_vocal})

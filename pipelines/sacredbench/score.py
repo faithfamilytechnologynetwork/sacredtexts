@@ -8,7 +8,9 @@ Metrics emitted per answer:
                   Arabic/Hebrew combining marks + annotation symbols removed and
                   alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
                   matches), case-folded, punctuation stripped, whitespace collapsed
-                  (0/1) — see ``strip_script_marks``
+                  (0/1) — see ``strip_script_marks``. Uthmani/Imla'i orthography is
+                  NOT folded here (Spec 52); it is credited only by
+                  ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
                   (0..1) — the v1 "semantic similarity" stand-in; embedding- or
                   judge-based semantic scoring is a later, pluggable metric
@@ -144,7 +146,7 @@ def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
     text = text.replace("“", '"').replace("”", '"')
     text = text.replace("–", "-").replace("—", "-")
     if plene:  # long ā → alef, BEFORE the mark pass that would otherwise delete the dagger
-        text = text.replace(_ALEF_MAQSURA + _DAGGER_ALEF, _ALEF).replace(_DAGGER_ALEF, _ALEF)
+        text = _materialise_long_alif(text)
     if fold:
         text = fold_arabic_orthography(text)
     text = strip_script_marks(text)  # Arabic/Hebrew marks BEFORE the punctuation pass,
@@ -193,16 +195,61 @@ _HAMZA = "ء"         # ARABIC LETTER HAMZA (standalone)
 _WASL = "ٱ"          # ARABIC LETTER ALEF WASLA
 
 
+def _dagger_after_maqsura(text: str, i: int) -> int | None:
+    """Index of the dagger that closes a ``ىٰ`` digraph at ``text[i]``, or ``None``.
+
+    Tatweel and combining marks between the alef maqsura and the dagger still count.
+    NFKD sorts fatha (combining class 30) before the dagger (class 35), so a typed
+    ``ىَٰ`` arrives as ``ى`` + fatha + dagger. An adjacent-only check folds that ``ى``
+    to ``ي`` and the long ā is lost.
+    """
+    if i >= len(text) or text[i] != _ALEF_MAQSURA:
+        return None
+    j = i + 1
+    while j < len(text) and text[j] != _DAGGER_ALEF and (
+        text[j] == "ـ" or unicodedata.combining(text[j])
+    ):
+        j += 1
+    if j < len(text) and text[j] == _DAGGER_ALEF:
+        return j
+    return None
+
+
+def _materialise_long_alif(text: str) -> str:
+    """Rewrite every long-ā dagger, including a ``ىٰ`` digraph with marks or tatweel
+    inside it, to a full alef. Marks inside the digraph are consumed with it."""
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        end = _dagger_after_maqsura(text, i)
+        if end is not None:
+            out.append(_ALEF)
+            i = end + 1
+            continue
+        out.append(_ALEF if text[i] == _DAGGER_ALEF else text[i])
+        i += 1
+    return "".join(out)
+
+
 def fold_arabic_orthography(text: str) -> str:
     """The SYMMETRIC Arabic letter folds (Spec 52), applied to both answer and expected: standalone
     hamza ء → alef ا, and a BARE alef-maqsura ى → dotted ya ي. A ى that carries a dagger (the ``ىٰ``
-    long-ā digraph) is left alone — folding it to ya would collide the long-ā form with a genuine
-    ``…ay…`` word (ءَاتَىٰنَا "He gave us" vs ءَاتَيْنَا "we gave"); the digraph's long ā is instead
-    handled, optionally, in ``fold_aware_contains``. Expects NFKD-normalised input, runs BEFORE the
-    Mn-mark deletion (which removes the dagger as before). Arabic-only — Latin byte-for-byte unchanged."""
+    long-ā digraph, even with a vowel mark or tatweel between them) is left alone — folding it to ya
+    would collide the long-ā form with a genuine ``…ay…`` word (ءَاتَىٰنَا "He gave us" vs ءَاتَيْنَا
+    "we gave"); the digraph's long ā is instead handled, optionally, in ``fold_aware_contains``.
+    Expects NFKD-normalised input, runs BEFORE the Mn-mark deletion (which removes the dagger as
+    before). Arabic-only — Latin byte-for-byte unchanged."""
     text = text.replace(_HAMZA, _ALEF)
-    # bare maqsura → ya, but NOT a maqsura immediately followed by the dagger (the ىٰ digraph)
-    return re.sub(_ALEF_MAQSURA + r"(?!" + _DAGGER_ALEF + r")", _YA, text)
+    out: list[str] = []
+    i = 0
+    while i < len(text):
+        if text[i] == _ALEF_MAQSURA and _dagger_after_maqsura(text, i) is None:
+            out.append(_YA)
+        else:
+            out.append(text[i])
+        i += 1
+    return "".join(out)
 
 
 def score_normalize(text: str) -> str:
@@ -240,8 +287,9 @@ def _fold_containment_pattern(expected: str) -> str:
     i, n = 0, len(s)
     while i < n:
         ch = s[i]
-        if ch == _ALEF_MAQSURA and i + 1 < n and s[i + 1] == _DAGGER_ALEF:
-            atoms.append("AA"); i += 2; continue          # ىٰ digraph → optional long ā
+        end = _dagger_after_maqsura(s, i)
+        if end is not None:
+            atoms.append("AA"); i = end + 1; continue     # ىٰ digraph → optional long ā
         if ch == _DAGGER_ALEF:
             atoms.append("AA"); i += 1; continue           # lone dagger → optional long ā
         if ch in (_HAMZA, _WASL):

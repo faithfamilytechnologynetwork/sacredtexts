@@ -1,0 +1,9 @@
+---
+VERDICT: COMMENT
+SUMMARY: The specification is complete, feasible, and well tested; only minor evidence wording and acceptance-value clarifications are recommended.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- Calling all 11 judge results “near-certain” non-refusals overstates the evidence: six have `refusal_p` between 0.36 and 0.49. Say they are below the pre-registered 0.5 threshold instead.
+- Consider pinning the derived post-change summary values explicitly: `opus-search` accuracy/coverage become approximately `0.8605/0.86`, and `haiku-search` becomes `0.7879/0.66`.
+- No material security concern is introduced; the existing copyright audit and prohibition on runtime judge/API calls adequately cover the relevant artifact and external-input risks.

@@ -1,0 +1,97 @@
+id: '48'
+title: refusal-classifier-false-posit
+protocol: aspir
+phase: review
+plan_phases:
+  - id: phase_1
+    title: Assertion-based refusal rule in outcomes.py
+    status: complete
+  - id: phase_2
+    title: Sanctioned rebaseline, projection-SHA oracle, and Spec 15 re-pin
+    status: complete
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+    requested_at: '2026-10-29T19:24:46.436Z'
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: true
+history:
+  - iteration: 1
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter2-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter2-claude.txt
+  - iteration: 3
+    plan_phase: phase_1
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter3-codex.txt
+      - model: claude
+        verdict: COMMENT
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_1-iter3-claude.txt
+  - iteration: 1
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_2-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_2-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_2-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-48/codev/projects/48-refusal-classifier-false-posit/48-phase_2-iter2-claude.txt
+started_at: '2026-10-29T16:57:00.818Z'
+updated_at: '2026-10-29T19:24:46.436Z'
+force_advanced:
+  phase: phase_1
+  iteration: 3
+  max_iterations: 3
+  rebuttal_file: 48-phase_1-iter3-rebuttals.md
+  at: '2026-10-29T18:37:20.866Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-10-29T18:37:22.777Z'
+    acknowledged_at: '2026-10-29T18:37:56.773Z'
+  - boundary: enter:review
+    at: '2026-10-29T19:07:16.997Z'
+    acknowledged_at: '2026-10-29T19:07:27.157Z'
+pr_ready_for_human: true
