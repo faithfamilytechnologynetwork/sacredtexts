@@ -96,3 +96,30 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   (sonnet+sol, matches exp-arabic comparability), defer gemini to a native GEMINI_API_KEY (my
   native grounding path is built+tested). Awaiting scope confirm before rework + paid run.
   Did NOT do the code rework or paid run yet (money + scope-down are the architect's call).
+- 2026-10-29: architect: do ONE bounded gemini rescue with OpenRouter provider pinning (AI
+  Studio vs Vertex); keep gemini only if a backend fires 2/2, else drop + record + GO on the
+  2-model paid collect (no more holds). RESCUE RESULT: AI Studio 429 (4/4 across rescue+fair
+  retry, shared-pool rate limit), Vertex finish=error/no-search (2/2). Neither passes →
+  DROPPED gemini, deferred to native GEMINI_API_KEY.
+- 2026-10-29: EXECUTE rework DONE + committed (5cc089b). config.py: web_search guard on an
+  OpenAI-compatible host → per-model-FAMILY map (anthropic/, openai/ forwarded natively;
+  google/* rejected). providers.py: _openai routes web_search+base_url → _openai_openrouter_
+  search (chat.completions, Anthropic native block for anthropic/*, {type:web_search} else;
+  records provider-of-record + web_search count + citations; non-stop finish fails loud).
+  Native Responses + Gemini grounding paths kept for native-key runs. models.yaml = 2-model
+  OpenRouter panel (sonnet+sol, 224 cells). README has the required per-arm nativeness
+  verification table. Spec addendum records the pivot (hypotheses unchanged). 578 tests pass.
+- 2026-10-29: live collect DONE — 224/224 cells, zero failures (first attempt used wrong CLI:
+  `collect` takes `config` POSITIONAL not `--config`; README recipe fixed). Nativeness re-proven
+  per cell: served_by = Claude Platform on AWS / OpenAI, per-cell server_tool_use + citations.
+  Search fired: sonnet 14/56, sol 49/56. Scored with committed deterministic scorer. analyze.py
+  → analysis.json. Committed evidence (717d4cb).
+- FINDINGS (n=28/text/arm, directional): search helps the model that USES it (sol +9pp overall,
+  +29pp complete_unit) and barely moves sonnet (searched 14/56, -4pp within noise). H1 CONFIRMED
+  narrowly (sonnet hadith cov 78.6->85.7%, refusals 6->4, recovered cells mostly wrong → acc
+  fell). H2 DISCONFIRMED (cite_passage/wrong_locus flat every arm). H3 mixed/mostly disconfirmed
+  (orthography other_script did NOT rise; sol gained 3 wrong_passage on-arm). Headline: provider
+  search-PROPENSITY, not just quality, drives the delta. Full writeup: run README + review.
+- NEXT: porch done execute→analyze; analyze work is the committed review; porch done analyze
+  reaches the experiment-complete GATE (human approval) → notify architect + STOP (do NOT self-
+  approve). Gemini remains deferred to a native GEMINI_API_KEY (native grounding path ready).
