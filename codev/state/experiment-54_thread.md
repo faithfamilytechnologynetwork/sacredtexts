@@ -123,3 +123,13 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
 - NEXT: porch done execute→analyze; analyze work is the committed review; porch done analyze
   reaches the experiment-complete GATE (human approval) → notify architect + STOP (do NOT self-
   approve). Gemini remains deferred to a native GEMINI_API_KEY (native grounding path ready).
+- 2026-10-29: reached experiment-complete GATE (WAITING FOR HUMAN APPROVAL). Notified architect.
+  Architect: HOLD at gate (Waleed's call); PROTOCOL CORRECTION — builders NEVER run `porch
+  approve`; the ARCHITECT runs it after Waleed approves. So I will not run porch approve.
+- 2026-10-29: architect: open the PR now. Opened **PR #59** (builder/experiment-54 → main,
+  Refs #54, gemini-native deferred, nativeness-verification method credited in the body, no
+  attribution lines per CLAUDE.md). Branch already pushed (porch auto-commits reach origin).
+  PR goes through the architect's integration review + the normal pr gate. Did NOT run `porch
+  done --pr` (parked at the experiment-complete gate; not risking gate-state mutation — architect
+  manages the pr gate). HOLDING: (1) Waleed's experiment-complete approval → architect runs
+  porch approve; (2) architect's PR review. Nothing further for me to do until then.
