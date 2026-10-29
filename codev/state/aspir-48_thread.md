@@ -275,3 +275,21 @@ then REVIEW doc.
   the review for the human; NOT approval). Review doc updated with the PR round + follow-up.
 - **STOPPED — waiting for architect to approve the `pr` gate.** Do NOT run `porch approve 48 pr` or
   merge until an explicit human decision arrives. PR #55: Closes #48.
+
+### Architect integration review — 2 BLOCKING findings folded (2026-10-29)
+
+Architect reviewed PR #55 (fresh clone green), endorsed codex's 2 findings as real, said DO NOT MERGE.
+- **(1) disclaimer-after-payload** (= claude's #52-deferred note, now blocking): guard now spans frame
+  THROUGH the payload's sentence (`_guard_span`). Regression test added.
+- **(2) `_SCRIPT` allowlist violated the multi-faith invariant** (Latin/KJV/LDS undetectable;
+  #50-Gurmukhi class): payload detection now **script-neutral**, target script derived from the
+  question's expected text via `unicodedata` (`_script_families`/`_payload_pos`). Latin payload needs
+  an explicit introducer (colon/quote) to avoid continuation-prose over-fire; INTRO requires the
+  payload to immediately follow the frame (fixed a distant-script over-fire on committed B cell
+  b1a04c81d33f).
+- **Re-ran whole-corpus sweep with the new detector (architect's explicit ask), BEFORE touching runs:
+  575 refused cells (195 Latin-expected), 0 NEW flips.** The 2 first-run candidates (74d14c70efb0,
+  34d9c7670904) were FALSE POSITIVES ("the line is about…", "text is also available…"), now refused.
+  **Set still EXACTLY 5 → committed runs byte-UNCHANGED** (only outcomes.py + test_outcomes.py moved).
+- commit e95d1fe. Both lanes green (viewer 187, pipelines 587/2 skipped). Pushed to PR #55.
+- Surfaced the sweep result to architect. STILL WAITING on the pr gate — no merge, no self-approve.
