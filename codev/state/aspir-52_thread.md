@@ -140,4 +140,26 @@ claude found two HIGH traps + wiring errors; codex found the submetric-wiring + 
   strict. Refused-set change flows through the flip set.
 - Arabic-cell count pinned to chosen def (≈2/132/452; 840 was a looser count).
 
-All folded into plan. Next: iter2 rebuttal committed → porch done (plan).
+All folded into plan. iter2 rebuttal committed → porch done → plan approved, advanced to IMPLEMENT.
+
+## Implement Phase 1 (2026-10-29) — fold capability, UNWIRED
+
+Added to score.py (all unwired — default path byte-identical):
+- `fold_arabic_orthography(text)`: position-aware. Manual scan: ىٰ digraph medial→ا / final→ي
+  (medial detector SKIPS Mn+editorial to find next real letter — the وَعَلَىٰٓ trap), lone dagger→ا,
+  standalone hamza ء→ا, bare maqsura→ي. Expects NFKD'd input; runs before mark deletion.
+- `score_normalize(text)`: NFKD→quote/dash→fold→strip_script_marks→punct→ws (fold interleaved, not
+  wrapped). normalize() untouched.
+- `arabic_ws_insensitive_contains(answer,expected)`: fold-aware, whitespace-stripped containment
+  for the word-boundary cases.
+
+Tests: pipelines/tests/test_arabic_orthography_fold.py — 13 tests: per-pair folds (both
+directions), already-folded cases, position-awareness (medial ا vs final ي), stacked-mark
+وَعَلَىٰٓ→وعلي (not وعلا), must-differ قال/قيل + بيت/بات, NFKD-first (U+FEEF→ي), word-boundary helper,
+Latin byte-invariance, Hebrew untouched, and a corpus collision DIAGNOSTIC over QUL (introduced
+merges bounded <150 AND each is a true orthographic variant via a dagger→alef-aware skeleton).
+Caught 2 bugs in my own reference skeleton (dagger must fold→alef not delete; tatweel must be
+stripped) — fold itself was correct.
+
+Full suite: 577 passed (564 + 13), 2 skipped. Committed-run guards green (byte-identical).
+Next: commit P1, porch done, /compact, Phase 2.

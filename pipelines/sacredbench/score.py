@@ -136,6 +136,102 @@ def normalize(text: str) -> str:
     return _WS_RE.sub(" ", text).strip()
 
 
+# --- Arabic orthography fold (Spec 52) ---------------------------------------------------------
+# Uthmani (QUL corpus) and standard Imla'i spell the SAME Qur'anic word differently in ways
+# `normalize()` does not already fold (NFKD + mark deletion already handles alif-madda آ,
+# hamza-seats أ/إ/ؤ/ئ, and wasl ٱ — see the test suite). The RESIDUAL gaps, each a genuine
+# Uthmani↔Imla'i equivalence of the same consonantal skeleton:
+#   - dagger-alif  ـٰ (U+0670)  -> full alef ا  (it spells long ā; it is category Mn, so it must
+#                                   be folded to a LETTER *before* the mark-deletion pass deletes it)
+#   - alef-maqsura ى (U+0649)   -> dotted ya ي   (word-final dotless ya)
+#   - the ىٰ digraph             -> ا medially (long ā, e.g. أَتَىٰكُمْ↔أَتَاكُمْ) but ى/ي word-finally
+#                                   (e.g. عَلَىٰ↔على) — a context-free map cannot do both, and the
+#                                   full collapse of {ا ى ي ـٰ ٱ} provably merges distinct words
+#                                   (قَالَ≡قِيلَ, بَيْت≡بَات); hence the position-aware rule here.
+#   - standalone hamza ء (U+0621, category Lo: NOT decomposed by NFKD) -> ا  (equates
+#                                   أَرَءَيْتُمْ↔أَرَأَيْتُمْ; "drop" is asymmetric and fails that pair)
+# This is applied by `score_normalize()` AFTER NFKD and BEFORE `strip_script_marks` (the ordering
+# is load-bearing: the dagger is a mark). It is NOT wired into the shared `normalize()` — that
+# stays byte-identical so generation (`generate.py`) keeps the committed question-set digest and
+# the copyright audit is untouched (Spec 52 plan, decision 1).
+_DAGGER_ALEF = "ٰ"   # ARABIC LETTER SUPERSCRIPT ALEF (category Mn)
+_ALEF_MAQSURA = "ى"  # ARABIC LETTER ALEF MAKSURA
+_YA = "ي"            # ARABIC LETTER YEH
+_ALEF = "ا"          # ARABIC LETTER ALEF
+_HAMZA = "ء"         # ARABIC LETTER HAMZA (standalone)
+
+
+def _skips_to_arabic_letter(text: str, i: int) -> bool:
+    """True if, skipping any combining marks / editorial code points from index ``i``, the next
+    real code point is an Arabic-block LETTER. Used to decide whether a ``ىٰ`` digraph is medial
+    (long ā → ا) or word-final (→ ya). The skip is REQUIRED because the fold runs before mark
+    deletion, so a word-final maqsura is frequently followed by more marks (e.g. وَعَلَىٰٓ =
+    ى + dagger + madda, then the boundary) — a naive adjacency check would mis-read it as medial."""
+    n = len(text)
+    while i < n and (unicodedata.category(text[i]) == "Mn" or text[i] in _SCRIPT_EDITORIAL):
+        i += 1
+    return i < n and _in_script_blocks(text[i]) and unicodedata.category(text[i]).startswith("L")
+
+
+def fold_arabic_orthography(text: str) -> str:
+    """Fold the residual Uthmani↔Imla'i orthographic variants to one skeleton (Spec 52).
+
+    Expects NFKD-normalised input (``score_normalize`` guarantees this) and must run BEFORE the
+    Mn-mark deletion. Arabic-only: no non-Arabic code point is touched, so Latin stays
+    byte-for-byte unchanged and Hebrew/other scripts are not reached. Direction-independent
+    (applied to both answer and expected)."""
+    out: list[str] = []
+    n = len(text)
+    i = 0
+    while i < n:
+        ch = text[i]
+        if ch == _ALEF_MAQSURA and i + 1 < n and text[i + 1] == _DAGGER_ALEF:
+            # ىٰ digraph: medial (a letter follows) spells long ā → ا; word-final → ya (same as the
+            # bare-maqsura rule). The dagger is consumed here; any intervening marks stay and are
+            # deleted later by strip_script_marks.
+            out.append(_ALEF if _skips_to_arabic_letter(text, i + 2) else _YA)
+            i += 2
+            continue
+        if ch == _DAGGER_ALEF:
+            out.append(_ALEF)  # lone dagger-alif always spells long ā
+        elif ch == _HAMZA:
+            out.append(_ALEF)  # standalone hamza -> alef (symmetric with the NFKD hamza-seat fold)
+        elif ch == _ALEF_MAQSURA:
+            out.append(_YA)    # bare alef-maqsura -> dotted ya
+        else:
+            out.append(ch)
+        i += 1
+    return "".join(out)
+
+
+def score_normalize(text: str) -> str:
+    """``normalize()`` plus the Arabic orthography fold, for the SCORING comparison only.
+
+    The fold is interleaved at the correct point — NFKD → quote/dash → fold → mark deletion →
+    punctuation → whitespace — NOT wrapped around ``normalize()`` (that would run the fold before
+    NFKD and let NFKD-decomposed presentation forms evade it). The shared ``normalize()`` is left
+    untouched (Spec 52 plan, decision 1)."""
+    text = unicodedata.normalize("NFKD", text)
+    text = text.replace("‘", "'").replace("’", "'")
+    text = text.replace("“", '"').replace("”", '"')
+    text = text.replace("–", "-").replace("—", "-")
+    text = fold_arabic_orthography(text)  # BEFORE the mark pass: the dagger-alif is a mark
+    text = strip_script_marks(text)
+    text = _PUNCT_RE.sub(" ", text.casefold())
+    return _WS_RE.sub(" ", text).strip()
+
+
+def arabic_ws_insensitive_contains(answer: str, expected: str) -> bool:
+    """Whitespace-insensitive, fold-aware containment for the word-boundary cases (Spec 52):
+    Uthmani writes some compounds as one orthographic word (يَـٰبُنَىَّ) where Imla'i writes two
+    (يَا بُنَيَّ). Comparing ``score_normalize``d strings with all whitespace removed lets the
+    reference match across that boundary. Guard the empty case so an empty reference never matches.
+    (Phase 1 provides this helper; Phase 2 wires it into the containment predicate.)"""
+    na = score_normalize(answer).replace(" ", "")
+    ne = score_normalize(expected).replace(" ", "")
+    return bool(ne) and ne in na
+
+
 def token_f1(answer: str, expected: str) -> float:
     a, e = normalize(answer).split(), normalize(expected).split()
     if not a or not e:
