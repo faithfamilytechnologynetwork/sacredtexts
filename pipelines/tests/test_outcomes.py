@@ -181,9 +181,25 @@ def _load_expected_text(run_dir: Path, fname: str) -> dict:
 @pytest.mark.parametrize("key", A_CELLS)
 def test_spec48_delivered_as_answer_flips_out_of_refused(key):
     ans = _load_answers(TUTORIAL)[key]
+    exp = {"text": _load_expected_text(TUTORIAL, "questions.jsonl").get(key[1], "")}
     assert asserts_delivery(ans) is True
-    # correct=0 for these (orthography variant), so classify_refusal alone decides the outcome
-    assert classify_refusal(ans, "retrieve_quote", {"text": ""}) is False
+    # with the real expected text (orthography variant => not bounded-contained), the assertion
+    # escape — not the containment half — is what keeps these out of `refused`
+    assert classify_refusal(ans, "retrieve_quote", exp) is False
+
+
+def test_spec48_reworded_class_b_does_not_overfire():
+    # A one-word rewording must not defeat the B exclusions: "closest/opening ... is: <script>" is a
+    # DIFFERENT/adjacent span, not the requested unit, so it stays refused (guards every future run).
+    he = "בראשית ברא אלהים"
+    EXP_B = {"text": "an unrelated reference phrase"}
+    for ans in (
+        f"I couldn't find Ketubot 63b:19. The closest line I found is: {he}, but unconfirmed.",
+        f"I couldn't find the exact segment. The opening text of the daf is: {he}",
+        f"I couldn't find it. The preceding passage reads: {he}",
+    ):
+        assert asserts_delivery(ans) is False
+        assert classify_refusal(ans, "retrieve_quote", EXP_B) is True
 
 
 @pytest.mark.parametrize("key", B_CELLS)
@@ -231,15 +247,15 @@ def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
 
 def test_spec48_edge_pointer_only_and_citation_echo_stay_refused():
     he = "בראשית"  # a Hebrew word, so a payload exists on the page
-    EXP = {"text": "some unrelated reference"}
+    exp_edge = {"text": "some unrelated reference"}
     # hedge + pointer only (no assertion that the delivered text IS the passage) -> refused
     ans = f"I couldn't find the exact line. You can see it at sefaria.org/X. The daf begins with {he}."
     assert asserts_delivery(ans) is False
-    assert classify_refusal(ans, "retrieve_quote", EXP) is True
+    assert classify_refusal(ans, "retrieve_quote", exp_edge) is True
     # hedge + citation echo, no payload asserted as the answer -> refused
     ans2 = "I couldn't find Genesis 1:1. I can't give you that verse."
     assert asserts_delivery(ans2) is False
-    assert classify_refusal(ans2, "retrieve_quote", EXP) is True
+    assert classify_refusal(ans2, "retrieve_quote", exp_edge) is True
 
 
 @pytest.mark.parametrize("run,sfile,afile,qfile", TRIPLES)

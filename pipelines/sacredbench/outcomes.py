@@ -119,9 +119,16 @@ _TEXT_RETRIEVAL = ("retrieve_quote", "complete_unit")
 # Target-script run (Hebrew, Arabic incl. presentation forms, Greek) — a delivered scripture payload.
 # A positive delivery must introduce actual original-script text (conservative: an English-only
 # gloss is not a delivery), which is also what keeps delivery *volume* from being the signal.
-# Letter ranges only; the Arabic presentation-forms-B range stops at U+FEFE so the BOM (U+FEFF) is
-# excluded, and the Hebrew range starts at the alef (U+05D0) so lone cantillation/punctuation marks
-# do not read as a "payload".
+#
+# LIMITATION (Spec 48): this is a Hebrew/Arabic/Greek ALLOWLIST. A hedged-but-delivering answer in
+# any other script — including **Latin** (a confabulated non-containing English/Latin delivery) —
+# is not recognised as a payload and stays `refused`, so the original false-`refused` bug survives
+# on that axis for a Latin-script tradition. Adding such a tradition would require EXTENDING this
+# range (the one spot where a new tradition touches core pipeline code — cf. arch-critical). The
+# ranges are approximate letter blocks; the Arabic block also admits harakat / Arabic-Indic digits,
+# which is harmless because `_ASSERT_INTRO`/`_ASSERT_RECON` still require a positive assertion frame.
+# The presentation-forms-B range stops at U+FEFE so the BOM (U+FEFF) is excluded, and the Hebrew
+# range starts at the alef (U+05D0) so lone cantillation/punctuation marks do not read as a payload.
 _SCRIPT = (
     "א-תׯ-״ؠ-ۿݐ-ݿࢠ-ࣿ"
     "יִ-﷿ﹰ-﻾Ͱ-Ͽἀ-῿"
@@ -174,6 +181,18 @@ _REFUSE_DELIVER = re.compile(
     re.IGNORECASE,
 )
 
+# A NON-IDENTITY modifier inside the assertion clause disqualifies it: the model is asserting a
+# *different / adjacent / surrounding* span, not the requested unit. This generalises the deliberate
+# `daf`/`segment` (not in `_UNIT`) and `begins`/`opens` (not in `_VERB`) exclusions so a rewording
+# can't defeat them — e.g. "the closest line I found is: «script»" or "the opening text of the daf
+# is: «script»" (the real B cell `de9d77a6c963` is otherwise excluded only by its indefinite
+# article "a different line", an accident this makes principled).
+_NON_IDENTITY = re.compile(
+    r"\b(?:different|closest|other|another|next|previous|preceding|following|"
+    r"surrounding|nearby|adjacent|opening|opens?|begins?|neighbou?ring)\b",
+    re.IGNORECASE,
+)
+
 
 def asserts_delivery(answer: str) -> bool:
     """True iff the answer makes a POSITIVE assertion that a delivered original-script payload IS the
@@ -184,7 +203,9 @@ def asserts_delivery(answer: str) -> bool:
     if _REFUSE_DELIVER.search(answer):
         return False  # an explicit refusal to deliver overrides any tentative assertion fragment
     for m in _ASSERT_INTRO.finditer(answer):
-        if not _NEG.search(m.group("clause")):  # negation in the assertion's own clause disqualifies
+        clause = m.group("clause")
+        # a negation OR a non-identity modifier in the assertion's own clause disqualifies it
+        if not _NEG.search(clause) and not _NON_IDENTITY.search(clause):
             return True
     for m in _ASSERT_RECON.finditer(answer):
         # require the reconstruction claim to be followed by an actual payload (script after the
