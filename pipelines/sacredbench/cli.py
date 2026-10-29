@@ -297,6 +297,18 @@ def generate(
             )
         text_meta[key] = tm
         docs.append(doc)
+    # Spec 50 part-1 canary gate (PR #51 review): refuse Gurmukhi texts while normalize()
+    # is Gurmukhi-unaware — the punctuation pass turns vowel signs into spaces, so every
+    # downstream score (normalized/token_f1/containment) is silently corrupt. Part 2 of
+    # issue #50 makes normalize() keep Indic vowel signs; this gate then opens by itself.
+    from .score import normalize as _canary_norm
+
+    if any(d.language == "pa" for d in docs) and _canary_norm("ਕਰਤਾ") == _canary_norm("ਕਰਤੀ"):
+        raise typer.BadParameter(
+            "Gurmukhi text selected but normalize() is not Gurmukhi-aware (issue #50 part 2 "
+            "has not landed): scoring would be silently wrong. Wait for part 2, or pass "
+            "explicit input directories that exclude texts/standardized/Sikhism."
+        )
     questions, excluded = run_generate(
         docs, text_meta, per_text=per_text, seed=seed, negatives_share=negatives_share,
         tasks=task_subset,

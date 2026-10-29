@@ -577,3 +577,49 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         "texts/standardized/Judaism/anything.json",
     ]:
         assert _check_ignored(rel), f"restricted/standardized path must be ignored: {rel}"
+
+
+def test_cli_generate_refuses_gurmukhi_while_normalize_is_unaware(tmp_path):
+    """Spec 50 part-1 canary gate: a pa text in the pool is refused for exactly as long
+    as normalize() collapses Gurmukhi vowel signs (ਕਰਤਾ == ਕਰਤੀ). When issue #50 part 2
+    lands and the collision disappears, the gate opens by itself and this test still
+    passes — both branches are asserted against the live normalize()."""
+    from sacredbench.score import normalize
+
+    raw = tmp_path / "texts" / "raw"
+    _write(
+        raw / "Sikhism" / "source.yaml",
+        PROV
+        + "targets:\n"
+        "  - payload: sggs.json\n"
+        "    converter: bible_flat\n"
+        "    work: Sri Guru Granth Sahib\n"
+        "    version: Test\n"
+        "    language: pa\n"
+        "    document_type: scripture\n"
+        "    tradition: [Sikhism]\n"
+        "    license: public-domain\n"
+        "    license_detail: public domain\n"
+        "    requested_as: [the Guru Granth Sahib]\n"
+        "    canonical_language: pa\n",
+    )
+    _write(raw / "Sikhism" / "sggs.json", json.dumps([]))
+    sources = cat.discover_catalogue(raw)
+    std = tmp_path / "texts" / "standardized"
+    target = next(t for t in cat.all_targets(sources))
+    doc_path = target.standardized_dir(std) / "doc.json"
+    _std_doc(doc_path, work="Sri Guru Granth Sahib")
+    body = json.loads(doc_path.read_text(encoding="utf-8"))
+    body["source"]["language"] = "pa"
+    body["source"]["version"] = "Test"
+    body["source"]["tradition"] = ["Sikhism"]
+    doc_path.write_text(json.dumps(body), encoding="utf-8")
+
+    r = runner.invoke(
+        app, ["generate", str(std), "--raw-root", str(raw), "--standardized-root", str(std)]
+    )
+    if normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ"):  # Gurmukhi-unaware: gate must be CLOSED
+        assert r.exit_code != 0
+        assert "Gurmukhi" in r.output and "#50" in r.output
+    else:  # part 2 landed: gate must be OPEN (failures, if any, come later and differ)
+        assert "Gurmukhi text selected but normalize()" not in r.output
