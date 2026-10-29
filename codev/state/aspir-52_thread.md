@@ -386,3 +386,36 @@ Architect: (B) document+pin+defer. Done:
 - Folded claude minors: probes _LETTER_FOLD divergence doc; cite_passage fold-branch #39 note.
 Suite 638 pass / 2 skip; viewer 187; audit OK. Committing, then porch → pr gate (HUMAN approval;
 I do NOT self-approve). Packet to architect at the gate includes the residual census.
+
+## Phase 3 — governance docs + number refresh (2026-10-29, post-refresh session)
+
+Re-entered after context refresh at the phase_3 boundary. porch next → phase_3 implement iter1
+(docs-only). Verified what phase-2 had already done (cold lessons-learned.md, review doc with the
+full moved-numbers table, the 3 Arabic-run READMEs) vs. what phase_3 still owed. Outstanding +
+done:
+- **arch-critical.md** (hot): appended the Spec-52 orthography-fold fact to the existing scoring
+  bullet (containment-path-only, position-aware optional long-ā, symmetric folds, strict SUPERSET
+  of bounded_contains, shared across the 5 call-sites, normalize()/equality submetrics byte-stable,
+  names test_orthography_rebaseline.py). Fact COUNT unchanged (10) — appended, no new bullet.
+- **lessons-critical.md** (hot): was at 11 lessons (over the ≈10 cap). Consolidated the two
+  viewer gotchas (HeroUI v3 provider-less + the REMOVED client-side GitHub data layer) into one
+  bullet to make room, then added the Spec-52 fold-design lesson (context-free Arabic fold is
+  provably insufficient → position-aware + hand-verified + scoring-only normaliser). Net 11, no
+  growth. Deep version already lives in cold lessons-learned.md (Scoring & evaluation).
+- **TUTORIAL.md**: the one rotted hard-coded number — opus original-run overall 69% → **71%**
+  (post-rebaseline). KJV 100/86/12 are English, unchanged. Only one %-triplet in the file.
+- **CODE_WALKTHROUGH.md** §4: added a paragraph on the scoring-only Arabic fold (fold_aware_contains
+  score.py:340 / score_normalize score.py:255, superset, no generator drift) + extended the
+  Sanctioned-exception note to cite Spec 52 + test_orthography_rebaseline.py. Pointers verified
+  exact; test_code_walkthrough.py guard green.
+- **first-run README**: deliberately NO note — it's English-only (digest ef837474), its scores.jsonl
+  was untouched, and the Arabic-only fold provably can't affect it. A Spec-52 note there would be
+  noise, not self-describing evidence. (Moved-numbers table lists it as 0 for completeness.)
+
+Path note: plan said pipelines/TUTORIAL.md + pipelines/CODE_WALKTHROUGH.md; both actually live at
+repo ROOT. Edited the real files.
+
+Test gate (bash .codev/checks/test.sh, both lanes — branch touches runs/ + pipelines/): pipelines
+**640 pass / 2 skip**, viewer lane passed. Committing phase-3 docs, then porch done 52 → 3-way
+consult. Moved-numbers packet (incl. the 8-cell #60 residual census) goes to the architect at the
+pr gate per standing order; I do NOT self-approve any gate.
