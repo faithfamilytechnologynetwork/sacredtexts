@@ -114,3 +114,30 @@ claude grepped the real consumers and found gaps I missed. Re-verified each, the
   blocker).
 
 Next: plan rebuttal + spec limitation edit committed → porch done (plan).
+
+## Plan consult iter2 (2026-10-29) — both REQUEST_CHANGES, strategy holds; 2 silent-corruption traps
+
+claude found two HIGH traps + wiring errors; codex found the submetric-wiring + ordering bugs:
+- **TRAP: viewer false-green.** .codev/checks/test.sh maps runs/**→pytest lane ONLY; apps/viewer/
+  src/local/tutorialRun.test.ts pins rebaselined tutorial numbers off-disk → "suite green" could
+  hide red vitest. Fix: re-pin viewer test + run `pnpm -C apps/viewer test` explicitly + map runs→
+  BOTH lanes.
+- **TRAP: analyze.py:14 imports MAIN checkout** (`sys.path.insert(0,"/Users/.../sacredtexts/
+  pipelines")`) → re-run from worktree uses UNFOLDED scorer (silent non-rebaseline). Fix path
+  repo-relative first.
+- **Wiring fixed**: exact stays RAW; token_f1 must switch its internal normalize()→score_normalize
+  (else Arabic token_f1 won't move); normalized→score_normalize; contains→fold-aware bounded_contains;
+  cite_passage _citation_candidates+boundary AND verdict both move together (else n_candidates
+  disagrees → false hedge).
+- **Ordering fixed**: score_normalize INTERLEAVES fold as NFKD→fold→marks, NOT fold()+normalize()
+  (which runs fold before NFKD → compat forms evade). Prototype already did this; plan prose was wrong.
+- **Rebaseline re-pin surface completed**: FLIP_SET + invariants + EXPECTED_ACCURACY/COVERAGE in
+  test_contains_reference_rebaseline; non-Arabic SHA from pre-change `git show HEAD:` (not circular).
+- **probes.py:18-40 fork** (looser context-free fold_arabic_letters used by clustered_accuracy):
+  re-express over score_normalize (nothing committed depends on it).
+- **Refusal nuance**: under default strict+containment, classify_refusal edit can't independently
+  move an outcome (contained⇒correct=1⇒not refused via headline); matters only under --evaluator
+  strict. Refused-set change flows through the flip set.
+- Arabic-cell count pinned to chosen def (≈2/132/452; 840 was a looser count).
+
+All folded into plan. Next: iter2 rebuttal committed → porch done (plan).

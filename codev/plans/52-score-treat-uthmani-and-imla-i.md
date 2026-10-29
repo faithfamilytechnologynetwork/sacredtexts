@@ -29,22 +29,42 @@ whitespace in the normaliser — preserving the meaning of Arabic `exact`/`norma
    committed question-set `ANCHOR_DIGEST` (`test_original_run_regression.py`), making the
    reference run non-reproducible, and would touch the copyright path (`audit.py` uses
    `strip_script_marks`). The spec mandates the pre-Mn ordering but **not** that the fold live in
-   the shared normaliser. So: `normalize()` stays byte-identical; `score_normalize()` =
-   `fold_arabic_orthography` (pre-mark) + the existing normalise pipeline; generation, editions,
-   and the audit gate are untouched and the digest stays stable.
+   the shared normaliser. So: `normalize()` stays byte-identical; `score_normalize()` interleaves
+   the fold **inside** the existing pipeline at the correct point — **NFKD → quote/dash folds →
+   `fold_arabic_orthography` → `strip_script_marks` (mark deletion) → punctuation → whitespace** —
+   NOT `fold(text)` wrapped around `normalize(text)` (that would run the fold before NFKD and let
+   NFKD-decomposed Arabic presentation forms evade it). Generation, editions, and the audit gate
+   are untouched and the digest stays stable.
 2. **Containment contract — extend `bounded_contains` to be fold-aware (one contract), not a
    parallel function.** Its docstring makes it the single shared containment rule; its callers are
    `score_answer`, `outcomes.classify_refusal` (`:133`), `facct.py` (`:277`), `probes.py` (`:203`).
    A parallel Arabic-only function would let `facct` silently diverge while `test_facct.py:505`
    still passes. So `bounded_contains` uses `score_normalize` + whitespace-insensitive Arabic
    handling, and all four callers get the consistent folded contract.
+
+**Precise scorer wiring (iter-2 correction).** Of the four text-retrieval submetrics: `exact`
+stays **raw** `answer.strip()==target.strip()` (no normaliser — unchanged); `normalized` uses
+`score_normalize`; `token_f1` must be changed to call `score_normalize` internally (it calls
+`normalize()` today, so without this edit Arabic `token_f1` would NOT move as the spec requires);
+`contains_reference` goes through the fold-aware `bounded_contains`. For `cite_passage`, both the
+candidate dedup (`_citation_candidates` / the boundary regex over the expected citation,
+`score.py:247-276`) **and** the verdict (`bounded_contains`, `:281`) must move to `score_normalize`
+together — folding only the verdict would make `n_candidates` disagree with the credit (the same
+citation in two orthographies would count as two candidates → false hedge → 0).
 3. **Consequence — the flip set is NOT refusal-independent; correct the #48 reasoning.** Because
    `outcomes.classify_refusal` uses `bounded_contains`, an Arabic cell with a leading decline cue
    that *did* deliver the verse in Imla'i flips `refused` → scored (correctly — it delivered). So
    the rebaseline moves some Arabic **refused** classifications too, and a rebase onto #48 is
    **not** automatically clean: the witness must be re-run after a #48 rebase. (The flip set is
    still defined on the text-match projection, so it does not *depend on #48's* decline-cue logic;
-   but the two touch the same population — Arabic cells with decline cues.) **Merge order
+   but the two touch the same population — Arabic cells with decline cues.) **Mechanism nuance
+   (iter-2):** under the default `strict`+`containment` graders — which all three committed runs
+   use — the `classify_refusal` `bounded_contains` edit cannot *independently* move an outcome:
+   `_with_outcome` gates `refused` on `not correct`, and a newly-contained cell already has
+   `correct=1`, so its refused→scored change flows entirely through the headline flip (already in
+   the flip set). The `classify_refusal` edit matters only under `--evaluator strict`. So the
+   refused-set movement on the committed runs is a *consequence* of the flip set, which makes the
+   delta easier to reason about — state this in the witness rationale. **Merge order
    (architect, 2026-10-29): #48 lands FIRST; this project rebases onto the post-#48 baseline and
    re-runs the orthography witness over it** — the witness is a mechanical projection-delta that
    re-runs cheaply over any baseline, whereas #48's hand-locked per-cell dispositions should not be
@@ -99,12 +119,15 @@ byte-identical (suite green), so the hard logic is reviewed before the contract 
 
 #### Files to Create / Modify
 
-- `pipelines/sacredbench/score.py` — add `fold_arabic_orthography(text)` and
-  `score_normalize(text)` (= fold then the existing `normalize` pipeline). Do **not** yet call
-  them from `normalize()`, `score_answer`, or `bounded_contains`. The word-final detector inside
-  the fold must **skip Mn marks + `_SCRIPT_EDITORIAL`** to find the next real letter, because the
-  fold runs pre-mark-deletion (verified: 2,972 corpus words have a final maqsura followed only by
-  marks, e.g. `وَعَلَىٰٓ` = ى + U+0670 + U+0653; a naive adjacency check mis-folds it to `وعلا`).
+- `pipelines/sacredbench/score.py` — add `fold_arabic_orthography(text)`, `score_normalize(text)`
+  (the fold interleaved into the pipeline: NFKD → quote/dash → fold → mark deletion → punct → ws),
+  and the whitespace-insensitive Arabic containment helper. Do **not** yet call any of them from
+  `normalize()`, `score_answer`, `token_f1`, or `bounded_contains` (those wirings happen in Phase 2
+  — this keeps the default path, and therefore every committed score, byte-identical). The
+  word-final detector inside the fold must **skip Mn marks + `_SCRIPT_EDITORIAL`** to find the next
+  real letter, because the fold runs pre-mark-deletion (verified: 2,972 corpus words have a final
+  maqsura followed only by marks, e.g. `وَعَلَىٰٓ` = ى + U+0670 + U+0653; a naive adjacency check
+  mis-folds it to `وعلا`).
 - `pipelines/tests/test_arabic_orthography_fold.py` (new) — the unit/invariant suite (Latin
   invariance kept consistent with `test_normalize_nonlatin.py`).
 
@@ -112,7 +135,9 @@ byte-identical (suite green), so the hard logic is reviewed before the contract 
 
 - [ ] `fold_arabic_orthography` folding each in-scope pair (dagger→ا, medial digraph→ا, final
       digraph/bare maqsura→ي, standalone hamza ء→ا), direction-independent.
-- [ ] `score_normalize` composing the fold + existing normalise pipeline.
+- [ ] `score_normalize` interleaving the fold at the right pipeline point (NFKD → fold → marks),
+      with a test on an Arabic **presentation/compatibility form** that NFKD decomposes, proving the
+      fold still applies after decomposition (guards against the fold-before-NFKD ordering bug).
 - [ ] Per-pair unit tests; already-folded cases (madda/seats/wasl) still fold.
 - [ ] Context-dependence negatives: `أَتَىٰكُمْ↔أَتَاكُمْ` fold equal AND `عَلَىٰ↔على` stay equal,
       **plus a stacked-mark case `وَعَلَىٰٓ`** (final maqsura behind a dagger+madda) stays `وعلي`,
@@ -160,23 +185,49 @@ pre-registered, hand-verified set.
 
 #### Files to Create / Modify
 
-- `pipelines/sacredbench/score.py` — `score_answer` uses `score_normalize` for
-  `exact`/`normalized`/`token_f1`; `bounded_contains` uses `score_normalize` + whitespace-insensitive
-  Arabic containment (so `contains_reference`, `outcomes`, `facct`, `probes`, and the cite_passage
-  candidate dedup all share it). `normalize()` is left unchanged. Update the module docstring to
-  state the Arabic-orthography contract, the `score_normalize` vs `normalize` split, and the ordering.
+- `pipelines/sacredbench/score.py` — wire per the "Precise scorer wiring" note above: `normalized`
+  → `score_normalize`; `token_f1` → change its internal `normalize()` calls to `score_normalize`
+  (else Arabic `token_f1` does not move); `exact` stays **raw** (unchanged); `bounded_contains` →
+  `score_normalize` + whitespace-insensitive Arabic containment; `cite_passage`'s
+  `_citation_candidates` + boundary regex **and** verdict both move to `score_normalize` together.
+  `normalize()` is left unchanged. Update the module docstring (the `score_normalize` vs `normalize`
+  split, ordering, the Arabic contract).
+- `pipelines/sacredbench/probes.py` — `probes.py:18-40` already holds a **looser, context-free**
+  Arabic fold (`fold_arabic_letters`: `ى→ي`, `ئ→ي`, `ة→ه` after `normalize()`) used by
+  `clustered_accuracy`. That is the exact fork the containment decision closes, in the analysis
+  layer. **Decision: re-express it over `score_normalize`** (so a probe cannot assert an
+  equivalence the scorer denies); update `test_probes.py`. Nothing committed depends on it (no probe
+  artifact in any `runs/`), so if re-expression proves non-trivial the fallback is to document the
+  divergence explicitly — but default to reconciling.
 - Regenerate, for `first-run-2026-10-11`, `tutorial-2026-10-11`, `original-2026-10-21`:
   `scores.jsonl`, `summary.json`/`summary.md`; `original-2026-10-21/facct.json`/`.md`;
   `tutorial-2026-10-11/jev_agreement.json`/`.md`. (Panel/usage fed back verbatim; never re-run
   `collect`/`generate`.)
-- Regenerate `runs/exp-arabic-prompts-2026-10-29/` **using its own layout**: it has
-  `scores-en.jsonl` + `scores-ar.jsonl` (no `scores.jsonl`), its own `analyze.py`, and **no**
-  summary files. Re-run `analyze.py` to refresh both conditions; keep `answers-ar-normalized.jsonl`
-  as provenance (the hand-normalisation the scorer fold now supersedes — note this in the run
-  README). Do not invent a generic `scores.jsonl`/`summary.*`.
+- `runs/exp-arabic-prompts-2026-10-29/analyze.py` — **fix the hard-coded `sys.path.insert(0, "/Users/
+  …/sacredtexts/pipelines")` (`:14`) to a repo-relative path first.** As written it imports the
+  **main checkout's** scorer, so re-running it from this worktree would regenerate `scores-{en,ar}.jsonl`
+  with the UNFOLDED scorer — a silent non-rebaseline. Then re-run it to refresh both conditions.
+  Keep `answers-ar-normalized.jsonl` as provenance (the hand-normalisation the fold now supersedes —
+  note in the run README); preserve the README's pre-fold headline (82.1/78.6 vs 71.4/71.4) as
+  *pre-fold* evidence rather than overwriting it. Use the README's own prototype re-score
+  (`:67-87`, en 52/56 / ar 52/56) as a free independent cross-check on the Phase-2 numbers. Do not
+  invent a generic `scores.jsonl`/`summary.*` for this run.
+- `apps/viewer/src/local/tutorialRun.test.ts` — re-pin the rebaselined tutorial numbers it reads off
+  disk (leaderboard order + non-increasing assert, `opus≈1.0`/`haiku≈0.7121`, the
+  `haiku-search` correct/refused/wrong counts incl. the Sunni-Islam/Arabic subset). **The test
+  dispatcher `.codev/checks/test.sh` maps `runs/**`→the pipelines (pytest) lane only**, so a
+  pipelines+runs PR would NOT run vitest and "full suite green" could hide a red viewer suite —
+  Phase 2 must run `pnpm -C apps/viewer test` explicitly AND map `runs` to **both** lanes in the
+  dispatcher (the treatment `fixtures/` already gets), so this can't silently regress again.
 - `pipelines/tests/test_contains_reference_rebaseline.py` — rescope its projection oracle to
-  **non-Arabic cells only** (Arabic `exact`/`normalized`/`token_f1` are expected to move), and
-  re-pin its **refused** sets/counts for the Arabic cells that reclassify.
+  **non-Arabic cells only** (the rescoped non-Arabic SHA computed from **pre-change `git show HEAD:`**
+  scores filtered to non-Arabic — NOT recomputed from the regenerated file, which would be
+  circular); re-pin `FLIP_SET` + `test_headline_flips_exactly_the_registered_cells` (the predicate
+  `correct==1 and normalized==0` now admits Arabic containment-credited cells — first-run's 2 Arabic
+  cells are under `gemma-3-4b`/`llama-3.1-8b`, outside the current claude-haiku-only set, so check
+  them); the `test_contains_reference_invariants` "`correct==normalized` except flipped" invariant;
+  `EXPECTED_ACCURACY`/`EXPECTED_COVERAGE` for tutorial `retrieve_quote` (all four models carry Arabic
+  cells); and the **refused** sets/counts for any Arabic cells that reclassify.
 - `pipelines/tests/test_orthography_rebaseline.py` (new) — the durable witness: (1) a SHA over the
   **non-Arabic** projection frozen from pre-change committed scores (`git show HEAD:…`), proving
   nothing non-Arabic moved; (2) the **full Arabic before/after delta** — every Arabic cell whose
@@ -196,8 +247,14 @@ pre-registered, hand-verified set.
       unchanged; the four submetrics keep their defined meaning.
 - [ ] All four runs regenerated (scores + summary + facct + jev_agreement / analyze outputs) and
       internally consistent.
-- [ ] "Arabic cell" defined by answer-script (answer or expected contains Arabic code points),
-      partitioning frozen vs movable cells; covers cite_passage Arabic cells, which can also move.
+- [ ] "Arabic cell" defined precisely (a cell whose **answer or expected text** contains
+      Arabic-script code points) and the resulting count **pinned** so a partition drift is visible
+      (a prototype count by that definition gives ≈2 / 132 / 452 movable cells for
+      first-run / tutorial / original; this differs from the spec's 840 figure, which counted any
+      answer row with Arabic codepoints incl. verify_source cells whose expected is an English
+      yes/no — pin whichever the chosen definition yields, and note the hand-verification budget is
+      bounded by *moved* cells, not by the partition size). Covers cite_passage Arabic cells, which
+      can also move.
 - [ ] New `test_orthography_rebaseline.py`; `test_contains_reference_rebaseline.py` rescoped +
       refused-sets re-pinned; first-run/tutorial/original guards re-pinned; `ANCHOR_DIGEST`
       confirmed stable.
@@ -276,6 +333,9 @@ confirm the architect acknowledgement. No code.
 | Dagger fold ordered after mark deletion (silently no-ops) | Medium | High | Ordering is a stated contract; dagger-pair unit test fails if mis-ordered |
 | Rebaseline misses a run or derived artifact | Medium | Medium | Phase-2 enumerates all four runs + summary/facct/jev_agreement/analyze; witness asserts self-consistency |
 | Latin/Hebrew accidentally affected | Low | High | Script-scoped fold; Latin-invariance + Hebrew-untouched tests; non-Arabic projection SHA frozen |
+| Viewer suite pins moved tutorial numbers but dispatcher runs only pytest (false green) | Medium | High | Re-pin `tutorialRun.test.ts`; run `pnpm -C apps/viewer test` explicitly; map `runs`→both lanes in `.codev/checks/test.sh` |
+| `analyze.py` imports the main checkout's scorer → silent non-rebaseline from the worktree | Medium | High | Fix its `sys.path.insert` to repo-relative before re-running; cross-check against the README's prototype re-score (52/56) |
+| Generation (unfolded `normalize`) vs scoring (folded) treat negatives differently | Low | Low | Harmless at verse length across different works (negatives are whole other-work entries); stated explicitly, not left implicit |
 | Hard-coded numbers in TUTORIAL/CODE_WALKTHROUGH rot | Medium | Low | Phase-3 refresh + grep gate |
 | Two rebaselines by accident (churn) | Low | Medium | Phase 1 deliberately unwired; rebaseline happens exactly once in Phase 2 |
 
