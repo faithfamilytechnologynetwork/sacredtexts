@@ -66,3 +66,10 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   architect, waiting. All keyless deliverables done; porch phase stays at `execute` until the
   live run can run. Resume path: keys in env → run README's recipe (collect → score) → fill
   Results + write codev/reviews/54-...md → `porch done 54` to analyze → gate.
+- 2026-10-29: architect reply — (b) slugs CONFIRMED: Claude=claude-sonnet-5-5,
+  Gemini=gemini-3.8-flash (both already set); OpenAI=native flagship in the gpt-6.1-sol
+  family (gpt-6.1 = right family, exact native id fail-fasts at first collect). Comparability
+  with main panel + exp-arabic (sonnet+sol) is the tiebreaker. Recorded in models.yaml.
+  (c) HOLD the PR — ship code + live evidence together; if keys haven't landed within ~24h
+  (≈2026-10-30 17:30Z) architect will have me open a deferred code+harness PR (Refs #54, live
+  run deferred). (a) keys with Waleed. STILL WAITING on keys; nothing to advance.

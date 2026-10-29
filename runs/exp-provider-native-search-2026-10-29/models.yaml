@@ -19,8 +19,12 @@
 # so price_in/price_out are omitted and `score` reports token totals only, never a cost.
 #
 # Keys come from the ENVIRONMENT only (ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY).
-# Model slugs marked (confirm) are finalised when keys are provisioned — the exact current
-# slug may differ; the experiment design is slug-independent.
+#
+# Slug intents (architect-confirmed 2026-10-29): Claude = claude-sonnet-5-5, Gemini =
+# gemini-3.8-flash. OpenAI = the native flagship in the gpt-6.1-sol family (`gpt-6.1` below is
+# the right family; the EXACT native id validates at the first collect call — fail-fast by
+# design, no invented slug). Panel kept comparable with the signed-off main panel and the
+# exp-arabic experiment (sonnet + sol).
 concurrency: 4
 models:
   # --- Anthropic (Claude) ---
