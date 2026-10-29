@@ -57,4 +57,29 @@ Empirically verified their claims in a REPL before revising (don't guess Unicode
 - **Spec-15 submetric consequence** of any Arabic-whitespace rule made explicit (token_f1
   degenerates) — left as a Critical open question for the plan to decide.
 
-Spec revised in place. Next: commit "with multi-agent review", `porch next` (likely iter2 consult).
+Spec revised in place; rebuttal written; porch advanced to PLAN (ASPIR autonomous on spec).
+
+## Plan phase (2026-10-29) — resolved both Critical open questions by prototyping
+
+Prototyped the fold against real code + the exp run (scratchpad only, not committed):
+
+- **ى/ىٰ = position-aware**: medial digraph ىٰ→ا (long ā), word-final digraph + bare maqsura ى→ي,
+  lone dagger→ا, standalone hamza ء→ا. Verified أَتَىٰكُمْ↔أَتَاكُمْ merge AND عَلَىٰ↔على preserved,
+  AND قال≠قيل, بيت≠بات. Runs BEFORE Mn deletion (dagger is Mn).
+- **word boundary = whitespace-insensitive containment predicate ONLY** (not in normalize()),
+  preserving exact/normalized/token_f1 meaning (Spec-15). يَـٰبُنَىَّ↔يَا بُنَيَّ caught via contains.
+- **collision gate**: before/after corpus sweep (19002 Qur'an words) is a DIAGNOSTIC — it shows
+  65 "introduced" merges but most are CORRECT same-word Uthmani↔plene reunions (current scorer's
+  dagger-DELETION spuriously split عِبَـٰدَنَآ→عبدنا); a few genuine merges (نبى/نبّئ). ⇒ the real
+  gate is the HAND-VERIFIED pre-registered flip set at scoring granularity.
+- **End-to-end validation on exp run**: converges — en retrieve_quote sol 3→6, sonnet 1→6; ar both
+  0→5; complete_unit→7/7. My fold is MORE complete than the README quick-fold (resolves 10:50
+  5d482247 residual via hamza rule). Exact flip set frozen during implement Phase 2.
+
+Plan = 3 phases, rebaseline done ONCE: P1 build+test fold capability UNWIRED (committed scores
+byte-identical, suite green); P2 wire into normalize()+containment + atomic rebaseline of all 4
+runs + new test_orthography_rebaseline.py witness (non-Arabic SHA frozen + pre-registered flip
+set) + rescope #15 oracle non-Arabic + re-pin first-run/tutorial guards; P3 governance docs +
+run-README notes + architect moved-numbers packet.
+
+Next: PLAN_DRAFTED → porch plan consult (codex+claude).
