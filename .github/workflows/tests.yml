@@ -6,10 +6,10 @@ on:
 
 jobs:
   pipelines:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Install into .venv
@@ -20,15 +20,15 @@ jobs:
         run: .venv/bin/python -m pytest pipelines -q
 
   viewer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.30.2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: pnpm
           cache-dependency-path: apps/viewer/pnpm-lock.yaml
       - name: vitest

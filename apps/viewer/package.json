@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.30.2",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "description": "Browse & explore the Sacred Texts benchmark - a local-only SPA that reads run artifacts (summary/scores/answers/questions) and renders a leaderboard, error explorer, and cross-run standings.",
   "scripts": {
