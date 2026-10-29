@@ -244,3 +244,18 @@ then REVIEW doc.
 - phase_2 (final implement phase) complete. Next: REVIEW phase — write codev/reviews/48-*.md
   (per-run moved-cell enumeration + before/after numbers + post-fix jev note + moved means, all
   banked above), then open PR.
+
+### Review phase + PR (2026-10-29)
+
+- Wrote `codev/reviews/48-*.md`: 10/10 ACs met, moved-cell enumeration (5 tutorial A cells with
+  answer-text delivery assertions), before/after table, post-fix jev (11→6, 0.985), aggregate
+  similarity means, full consult dispositions (spec/plan/impl-ph1 ×3/impl-ph2 ×3), deviations,
+  lessons, follow-ups (#52 handoff, _NON_IDENTITY conservatism, jev re-align).
+- Governance routing: HOT `arch-critical.md` Scoring fact gained the Spec 48 assertion-gated refusal
+  clause (no line added); COLD `lessons-learned.md` got the assertion-vs-disclaimer recipe (Scoring)
+  + "rebaseline must sync human-readable run-dir figures" (Process).
+- Committed phase_2 consult evidence (iter1-3) to match the committed phase_1 pattern.
+- Both lanes green. Pushed builder/aspir-48. **PR #55 opened** (Closes #48):
+  https://github.com/faithfamilytechnologynetwork/sacredtexts/pull/55
+- NEXT: run checks via `porch done 48`, signal PR_READY, notify architect, then WAIT for the `pr`
+  human-approval gate (do NOT self-approve/merge). After merge → verify phase.
