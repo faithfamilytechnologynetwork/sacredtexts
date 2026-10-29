@@ -147,6 +147,20 @@ comment reading opus-search "93%" while `summary.md` shows "92%" is **not** stal
 with JS `Math.round(0.925*100) = 93`, `summary.md` truncates with Python `int(92.5) = 92`. The comment
 correctly describes the renderer it documents; "fixing" it would make it lie. Surfaced, not changed.
 
+### Review / PR Phase (Round 1) — codex + claude
+- **claude (APPROVE, HIGH)**: re-reproduced oracle SHAs, the 5-cell delta, Jev figures, and both
+  lanes. Minor notes: dead `ANSWER_FILES` → **Addressed** (removed); `scores-ar.jsonl` paired with
+  the un-normalized answers file → **Addressed** (re-paired to `answers-ar-normalized.jsonl`, inert
+  today); same-sentence disclaimer *after* the payload reads as delivery → **N/A** this PR
+  (documented #52 handoff, no committed cell affected); AC3 guarded only transitively →
+  **Acknowledged** (verified manually + via the refused-set gate; a direct `refusal_p` assert would
+  re-encode the Jev join the spec keeps as a cross-check).
+- **codex (REQUEST_CHANGES, HIGH)**: `asserts_delivery`'s RECON path checked negation/non-identity
+  only through the claim's end, so a disqualifier between the claim and a later payload
+  ("…is not reliable; the adjacent text is: «script»") was missed. → **Addressed** (commit `26ec480`):
+  widened the RECON span to the payload's start; the only committed RECON A cell `d4c3bda0b400` still
+  flips; regression case added. Rebaseline artifacts untouched (classifier-only sharpening).
+
 ## Lessons Learned
 
 ### What Went Well
@@ -214,8 +228,11 @@ locally), not flakes.
   Arabic refused cells afterward (its witness, not this PR). Per the architect, this PR lands first
   and #52 rebases onto it.
 - **`_NON_IDENTITY` is conservative** — it can strand a genuine A cell as `refused` rather than
-  risk flipping a B cell; cross-sentence governing negation is not handled; `_SCRIPT` is
-  Hebrew/Arabic/Greek only (a Latin-script hedged delivery stays `refused`). Handoff to #52.
+  risk flipping a B cell; cross-sentence governing negation is not handled; a disclaimer that
+  **trails the payload** within the same sentence ("the line is: «script», but that is a different
+  line") still reads as a delivery (the checked span ends at the payload start — no committed cell
+  affected); `_SCRIPT` is Hebrew/Arabic/Greek only (a Latin-script hedged delivery stays `refused`).
+  Handoff to #52.
 - **Jev rubric divergence** is intentional this PR (#47's recorded grader identity); re-align the
   deterministic refusal rule with the rubric in a future `sacredbench-jev-2`.
 - The `test.sh` `runs/|texts/` → both-lanes mapping requires the pnpm toolchain for a pipelines-only
