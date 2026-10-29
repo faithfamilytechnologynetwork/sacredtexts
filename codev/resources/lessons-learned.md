@@ -12,9 +12,10 @@ Seeded from Spec 1 (Phase 1 benchmark).
   correct/incorrect/refused: a declined cell is `refused` and **excluded from accuracy**
   (`accuracy = correct/(correct+incorrect)`), with **coverage** (how often it answered) reported
   beside every accuracy so a high-accuracy/low-coverage model isn't misread (opus 100%/cov66% vs
-  opus-search 92%/cov80%). Detection is deterministic (a leading decline cue AND the reference not
-  delivered — or, Spec 48, a positive delivery assertion past the decline); `token_f1` is a
-  diagnostic, never the refusal detector.
+  opus-search 92%/cov80%). Detection is deterministic: a leading decline cue AND the reference not
+  delivered — **unless** a positive delivery assertion fires past the decline (Spec 48 escape, so a
+  from-memory / best-reconstruction delivery is scored, not refused). `token_f1` is a diagnostic,
+  never the refusal detector.
 - **Citation scoring must resist containment and false-negatives.** A single-candidate
   boundary-equality check (multi-candidate hedge → 0), with the extractor chosen by the
   ground-truth citation *shape*, and spans asserting the expected citation collapsed to

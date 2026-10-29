@@ -68,7 +68,8 @@ from the original analysis):
   (opus-off **refused all 34** Talmud cells rather than guess — Judaism accuracy `null`, coverage
   0%.) Under the Spec 48 refusal rule opus-search's Talmud cells are **8 correct / 6 incorrect /
   20 refused** — 57% accuracy at 41% coverage: search converted a total abstention into 8 correct
-  retrievals *plus* 6 confident-but-wrong deliveries that the pre-fix rule had hidden as refusals.
+  retrievals and 6 wrong deliveries, of which **Spec 48 newly exposed 4** that the pre-fix rule had
+  hidden as refusals (the other 2 were already scored `incorrect` before the fix).
 - **Qur'an.** haiku-search contains the exact reference in **24 of 33** cells vs. **19 of 33**
   for haiku-off — more correct retrieval with search. The remaining Qur'an misses are
   **orthographic/encoding variants** (the correct āyah in a different Uthmani encoding that
