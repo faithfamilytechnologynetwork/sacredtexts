@@ -3,7 +3,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { CenteredSpinner } from "../components/Loading";
 import { LeaderboardTable } from "../components/LeaderboardTable";
 import { RunSelector } from "../components/RunSelector";
-import { fetchRunIndex, type RunRef } from "../lib/runIndex";
+import { benchmarkRuns, fetchRunIndex, type RunRef } from "../lib/runIndex";
 import { loadRun, type Summary } from "../lib/localResults";
 
 // The `/` home: the benchmark leaderboard over a selectable run.
@@ -54,12 +54,14 @@ export function LeaderboardPage() {
   }, []);
 
   const runs = index.status === "ready" ? index.runs : [];
-  // The selected run id: the `?run=` value when it names a known run, else the default
-  // (most recent — the index is newest-first, so runs[0]).
+  // The selected run id: the `?run=` value when it names a known run (experiment runs included —
+  // they stay openable), else the DEFAULT: the most-recent non-experiment (benchmark) run, so a
+  // one-off `exp-*` A/B snapshot never becomes the home view. Falls back to runs[0] only if every
+  // run is an experiment run.
   const selectedId = useMemo(() => {
     if (runs.length === 0) return undefined;
     if (run && runs.some((r) => r.id === run)) return run;
-    return runs[0]!.id;
+    return (benchmarkRuns(runs)[0] ?? runs[0]!).id;
   }, [run, runs]);
 
   // (2) Load the selected run; re-run on selection change with a stale-request guard.

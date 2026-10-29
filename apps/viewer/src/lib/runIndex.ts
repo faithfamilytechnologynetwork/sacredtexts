@@ -19,6 +19,22 @@ export interface RunRef {
 export type RunIndexResult = { ok: true; runs: RunRef[] } | { ok: false; message: string };
 
 /**
+ * Whether a run id is an EXPERIMENT run (`exp-*`). Experiment runs are one-off A/B snapshots
+ * (e.g. the #54 provider-native search arm), not part of the benchmark's standing results — so
+ * they are excluded from the cross-run standings and from the leaderboard's default-home
+ * selection, but stay fully openable via `?run=<id>` and the run selector. Keeping the rule in
+ * one place means both call sites agree on what "experiment" means.
+ */
+export function isExperimentRun(id: string): boolean {
+  return id.startsWith("exp-");
+}
+
+/** The runs that count toward standings / the default home: every non-experiment run. */
+export function benchmarkRuns(runs: RunRef[]): RunRef[] {
+  return runs.filter((r) => !isExperimentRun(r.id));
+}
+
+/**
  * Fetch and parse the run index, distinguishing empty (no runs) from a genuine fetch/parse
  * failure. A 200 HTML body — a production static host with no `/runs` endpoint serving the
  * SPA shell for an unknown path — is treated as "no runs" (the empty state), never a crash.

@@ -1,7 +1,8 @@
 # Experiment 54 — Provider-native search arm: does real search change scripture fidelity?
 
 **Protocol**: EXPERIMENT (soft mode) · **Issue**: #54 · **Requested by**: Waleed (2026-10-29)
-**Status**: harness complete, **live run blocked on native API keys** (see Blockers)
+**Status**: COMPLETE (2-model pilot via OpenRouter; gemini deferred) — see the Design update
+below and `codev/reviews/54-experiment-provider-native-sea.md`
 **Run dir**: `runs/exp-provider-native-search-2026-10-29/`
 
 Related: #52 (orthography), #48, #39, #29, #11 (panel tools identity), Spec 8 (web-search seam).

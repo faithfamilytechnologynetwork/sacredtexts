@@ -2,7 +2,7 @@
 
 Proves the harness is wired correctly WITHOUT any API call or key: the panel loads, the
 questions load, the search-on/off arms carry distinct panel fingerprints, and the cell plan
-is exactly 56 x 6 = 336. Makes no network call — safe to run before keys are provisioned.
+is exactly 56 x 4 = 224 (2 models x search on/off; gemini deferred). Makes no network call.
 
     uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/dry_run.py
 """

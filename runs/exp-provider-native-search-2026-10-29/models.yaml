@@ -22,7 +22,10 @@
 #
 # UNPRICED by design: web search is billed per request (not in in/out tokens), so
 # price_in/price_out are omitted and `score` reports token totals only, never a cost. The
-# answer rows DO record per-cell cost + search-request counts from OpenRouter for provenance.
+# answer rows record per-cell search-request counts + provider-of-record from OpenRouter for
+# provenance. NOTE: per-cell COST capture was added to the provider seam AFTER this run, so
+# THIS run's 224 rows have no `cost` key (collected evidence is not retrofitted); future
+# collects record `usage.cost`.
 #
 # Key from the ENVIRONMENT only (OPENROUTER_API_KEY).
 concurrency: 4

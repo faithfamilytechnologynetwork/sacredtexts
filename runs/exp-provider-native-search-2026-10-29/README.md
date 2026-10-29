@@ -33,9 +33,14 @@ model family it does not forward natively.
 **routing-variance** across Google's backends: Google AI Studio shared-pool **429s** (4/4
 attempts), Google Vertex returns `finish_reason=error` with **no** `server_tool_use_details`
 and zero citations (2/2). A flaky/non-firing arm is not experiment-grade, so gemini is deferred
-to a native `GEMINI_API_KEY`, where the pipeline's `google_search` grounding path (built +
-tested, `providers._gemini`) runs it. This is a one-sided outcome recorded, not hidden: the
-architect's single earlier probe *did* fire, which is itself the routing-variance evidence.
+to a native `GEMINI_API_KEY`, where the pipeline's `google_search` grounding path runs it.
+
+> **Caveat on the direct-native code paths.** The direct OpenAI **Responses-API** path
+> (`providers._openai_responses_search`) and the direct **Gemini grounding** path
+> (`providers._gemini`) are **seam-tested only** (faked SDKs), **awaiting a live smoke** — they
+> have no live evidence in this run, which used the OpenRouter-transported path for sonnet+sol.
+> Do not treat them as production-verified (our own lesson: a mocked provider seam hides
+> live-only failures). The deferred gemini-native run is the smoke that would verify grounding.
 
 ## Nativeness verification (REQUIRED before the paid run)
 
@@ -150,10 +155,13 @@ readily, sonnet mostly answers from parametric memory.
 - **H2 (wrong_locus / citation errors fall): DISCONFIRMED.** `cite_passage` is flat — 7 correct /
   7 incorrect, all 7 incorrect classified `wrong_locus`, in **every** arm. Even with sol
   searching 49/56, locus/citation-form accuracy did not move at all.
-- **H3 (other-edition / orthography mismatches rise): MIXED → mostly DISCONFIRMED.** The
-  orthography prediction fails: `other_script` on `retrieve_quote` did **not** rise — sol *fell*
-  7→4, sonnet flat 3→3. Only the "other-edition" half gets weak support: sol's `retrieve_quote`
-  gained 3 `wrong_passage` on-arm (0→3) — the model quoting a different passage it fetched.
+- **H3 (other-edition / orthography mismatches rise): INCONCLUSIVE.** The implemented analysis
+  cannot measure H3's constructs: `other_script` is a *Unicode-script* change, but Uthmani and
+  Imla'i are **both Arabic script** — so it does not capture orthography; and `wrong_passage` is
+  just low token-overlap, not an edition determination. The raw movements (sol `other_script`
+  7→4, `wrong_passage` 0→3 on `retrieve_quote`) are suggestive but don't establish edition or
+  orthography drift. For a pilot, **inconclusive** is the honest call — a real H3 test needs
+  manual edition/orthography adjudication (ties into #52), which is out of scope here.
 
 ### Unregistered but clearest finding
 
@@ -168,5 +176,13 @@ Search injects fetched pages as prompt tokens: `sol-search` used **502k** input 
 `sol`'s 9.5k (≈53×); `sonnet-search` 674k vs 14.7k. Token totals in `summary.md`; the run stayed
 well under the $10 cap (per-cell OpenRouter costs from the verification probes ⇒ ≈$5–7 total).
 UNPRICED by design, so `score` reports tokens only.
+
+### Viewer
+
+This is the first `exp-*` run with `scores.jsonl`/`summary.json`, so the viewer can render it.
+Experiment runs are **excluded from the cross-run standings and from the leaderboard's
+default-home selection** (`isExperimentRun` / `benchmarkRuns` in `apps/viewer/src/lib/runIndex.ts`)
+so a one-off A/B snapshot never presents itself as a model's current standing — but this run
+stays fully **openable** via the run selector and `/?run=exp-provider-native-search-2026-10-29`.
 
 Full discussion, limitations, and next steps: `codev/reviews/54-experiment-provider-native-sea.md`.

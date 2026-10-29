@@ -34,9 +34,24 @@ WEB_SEARCH_TOOL = {"type": "web_search_20250305", "name": "web_search", "max_use
 
 # OpenAI Responses-API native web search — the search a ChatGPT user actually gets (#54).
 # Pinned to the stable tool type; recorded in the run README as part of what the run proves.
-# Reached only via provider=openai with NO base_url (config.py forbids web_search on a
-# third-party OpenAI-compatible host), so this always runs on OpenAI's own endpoint.
 OPENAI_WEB_SEARCH_TOOL = {"type": "web_search"}
+
+# SINGLE SOURCE OF TRUTH (#54 review item 9): which model families an OpenRouter-class host
+# forwards to the provider's OWN native server-side search, and the exact tool block to send
+# for each. config.py derives its web_search allowlist from the KEYS of this map; this module
+# picks the tool SHAPE from the VALUES. Add a family here and nowhere else — a new family must
+# declare its block, so it can never silently inherit the normalised shape.
+OPENROUTER_SEARCH_TOOL_BY_FAMILY = {
+    "anthropic/": WEB_SEARCH_TOOL,       # Anthropic's native block, forwarded verbatim
+    "openai/": OPENAI_WEB_SEARCH_TOOL,   # normalised {"type": "web_search"}
+}
+
+# Per-family expected provider-of-record (case-insensitive substring) and citation annotation
+# style — the mechanical nativeness signals asserted on every search-on cell (#54 review item 4):
+# the host's upstream must be the real vendor, and (when the answer cites) the annotation shape
+# must be that vendor's own (Anthropic ships a `content` snippet; OpenAI ships char offsets).
+_EXPECTED_PROVIDER_SUBSTR = {"anthropic/": ("claude", "anthropic"), "openai/": ("openai",)}
+_EXPECTED_CITATION_STYLE = {"anthropic/": "anthropic_content", "openai/": "openai_offsets"}
 
 # stop_reasons that mean the turn FINISHED and its text is the model's real answer. Any
 # other value is an incomplete turn — max_tokens (truncated), pause_turn (a long-running
@@ -183,20 +198,58 @@ def _openai_responses_search(client: Any, model: ModelSpec, prompt: str) -> tupl
     return text, _openai_responses_usage(resp)
 
 
+def _family_of(model_slug: str) -> str | None:
+    """The forwarded-family prefix this slug belongs to (``anthropic/`` / ``openai/``), or None."""
+    for fam in OPENROUTER_SEARCH_TOOL_BY_FAMILY:
+        if model_slug.startswith(fam):
+            return fam
+    return None
+
+
 def _openrouter_search_tool(model_slug: str) -> dict:
-    """The native-search tool block the OpenAI-compatible host forwards for this model family.
-    Anthropic models take Anthropic's own server-tool block (verbatim, forwarded to Claude's
-    native web_search); other forwarded families take the normalised ``{type: web_search}``.
-    config.py has already confirmed the family is one the host forwards natively."""
-    if model_slug.startswith("anthropic/"):
-        return WEB_SEARCH_TOOL
-    return OPENAI_WEB_SEARCH_TOOL
+    """The native-search tool block the host forwards for this model family, from the single
+    source of truth. config.py has already confirmed the family is forwarded; defensive here."""
+    fam = _family_of(model_slug)
+    if fam is None:
+        raise ProviderError(f"{model_slug}: no OpenRouter native-search tool shape for this family")
+    return OPENROUTER_SEARCH_TOOL_BY_FAMILY[fam]
+
+
+def _assert_native_arm(model_slug: str, usage: dict) -> None:
+    """Fail loud unless this search-on cell mechanically proves the provider's OWN native
+    search ran — not an OpenRouter-side generic/Exa layer (#54 review item 4). Every search-on
+    cell must carry a provider-of-record matching the family; a cell that cited must carry the
+    family's own annotation shape. This is the load-bearing discipline of the experiment, made
+    mechanical so a drifted/non-native response stays pending instead of being committed."""
+    fam = _family_of(model_slug)
+    if fam is None:
+        return
+    prov = (usage.get("provider") or "").lower()
+    if not prov:
+        raise ProviderError(
+            f"{model_slug}: search-on cell carries no provider-of-record — cannot prove native "
+            "search (vs an OpenRouter/Exa layer); refusing to commit."
+        )
+    if not any(sub in prov for sub in _EXPECTED_PROVIDER_SUBSTR[fam]):
+        raise ProviderError(
+            f"{model_slug}: provider-of-record {usage.get('provider')!r} does not match the "
+            f"native provider expected for family {fam!r} {_EXPECTED_PROVIDER_SUBSTR[fam]} — "
+            "refusing (possible non-native / third-party search)."
+        )
+    style = usage.get("citation_style")
+    if style and style != _EXPECTED_CITATION_STYLE[fam]:
+        raise ProviderError(
+            f"{model_slug}: cited with annotation style {style!r}, not the {fam!r} native shape "
+            f"{_EXPECTED_CITATION_STYLE[fam]!r} — a uniform layer would not match the vendor's "
+            "own shape; refusing (possible non-native search)."
+        )
 
 
 def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tuple[str, dict]:
     """Single-turn chat.completions call that carries a provider's NATIVE web search through an
     OpenAI-compatible host (OpenRouter). Records provider-of-record, the server-tool search
-    count, and cited URLs into usage — the per-cell nativeness evidence #54 requires."""
+    count, cost, and cited URLs into usage, and asserts the arm is mechanically native before
+    returning — the per-cell nativeness evidence #54 requires."""
     resp = client.chat.completions.create(
         model=model.model,
         messages=[{"role": "user", "content": prompt}],
@@ -217,7 +270,9 @@ def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tup
             "failure (re-run retries the pending cell)."
         )
     text = choice.message.content or ""
-    return text, _openrouter_usage(resp, choice)
+    usage = _openrouter_usage(resp, choice)
+    _assert_native_arm(model.model, usage)  # mechanical nativeness gate — fail loud if not native
+    return text, usage
 
 
 def _gemini(model: ModelSpec, prompt: str) -> tuple[str, dict]:
@@ -345,20 +400,41 @@ def _openrouter_usage(resp: Any, choice: Any) -> dict:
     stu = udump.get("server_tool_use_details")
     if isinstance(stu, dict) and stu.get("web_search_requests"):
         out["web_search_requests"] = stu["web_search_requests"]
+    # per-cell cost (the host reports it with usage.include; UNPRICED scoring ignores it, but
+    # recording it makes cost provenance TRUE for future collects — #54 review item 3).
+    cost = udump.get("cost")
+    if cost is not None:
+        out["cost"] = cost
     # provider-of-record (OpenRouter's upstream): part of the per-cell nativeness evidence
     provider = getattr(resp, "provider", None)
     if provider:
         out["provider"] = provider
     citations: list[str] = []
+    style: str | None = None
     for ann in getattr(choice.message, "annotations", None) or []:
         ad = ann.model_dump() if hasattr(ann, "model_dump") else (ann if isinstance(ann, dict) else {})
         if ad.get("type") == "url_citation":
-            url = (ad.get("url_citation") or {}).get("url")
+            uc = ad.get("url_citation") or {}
+            url = uc.get("url")
             if url:
                 citations.append(url)
+            style = style or _citation_style(uc)
     if citations:
         out["citations"] = _dedupe(citations)
+    if style:
+        out["citation_style"] = style
     return out
+
+
+def _citation_style(url_citation: dict) -> str | None:
+    """Classify a url_citation annotation by its vendor-native shape: Anthropic ships a
+    ``content`` snippet; OpenAI ships character offsets. The per-provider difference is the
+    decisive proof the search is native, not a uniform OpenRouter/Exa layer (#54)."""
+    if url_citation.get("content"):
+        return "anthropic_content"
+    if url_citation.get("start_index") is not None or url_citation.get("end_index") is not None:
+        return "openai_offsets"
+    return "other"
 
 
 def _gemini_search_provenance(resp: Any) -> dict:

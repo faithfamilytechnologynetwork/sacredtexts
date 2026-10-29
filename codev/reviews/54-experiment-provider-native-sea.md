@@ -42,11 +42,13 @@ locus errors fall), H3 (edition/orthography mismatches rise).
 3. **H2 — DISCONFIRMED.** `cite_passage` is perfectly flat (7/7, all misses `wrong_locus`) in
    every arm. Even with sol searching 49/56, citation locus/form did not improve — locus looks
    like a parametric formatting skill search doesn't touch.
-4. **H3 — MIXED → mostly DISCONFIRMED.** The orthography half fails: `other_script` on
-   `retrieve_quote` did not rise with search (sol fell 7→4, sonnet flat). Only the
-   other-edition half gets weak support: sol gained 3 `wrong_passage` on-arm (0→3), consistent
-   with quoting a fetched edition. So "search drags in the wrong edition" is a real but small
-   effect; "search corrupts orthography" is not supported here.
+4. **H3 — INCONCLUSIVE.** The implemented analysis cannot measure H3's constructs:
+   `other_script` is a *Unicode-script* change, but Uthmani and Imla'i are **both Arabic
+   script**, so it does not detect orthography; and `wrong_passage` is low token-overlap, not an
+   edition determination. The raw movements (sol `other_script` 7→4, `wrong_passage` 0→3 on
+   `retrieve_quote`) are suggestive but establish neither edition nor orthography drift. For a
+   pilot, inconclusive is the honest verdict — a real H3 test needs manual edition/orthography
+   adjudication (ties into #52), out of scope here.
 
 ## Limitations
 
@@ -80,4 +82,12 @@ locus errors fall), H3 (edition/orthography mismatches rise).
   the run README recipe is now correct).
 - Native code paths (OpenAI Responses, Gemini grounding) were kept even though this run used
   OpenRouter transport — they are the path for the deferred native-gemini run and future
-  native-key runs.
+  native-key runs. **They are seam-tested only (faked SDKs), awaiting a live smoke** — not
+  production-verified (our own lesson: mocked provider seams hide live-only failures). The
+  deferred gemini-native run is the smoke that verifies grounding.
+- Nativeness is now MECHANICAL, not prose-only: `providers._assert_native_arm` fails a search-on
+  cell loud at collect unless it carries a provider-of-record matching the family and (when it
+  cites) the family's own citation-annotation shape. config pins OpenRouter-transported search
+  to the declared forwarding host + forwarded families (one source of truth:
+  `providers.OPENROUTER_SEARCH_TOOL_BY_FAMILY`). Per-cell `usage.cost` is captured for future
+  collects (this run's committed rows predate it — not retrofitted).

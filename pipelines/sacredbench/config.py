@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
@@ -31,17 +32,18 @@ PROVIDERS = ("anthropic", "openai", "gemini")
 TOOLS = ("web_search",)
 # Providers that expose a native server-side search tool on their OWN endpoint. All three do.
 _NATIVE_SEARCH_PROVIDERS = frozenset({"anthropic", "openai", "gemini"})
-# `web_search` may also run through an OpenAI-compatible host (`provider: openai` + `base_url`,
-# i.e. OpenRouter) — but ONLY for model families whose request OpenRouter forwards to the
-# provider's NATIVE server-side search, verified per-arm (#54): the provider-of-record is the
-# real vendor, usage carries that vendor's `server_tool_use_details`, and citations use the
-# vendor's own annotation shape (content-snippet for Anthropic, char-offset for OpenAI) — NOT a
-# uniform OpenRouter/Exa web layer, which #54 rejects as unrepresentative. Keyed on the model
-# slug's family prefix. gemini is intentionally ABSENT: its grounding does not reliably fire
-# through OpenRouter (routing-variance across the Google AI Studio / Vertex backends — AI Studio
-# shared-pool 429s, Vertex returns finish=error with no search), so it is run only on a native
-# GEMINI_API_KEY (provider: gemini). Any other family on a third-party host is rejected.
-_OPENROUTER_NATIVE_SEARCH_FAMILIES = ("anthropic/", "openai/")
+# `web_search` may also run through an OpenAI-compatible host (`provider: openai` + `base_url`)
+# — but ONLY on a host DECLARED to forward the provider's NATIVE search, and only for a family
+# that host forwards (verified per-arm, #54: provider-of-record is the real vendor, usage
+# carries that vendor's `server_tool_use_details`, citations use the vendor's own annotation
+# shape — NOT a uniform OpenRouter/Exa web layer). The host is pinned by netloc: an ARBITRARY
+# OpenAI-compatible base_url is NOT assumed to forward native search (it could be any proxy or a
+# generic web layer), so web_search on an unlisted host is rejected (#54 review item 1). The
+# forwarded families are the KEYS of providers.OPENROUTER_SEARCH_TOOL_BY_FAMILY (single source of
+# truth — imported where used to avoid an import cycle). gemini is intentionally absent: its
+# grounding does not reliably fire through OpenRouter (routing-variance across Google AI Studio /
+# Vertex), so it runs only on a native GEMINI_API_KEY (provider: gemini).
+_SEARCH_FORWARDING_HOST_NETLOCS = frozenset({"openrouter.ai"})
 
 
 class ConfigError(Exception):
@@ -96,17 +98,26 @@ def _parse_tools(
                     f"{path}: models[{i}] tool 'web_search' needs a provider with a native "
                     f"search tool ({sorted(_NATIVE_SEARCH_PROVIDERS)}), not {provider!r}"
                 )
-            if provider == "openai" and base_url and not any(
-                model.startswith(fam) for fam in _OPENROUTER_NATIVE_SEARCH_FAMILIES
-            ):
-                raise ConfigError(
-                    f"{path}: models[{i}] tool 'web_search' on a third-party OpenAI-compatible "
-                    f"host (base_url={base_url!r}) is allowed only for a model family whose "
-                    f"native search that host forwards to the provider "
-                    f"({list(_OPENROUTER_NATIVE_SEARCH_FAMILIES)}); model {model!r} is not one, "
-                    "so this would be a third-party web layer (OpenRouter ':online' / Exa), "
-                    "out of scope (#54)"
-                )
+            if provider == "openai" and base_url:
+                # import here (not at module top) to avoid a config<->providers import cycle
+                from sacredbench.providers import OPENROUTER_SEARCH_TOOL_BY_FAMILY
+                netloc = urlparse(base_url).netloc
+                if netloc not in _SEARCH_FORWARDING_HOST_NETLOCS:
+                    raise ConfigError(
+                        f"{path}: models[{i}] tool 'web_search' on an OpenAI-compatible host is "
+                        f"pinned to hosts declared to forward the provider's native search "
+                        f"({sorted(_SEARCH_FORWARDING_HOST_NETLOCS)}); base_url={base_url!r} "
+                        f"(host {netloc!r}) is not one — an arbitrary host is not assumed to "
+                        "forward native search and could be a third-party web layer (#54)"
+                    )
+                families = tuple(OPENROUTER_SEARCH_TOOL_BY_FAMILY)
+                if not any(model.startswith(fam) for fam in families):
+                    raise ConfigError(
+                        f"{path}: models[{i}] tool 'web_search' on host {netloc!r} is forwarded "
+                        f"natively only for families {list(families)}; model {model!r} is not "
+                        "one, so this would be a third-party web layer (':online' / Exa), out "
+                        "of scope (#54)"
+                    )
         tools.append(t)
     # order-independent identity: a model's tools are a set, serialised sorted
     return tuple(sorted(set(tools)))

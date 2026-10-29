@@ -43,19 +43,20 @@ def _write(tmp_path, models) -> Path:
     return p
 
 
-def test_web_search_on_third_party_host_non_native_family_rejected(tmp_path):
-    """web_search on provider=openai + base_url is allowed only for a model family the host
-    forwards to the provider's native search; an unknown family (here a bare 'm') is a
-    third-party web layer — rejected (#54)."""
-    cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": "m",
-                            "base_url": "https://x/v1", "api_key_env": "K", "tools": ["web_search"]}])
-    with pytest.raises(ConfigError, match="third-party OpenAI-compatible host"):
+def test_web_search_on_undeclared_host_rejected(tmp_path):
+    """web_search through an OpenAI-compatible host is pinned to hosts DECLARED to forward native
+    search; an arbitrary host is not assumed to forward it — rejected even for a native family
+    (#54 review item 1: no silent third-party-layer bypass)."""
+    cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": "anthropic/claude-sonnet-5.5",
+                            "base_url": "https://evil-proxy.example/v1", "api_key_env": "K",
+                            "tools": ["web_search"]}])
+    with pytest.raises(ConfigError, match="not assumed to forward native search"):
         load_config(cfg)
 
 
 def test_web_search_on_openrouter_native_family_accepted(tmp_path):
-    """anthropic/* and openai/* through OpenRouter carry the provider's NATIVE search (verified
-    #54), so web_search is accepted on those families even with a base_url set."""
+    """anthropic/* and openai/* on the DECLARED OpenRouter host carry the provider's NATIVE
+    search (verified #54), so web_search is accepted there even with a base_url set."""
     for slug in ("anthropic/claude-sonnet-5.5", "openai/gpt-6.1-sol"):
         cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": slug,
                                  "base_url": "https://openrouter.ai/api/v1",
@@ -66,11 +67,11 @@ def test_web_search_on_openrouter_native_family_accepted(tmp_path):
 
 def test_web_search_gemini_family_on_openrouter_rejected(tmp_path):
     """google/* is intentionally NOT a forwarded family (grounding doesn't fire reliably through
-    OpenRouter) — web_search on it through the host is rejected; it runs on a native key only."""
+    OpenRouter) — web_search on it even on the declared host is rejected; native key only."""
     cfg = _write(tmp_path, [{"id": "g", "provider": "openai", "model": "google/gemini-3.8-flash",
                              "base_url": "https://openrouter.ai/api/v1",
                              "api_key_env": "OPENROUTER_API_KEY", "tools": ["web_search"]}])
-    with pytest.raises(ConfigError, match="third-party OpenAI-compatible host"):
+    with pytest.raises(ConfigError, match="natively only for families"):
         load_config(cfg)
 
 
@@ -345,11 +346,23 @@ class _Dump:
         return self._d
 
 
+def _url_citation(url, style):
+    """Build a url_citation annotation in a vendor-native shape: 'anthropic_content' carries a
+    content snippet; 'openai_offsets' carries char offsets; 'other' is a bare url (an Exa-like
+    uniform shape that the nativeness gate must reject)."""
+    uc = {"url": url}
+    if style == "anthropic_content":
+        uc["content"] = "…snippet…"
+    elif style == "openai_offsets":
+        uc["start_index"], uc["end_index"] = 10, 40
+    return _Dump({"type": "url_citation", "url_citation": uc})
+
+
 def _openrouter_chat_resp(text="the answer", finish="stop", searches=2, citations=("https://a",),
-                          provider="OpenAI"):
-    usage = _Dump({"prompt_tokens": 3, "completion_tokens": 4,
+                          provider="OpenAI", style="openai_offsets", cost=0.0123):
+    usage = _Dump({"prompt_tokens": 3, "completion_tokens": 4, "cost": cost,
                    "server_tool_use_details": {"web_search_requests": searches}})
-    anns = [_Dump({"type": "url_citation", "url_citation": {"url": u}}) for u in citations]
+    anns = [_url_citation(u, style) for u in citations]
     msg = types.SimpleNamespace(content=text, annotations=anns)
     choice = types.SimpleNamespace(finish_reason=finish, message=msg)
     return types.SimpleNamespace(choices=[choice], usage=usage, provider=provider)
@@ -363,7 +376,7 @@ def _or_model(model_id, slug):
 
 def test_openrouter_native_search_anthropic_family_forwards_anthropic_block(monkeypatch):
     resp = _openrouter_chat_resp(searches=1, citations=("https://a", "https://a", "https://b"),
-                                 provider="Claude Platform on AWS")
+                                 provider="Claude Platform on AWS", style="anthropic_content")
     captured = _install_fake_openai(monkeypatch, chat_resp=resp)
     text, usage, _ = complete(_or_model("sonnet-search", "anthropic/claude-sonnet-5.5"), "p")
     assert text == "the answer" and captured["_endpoint"] == "chat"
@@ -372,6 +385,8 @@ def test_openrouter_native_search_anthropic_family_forwards_anthropic_block(monk
     assert usage["web_search_requests"] == 1
     assert usage["citations"] == ["https://a", "https://b"]       # deduped
     assert usage["provider"] == "Claude Platform on AWS"          # provider-of-record recorded
+    assert usage["citation_style"] == "anthropic_content"         # vendor-native annotation shape
+    assert usage["cost"] == 0.0123                                # per-cell cost captured (item 3)
     assert usage["in"] == 3 and usage["out"] == 4
 
 
@@ -380,6 +395,7 @@ def test_openrouter_native_search_openai_family_forwards_normalised_shape(monkey
     _, usage, _ = complete(_or_model("sol-search", "openai/gpt-6.1-sol"), "p")
     assert captured["tools"] == [providers.OPENAI_WEB_SEARCH_TOOL]  # {"type": "web_search"}
     assert usage["provider"] == "OpenAI" and usage["web_search_requests"] == 2
+    assert usage["citation_style"] == "openai_offsets"
 
 
 @pytest.mark.parametrize("finish", ["length", "error"])
@@ -387,6 +403,32 @@ def test_openrouter_search_non_stop_finish_fails_loud(monkeypatch, finish):
     _install_fake_openai(monkeypatch, chat_resp=_openrouter_chat_resp(finish=finish))
     with pytest.raises(ProviderError, match="non-terminal finish_reason"):
         complete(_or_model("x", "anthropic/claude-sonnet-5.5"), "p")
+
+
+# --- mechanical nativeness gate (#54 review item 4) --------------------------
+
+
+def test_openrouter_search_missing_provider_of_record_fails_loud(monkeypatch):
+    resp = _openrouter_chat_resp(provider=None)  # no provider-of-record
+    _install_fake_openai(monkeypatch, chat_resp=resp)
+    with pytest.raises(ProviderError, match="no provider-of-record"):
+        complete(_or_model("sol-search", "openai/gpt-6.1-sol"), "p")
+
+
+def test_openrouter_search_wrong_provider_of_record_fails_loud(monkeypatch):
+    # provider-of-record doesn't match the family → possible non-native routing → refuse
+    resp = _openrouter_chat_resp(provider="SomeProxy")
+    _install_fake_openai(monkeypatch, chat_resp=resp)
+    with pytest.raises(ProviderError, match="does not match the native provider"):
+        complete(_or_model("sol-search", "openai/gpt-6.1-sol"), "p")
+
+
+def test_openrouter_search_uniform_annotation_shape_fails_loud(monkeypatch):
+    # citations in a bare/uniform shape (not the vendor's own) → Exa-layer smell → refuse
+    resp = _openrouter_chat_resp(provider="OpenAI", style="other")
+    _install_fake_openai(monkeypatch, chat_resp=resp)
+    with pytest.raises(ProviderError, match="not the 'openai/' native shape"):
+        complete(_or_model("sol-search", "openai/gpt-6.1-sol"), "p")
 
 
 # --- Gemini native search (Google-Search grounding) --------------------------

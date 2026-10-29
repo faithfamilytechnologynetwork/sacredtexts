@@ -41,17 +41,19 @@ models:
     max_tokens: 4096
   # Multi-provider is still supported — this tutorial panel is all-Anthropic for simplicity.
   # web_search is each provider's NATIVE server-side search (Anthropic web_search, OpenAI
-  # Responses-API web_search, Google-Search grounding), so it is valid on provider: anthropic,
-  # openai, or gemini — BUT only on the vendor's own endpoint. On provider: openai it is
-  # rejected at load time when a base_url is set, because a third-party OpenAI-compatible host
-  # (OpenRouter :online / Exa) is a third-party search layer, not the product's own search.
-  # A no-tools entry on any OpenAI-compatible host still works via base_url + api_key_env;
-  # keys come from the environment. Uncomment and adjust to add a non-Anthropic entry:
-  # - id: openrouter-example
+  # Responses-API web_search, Google-Search grounding). It is valid (a) on a native endpoint
+  # (provider: anthropic / openai-with-no-base_url / gemini), and (b) through a host DECLARED to
+  # forward native search — today OpenRouter (base_url host openrouter.ai) — but only for the
+  # families it forwards (anthropic/*, openai/*; see config._SEARCH_FORWARDING_HOST_NETLOCS and
+  # providers.OPENROUTER_SEARCH_TOOL_BY_FAMILY). web_search on an UNDECLARED host, or a
+  # non-forwarded family, is rejected at load time — an arbitrary host is not assumed to forward
+  # native search and could be a generic third-party web layer (:online / Exa), out of scope
+  # (#54). A no-tools entry on any OpenAI-compatible host always works. Example OpenRouter entry:
+  # - id: sol-search
   #   provider: openai
-  #   model: anthropic/claude-haiku-5-5        # a slug the host recognises
-  #   base_url: https://openrouter.ai/api/v1
+  #   model: openai/gpt-6.1-sol                # a forwarded family (openai/*)
+  #   base_url: https://openrouter.ai/api/v1   # the declared forwarding host
   #   api_key_env: OPENROUTER_API_KEY
   #   max_tokens: 4096
   #   temperature: 0                           # optional; omit to use the host default
-  #   # tools: [web_search]                    # NOT here: rejected on a third-party host (base_url set)
+  #   tools: [web_search]                      # OK here: declared host + forwarded family
