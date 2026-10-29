@@ -146,3 +146,34 @@ Executed exactly as surfaced + architect's 5 conditions:
 - Reframed my whole-corpus gate to the durable post-rebaseline form: no committed refusal asserts delivery (all 4 runs).
 
 FULL pipelines suite: 585 passed, 2 skipped. Numbers match Waleed-seen plan pins exactly.
+
+### Phase_1 DONE — 3 impl-consult iterations (2026-10-29)
+
+phase_1 ✓ complete. Iteration history (all folded, committed):
+- iter1: claude APPROVE / codex REQUEST_CHANGES (gate strength, edge end-behavior, phase-boundary
+  doc). Fixed: reproduce-committed gate, classify_refusal==True edges, plan boundary note.
+- iter1b (re-consult on fixed code): codex APPROVE / claude REQUEST_CHANGES — _ASSERT_INTRO
+  over-fires on reworded B ("the closest line is:", "the opening text of the daf is:"). Fixed:
+  _NON_IDENTITY modifier guard on the intro clause.
+- iter2: codex+claude REQUEST_CHANGES. codex: _ASSERT_RECON missed _NON_IDENTITY → fixed. claude:
+  rebaseline broke apps/viewer tutorialRun.test.ts (haiku-search refused 35→34/wrong 13→14), HIDDEN
+  by dispatcher mapping runs/**→pipelines lane only. Fixed: re-pin viewer test (verified vitest 187),
+  + architect GO'd dispatcher change: runs/**+texts/**→BOTH lanes (own commit).
+- iter3: codex REQUEST_CHANGES (recon/intro negation not scoped widely enough — "reconstruction of
+  what is probably NOT the requested line is:") / claude COMMENT (all verified; residual → #52).
+  Fixed: scope negation+non-identity to the assertion's own SENTENCE (both paths); all 5 A cells keep
+  a negation-free assertion sentence, 0 stranded.
+
+Final rule: asserts_delivery = positive identity frame (INTRO "the <unit> is/reads/starts: <script>"
+OR RECON "my best reconstruction of <wording>"), sentence-scoped negation+non-identity guard, global
+refusal-to-deliver disqualifier, Hebrew/Arabic/Greek payload. Both lanes green (viewer 187, pipelines
+586). Committed evidence: only the 5 tutorial flips.
+
+Post-fix jev agreement (for review): 0.9725→0.985, deterministic_only 11→6, all 6 survivors
+refusal_p∈[0.36,0.49]⊂[0.25,0.75], none <0.25 (satisfies retargeted criterion).
+Moved similarity means (for review): opus-search token_f1 0.9098→0.8758, normalized 0.8684→0.825,
+contains_reference 0.9737→0.925 (haiku-search likewise).
+
+Phase_2 (residual, boundary collapsed into phase_1): per-run enumeration + post-fix jev note +
+moved means → REVIEW doc; confirm byte-identical runs. porch emitted a context-refresh at the
+phase_1→phase_2 boundary.
