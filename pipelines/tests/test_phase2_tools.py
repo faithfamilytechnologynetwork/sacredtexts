@@ -43,11 +43,26 @@ def _write(tmp_path, models) -> Path:
     return p
 
 
-def test_web_search_on_non_anthropic_rejected(tmp_path):
+def test_web_search_on_openai_third_party_host_rejected(tmp_path):
+    """web_search on provider=openai with a base_url set routes search through a third-party
+    OpenAI-compatible host (OpenRouter :online / Exa) — rejected (#54): native search only."""
     cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": "m",
                             "base_url": "https://x/v1", "api_key_env": "K", "tools": ["web_search"]}])
-    with pytest.raises(ConfigError, match="requires provider 'anthropic'"):
+    with pytest.raises(ConfigError, match="third-party OpenAI-compatible host"):
         load_config(cfg)
+
+
+def test_web_search_native_openai_accepted(tmp_path):
+    """Native OpenAI (no base_url) + web_search is now valid — Responses-API search."""
+    cfg = _write(tmp_path, [{"id": "a", "provider": "openai", "model": "gpt-x", "tools": ["web_search"]}])
+    loaded = load_config(cfg)
+    assert loaded.models[0].tools == ("web_search",) and loaded.models[0].base_url is None
+
+
+def test_web_search_native_gemini_accepted(tmp_path):
+    """Native Gemini + web_search is valid — Google-Search grounding."""
+    cfg = _write(tmp_path, [{"id": "g", "provider": "gemini", "model": "gemini-x", "tools": ["web_search"]}])
+    assert load_config(cfg).models[0].tools == ("web_search",)
 
 
 def test_unknown_tool_rejected(tmp_path):
@@ -216,6 +231,156 @@ def test_terminal_stop_reasons_succeed(monkeypatch):
         off = ModelSpec(id="x", provider="anthropic", model="claude-haiku-5-5", tools=())
         text, _, _ = complete(off, "prompt")
         assert text == "ok"
+
+
+# --- OpenAI native search (Responses API) ------------------------------------
+
+
+def _install_fake_openai(monkeypatch, responses_resp=None, chat_resp=None):
+    """Fake the SDK as `_openai` imports it (`from openai import OpenAI` inside the function).
+    The fake client exposes BOTH endpoints so a test can assert which one the code chose."""
+    captured: dict = {}
+
+    def rcreate(**kwargs):
+        captured.update(kwargs)
+        captured["_endpoint"] = "responses"
+        return responses_resp
+
+    def ccreate(**kwargs):
+        captured.update(kwargs)
+        captured["_endpoint"] = "chat"
+        return chat_resp
+
+    client_obj = types.SimpleNamespace(
+        responses=types.SimpleNamespace(create=rcreate),
+        chat=types.SimpleNamespace(completions=types.SimpleNamespace(create=ccreate)),
+    )
+    fake = types.ModuleType("openai")
+    fake.OpenAI = lambda **kw: client_obj
+    monkeypatch.setitem(sys.modules, "openai", fake)
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    return captured
+
+
+def _responses_resp(text="the answer", status="completed", searches=1, citations=("https://a",), reason=None):
+    output = [types.SimpleNamespace(type="web_search_call") for _ in range(searches)]
+    anns = [types.SimpleNamespace(type="url_citation", url=u) for u in citations]
+    block = types.SimpleNamespace(type="output_text", annotations=anns)
+    output.append(types.SimpleNamespace(type="message", content=[block]))
+    usage = types.SimpleNamespace(input_tokens=3, output_tokens=4)
+    incomplete = types.SimpleNamespace(reason=reason) if reason else None
+    return types.SimpleNamespace(
+        status=status, output_text=text, output=output, usage=usage, incomplete_details=incomplete
+    )
+
+
+def test_openai_native_web_search_uses_responses_with_provenance(monkeypatch):
+    resp = _responses_resp(searches=2, citations=("https://a", "https://a", "https://b"))
+    captured = _install_fake_openai(monkeypatch, responses_resp=resp)
+    m = ModelSpec(id="o", provider="openai", model="gpt-x", max_tokens=256, tools=("web_search",))
+    text, usage, _ = complete(m, "prompt")
+    assert text == "the answer"
+    assert captured["_endpoint"] == "responses"              # Responses API, not chat
+    assert captured["tools"] == [providers.OPENAI_WEB_SEARCH_TOOL]
+    assert captured["input"] == "prompt" and captured["max_output_tokens"] == 256
+    assert usage["in"] == 3 and usage["out"] == 4
+    assert usage["web_search_requests"] == 2                 # two web_search_call items
+    assert usage["citations"] == ["https://a", "https://b"]  # deduped, first-seen order
+
+
+def test_openai_responses_incomplete_turn_fails_loud(monkeypatch):
+    _install_fake_openai(monkeypatch, responses_resp=_responses_resp(status="incomplete", reason="max_output_tokens"))
+    m = ModelSpec(id="o", provider="openai", model="gpt-x", tools=("web_search",))
+    with pytest.raises(ProviderError, match="incomplete Responses turn"):
+        complete(m, "prompt")
+
+
+def test_openai_search_off_uses_chat_completions(monkeypatch):
+    """The refactor must not leak the Responses path onto the search-off arm: off still uses
+    chat.completions and passes no search tool."""
+    chat = types.SimpleNamespace(
+        choices=[types.SimpleNamespace(message=types.SimpleNamespace(content="off answer"))],
+        usage=types.SimpleNamespace(prompt_tokens=1, completion_tokens=2),
+    )
+    captured = _install_fake_openai(monkeypatch, chat_resp=chat)
+    m = ModelSpec(id="o", provider="openai", model="gpt-x", max_tokens=256, tools=())
+    text, usage, _ = complete(m, "prompt")
+    assert text == "off answer" and captured["_endpoint"] == "chat"
+    assert "tools" not in captured
+    assert usage == {"in": 1, "out": 2}
+
+
+# --- Gemini native search (Google-Search grounding) --------------------------
+
+
+def _install_fake_gemini(monkeypatch, resp):
+    """Fake `google.genai` as `_gemini` imports it (`from google import genai` +
+    `from google.genai import types`). The fake `types` makes HttpOptions / Tool /
+    GoogleSearch / GenerateContentConfig constructible so the real call code runs."""
+    captured: dict = {}
+
+    def generate_content(**kwargs):
+        captured.update(kwargs)
+        return resp
+
+    client_obj = types.SimpleNamespace(models=types.SimpleNamespace(generate_content=generate_content))
+    fake_types = types.ModuleType("google.genai.types")
+    fake_types.HttpOptions = lambda **kw: types.SimpleNamespace(**kw)
+    fake_types.GenerateContentConfig = lambda **kw: types.SimpleNamespace(**kw)
+    fake_types.GoogleSearch = lambda **kw: types.SimpleNamespace(**kw)
+    fake_types.Tool = lambda **kw: types.SimpleNamespace(**kw)
+    fake_genai = types.ModuleType("google.genai")
+    fake_genai.Client = lambda **kw: client_obj
+    fake_genai.types = fake_types
+    fake_google = types.ModuleType("google")
+    fake_google.genai = fake_genai
+    monkeypatch.setitem(sys.modules, "google", fake_google)
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+    monkeypatch.setitem(sys.modules, "google.genai.types", fake_types)
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    return captured
+
+
+def _gemini_resp(text="the answer", finish="STOP", queries=("q1",), uris=("https://a",)):
+    gm = types.SimpleNamespace(
+        web_search_queries=list(queries),
+        grounding_chunks=[types.SimpleNamespace(web=types.SimpleNamespace(uri=u)) for u in uris],
+    )
+    cand = types.SimpleNamespace(finish_reason=types.SimpleNamespace(name=finish), grounding_metadata=gm)
+    usage = types.SimpleNamespace(prompt_token_count=3, candidates_token_count=4, thoughts_token_count=0)
+    return types.SimpleNamespace(text=text, candidates=[cand], usage_metadata=usage)
+
+
+def test_gemini_native_grounding_passes_tool_with_provenance(monkeypatch):
+    resp = _gemini_resp(queries=("q1", "q2"), uris=("https://a", "https://a", "https://b"))
+    captured = _install_fake_gemini(monkeypatch, resp)
+    m = ModelSpec(id="g", provider="gemini", model="gemini-x", max_tokens=256, tools=("web_search",))
+    text, usage, _ = complete(m, "prompt")
+    assert text == "the answer"
+    cfg = captured["config"]
+    assert cfg.tools and cfg.tools[0].google_search is not None   # grounding tool passed
+    assert usage["in"] == 3 and usage["out"] == 4
+    assert usage["web_search_requests"] == 2                       # two search queries
+    assert usage["citations"] == ["https://a", "https://b"]        # deduped grounded URIs
+
+
+def test_gemini_grounding_incomplete_finish_fails_loud(monkeypatch):
+    _install_fake_gemini(monkeypatch, _gemini_resp(finish="MAX_TOKENS"))
+    m = ModelSpec(id="g", provider="gemini", model="gemini-x", tools=("web_search",))
+    with pytest.raises(ProviderError, match="incomplete grounded turn"):
+        complete(m, "prompt")
+
+
+def test_gemini_search_off_passes_no_tool_and_ignores_finish(monkeypatch):
+    """The search-off Gemini path is byte-identical to prior behaviour: no grounding tool, no
+    finish-reason gate (a non-STOP finish off-arm is not this experiment's concern), no
+    provenance keys."""
+    captured = _install_fake_gemini(monkeypatch, _gemini_resp(finish="MAX_TOKENS"))
+    m = ModelSpec(id="g", provider="gemini", model="gemini-x", tools=())
+    text, usage, _ = complete(m, "prompt")
+    assert text == "the answer"                        # not failed loud despite MAX_TOKENS
+    assert getattr(captured["config"], "tools", None) is None
+    assert "web_search_requests" not in usage and "citations" not in usage
 
 
 # --- tools-aware panel identity in summary.json ------------------------------

@@ -25,10 +25,18 @@ from pathlib import Path
 import yaml
 
 PROVIDERS = ("anthropic", "openai", "gemini")
-# Tool-use settings a panel entry may request. Today only web search, which is an
-# Anthropic server-side tool — so it is valid only on provider=anthropic (fail-fast).
+# Tool-use settings a panel entry may request. Today only web search. It is each provider's
+# NATIVE server-side search — Anthropic `web_search`, OpenAI Responses-API `web_search`,
+# Google-Search grounding — i.e. the search a user actually gets from that product.
 TOOLS = ("web_search",)
-_ANTHROPIC_ONLY_TOOLS = frozenset({"web_search"})
+# Providers that expose a native server-side search tool. All three current providers do, so
+# `web_search` is valid on each — but see the base_url guard below: on `openai` it is rejected
+# when a third-party `base_url` is set, because that routes search through a third-party
+# OpenAI-compatible host (OpenRouter `:online` / Exa), a uniform third-party layer rather than
+# the real product experience (#54 explicitly rejects those). `anthropic`/`gemini` always use
+# the vendor's own client in the provider seam (base_url is not a search path), so only the
+# `openai` host needs guarding.
+_NATIVE_SEARCH_PROVIDERS = frozenset({"anthropic", "openai", "gemini"})
 
 
 class ConfigError(Exception):
@@ -57,10 +65,12 @@ class RunConfig:
     concurrency: int = 8
 
 
-def _parse_tools(raw, provider: str, i: int, path: Path) -> tuple[str, ...]:
+def _parse_tools(raw, provider: str, base_url: str | None, i: int, path: Path) -> tuple[str, ...]:
     """Validate a model entry's optional ``tools`` list, fail-fast. ``None`` → no tools.
-    A non-list, an unrecognised value, or an Anthropic-only tool on another provider is a
-    ``ConfigError`` — never silently ignored (the YAML key is otherwise unchecked today)."""
+    A non-list or an unrecognised value is a ``ConfigError``. ``web_search`` is a native
+    server-side tool: valid on any provider that exposes one, but rejected on ``openai`` when
+    a third-party ``base_url`` is set (that would route search through a third-party layer,
+    which #54 forbids) — never silently ignored (the YAML key is otherwise unchecked today)."""
     if raw is None:
         return ()
     if not isinstance(raw, list):
@@ -71,11 +81,19 @@ def _parse_tools(raw, provider: str, i: int, path: Path) -> tuple[str, ...]:
             raise ConfigError(
                 f"{path}: models[{i}] unknown tool {t!r} (supported: {TOOLS})"
             )
-        if t in _ANTHROPIC_ONLY_TOOLS and provider != "anthropic":
-            raise ConfigError(
-                f"{path}: models[{i}] tool {t!r} is an Anthropic server-side tool and "
-                f"requires provider 'anthropic', not {provider!r}"
-            )
+        if t == "web_search":
+            if provider not in _NATIVE_SEARCH_PROVIDERS:
+                raise ConfigError(
+                    f"{path}: models[{i}] tool 'web_search' needs a provider with a native "
+                    f"search tool ({sorted(_NATIVE_SEARCH_PROVIDERS)}), not {provider!r}"
+                )
+            if provider == "openai" and base_url:
+                raise ConfigError(
+                    f"{path}: models[{i}] tool 'web_search' is OpenAI's native Responses-API "
+                    f"search and runs only on OpenAI's own endpoint; it must not route through "
+                    f"a third-party OpenAI-compatible host (base_url={base_url!r}) — third-party "
+                    "search layers (OpenRouter ':online' / Exa) are out of scope (#54)"
+                )
         tools.append(t)
     # order-independent identity: a model's tools are a set, serialised sorted
     return tuple(sorted(set(tools)))
@@ -117,7 +135,7 @@ def load_config(path: Path) -> RunConfig:
         for pk, pv in (("price_in", price_in), ("price_out", price_out)):
             if pv is not None and (not isinstance(pv, (int, float)) or pv < 0):
                 raise ConfigError(f"{path}: models[{i}] {pk} must be a non-negative number")
-        tools = _parse_tools(m.get("tools"), m["provider"], i, path)
+        tools = _parse_tools(m.get("tools"), m["provider"], m.get("base_url"), i, path)
         specs.append(
             ModelSpec(
                 id=str(m["id"]),
