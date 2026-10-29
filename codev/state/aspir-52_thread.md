@@ -247,3 +247,18 @@ rebaseline must happen ONCE over the post-#48 baseline.
 
 ACTION: surfaced block to architect; holding for #48 merge + their go. porch "Refresh your context"
 task is pending — reasonable to refresh when resuming Phase 2 fresh.
+
+## Hold prep (architect: HOLD entirely, no early PR; #48 imminent) — 2026-10-29
+
+Architect said hold, use the time to pre-draft. Done (all committed):
+- `codev/projects/52-.../phase2-runbook.md` — the one-clean-motion Phase-2 script: rebase onto
+  post-#48 → capture pre-change SIM/MOV SHAs (ready-to-run snippet) → wire bounded_contains→
+  fold_aware_contains (score_answer contains_reference, cite verdict, outcomes, facct, probes) →
+  SURGICAL summary splice (the #48 scar) → facct/jev_agreement regen → fix analyze.py path → re-pin
+  oracles + new test_orthography_rebaseline.py witness → viewer re-pin + dispatcher runs→both-lanes
+  → hand-verify every moved cell → moved-numbers packet to architect → one atomic commit.
+- `codev/reviews/52-*.md` — review doc; Phase-1 sections final, moved-numbers table TBD in Phase 2.
+- `codev/projects/52-.../pr-body.md` — PR body draft, moved-numbers TBD.
+
+STATE: Phase 1 complete & committed; Phase 2 fully scripted & ready. HOLDING for architect's
+"#48 merged" ping, then execute the runbook as one motion. Nothing else to do until then.
