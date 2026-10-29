@@ -5,21 +5,21 @@ phase: implement
 plan_phases:
   - id: phase_1
     title: score_normalize fold capability (logic + tests, unwired)
-    status: in_progress
+    status: complete
   - id: phase_2
     title: Adopt fold as scoring contract + sanctioned rebaseline
-    status: pending
+    status: in_progress
   - id: phase_3
     title: Governance docs, number refresh, architect moved-numbers packet
     status: pending
-current_plan_phase: phase_1
+current_plan_phase: phase_2
 gates:
   pr:
     status: pending
   verify-approval:
     status: pending
-iteration: 3
-build_complete: true
+iteration: 1
+build_complete: false
 history:
   - iteration: 1
     build_output: ''
@@ -69,10 +69,13 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter3-claude.txt
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-29T18:35:24.735Z'
+updated_at: '2026-10-29T18:35:26.603Z'
 force_advanced:
   phase: phase_1
   iteration: 3
   max_iterations: 3
   rebuttal_file: 52-phase_1-iter3-rebuttals.md
   at: '2026-10-29T18:35:24.734Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-10-29T18:35:26.602Z'
