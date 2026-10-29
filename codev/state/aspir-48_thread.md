@@ -76,3 +76,30 @@ Spec 15 constants (REFUSED_COUNTS/REFUSED_SET_SHA256/EXPECTED_*/test_first_run_*
 opus-search rq 0.9737→0.9250 / 0.76→0.80 / 24→20; haiku-search 0.80→0.7879 / 0.65→0.66 / 35→34.
 
 Plan drafted; porch runs 2-way plan consult next.
+
+### Plan consult + revision (2026-10-29)
+
+Both plan consults REQUEST_CHANGES (HIGH), all verified in-data, folded (no architect decision needed):
+- **Rule form fixed**: conjunctive "assertion AND no-disclaimer" is FALSIFIED by my own A cell
+  d4c3bda0b400 ("I'm not sure which passage is segment 9" — a disclaimer, yet A). Switched to
+  ASSERTION-ONLY (positive identity assertion fires → not refused; disclaimer not consulted).
+- **Negation-aware / positive-frame**: flat "from memory" substring appears in 147 currently-REFUSED
+  cells (38 tutorial/34 first-run/75 original), nearly all declines. Rule must match the positive
+  frame "…text of X is:" NOT under a negation — never a bare substring family.
+- **Blast-radius sweep moved into Phase 1**: read-only across all 4 runs + all _TEXT_RETRIEVAL tasks
+  (complete_unit incl — original has 89 refused complete_unit), asserting global refused-delta ==
+  locked flip set BEFORE any regen. Non-tutorial flip sets pre-registered empty unless sweep proves.
+- **Artifact fixes (all verified)**: arabic run has NO scores.jsonl/summary — has scores-{ar,en}.jsonl
+  + answers-{en,ar,ar-normalized}.jsonl + local analyze.py (fold); must regen via analyze.py path.
+  original has facct.{json,md} (paper-facing, reads refused/acc/cov from metrics.outcome, no test
+  catches staleness) + test_original_run_regression.py — both were missing from my file list.
+- **Non-circular oracle**: freeze PRE-change (model,qid)->outcome SHA + correct SHA via git show HEAD;
+  assert apply(flip_set, prechange)==postchange exactly + correct unchanged. Re-pinning
+  REFUSED_SET_SHA256 alone is circular.
+- **Numbers contingent**: 0.9250/0.80/20 etc are targets re-derived from actual flip set; safe
+  fallback strands ambiguous A cells as refused + surface, never hand-fit.
+
+Merge order (architect): I land FIRST, #52 rebases onto me. #52 later extends fold-aware containment
+into classify_refusal → moves some Arabic refused-cells afterward (their witness, not mine).
+
+Plan revised; porch re-consult or advance next.
