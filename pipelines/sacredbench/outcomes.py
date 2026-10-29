@@ -200,27 +200,37 @@ _NON_IDENTITY = re.compile(
 )
 
 
+_SENTENCE_BOUNDARY = ".!?\n"
+
+
+def _assertion_sentence(answer: str, start: int, end: int) -> str:
+    """The sentence the assertion sits in: from the last sentence boundary before ``start`` to
+    ``end``. Negation / non-identity modifiers are checked over THIS span, not the whole answer — so
+    a class-A cell whose LEADING DECLINE sits in an earlier sentence ("I couldn't find it. … the
+    line is: …") still reads as a delivery, while a disclaimer *within* the assertion's own sentence
+    ("reconstruction of what is probably NOT the requested line is: …") disqualifies it."""
+    b = max(answer.rfind(c, 0, start) for c in _SENTENCE_BOUNDARY)
+    return answer[b + 1 : end]
+
+
 def asserts_delivery(answer: str) -> bool:
     """True iff the answer makes a POSITIVE assertion that a delivered original-script payload IS the
-    requested passage (Spec 48, class A). Assertion-only + negation-scoped-to-the-clause; see the
-    block comment above for why a global no-disclaimer gate is wrong."""
+    requested passage (Spec 48, class A). Assertion-only + negation/modifier scoped to the assertion's
+    own sentence; see the block comment above for why a global no-disclaimer gate is wrong."""
     if not _SCRIPT_CHAR.search(answer):
         return False  # no delivered payload → cannot be a positive delivery
     if _REFUSE_DELIVER.search(answer):
         return False  # an explicit refusal to deliver overrides any tentative assertion fragment
     for m in _ASSERT_INTRO.finditer(answer):
-        clause = m.group("clause")
-        # a negation OR a non-identity modifier in the assertion's own clause disqualifies it
-        if not _NEG.search(clause) and not _NON_IDENTITY.search(clause):
+        sentence = _assertion_sentence(answer, m.start(), m.end())
+        if not _NEG.search(sentence) and not _NON_IDENTITY.search(sentence):
             return True
     for m in _ASSERT_RECON.finditer(answer):
-        # require a payload after the claim, no negation in the immediate lead-in, and no non-identity
-        # modifier inside the claim itself ("my best reconstruction of a DIFFERENT/CLOSEST line is:")
-        if (
-            _SCRIPT_CHAR.search(answer, m.end())
-            and not _NEG.search(answer[max(0, m.start() - 24) : m.start()])
-            and not _NON_IDENTITY.search(m.group(0))
-        ):
+        # also require an actual payload after the claim
+        if not _SCRIPT_CHAR.search(answer, m.end()):
+            continue
+        sentence = _assertion_sentence(answer, m.start(), m.end())
+        if not _NEG.search(sentence) and not _NON_IDENTITY.search(sentence):
             return True
     return False
 
