@@ -83,3 +83,34 @@ set) + rescope #15 oracle non-Arabic + re-pin first-run/tutorial guards; P3 gove
 run-README notes + architect moved-numbers packet.
 
 Next: PLAN_DRAFTED → porch plan consult (codex+claude).
+
+## Plan consult iter1 (2026-10-29) — both REQUEST_CHANGES, strategy endorsed; big blast-radius finds
+
+claude grepped the real consumers and found gaps I missed. Re-verified each, then revised:
+- **Scoping decision**: fold goes in NEW `score_normalize()`, shared `normalize()` UNTOUCHED.
+  generate.py/editions.py use normalize() → folding there would move the committed question-set
+  ANCHOR_DIGEST (generator drift) + touch the copyright audit. Scoping to scoring keeps digest
+  stable. Architect endorsed.
+- **Containment contract**: extend the single `bounded_contains` to be fold-aware (callers:
+  score_answer, outcomes.classify_refusal:133, facct:277, probes:203) — one contract, no silent
+  facct divergence.
+- **Refusal-independence FALSIFIED**: fold-aware containment in outcomes ⇒ some Arabic `refused`
+  cells reclassify. Flip set NOT refusal-independent. Corrected architect (my earlier claim was
+  wrong).
+- **Word-final detector must skip Mn+editorial** (fold runs pre-mark-deletion): 2972 corpus words
+  have final maqsura behind marks (وَعَلَىٰٓ) — naive adjacency mis-folds →وعلا. Added predicate +
+  stacked-mark test.
+- **Omitted guard** test_original_run_regression.py (THE Arabic guard, 840 cells): re-pin re-score
+  + facct asserts; digest assert stays stable.
+- **Witness** strengthened to pin FULL Arabic before/after delta (normalized/token_f1/
+  contains_reference/correct/outcome), not just flips.
+- exp-run layout corrected (scores-en/ar + analyze.py, no summary; keep answers-ar-normalized as
+  provenance). سأل≠سال noted unsatisfiable+pre-existing. TUTORIAL.md+CODE_WALKTHROUGH.md added to P3.
+
+## Architect decisions (2026-10-29)
+- **Merge order: #48 FIRST**, I rebase + re-run witness over post-#48 baseline. Recorded in plan.
+- Both plan decisions endorsed (scoring-only score_normalize; hand-verified moved cells as gate).
+- Directive: document نبى-class collision residue as a stated limitation in the SPEC (done — not a
+  blocker).
+
+Next: plan rebuttal + spec limitation edit committed → porch done (plan).

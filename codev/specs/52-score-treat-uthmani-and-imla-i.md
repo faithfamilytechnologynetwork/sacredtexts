@@ -85,12 +85,22 @@ are not touched by the new Arabic-specific rules.
       mismatch; no single context-free character map does both, and the context-free map that
       covers all pairs merges distinct words (see Assumptions). The implementation satisfies the
       enumerated pairs **without** introducing any word-level collision.
-- [ ] **Word-level non-collision gate.** No fold rule causes two distinct Arabic words in the
-      corpus vocabulary to normalise to the same string (checked at word granularity, not just
-      whole-benchmark-unit granularity, because `contains_reference` is substring-based and
-      `token_f1` is token-based — a word merge credits a wrong word inside an otherwise-correct
-      answer and the projection oracle cannot see it). Any rule that would introduce a collision
-      is rejected; the residual cell it would have rescued stays residual and is documented.
+- [ ] **No-wrong-credit gate (operative).** The fold must not cause any committed answer to be
+      credited for a wrong word. This is enforced at **scoring granularity**: every Arabic cell
+      that moves under the rebaseline is hand-verified a true Uthmani↔Imla'i equivalence of the
+      same unit before it is pre-registered. A word-level corpus-vocabulary sweep is a supporting
+      diagnostic (it flags introduced non-variant merges for that review), not a standalone
+      pass/fail — see the known limitation below.
+
+**Known limitation (accepted — architect 2026-10-29, not a blocker).** A literal word-level
+zero-collision gate is infeasible: the core alef-maqsura→ya fold (which rescues the single
+largest class, e.g. `هدى↔هدي`, `بُنَىَّ↔بُنَيَّ`) necessarily merges a few rare consonantal-skeleton
+minimal pairs. The one the prototype surfaced — `نَبِىٍّ` (prophet) vs `نَبِّئْ` (inform) → `نبي` —
+is **mostly pre-existing** (`نَبِّئْ`→`نبي` already today via the ئ seat-fold). Such residual merges
+are documented and accepted because (a) rejecting the rule would abandon the fix, and (b) the
+no-wrong-credit gate at scoring granularity catches any case that would actually mis-credit a
+committed answer. The benchmark scores verse-length references, where a single-word ambiguity
+essentially never flips a cell.
 - [ ] On `runs/exp-arabic-prompts-2026-10-29`, re-scoring converges the two conditions and
       credits every content-correct cell that can be credited without a word-level collision;
       the set of cells whose headline flips is pre-registered and reproduced exactly.
@@ -139,8 +149,11 @@ are not touched by the new Arabic-specific rules.
 - **Script-scoped only.** New rules apply to Arabic script; Latin must stay byte-for-byte
   identical and the rules must not reach Hebrew or other RTL scripts.
 - **Direction-independent.** Applied to both answer and expected text.
-- **No word-level collisions.** A fold rule that merges two distinct Arabic words is rejected
-  even if it would rescue a residual cell (non-collision beats convergence on conflict).
+- **No wrong credit.** The operative gate is that no committed answer is credited for a wrong
+  word, enforced by hand-verifying every moved cell at scoring granularity. A literal word-level
+  zero-collision gate is infeasible (it would abandon the core maqsura→ya fold); the rare,
+  largely pre-existing minimal-pair residue (the `نبى`-class) is an accepted, documented
+  limitation — see Success Criteria.
 - **Issue steer: one mechanism, not both** — a deterministic fold in the scorer *or* Jev
   equivalence adjudication, not both. Jev-as-default is excluded by #21.
 - **Native-speaker review is a #39 gate, not this one.** Nancy's caution (2026-10-29) that
