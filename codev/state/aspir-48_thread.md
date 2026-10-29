@@ -212,3 +212,19 @@ then REVIEW doc.
   `int(92.5)=92%` — a pre-existing round-vs-truncate convention difference, left as-is (correct for
   each renderer). Surfacing to architect.
 - Re-entering porch for iter2 (expect re-consult over the fix).
+
+### Phase_2 impl-consult iter2 + fold (2026-10-29)
+
+- **claude: APPROVE (HIGH)** — re-verified rebaseline exact (5 cells outcome-only, frozen SHAs
+  reproduce from merge base, 3 runs byte-identical, Jev 0.985/6, both lanes green). iter1
+  REQUEST_CHANGES fully resolved. Confirmed the viewer 92-vs-93 dispute is a TRUE false positive
+  (Python `.0%`→92, JS `Math.round`→93). Non-blocking carry-forward: review-doc enumeration + moved
+  means (review phase).
+- **codex: REQUEST_CHANGES (HIGH)** — two factual slips MY iter1 doc-sync introduced (not the
+  rebaseline): (1) README Talmud bullet implied all 6 opus-search incorrect were hidden-as-refused;
+  only 4 moved (pre-fix Judaism 8/2/24→8/6/20, 2 were already incorrect); (2) lessons-learned framed
+  the positive-delivery assertion with "or" as an alt detection condition — it's an ESCAPE (refused
+  UNLESS it fires).
+- **Folded** (commit 206692f): reworded both — Talmud bullet "Spec 48 newly exposed 4 … other 2 were
+  already incorrect"; lessons-learned "unless a positive delivery assertion fires". Both lanes green.
+- Re-entering porch (iter3 expected: re-consult over the two-line fix).
