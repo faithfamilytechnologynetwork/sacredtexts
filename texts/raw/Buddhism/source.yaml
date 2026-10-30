@@ -1,0 +1,31 @@
+# Source catalogue for the Buddhist corpus.
+# The Dhammapada in Pali, Chaṭṭha Saṅgāyana edition, Vipassana Research Institute (VRI).
+# The payload is VRI's romanized TEI file, committed exactly as published (UTF-16).
+# Converter: vri_dhammapada (Spec 63) — it drops VRI's apparatus and closing matter, never a word.
+source_url: https://github.com/VipassanaTech/tipitaka-xml
+provenance:
+  retrieved_from: github.com/VipassanaTech/tipitaka-xml@2d134ff9ef60f70a1eb03c9370580228811a3070 (romn/s0502m.mul.xml)
+  fetch_method: direct download, verbatim
+  sha256: 17bd8e40331d5a90384459f4c00f4f93c6df84c565f9a276f28c117f6f1f94e8
+  fetch_date: "2026-10-30"
+notes: >-
+  Citation is "Dhammapada N", the verse number VRI prints (1-423). VRI captures its text in
+  Devanagari and generates the romanized file by script conversion; the romanized file is
+  used because it is the form scholarship and online sources use. Dhp 359 keeps both stanzas
+  VRI prints, the first of them in parentheses. SuttaCentral's Mahāsaṅgīti text was not used:
+  its licensing page politely asks that its content not be used for generative-AI datasets.
+targets:
+  - payload: s0502m.mul.xml
+    converter: vri_dhammapada
+    work: Dhammapada
+    version: Chaṭṭha Saṅgāyana (VRI)
+    language: pi
+    document_type: scripture
+    tradition: [Buddhism]
+    license: open
+    license_detail: >-
+      VRI, tipitaka-xml README: "These files are made freely available for non-commericial
+      use. Please attribute Vipassana Research Institute when incorporating these files into
+      your projects." The Pali text itself is ancient and public domain.
+    requested_as: ["the Dhammapada", "the Pali Dhammapada", "the Dhammapadapāḷi"]
+    canonical_language: pi
