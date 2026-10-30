@@ -398,6 +398,26 @@ def gurmukhi_scoring_unaware() -> bool:
     return normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ")
 
 
+def pali_scoring_unaware() -> bool:
+    """True while ``normalize()`` folds romanized Pali diacritics (dhammā == dhamma): NFKD
+    splits a diacritic off its letter and the punctuation pass turns it into a space, so
+    long vowels vanish and words split (manopubbaṅgamā -> ``manopubban gama``). Issue #50
+    part 2 covers this too; the gates keyed on this canary open by themselves."""
+    return normalize("dhammā") == normalize("dhamma")
+
+
+# language -> (display name, standardized source dir, canary) for the collect/score gates.
+SCORING_GATES = {
+    "pa": ("Gurmukhi", "Sikhism", gurmukhi_scoring_unaware),
+    "pi": ("Pali", "Buddhism", pali_scoring_unaware),
+}
+
+
+def gated_languages() -> dict[str, tuple[str, str]]:
+    """Languages ``collect`` and ``score`` must refuse now: ``{language: (name, source dir)}``."""
+    return {lang: (name, source) for lang, (name, source, unaware) in SCORING_GATES.items() if unaware()}
+
+
 def token_f1(answer: str, expected: str) -> float:
     a, e = normalize(answer).split(), normalize(expected).split()
     if not a or not e:
