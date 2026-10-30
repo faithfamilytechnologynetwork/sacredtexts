@@ -1,7 +1,7 @@
 id: '52'
 title: score-treat-uthmani-and-imla-i
 protocol: aspir
-phase: verify
+phase: verified
 plan_phases:
   - id: phase_1
     title: score_normalize fold capability (logic + tests, unwired)
@@ -26,7 +26,7 @@ iteration: 1
 build_complete: true
 history: []
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-30T02:48:34.131Z'
+updated_at: '2026-10-30T02:48:36.012Z'
 force_advanced:
   phase: phase_2
   iteration: 3
