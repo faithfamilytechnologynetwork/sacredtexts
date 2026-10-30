@@ -20,11 +20,12 @@ gates:
     approved_at: '2026-10-30T02:14:02.818Z'
   verify-approval:
     status: pending
+    requested_at: '2026-10-30T02:18:30.604Z'
 iteration: 1
 build_complete: false
 history: []
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-30T02:17:52.055Z'
+updated_at: '2026-10-30T02:18:30.605Z'
 force_advanced:
   phase: phase_2
   iteration: 3
