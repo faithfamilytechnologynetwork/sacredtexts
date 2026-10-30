@@ -4,9 +4,11 @@ live in `score_normalize`, and ALL the orthographic flexibility — including th
 that the defective-spelling class (هذا/ذلك/الرحمن) requires — lives in `fold_aware_contains`, which is
 a strict SUPERSET of `bounded_contains`. So this can only ADD credit, never remove it.
 
-These exercise the capability in isolation (Phase 1): `fold_aware_contains` is not yet wired into the
-default scoring path, so `normalize()` and every committed score stay byte-identical (guarded by the
-existing regression suites). Read-only; the corpus sweep reads the committed open-licensed QUL Qur'an.
+These exercise the fold capability in isolation. As of Phase 2 `fold_aware_contains` IS wired into
+the default scoring path (`contains_reference`, the `cite_passage` verdict, `outcomes.classify_refusal`,
+the FAccT counterfactual, and the probes); `normalize()` and the equality submetrics stay byte-identical
+(guarded by the committed-run regression and rebaseline suites). Read-only here; the corpus sweep reads
+the committed open-licensed QUL Qur'an.
 """
 from __future__ import annotations
 
@@ -92,6 +94,21 @@ def test_fold_contains_is_direction_independent():
     assert fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يَا بُنَيَّ")  # rev, word boundary
     # per-position optionality handles a MIXED verse (defective هذا + plene الكتاب in one reference):
     assert fold_aware_contains("قال هذا الكتاب لقومه", "هَٰذَا ٱلْكِتَٰبَ")
+
+
+def test_mixed_daggerless_imlai_reference_is_the_documented_boundary():
+    # The per-position optionality is carried by the REFERENCE's daggers. Direction-independence
+    # therefore holds whenever the reference is in the corpus orthography (Uthmani for the Qur'an,
+    # carrying the daggers) — which is always the case on the committed corpora and under #39's
+    # Arabic subset. The ONE case it does NOT cover is a reference itself written in MIXED Imla'i
+    # (defective هذا + plene الكتاب, with no daggers to mark the optional positions): the two global
+    # answer forms (default dagger-deleted + plene) cannot reproduce a per-word mix. This pins that
+    # boundary (Spec 52 review consult iter-1, codex) — an accepted, architect-endorsed narrowing of
+    # the "both directions" phrasing, not a regression. It only ever withholds credit (never grants a
+    # wrong one), and it does not arise on any committed cell.
+    assert not fold_aware_contains("هَٰذَا ٱلْكِتَٰبَ", "هذا الكتاب")   # mixed daggerless ref → boundary
+    assert fold_aware_contains("قال هذا الكتاب لقومه", "هَٰذَا ٱلْكِتَٰبَ")  # same words, daggered ref → OK
+    assert fold_aware_contains("ٱلْكِتَٰبِ", "الكتاب")                  # pure-plene daggerless ref → OK
 
 
 def test_fold_contains_handles_multiline_reference():

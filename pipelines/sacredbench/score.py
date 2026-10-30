@@ -351,7 +351,12 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     in MIXED Imla'i (e.g. defective ``هذا`` + plene ``الكتاب``, no daggers to mark) is NOT fully
     matched — the two global answer forms cannot reproduce a per-word mix. This never arises on the
     committed corpora (references are the corpus orthography — Uthmani for the Qur'an, carrying the
-    daggers); see the Spec 52 review's residuals. Empty reference never matches."""
+    daggers); see the Spec 52 review's residuals. SCOPE of the "only ADDS credit" guarantee: it is
+    exact for the containment headline under the default graders. Under ``--evaluator strict`` the
+    ``_with_outcome`` rule ``classify_refusal(...) and not correct`` means a decline-prefixed Imla'i
+    delivery now folds to ``incorrect`` instead of ``refused`` (coverage ↑, accuracy ↓) — the same
+    rule ``bounded_contains`` already applied, just reaching more deliveries; no committed run uses
+    strict. Empty reference never matches."""
     if not normalize(expected):
         return False
     if bounded_contains(answer, expected):          # today's contract — superset floor

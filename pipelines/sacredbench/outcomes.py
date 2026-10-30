@@ -44,9 +44,10 @@ Both halves matter:
   committed leading verdict is graded even with a trailing disclaimer, and a negation-evasion with no
   leading verdict is refused, not scored correct.
 
-This module is deliberately thin: the primitives (``normalize``, ``bounded_contains``, ``parse_yes_no``)
-live in ``score.py`` and are imported lazily so there is no import cycle (``score`` imports this inside
-``score_answer``).
+This module is deliberately thin: the primitives (``normalize``, ``fold_aware_contains``,
+``parse_yes_no``) live in ``score.py`` and are imported lazily so there is no import cycle (``score``
+imports this inside ``score_answer``). ``classify_refusal`` credits a delivered Imla'i-orthography
+variant via ``fold_aware_contains`` (Spec 52), the same strict-superset containment the headline uses.
 """
 
 from __future__ import annotations

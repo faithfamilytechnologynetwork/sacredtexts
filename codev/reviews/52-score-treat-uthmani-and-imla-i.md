@@ -115,6 +115,24 @@ Per-phase 3-way consult (codex + claude; Gemini excluded — it cannot see the w
 - **claude — COMMENT** (non-blocking) → **Addressed**: cold-doc fold references tightened; folded in
   `dd35f56`.
 
+### Review Phase — PR #62 consult (Round 1)
+- **claude — APPROVE (HIGH)**: independently re-verified every quantitative claim (58 cells all
+  `incorrect→correct`; SIM SHAs frozen *non-circularly* against the pre-#52 base; `facct`/`jev_agreement`
+  recompute byte-identically; no ReDoS). Four non-blocking minors, all folded (see below).
+- **codex — REQUEST_CHANGES (HIGH)**: "direction independence fails for mixed Imla'i references"
+  (`fold_aware_contains("هَٰذَا ٱلْكِتَٰبَ","هذا الكتاب")==False`) → **Rebutted + claims narrowed**. This
+  is the intended, documented boundary (carried by the reference's daggers; a mixed *daggerless* Imla'i
+  reference cannot be reproduced by the two global answer forms) — raised by the codex Phase-2 consult
+  and architect-endorsed. It only withholds credit, on 0 committed cells. Addressed by narrowing the
+  spec criterion + PR body and pinning the boundary in
+  `test_mixed_daggerless_imlai_reference_is_the_documented_boundary`. Stale "not yet wired" test
+  docstring → **Addressed**.
+- **Minors folded**: `outcomes.py` docstring `bounded_contains`→`fold_aware_contains` (**Addressed**);
+  strict-grader scope paragraph added to the `fold_aware_contains` docstring (**Addressed**);
+  `_single_citation_correct` verse-length-fold inheritance → **Rebutted** (verified no-op, 0 Arabic
+  citations, guarded by the partition pin; citation predicate is a #39 decision); haiku ceiling signal
+  → **N/A** (working-group note). Full dispositions in `52-review-iter1-rebuttals.md`.
+
 **Force-advance note.** phase_1 and phase_2 reached porch's `max_iterations` ceiling (3). The final
 rebuttals show every remaining concern resolved in the force-advance commit (phase_1 `4a5c3a2`
 predecessors; phase_2 `4a5c3a2`), not carried unresolved — verified against the rebuttal docs, per

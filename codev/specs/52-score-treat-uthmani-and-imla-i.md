@@ -77,9 +77,15 @@ are not touched by the new Arabic-specific rules.
 ## Success Criteria
 
 - [ ] For each enumerated orthographic pair where equating the two does not collide with a
-      distinct Arabic word, the two renderings normalise to the same string in both match
-      directions. The gaps in scope: dagger-alif → ا, alef-maqsura ى → ي, the ىٰ digraph → ا,
-      standalone hamza ء, and Arabic word-boundary equivalence.
+      distinct Arabic word, the two renderings are credited as equivalent in both match directions
+      **whenever the reference is in the corpus orthography** (Uthmani for the Qur'an, carrying the
+      daggers that mark the optional long-ā positions — the committed corpora and #39's Arabic
+      subset are always this). The gaps in scope: dagger-alif → ا, alef-maqsura ى → ي, the ىٰ
+      digraph → ا, standalone hamza ء, and Arabic word-boundary equivalence. **Documented boundary
+      (accepted):** the optionality is carried by the reference's daggers, so a reference itself
+      written in *mixed Imla'i* (defective هذا + plene الكتاب, no daggers to mark) is not matched by
+      the two global answer forms — this only ever withholds credit, never grants a wrong one, and
+      arises on 0 committed cells (pinned in `test_arabic_orthography_fold.py`).
 - [ ] **The long-ā alef is OPTIONAL (handled in containment, not a canonical fold).** The long ā
       written in Uthmani as a dagger-alif ـٰ or the ىٰ digraph is written as a full alef by the
       **plene** class (`ٱلْكِتَٰبِ→الكتاب`, `سُبْحَٰنَ→سبحان`) but **omitted** by the **defective-spelling
