@@ -27,6 +27,8 @@ Phase 3):
   one document of panktis cited ``Ang N:k``, Shabad OS apparatus removed.
 - ``vri_dhammapada``: VRI's romanized Dhammapada (TEI) → one document of verses cited
   ``Dhammapada N``, VRI's notes, page markers and closing matter removed.
+- ``stotrasamhita_gita`` (Spec 64): the Bhagavad Gita extract from Stotra Samhita →
+  one document of verses cited ``C:V`` in Gita Press numbering.
 
 Converters are fail-fast: an unexpected shape raises ``ConvertError`` naming the
 file. Adding a source format = one function + one ``CONVERTERS`` registry line.
@@ -546,6 +548,55 @@ def convert_vri_dhammapada(paths: list[Path], target: "Target") -> list[Document
     return [_doc(target, entries)]
 
 
+# --- Bhagavad Gita (stotrasamhita_gita) ----------------------------------------
+
+_GITA_MBOX_RE = re.compile(r"\{\\mbox\{\}([^{}]*)\}")  # a LaTeX line-break guard around a conjunct
+_GITA_JOINERS_RE = re.compile("[\u200c\u200d]")  # ZWNJ/ZWJ steer how a conjunct is drawn; not letters
+_GITA_NOT_TEXT_RE = re.compile(r"[^\u0900-\u097f ]")
+_GITA_CHAPTER_13_OFFSET = 1  # upstream numbers 13-2..13-35; Gita Press numbers 13.1..13.34
+
+
+def clean_gita_line(line: str) -> str:
+    """One half-verse as stored -> its letters: the LaTeX guard and the joiners removed."""
+    return _GITA_JOINERS_RE.sub("", _GITA_MBOX_RE.sub(r"\1", line))
+
+
+def convert_stotrasamhita_gita(paths: list[Path], target: "Target") -> list[Document]:
+    """``gita_stotrasamhita.json`` (``{upstream, verses[{chapter, number, lines}]}``, verses in
+    order — see ``texts/raw/Hinduism/build_extract.py``) → one document.
+
+    The unit is the verse; its citation is ``C:V`` in Gita Press numbering, so upstream's
+    chapter 13 moves down one. Half-verses join with a space. Fail-fast: a malformed record, or
+    anything but Devanagari left after cleaning."""
+    if len(paths) != 1:
+        raise ConvertError(f"stotrasamhita_gita expects one payload file, got {len(paths)}")
+    path = paths[0]
+    data = _load_json(path)
+    verses = data.get("verses") if isinstance(data, dict) else None
+    if not isinstance(verses, list):
+        raise ConvertError(f"{path}: expected an object with a 'verses' list (stotrasamhita_gita)")
+    entries: list[Entry] = []
+    for i, rec in enumerate(verses):
+        if (
+            not isinstance(rec, dict)
+            or not isinstance(rec.get("chapter"), int)
+            or not isinstance(rec.get("number"), int)
+            or not isinstance(rec.get("lines"), list)
+            or not rec["lines"]
+        ):
+            raise ConvertError(f"{path}: verses[{i}] missing or malformed 'chapter'/'number'/'lines'")
+        chapter = rec["chapter"]
+        number = rec["number"] - (_GITA_CHAPTER_13_OFFSET if chapter == 13 else 0)
+        text = " ".join(clean_gita_line(line) for line in rec["lines"])
+        if _GITA_NOT_TEXT_RE.search(text):
+            raise ConvertError(f"{path}: verses[{i}] ({chapter}:{number}) keeps non-Devanagari apparatus")
+        entries.append(Entry(unit_type="verse", citation=f"{chapter}:{number}", text=text))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    _require_unique_citations(entries, str(path))
+    return [_doc(target, entries)]
+
+
 CONVERTERS = {
     "bible_flat": convert_bible_flat,
     "lds_nested": convert_lds_nested,
@@ -556,6 +607,7 @@ CONVERTERS = {
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,
     "vri_dhammapada": convert_vri_dhammapada,
+    "stotrasamhita_gita": convert_stotrasamhita_gita,
 }
 
 

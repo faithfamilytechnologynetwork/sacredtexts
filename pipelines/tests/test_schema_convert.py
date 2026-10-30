@@ -1,3 +1,4 @@
+import collections
 import json
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from sacredbench.convert import (
     convert_quran_qul,
     convert_sefaria_talmud,
     convert_shabados_sggs,
+    convert_stotrasamhita_gita,
     convert_target,
     convert_vri_dhammapada,
 )
@@ -561,3 +563,83 @@ def test_real_dhammapada_converts_every_verse_and_removes_only_apparatus():
     assert by_citation["Dhammapada 1"].startswith("Manopubbaṅgamā dhammā, manoseṭṭhā manomayā;")
     assert by_citation["Dhammapada 359"].count("Tiṇadosāni") == 2  # both stanzas VRI prints
     assert by_citation["Dhammapada 423"].endswith("tamahaṃ brūmi brāhmaṇaṃ.")
+
+
+# --- Bhagavad Gita (stotrasamhita_gita, Spec 64) -------------------------------
+
+
+def _gita_payload(tmp_path: Path, verses: list[dict]) -> Path:
+    p = tmp_path / "gita.json"
+    p.write_text(json.dumps({"upstream": {}, "verses": verses}, ensure_ascii=False), encoding="utf-8")
+    return p
+
+
+def _gita_convert(p: Path):
+    return convert_stotrasamhita_gita([p], _target(converter="stotrasamhita_gita", language="sa"))
+
+
+def test_stotrasamhita_gita_joins_half_verses_and_cites_chapter_verse(tmp_path):
+    p = _gita_payload(tmp_path, [
+        {"chapter": 1, "number": 1, "lines": ["धर्मक्षेत्रे कुरुक्षेत्रे", "मामकाः पाण्डवाश्चैव"]},
+    ])
+    [doc] = _gita_convert(p)
+    assert [(e.unit_type, e.citation, e.text) for e in doc.entries] == [
+        ("verse", "1:1", "धर्मक्षेत्रे कुरुक्षेत्रे मामकाः पाण्डवाश्चैव"),
+    ]
+
+
+def test_stotrasamhita_gita_moves_chapter_13_to_gita_press_numbering(tmp_path):
+    p = _gita_payload(tmp_path, [
+        {"chapter": 12, "number": 20, "lines": ["ये तु"]},
+        {"chapter": 13, "number": 2, "lines": ["इदं शरीरं"]},
+        {"chapter": 14, "number": 1, "lines": ["परं भूयः"]},
+    ])
+    [doc] = _gita_convert(p)
+    assert [e.citation for e in doc.entries] == ["12:20", "13:1", "14:1"]
+
+
+@pytest.mark.parametrize("raw,clean", [
+    ("स्पृशञ्जिघ्र{\\mbox{}न्न}श्नन्", "स्पृशञ्जिघ्रन्नश्नन्"),
+    ("बुद\u200cध्वा", "बुदध्वा"),
+    ("क\u200dख", "कख"),
+    ("ॐ इति", "ॐ इति"),
+    ("परयाऽऽविष्टो", "परयाऽऽविष्टो"),
+])
+def test_stotrasamhita_gita_removes_apparatus_only(tmp_path, raw, clean):
+    [doc] = _gita_convert(_gita_payload(tmp_path, [{"chapter": 1, "number": 1, "lines": [raw]}]))
+    assert doc.entries[0].text == clean
+
+
+@pytest.mark.parametrize("line", ["\\twolineshloka", "धर्म}", "धर्म abc", "धर्म 1"])
+def test_stotrasamhita_gita_fails_on_leftover_apparatus(tmp_path, line):
+    with pytest.raises(ConvertError, match="non-Devanagari"):
+        _gita_convert(_gita_payload(tmp_path, [{"chapter": 1, "number": 1, "lines": [line]}]))
+
+
+def test_stotrasamhita_gita_fails_on_duplicate_citation(tmp_path):
+    with pytest.raises(ConvertError):
+        _gita_convert(_gita_payload(tmp_path, [
+            {"chapter": 1, "number": 1, "lines": ["क"]}, {"chapter": 1, "number": 1, "lines": ["ख"]},
+        ]))
+
+
+def test_real_gita_removes_only_declared_apparatus():
+    """Over all 700 verses: put the declared apparatus aside on both sides and the entry equals
+    the raw half-verses, so no letter was lost; the Gita Press chapter counts hold."""
+    root = Path(__file__).resolve().parents[2] / "texts" / "raw" / "Hinduism"
+    payload = root / "gita_stotrasamhita.json"
+    verses = json.loads(payload.read_text(encoding="utf-8"))["verses"]
+    [doc] = _gita_convert(payload)
+    assert len(doc.entries) == len(verses) == 700
+
+    def letters(s: str) -> str:
+        return s.replace("{\\mbox{}", "").replace("}", "").replace("\u200c", "").replace("\u200d", "")
+
+    for rec, entry in zip(verses, doc.entries, strict=True):
+        assert entry.text == " ".join(letters(line) for line in rec["lines"])
+    counts = collections.Counter(int(e.citation.split(":")[0]) for e in doc.entries)
+    assert [counts[c] for c in range(1, 19)] == [
+        47, 72, 43, 42, 29, 47, 30, 28, 34, 42, 55, 20, 34, 27, 20, 24, 28, 78,
+    ]
+    assert {e.citation for e in doc.entries} >= {"2:47", "13:1", "13:34", "18:78"}
+    assert "13:35" not in {e.citation for e in doc.entries}

@@ -1,0 +1,31 @@
+# Source catalogue for the Hindu corpus.
+# The Bhagavad Gita, Sanskrit in Devanagari, from Stotra Samhita. The payload is a verbatim,
+# verses-only extract of gita.tex built by build_extract.py beside this file. Converter:
+# stotrasamhita_gita (Spec 64) — it strips a LaTeX guard and invisible joiners, never a letter.
+source_url: https://github.com/stotrasamhita/gita
+provenance:
+  retrieved_from: github.com/stotrasamhita/gita@b89199ce6e8b6648af7f5d6b39085935aa921975 (gita.tex)
+  fetch_method: raw download; verses-only extract by build_extract.py
+  fetch_date: "2026-10-30"
+notes: >-
+  Citation is "C:V" in Gita Press numbering. The source is the 700-verse vulgate: it credits the
+  Sankara Bhashya and the Gita Press padaccheda, with volunteer proofreading. Upstream comments out
+  the extra verse "prakrtim purusam caiva" as 13-0 and numbers chapter 13 from 2; the converter
+  renumbers it 1..34.
+targets:
+  - payload: gita_stotrasamhita.json
+    converter: stotrasamhita_gita
+    work: Bhagavad Gita
+    version: Stotra Samhita (Gita Press text)
+    language: sa
+    document_type: scripture
+    tradition: [Hinduism]
+    license: open
+    license_detail: >-
+      The repository has NO licence file. Mapped to "open" on this reasoning, for the reviewer to
+      judge: the Gita is ancient and public domain, and only the verses are committed, as a
+      faithful transcription. Upstream's one usage line, "For Personal Use Only / Not For
+      Commercial Printing/Distribution", is commented out of frontmatter.tex at the pinned commit.
+      No written permission has been obtained. See the spec.
+    requested_as: ["the Bhagavad Gita", "the Gita", "the Bhagavad Gītā", "the Srimad Bhagavad Gita"]
+    canonical_language: sa

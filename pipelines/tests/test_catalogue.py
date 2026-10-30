@@ -512,14 +512,14 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
     assert "disagree on canonical_language" in str(e.value)
 
 
-def test_real_catalogue_default_pool_is_nineteen():
-    """The committed corpus: 23 targets, default pool (language == canonical_language,
-    non-restricted) is exactly these 19 texts (Spec 50 added Sri Guru Granth Sahib); every target carries both new fields; the two
+def test_real_catalogue_default_pool_is_twenty():
+    """The committed corpus: 24 targets, default pool (language == canonical_language,
+    non-restricted) is exactly these 20 texts (Spec 50 added Sri Guru Granth Sahib; Spec 63 the Dhammapada; Spec 64 the Bhagavad Gita); every target carries both new fields; the two
     LDS KJV targets are gone (issue #27 Q3). Pins membership, not just the count, so a
     canonical_language typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 23
+    assert len(targets) == 24
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language
@@ -548,6 +548,7 @@ def test_real_catalogue_default_pool_is_nineteen():
         ("The Bible", "WEB", "en"),
         ("Sri Guru Granth Sahib", "Shabad OS (SGPC Shabadaarth)", "pa"),
         ("Dhammapada", "Chaṭṭha Saṅgāyana (VRI)", "pi"),
+        ("Bhagavad Gita", "Stotra Samhita (Gita Press text)", "sa"),
     }
 
 
@@ -571,6 +572,8 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         "texts/raw/Sikhism/sggs_shabados.json",
         "texts/raw/Buddhism/source.yaml",
         "texts/raw/Buddhism/s0502m.mul.xml",
+        "texts/raw/Hinduism/source.yaml",
+        "texts/raw/Hinduism/gita_stotrasamhita.json",
     ]:
         assert (REPO_ROOT / rel).exists(), f"missing committed catalogue file: {rel}"
         assert not _check_ignored(rel), f"source.yaml must be trackable: {rel}"
