@@ -21,14 +21,29 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
 PROVIDERS = ("anthropic", "openai", "gemini")
-# Tool-use settings a panel entry may request. Today only web search, which is an
-# Anthropic server-side tool — so it is valid only on provider=anthropic (fail-fast).
+# Tool-use settings a panel entry may request. Today only web search. It is each provider's
+# NATIVE server-side search — Anthropic `web_search`, OpenAI Responses-API `web_search`,
+# Google-Search grounding — i.e. the search a user actually gets from that product.
 TOOLS = ("web_search",)
-_ANTHROPIC_ONLY_TOOLS = frozenset({"web_search"})
+# Providers that expose a native server-side search tool on their OWN endpoint. All three do.
+_NATIVE_SEARCH_PROVIDERS = frozenset({"anthropic", "openai", "gemini"})
+# `web_search` may also run through an OpenAI-compatible host (`provider: openai` + `base_url`)
+# — but ONLY on a host DECLARED to forward the provider's NATIVE search, and only for a family
+# that host forwards (verified per-arm, #54: provider-of-record is the real vendor, usage
+# carries that vendor's `server_tool_use_details`, citations use the vendor's own annotation
+# shape — NOT a uniform OpenRouter/Exa web layer). The host is pinned by netloc: an ARBITRARY
+# OpenAI-compatible base_url is NOT assumed to forward native search (it could be any proxy or a
+# generic web layer), so web_search on an unlisted host is rejected (#54 review item 1). The
+# forwarded families are the KEYS of providers.OPENROUTER_SEARCH_TOOL_BY_FAMILY (single source of
+# truth — imported where used to avoid an import cycle). gemini is intentionally absent: its
+# grounding does not reliably fire through OpenRouter (routing-variance across Google AI Studio /
+# Vertex), so it runs only on a native GEMINI_API_KEY (provider: gemini).
+_SEARCH_FORWARDING_HOST_NETLOCS = frozenset({"openrouter.ai"})
 
 
 class ConfigError(Exception):
@@ -57,10 +72,16 @@ class RunConfig:
     concurrency: int = 8
 
 
-def _parse_tools(raw, provider: str, i: int, path: Path) -> tuple[str, ...]:
+def _parse_tools(
+    raw, provider: str, base_url: str | None, model: str, i: int, path: Path
+) -> tuple[str, ...]:
     """Validate a model entry's optional ``tools`` list, fail-fast. ``None`` → no tools.
-    A non-list, an unrecognised value, or an Anthropic-only tool on another provider is a
-    ``ConfigError`` — never silently ignored (the YAML key is otherwise unchecked today)."""
+    A non-list or an unrecognised value is a ``ConfigError``. ``web_search`` is native
+    server-side search: valid on a provider's own endpoint, and also through an OpenAI-
+    compatible host (``provider: openai`` + ``base_url``) but ONLY for a model family whose
+    request OpenRouter forwards to the provider's native search (``_OPENROUTER_NATIVE_SEARCH_
+    FAMILIES``) — any other family on a third-party host is a third-party web layer, which #54
+    forbids. Never silently ignored (the YAML key is otherwise unchecked today)."""
     if raw is None:
         return ()
     if not isinstance(raw, list):
@@ -71,11 +92,32 @@ def _parse_tools(raw, provider: str, i: int, path: Path) -> tuple[str, ...]:
             raise ConfigError(
                 f"{path}: models[{i}] unknown tool {t!r} (supported: {TOOLS})"
             )
-        if t in _ANTHROPIC_ONLY_TOOLS and provider != "anthropic":
-            raise ConfigError(
-                f"{path}: models[{i}] tool {t!r} is an Anthropic server-side tool and "
-                f"requires provider 'anthropic', not {provider!r}"
-            )
+        if t == "web_search":
+            if provider not in _NATIVE_SEARCH_PROVIDERS:
+                raise ConfigError(
+                    f"{path}: models[{i}] tool 'web_search' needs a provider with a native "
+                    f"search tool ({sorted(_NATIVE_SEARCH_PROVIDERS)}), not {provider!r}"
+                )
+            if provider == "openai" and base_url:
+                # import here (not at module top) to avoid a config<->providers import cycle
+                from sacredbench.providers import OPENROUTER_SEARCH_TOOL_BY_FAMILY
+                netloc = urlparse(base_url).netloc
+                if netloc not in _SEARCH_FORWARDING_HOST_NETLOCS:
+                    raise ConfigError(
+                        f"{path}: models[{i}] tool 'web_search' on an OpenAI-compatible host is "
+                        f"pinned to hosts declared to forward the provider's native search "
+                        f"({sorted(_SEARCH_FORWARDING_HOST_NETLOCS)}); base_url={base_url!r} "
+                        f"(host {netloc!r}) is not one — an arbitrary host is not assumed to "
+                        "forward native search and could be a third-party web layer (#54)"
+                    )
+                families = tuple(OPENROUTER_SEARCH_TOOL_BY_FAMILY)
+                if not any(model.startswith(fam) for fam in families):
+                    raise ConfigError(
+                        f"{path}: models[{i}] tool 'web_search' on host {netloc!r} is forwarded "
+                        f"natively only for families {list(families)}; model {model!r} is not "
+                        "one, so this would be a third-party web layer (':online' / Exa), out "
+                        "of scope (#54)"
+                    )
         tools.append(t)
     # order-independent identity: a model's tools are a set, serialised sorted
     return tuple(sorted(set(tools)))
@@ -117,7 +159,9 @@ def load_config(path: Path) -> RunConfig:
         for pk, pv in (("price_in", price_in), ("price_out", price_out)):
             if pv is not None and (not isinstance(pv, (int, float)) or pv < 0):
                 raise ConfigError(f"{path}: models[{i}] {pk} must be a non-negative number")
-        tools = _parse_tools(m.get("tools"), m["provider"], i, path)
+        tools = _parse_tools(
+            m.get("tools"), m["provider"], m.get("base_url"), str(m["model"]), i, path
+        )
         specs.append(
             ModelSpec(
                 id=str(m["id"]),

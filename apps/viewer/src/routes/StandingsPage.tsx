@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CenteredSpinner } from "../components/Loading";
 import { formatCell, formatCoverage, loadSummary } from "../lib/localResults";
-import { fetchRunIndex } from "../lib/runIndex";
+import { benchmarkRuns, fetchRunIndex } from "../lib/runIndex";
 import { aggregate, type RunSummary } from "../lib/aggregate";
 import { recencyDate } from "../lib/recency";
 
@@ -26,11 +26,15 @@ type LoadState =
 async function loadAllRunSummaries(fetcher: typeof fetch): Promise<LoadState> {
   const index = await fetchRunIndex(fetcher);
   if (!index.ok) return { status: "failed", message: index.message };
-  if (index.runs.length === 0) return { status: "empty" };
+  // Cross-run standings are the benchmark's standing results — exclude one-off experiment
+  // (`exp-*`) runs so an A/B snapshot can't present itself as a model's current standing. They
+  // stay openable via the leaderboard's `?run=`; they just don't roll up here.
+  const standingsRuns = benchmarkRuns(index.runs);
+  if (standingsRuns.length === 0) return { status: "empty" };
   const loaded: RunSummary[] = [];
   const failed: string[] = [];
   await Promise.all(
-    index.runs.map(async (r) => {
+    standingsRuns.map(async (r) => {
       const result = await loadSummary(`/runs/${encodeURIComponent(r.id)}`, fetcher);
       if (result.ok) loaded.push({ runId: r.id, mtimeMs: r.mtimeMs ?? 0, summary: result.summary });
       else failed.push(r.id);

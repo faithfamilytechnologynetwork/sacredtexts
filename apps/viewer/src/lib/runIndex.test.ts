@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fetchRunIndex } from "./runIndex";
+import { benchmarkRuns, fetchRunIndex, isExperimentRun, type RunRef } from "./runIndex";
 
 /** A fetcher that answers `/runs/_index` with a fixed Response; any other URL 404s. */
 function indexFetcher(res: Partial<Response> & { textBody?: string }): typeof fetch {
@@ -92,5 +92,33 @@ describe("fetchRunIndex", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.runs.map((r) => r.id)).toEqual(["beta-2026-10-12", "alpha-2026-10-11"]);
+  });
+});
+
+describe("experiment-run filtering (#54 review item 10)", () => {
+  const ref = (id: string): RunRef => ({ id });
+
+  it("isExperimentRun matches exp-* ids only", () => {
+    expect(isExperimentRun("exp-provider-native-search-2026-10-29")).toBe(true);
+    expect(isExperimentRun("exp-arabic-prompts-2026-10-29")).toBe(true);
+    expect(isExperimentRun("original-2026-10-21")).toBe(false);
+    expect(isExperimentRun("first-run-2026-10-11")).toBe(false);
+  });
+
+  it("benchmarkRuns drops experiment runs but keeps order and benchmark runs", () => {
+    const runs = [
+      ref("exp-provider-native-search-2026-10-29"),
+      ref("original-2026-10-21"),
+      ref("exp-arabic-prompts-2026-10-29"),
+      ref("first-run-2026-10-11"),
+    ];
+    expect(benchmarkRuns(runs).map((r) => r.id)).toEqual([
+      "original-2026-10-21",
+      "first-run-2026-10-11",
+    ]);
+  });
+
+  it("benchmarkRuns returns empty when every run is an experiment run", () => {
+    expect(benchmarkRuns([ref("exp-a-2026-10-29"), ref("exp-b-2026-10-29")])).toEqual([]);
   });
 });
