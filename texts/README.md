@@ -42,6 +42,10 @@ database (the Sri Guru Granth Sahib's lines only — the full database is 603 MB
 TOML). `raw/Sikhism/build_extract.py` rebuilds it byte for byte from a checkout of
 `shabados/shabados` at the commit recorded in the file's `upstream` header.
 
+`raw/Buddhism/s0502m.mul.xml` is the Vipassana Research Institute's romanized Dhammapada,
+committed exactly as published (UTF-16 TEI). `raw/Buddhism/source.yaml` records its commit and
+SHA-256, and VRI's non-commercial terms.
+
 Per-source provenance metadata lives in each `texts/raw/<tradition>/source.yaml`
 (a targets manifest — provenance, converter, and a `license` field per target;
 see `pipelines/sacredbench/catalogue.py`).
