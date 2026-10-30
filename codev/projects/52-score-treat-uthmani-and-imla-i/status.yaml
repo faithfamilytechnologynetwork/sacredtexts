@@ -16,6 +16,7 @@ current_plan_phase: null
 gates:
   pr:
     status: pending
+    requested_at: '2026-10-30T00:15:26.673Z'
   verify-approval:
     status: pending
 iteration: 1
@@ -105,7 +106,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter3-claude.txt
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-30T00:02:54.385Z'
+updated_at: '2026-10-30T00:15:26.673Z'
 force_advanced:
   phase: phase_2
   iteration: 3
@@ -127,3 +128,4 @@ pr_history:
     pr_number: 62
     branch: builder/aspir-52
     created_at: '2026-10-30T00:02:19.023Z'
+pr_ready_for_human: true
