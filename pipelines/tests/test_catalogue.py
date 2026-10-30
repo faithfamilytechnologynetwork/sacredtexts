@@ -585,6 +585,7 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
 @pytest.mark.parametrize("lang,name,tradition,work,text,citation,collide", [
     ("pa", "Gurmukhi", "Sikhism", "Sri Guru Granth Sahib", "ਆਦਿ ਸਚੁ", "Ang 1:1", ("ਕਰਤਾ", "ਕਰਤੀ")),
     ("pi", "Pali", "Buddhism", "Dhammapada", "Manopubbaṅgamā dhammā", "Dhammapada 1", ("dhammā", "dhamma")),
+    ("sa", "Devanagari", "Hinduism", "Bhagavad Gita", "धर्मक्षेत्रे कुरुक्षेत्रे", "1:1", ("कर्ता", "कर्ती")),
 ])
 def test_canary_gates_collect_and_score_while_normalize_is_unaware(
     tmp_path, lang, name, tradition, work, text, citation, collide

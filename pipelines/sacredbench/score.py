@@ -406,10 +406,19 @@ def pali_scoring_unaware() -> bool:
     return normalize("dhammā") == normalize("dhamma")
 
 
+def devanagari_scoring_unaware() -> bool:
+    """True while ``normalize()`` collapses Devanagari vowel signs (कर्ता == कर्ती): the same
+    pass turns vowel signs and viramas into spaces (कर्मण्येवाधिकारस्ते ->
+    ``कर मण य व ध क रस त``). Issue #50 part 2 covers this too; the gates keyed on this canary
+    open by themselves."""
+    return normalize("कर्ता") == normalize("कर्ती")
+
+
 # language -> (display name, standardized source dir, canary) for the collect/score gates.
 SCORING_GATES = {
     "pa": ("Gurmukhi", "Sikhism", gurmukhi_scoring_unaware),
     "pi": ("Pali", "Buddhism", pali_scoring_unaware),
+    "sa": ("Devanagari", "Hinduism", devanagari_scoring_unaware),
 }
 
 
