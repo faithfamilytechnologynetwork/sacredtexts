@@ -3,112 +3,207 @@
 **Spec**: [codev/specs/52-score-treat-uthmani-and-imla-i.md](../specs/52-score-treat-uthmani-and-imla-i.md) ·
 **Plan**: [codev/plans/52-score-treat-uthmani-and-imla-i.md](../plans/52-score-treat-uthmani-and-imla-i.md)
 
-> Draft started during the Phase-2 hold (#48 merges first). Phase-1 sections are final; the
-> moved-numbers table and Phase-2/3 notes are filled when the rebaseline runs.
-
-## What shipped
+## Summary
 
 A model that reproduces a Qur'anic verse correctly but in a different orthography than the QUL
-Uthmani corpus (the common case when prompted in Arabic — #39) is now credited. The equivalence is
-implemented **entirely in the containment predicate** (`fold_aware_contains`), as a strict superset
-of the previous `bounded_contains`: `normalize()` and the similarity submetrics
+Uthmani corpus (the common case when prompted in Arabic — #39) is now credited. Three implement
+phases: **phase_1** built the fold capability, **phase_2** wired it into the five containment
+call-sites and ran a sanctioned oracle-witnessed rebaseline, **phase_3** routed the governance
+facts. The equivalence lives **entirely in the containment predicate** (`fold_aware_contains`), a
+strict superset of the previous `bounded_contains`: `normalize()` and the similarity submetrics
 (`exact`/`normalized`/`token_f1`) are byte-for-byte unchanged, so the only scores that move are
-`contains_reference`, the headline `correct`, and `outcome`.
+`contains_reference`, the headline `correct`, and `outcome`. Net outcome: **58 committed cells move
+`incorrect→correct`, zero losses, zero coverage change, zero similarity drift**; the motivating
+Arabic-prompt A/B converges both conditions on 96.4% (0 cross-condition flips), clearing the #39
+prerequisite.
 
-The fold: symmetric letter folds (standalone hamza ء→ا, bare alef-maqsura ى→ي) are canonical in
-`score_normalize`; the long ā (dagger-alif ـٰ and the ىٰ digraph) is matched as an **optional** alef
-(`ا?`) with whitespace-flex between Arabic letters, word-bounded, and direction-independent (the
-reference pattern is matched against the answer in both its dagger-deleted and plene forms).
+## Spec Compliance
 
-## Lessons learned
+- [x] **Enumerated orthographic pairs equate without distinct-word collision** (phase_1) — dagger-alif
+  → optional ā, alef-maqsura ى→ي, the ىٰ digraph → optional ā, standalone hamza ء→ا, and Arabic
+  word-boundary equivalence, all in `score_normalize` / `fold_aware_contains`.
+- [x] **The long-ā alef is OPTIONAL, handled in containment not a canonical fold** (phase_1) — the
+  equality-fold approach was abandoned (it un-credits the defective-spelling class هذا/الرحمن); the
+  long ā is matched as an optional alef (`ا?`). `normalize()` and the equality submetrics unchanged.
+- [x] **No-wrong-credit gate (operative)** (phase_1/phase_2) — `fold_aware_contains` is a strict
+  superset of `bounded_contains` (`normalized=1 ⇒ contains_reference=1` by construction), and every
+  one of the 58 moved cells was hand-verified a true Uthmani↔Imla'i equivalence at scoring
+  granularity before pre-registration.
+- [x] **exp-arabic-prompts-2026-10-29 converges** (phase_2) — both conditions reach 96.4% with 0
+  cross-condition flips; the pre-registered flip set reproduces exactly.
+- [x] **Latin `normalize()` byte-for-byte unchanged; Hebrew/other-RTL regression coverage added**
+  (phase_1) — Latin-invariance guard passes; `test_normalize_nonlatin.py` extended, invariance test
+  extended to `_answer_plene_form`.
+- [x] **Spec 15 four-submetric contract honored** (phase_2) — all orthographic flexibility is in the
+  containment predicate; Arabic `exact`/`normalized`/`token_f1` keep their meaning; only
+  `contains_reference` and the headline it drives move.
+- [x] **Sanctioned, oracle-witnessed rebaseline via before/after projection delta** (phase_2) — no
+  non-Arabic `(exact, normalized, token_f1)` projection value changes (SHA byte-identical on all 5
+  score files); moved Arabic cells match the pre-registered set. Witness
+  `test_orthography_rebaseline.py`.
+- [x] **All score-derived artifacts regenerated** (phase_2) — `scores.jsonl`, `summary.*` (all runs),
+  `original-2026-10-21/facct.*`, and `tutorial-2026-10-11/jev_agreement.*`; no `summary.md`
+  disagrees with its `scores.jsonl`.
+- [x] **"Arabic cell" defined for the oracle allow-list** (phase_2) — by answer/expected script
+  (contains Arabic-script code points); the byte-for-byte re-score guards named in the spec were
+  updated.
+- [x] **Moved headline numbers surfaced to the architect before merge** (phase_2 / pr gate) — packet
+  below, re-sent at the pr gate including the #60 residual census.
+- [x] **Copyright audit gate + full suite pass; no restricted-derived artifact committed/altered**
+  (all phases) — audit OK; pipelines 640 pass / 2 skip, viewer vitest pass.
 
-- **The hard part was NOT a character fold — it was that the long ā is lexically optional.** Standard
-  Imla'i writes the long ā as a full alef for the plene class (الكتاب, سبحان) but OMITS it for the
-  defective-spelling (رسم ناقص) class (هذا, ذلك, الرحمن, لكن). A context-free `dagger→ا` fold
-  therefore *un-credits* the defective class — it would mark `هذا`/`الرحمن` wrong, the inverse of
-  the spec's purpose, and in prototyping it flipped two verbatim-correct committed tutorial cells to
-  incorrect. Optionality cannot live in a canonical string, so it had to live in the containment
-  regex. **Lesson: an orthographic "equivalence" that is present-on-one-side / absent-on-the-other
-  is not a fold; it is an optional match.**
-- **A strict-superset containment is the safe way to change a scoring headline.** Defining the new
-  predicate as `bounded_contains OR fold_match` makes `normalized=1 ⇒ contains=1` true by
-  construction, guarantees the change only ADDS credit, and shrinks the rebaseline to one submetric
-  family — which also made the witness and the #48 rebase far simpler.
-- **Put a fold in the scoring-comparison path, not the shared `normalize()`.** `generate.py` and
-  `editions.py` share `normalize()`; folding there would have moved the committed question-set
-  `ANCHOR_DIGEST` and touched the copyright-audit path. Keeping it out of `normalize()` left
-  generation and the audit untouched.
-- **Context-free Arabic folds are provably insufficient** and some necessary folds merge rare
-  distinct-word minimal pairs (the 10-bucket residue below). The honest gate is no *wrong credit*,
-  enforced by hand-verifying every moved cell at scoring granularity, with the vocab residue pinned
-  as a drift-detecting allow-list — not a literal zero-collision rule.
-- **Cross-builder thread reuse paid off**: aspir-48's thread surfaced the summary.json/summary.md
+**Accepted known limitation (architect-approved 2026-10-29, per spec):** a literal word-level
+zero-collision gate is infeasible; the fold merges 10 rare consonantal-skeleton minimal-pair buckets
+(detailed under *Accepted collision residue* below). Accepted because rejecting either rule abandons
+the fix, and the no-wrong-credit gate at scoring granularity catches any mis-credit on a committed
+answer.
+
+## Deviations from Plan
+
+- **Containment-only pivot (phase_1).** The plan's first option (fold inside `normalize()`) was
+  abandoned mid-phase_1 after the iter-2 consult proved a context-free `dagger→ا` fold un-credits the
+  defective-spelling class. Pivoted to the containment-only / optional-ā design (architect-endorsed);
+  the spec was updated to encode it. This is the central deviation and it is the reason the change is
+  safe.
+- **Doc paths (phase_3).** The plan named `pipelines/TUTORIAL.md` and `pipelines/CODE_WALKTHROUGH.md`;
+  both actually live at the **repo root**. Edited the root files.
+- **`first-run-2026-10-11` carries no rebaseline note** — it is English-only (digest ef837474),
+  `scores.jsonl` untouched, 0 movers; the Arabic-only fold cannot affect it. Deliberate.
+- **8-cell `ءَا↔آ` residual deferred to #60** (phase_2) — the architect chose option (B)
+  (document + pin + defer the fold extension) on 2026-10-29 rather than widening the fold in this spec.
+
+## Consultation Feedback
+
+Per-phase 3-way consult (codex + claude; Gemini excluded — it cannot see the worktree, per
+`.codev/config.json`). Full dispositions in `codev/projects/52-score-treat-uthmani-and-imla-i/*-rebuttals.md`.
+
+### Specify Phase (Round 1)
+- **codex — REQUEST_CHANGES** → **Addressed**: non-collision requirement and scope clarified in the spec.
+- **claude — REQUEST_CHANGES** → **Addressed**: "alif madda آ already folds (NFKD); the real residue
+  is standalone hamza ء"; the hamza rule was restated precisely and the asymmetric-drop pitfall
+  (`أَرَءَيْتُمْ`) captured.
+
+### Plan Phase (Rounds 1–2)
+- **codex — REQUEST_CHANGES (both rounds)** → **Addressed/Rebutted**: the distinct-word-collision
+  objection was reconciled by moving the no-wrong-credit gate to *scoring granularity* with a pinned
+  residue allow-list (architect-ratified as the accepted known limitation), not a literal
+  zero-collision rule.
+- **claude — REQUEST_CHANGES (both rounds)** → **Addressed**: named which call-sites move
+  (`_citation_candidates` vs the verdict; the `audit.py` `strip_script_marks` comment); dispositions
+  written down for the pre-existing `سَأَلَ`/`سَالَ` merge.
+
+### Implement phase_1 (Rounds 1–3)
+- **codex — REQUEST_CHANGES (iter3)** → **Addressed**: direction-independence — the reference pattern
+  is now matched against the answer in both its dagger-deleted and plene (`_answer_plene_form`) forms;
+  reverse-direction + mixed-verse tests added.
+- **claude — REQUEST_CHANGES (iter3)** → **Addressed**: (1) **blocking** whitespace-collapse bug in
+  `_fold_containment_pattern` (newline-bearing hadith references) fixed; (2) diagnostic now sweeps
+  both answer canonicalisations and pins the 10-bucket union residue; (3) triple-duplication root
+  cause removed via `_normalize(text, *, fold=, plene=)`.
+
+### Implement phase_2 (Rounds 1–3)
+- **codex — APPROVE (iter3)** (REQUEST_CHANGES iters 1–2, all **Addressed**).
+- **claude — REQUEST_CHANGES (iter3)** → **Addressed**: caught a real, self-corrected documentation
+  error — the `ءَا↔آ` residual was understated as 1 cell; the correct census is **8 cells** with a
+  tutorial-run asymmetry. Surfaced to the architect, who chose option (B): pre-registered the 8-cell
+  set (`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`), filed **#60**, quantified the ~2–3 pt
+  tutorial artifact. Non-blocking comments (probe `_LETTER_FOLD` divergence, short-citation fold)
+  also addressed.
+
+### Implement phase_3 (Round 1)
+- **codex — APPROVE**, no issues.
+- **claude — COMMENT** (non-blocking) → **Addressed**: cold-doc fold references tightened; folded in
+  `dd35f56`.
+
+**Force-advance note.** phase_1 and phase_2 reached porch's `max_iterations` ceiling (3). The final
+rebuttals show every remaining concern resolved in the force-advance commit (phase_1 `4a5c3a2`
+predecessors; phase_2 `4a5c3a2`), not carried unresolved — verified against the rebuttal docs, per
+the force-advance lesson in `lessons-critical.md`.
+
+## Lessons Learned
+
+### What Went Well
+- **Strict-superset containment is the safe way to move a scoring headline.** Defining the predicate
+  as `bounded_contains OR fold_match` makes `normalized=1 ⇒ contains=1` true by construction, so the
+  change can only ADD credit — which shrank the rebaseline to one submetric family and made both the
+  witness and the #48 rebase far simpler.
+- **Keeping the fold out of shared `normalize()`** left generation's `ANCHOR_DIGEST` and the
+  copyright-audit path untouched — the minimal, deliberate change the spec demanded.
+- **Cross-builder thread reuse paid off**: aspir-48's thread surfaced the `summary.json`/`summary.md`
   "splice scar" (naive regeneration nulls the panel; the renderer emits extra columns that break the
   committed-summary guards) before I hit it.
 
-## Accepted collision residue (known limitation, architect-approved 2026-10-29)
+### Challenges Encountered
+- **The hard part was not a character fold — the long ā is lexically optional.** Imla'i writes it
+  plene for some words (الكتاب, سبحان) but OMITS it for the defective-spelling class (هذا, ذلك,
+  الرحمن, لكن). A context-free `dagger→ا` fold therefore *un-credits* the defective class — the
+  inverse of the spec's purpose; in prototyping it flipped two verbatim-correct committed cells to
+  incorrect. Optionality cannot live in a canonical string, so it had to live in the containment
+  regex. Resolved by the containment-only pivot.
+- **A competing implementation (#57/#58) merged to `main` mid-flight.** Reconciled to the reviewed
+  containment-only design (detail below); the witness re-ran byte-identically over the post-#57/#58
+  base, so the baseline never moved.
 
-10 QUL word-buckets where a necessary fold merges genuinely distinct words sharing a consonantal
-skeleton; pinned in `test_arabic_orthography_fold.py`:
-- hamza (ء→ا): سواء/سوء, جزاء/جزء, وراء/ورءا, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا
-- maqsura (ى→ي): نبى/نبّئ, قرى/قرئ, أمرى/امرئ
-- optional-long-ā branch: رَأَىٰ/رَءَا
+### What Would Be Done Differently
+- **Census the residual before claiming its size.** The `ءَا↔آ` residual was first documented as "1
+  cell / no bias"; the claude phase-2 iter-3 consult proved it is 8 cells with a tutorial asymmetry.
+  A proper detector (delete a hamza immediately before an alef, then run the optional-ā fold) should
+  have been run before writing any count.
 
-Benign at verse-length references; the no-wrong-credit gate catches any that would mis-credit a
-committed answer.
+### Methodology Improvements
+- The ASPIR force-advance at `max_iterations` is safe here only because the rebuttals genuinely
+  resolved the concerns; a reviewer reading `status.yaml` alone cannot tell a resolved force-advance
+  from an unresolved one. Surfacing the final-iteration rebuttal summary into the review (as done
+  here) closes that gap — worth making a protocol habit.
 
-**Under-credit residual (distinct from the collisions above) — [#60].** The fold does NOT cover the
-word-initial **hamza-alef ءَا (Uthmani) ↔ alef-madda آ (Imla'i)** equivalence: `score_normalize`
-renders e.g. Q14:34 «وَءَاتَىٰكُم» vs «وَآتَاكُم» as `وااتىكم` vs `واتاكم` (the `ء→ا` rule yields two
-alefs where madda yields one), so they do not match. **This is 8 committed cells, not one** (a
-census-corrected count — the earlier "one cell / no bias" claim was wrong; caught by the claude
-phase-2 iter-3 consult and self-corrected). Pre-registered by exact id in
-`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`:
-- tutorial: `haiku/retrieve_quote-1d74fc87541b` (8:52), `haiku/retrieve_quote-a8df3e43d35d` (2:285)
-- original: `haiku` & `opus` `/retrieve_quote-8c4ce779621f` (14:34)
-- exp-ar & exp-en: `sonnet` & `sol` `/retrieve_quote-8c4ce779621f` (14:34)
+## Architecture Updates
 
-All are under-credits (the answer IS the correct verse; the committed rebaseline stays a strict
-superset — nothing is wrongly credited). But the two tutorial cells are **asymmetric**: on the same
-verse `haiku-search` wrote «ءَا» (credited) while `haiku` wrote «آ» (uncredited), so **~2–3 pts of the
-committed haiku 88% → haiku-search 92% "search lift" is this orthography residual, not retrieval, and
-`haiku` is slightly under-credited.** NOT fixed here — the `ءَا↔آ` (and `ىٰ`↔maqsura) extension needs
-its own collision analysis; deferred to **[#60]** with the pinned set as its ready-made oracle
-(architect-approved defer 2026-10-29). This is the honest boundary of the fold.
+Governance facts routed by tier (Spec 987), committed in phase_3:
 
-**Directionality boundary.** The per-position optional-ā is carried by the *reference's* daggers, so
-the fold matches any answer orthography (plene/defective/mixed) against a reference in either
-reproduction direction — the dual answer form (`score_normalize` + `_answer_plene_form`) is
-load-bearing (14 committed cells match only via the plene form, where the answer wrote a dagger the
-reference wrote as a full alef). The one case it does NOT fully cover is a reference *itself* written
-in mixed Imla'i (defective `هذا` + plene `الكتاب`, with no daggers to mark the optional positions):
-the two global answer forms cannot reproduce a per-word mix. This never arises on the committed
-corpora — references are always the corpus orthography (Uthmani QUL for the Qur'an, carrying the
-daggers), and #39's Arabic subset scores against the same corpus — so the earlier "direction-
-independent" phrasing is narrowed to this accurate statement. (codex phase-2 consult, folded.)
+- Routed: **hot** — `arch-critical.md` scoring bullet — added the one-line Spec 52 fact ("Arabic
+  orthography folds in the CONTAINMENT path only; `fold_aware_contains` is a strict SUPERSET;
+  `normalize()`/equality submetrics stay BYTE-STABLE; witnessed by `test_orthography_rebaseline.py`"),
+  trimmed to a pointer into cold arch.md to respect the cap.
+- Routed: **cold** — `arch.md` § score.py — full fold record (rules, the 5 call-sites, the
+  optional-ā `ا?` mechanism, the sanctioned-rebaseline procedure).
+- Routed: **cold** — `arch.md` — the facct predicate-name reference updated to `fold_aware_contains`.
+- No hot-tier displacement was required beyond the trim-to-pointer above; the hot scoring bullet
+  absorbed the fact within the existing entry.
 
-**Digraph vs bare maqsura (conservative, flagged for #39).** A reference `ىٰ` digraph compiles to the
-optional long-ā alef (`ا?`) only, so a *reference* long-ā written as a digraph does not match an
-*answer* that wrote a bare maqsura/ya there (`علىٰ` ref vs `على`/`علي` answer). Conservative (only
-ever withholds credit, never grants a wrong one), affects **0 committed cells**, but could
-under-credit at #39's scale; logged and not widened now (broadening the digraph atom risks new
-collisions — its own analysis). (claude phase-2 consult.)
+## Lessons Learned Updates
 
-**Phase-2 "Arabic-cell partition count" deliverable.** It landed as BOTH the exact per-cell
-mover-identity sets (strictly stronger for moved cells) AND an explicit
-`test_arabic_cell_partition_pinned` (letters-only `_is_arabic_letter`, pinning arabic-expected and
-arabic-either counts per run) — the latter catches a corpus/question-set change that alters the
-fold's domain even when no cell moves. (codex phase-2 consult asked for the count; claude noted the
-mover-sets subsumed it — kept both.)
+- Routed: **hot** — `lessons-critical.md` — "A context-free Arabic orthography fold is provably
+  insufficient" (the Uthmani↔Imla'i equivalence must be position-aware and live in a scoring-only
+  normaliser, never shared `normalize()`, to avoid question-set/generator drift; Spec 52;
+  `test_orthography_rebaseline.py`). To stay under the cap, the two viewer gotchas were consolidated
+  into one entry (hot file now 11 entries).
+- Routed: **cold** — `lessons-learned.md` (Scoring & evaluation) — the strict-superset rebaseline
+  technique and the splice-scar avoidance, with the residual-census lesson.
 
-## Consult trail (Phase 1)
+## Flaky Tests
 
-Spec: 1 iteration (codex + claude, both REQUEST_CHANGES → folded). Plan: 2 iterations. Implement
-phase_1: 3 iterations — iter2 caught the blocking dagger defect (→ the containment-only pivot,
-architect-endorsed); iter3 caught direction-independence, a dead-fold-branch whitespace bug for
-newline-bearing hadith references, and the diagnostic's blind spot (now sweeps both answer forms).
+No flaky tests encountered. The 2 skips in the pipelines suite are pre-existing and unrelated
+(`test_edition_index.py`, `test_original_run_regression.py` environment-gated cells).
 
-## Moved numbers (Phase 2 rebaseline, witnessed over the post-#48 + post-#51 baseline)
+## Follow-up Items
+
+- **#60** (filed) — extend the fold to the word-initial **hamza-alef ءَا ↔ alef-madda آ** equivalence
+  plus the `ىٰ`↔bare-maqsura case. 8 committed cells are currently UNDER-credited (strict superset
+  preserved — never wrong credit), pre-registered in
+  `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL` as the follow-up's ready-made oracle. On the
+  tutorial run the residual is **asymmetric** (haiku-search wrote «ءَا» and was credited; haiku wrote
+  «آ» and was not), so ~2–3 pts of the committed haiku 88%→haiku-search 92% "search lift" is this
+  residual, not retrieval — documented in that run's README. Architect-approved defer (option B),
+  2026-10-29.
+- **#39** — the Arabic-instruction subset this spec unblocks; a native-speaker review of the Arabic
+  scaffolds (#41) should precede any scaled run (Nancy's ~20% AI-translation-subtlety caution).
+- **Digraph vs bare maqsura** (conservative, 0 committed cells) — a reference `ىٰ` digraph does not
+  match an answer's bare maqsura; only ever withholds credit. Logged for #39's scale, not widened now
+  (broadening the digraph atom risks new collisions).
+
+---
+
+## Appendix A — Moved numbers (Phase 2 rebaseline, witnessed over the post-#48 + post-#51 baseline)
 
 Captured 2026-10-29 by re-scoring each run's committed answers with the wired scorer (dry run,
 nothing written to `runs/` until the architect saw these). **58 moved cells total, every one
@@ -153,7 +248,55 @@ independent no-wrong-credit corroboration, exactly the 27 orthographic near-miss
 targeted. The refusal column is unchanged by Spec 52 (0.985, 6 deterministic-only — the Spec-48
 cells). (claude phase-2 consult flagged the stale artifact; regenerated + folded.)
 
-## Reconciliation with the competing #57 / #58 implementation
+## Appendix B — Accepted collision residue (known limitation, architect-approved 2026-10-29)
+
+10 QUL word-buckets where a necessary fold merges genuinely distinct words sharing a consonantal
+skeleton; pinned in `test_arabic_orthography_fold.py`:
+- hamza (ء→ا): سواء/سوء, جزاء/جزء, وراء/ورءا, ملأ/ملء, شىء/شيـٔا, برىء/بريـٔا
+- maqsura (ى→ي): نبى/نبّئ, قرى/قرئ, أمرى/امرئ
+- optional-long-ā branch: رَأَىٰ/رَءَا
+
+Benign at verse-length references; the no-wrong-credit gate catches any that would mis-credit a
+committed answer.
+
+**Under-credit residual (distinct from the collisions above) — [#60].** The fold does NOT cover the
+word-initial **hamza-alef ءَا (Uthmani) ↔ alef-madda آ (Imla'i)** equivalence: `score_normalize`
+renders e.g. Q14:34 «وَءَاتَىٰكُم» vs «وَآتَاكُم» as `وااتىكم` vs `واتاكم` (the `ء→ا` rule yields two
+alefs where madda yields one), so they do not match. **This is 8 committed cells, not one** (a
+census-corrected count — the earlier "one cell / no bias" claim was wrong; caught by the claude
+phase-2 iter-3 consult and self-corrected). Pre-registered by exact id in
+`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`:
+- tutorial: `haiku/retrieve_quote-1d74fc87541b` (8:52), `haiku/retrieve_quote-a8df3e43d35d` (2:285)
+- original: `haiku` & `opus` `/retrieve_quote-8c4ce779621f` (14:34)
+- exp-ar & exp-en: `sonnet` & `sol` `/retrieve_quote-8c4ce779621f` (14:34)
+
+All are under-credits (the answer IS the correct verse; the committed rebaseline stays a strict
+superset — nothing is wrongly credited). But the two tutorial cells are **asymmetric**: on the same
+verse `haiku-search` wrote «ءَا» (credited) while `haiku` wrote «آ» (uncredited), so **~2–3 pts of the
+committed haiku 88% → haiku-search 92% "search lift" is this orthography residual, not retrieval, and
+`haiku` is slightly under-credited.** NOT fixed here — the `ءَا↔آ` (and `ىٰ`↔maqsura) extension needs
+its own collision analysis; deferred to **[#60]** with the pinned set as its ready-made oracle
+(architect-approved defer 2026-10-29). This is the honest boundary of the fold.
+
+**Directionality boundary.** The per-position optional-ā is carried by the *reference's* daggers, so
+the fold matches any answer orthography (plene/defective/mixed) against a reference in either
+reproduction direction — the dual answer form (`score_normalize` + `_answer_plene_form`) is
+load-bearing (14 committed cells match only via the plene form, where the answer wrote a dagger the
+reference wrote as a full alef). The one case it does NOT fully cover is a reference *itself* written
+in mixed Imla'i (defective `هذا` + plene `الكتاب`, with no daggers to mark the optional positions):
+the two global answer forms cannot reproduce a per-word mix. This never arises on the committed
+corpora — references are always the corpus orthography (Uthmani QUL for the Qur'an, carrying the
+daggers), and #39's Arabic subset scores against the same corpus — so the earlier "direction-
+independent" phrasing is narrowed to this accurate statement. (codex phase-2 consult, folded.)
+
+**Phase-2 "Arabic-cell partition count" deliverable.** It landed as BOTH the exact per-cell
+mover-identity sets (strictly stronger for moved cells) AND an explicit
+`test_arabic_cell_partition_pinned` (letters-only `_is_arabic_letter`, pinning arabic-expected and
+arabic-either counts per run) — the latter catches a corpus/question-set change that alters the
+fold's domain even when no cell moves. (codex phase-2 consult asked for the count; claude noted the
+mover-sets subsumed it — kept both.)
+
+## Appendix C — Reconciliation with the competing #57 / #58 implementation
 
 While Phase 2 was executing, Jonathan Karr merged a competing #52 implementation (PR #57, `154e0ef`)
 directly to `main`, then a "fix double code branch" commit (`08f43b8`) and PR #58 (which merged this
@@ -185,7 +328,3 @@ baseline never moved.
 delivery IS the verse in a folded orthography). The composition is correct and is now pinned
 explicitly in `test_refusal_rebaseline.py` (re-pinned to current-state invariants per the
 architect's stacking-robustness ruling) and `test_contains_reference_rebaseline.py`.
-
-## Flaky tests
-
-None observed.

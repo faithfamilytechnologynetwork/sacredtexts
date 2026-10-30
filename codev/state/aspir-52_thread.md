@@ -431,3 +431,26 @@ Rebutted: CODE_WALKTHROUGH file:line refs are the doc's own convention (guard re
 drift by design). N/A: lessons-critical at 11 (pre-existing, no growth — claude says leave it).
 Acknowledged: moved-numbers packet goes to architect at the pr gate (standing order; residual census
 included). Full dispositions in 52-phase_3-iter1-rebuttals.md. Suite 640/2, both lanes green.
+
+## Review phase (2026-10-29, post-refresh re-entry)
+
+Re-entered at the `review` phase after a context refresh. Reconciled the full on-disk state:
+- **PR #58 (this branch's Phase-1) is already MERGED to main.** Phases 2 (wiring + rebaseline) and
+  3 (governance docs) are on the branch but NOT in main → a NEW PR from `builder/aspir-52` is needed
+  to land the core scoring change.
+- `main` had advanced via **PR #61** (CI workflow: `.github/workflows/tests.yml`, `.gitignore`,
+  `requirements.txt`, `apps/viewer/package.json`, a `test_jev.py` output-matching robustness fix).
+  My branch was based before it. Verified the merge is **conflict-free** (no file touched by both
+  sides; the one overlapping-concern file, `test_jev.py`, was changed only by main and its fix is
+  orthogonal to my jev-data regeneration). Merged `origin/main` into the branch (`2e8b4f5`) so the
+  new PR is current and runs under main's CI. Full gate GREEN after merge: pipelines **640 pass /
+  2 skip**, viewer vitest pass, audit OK.
+- **Review doc rewritten to the current porch template.** The prior draft predated the template and
+  lacked `## Architecture Updates` / `## Lessons Learned Updates` (porch review checks). New doc has
+  the full template (Summary / Spec Compliance / Deviations / Consultation Feedback / Lessons /
+  Architecture Updates / Lessons Learned Updates / Flaky / Follow-up) with the rich moved-numbers,
+  collision-residue, and #57/#58 reconciliation content preserved as appendices.
+
+Next: create the new PR (Closes #52), `porch done 52 --pr <N>`, signal PR_READY, send the architect
+the moved-numbers + #60 residual packet. STOP at the pr gate — HUMAN approval only; I do NOT
+self-approve.
