@@ -22,10 +22,10 @@ gates:
     status: pending
     requested_at: '2026-10-30T02:18:30.604Z'
 iteration: 1
-build_complete: false
+build_complete: true
 history: []
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-30T02:18:30.605Z'
+updated_at: '2026-10-30T02:48:32.002Z'
 force_advanced:
   phase: phase_2
   iteration: 3
