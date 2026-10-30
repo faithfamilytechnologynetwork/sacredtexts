@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The revised plan resolves the earlier blast-radius and oracle concerns, but still omits the promised end-to-end submetric test and leaves normalization ordering ambiguous.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The spec-required word-boundary submetric test is still absent. Add a `score_answer` test proving spacing differences leave `exact=0` and `normalized=0`, preserve token boundaries for `token_f1`, and allow only `contains_reference` to supply correctness. Phase 1 also says containment is added while its file instructions defer `bounded_contains` until Phase 2; make that sequencing consistent.
+- Clarify that `exact` remains raw equality. The Phase-2 wording currently says `score_answer` uses `score_normalize` for `exact`/`normalized`/`token_f1`, contradicting both the current implementation and the stated four-submetric contract.
+- `score_normalize = fold(text) + normalize(text)` applies the new fold before NFKD, so Arabic presentation forms that NFKD decomposes into `ى` can evade the fold. Specify NFKD → orthography fold → mark deletion/punctuation, while keeping public `normalize()` behavior unchanged, and add a representative compatibility-form test.

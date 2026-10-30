@@ -1,0 +1,9 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 2 has a directionality bug, stale derived artifacts, and an insufficient rebaseline oracle.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `fold_aware_contains` is not fully direction-independent for mixed defective/plene text (`score.py:332-360`). An Uthmani answer `هَٰذَا ٱلْكِتَٰبُ` fails against Imla'i expected `هذا الكتاب`: the two answer forms either delete or materialize every dagger globally, yielding `هذا الكتب` or `هاذا الكتاب`. This contradicts the claimed per-position optionality and the spec’s bidirectional requirement.
+- `tutorial-2026-10-11/jev_agreement.{json,md}` was not regenerated. It still reports 239 contained cells while current scores contain 259, and the README explicitly calls it pre-fix historical evidence. Phase 2 and the spec explicitly require regenerated, internally consistent Jev artifacts.
+- `test_orthography_rebaseline.py:48-56,109-134` pins only mover counts, not the exact pre-registered cell identities. Thus a different set—or compensating additions/removals—can pass. Original and experiment movers lack exact-set coverage, and the planned Arabic-cell partition count is also not pinned. The sanctioned rebaseline requires an exact per-cell delta witness.

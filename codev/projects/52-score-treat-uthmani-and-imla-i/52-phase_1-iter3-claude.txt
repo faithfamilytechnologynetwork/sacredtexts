@@ -1,0 +1,56 @@
+I'll start by reading the implementation files.The builder appears to be editing concurrently — the files changed since my first read. Re-reading current state.I verified everything empirically against the worktree (read-only; I ran probes and the test suite but made no edits). Note: the builder edited `score.py` and the test file mid-review — my findings are against the current on-disk state (which now includes `_answer_plene_form`, 576 tests passing).
+
+## What verifies
+
+- **The pivoted design is correct and the superset claim is structural.** `fold_aware_contains` is literally `bounded_contains(...) OR (arabic && pattern match)`, so `normalized=1 ⇒ contains=1` holds by construction and the fold can only add credit. `normalize()` is a thin `_normalize(fold=False)` delegate, so the equality submetrics genuinely cannot move.
+- **The defective-spelling fix is real.** `score_normalize("هَٰذَا") == "هذا"`, and `fold_aware_contains` credits plene (`الكتاب` ← `ٱلْكِتَٰبِ`), defective (`الرحمن` ← `ٱلرَّحْمَٰنِ`), digraph (`أتاكم`), word-final (`على`), and the mixed-verse case. The iter-2 blocking defect is gone.
+- **Digraph guard holds on real data.** I swept the QUL corpus: the maqsura→dagger gap-length histogram is `{0: 2242}` — the dagger is *always* immediately adjacent post-NFKD, so the `(?!ٰ)` lookahead never misses, and `ءَاتَىٰنَا` ≠ `ءَاتَيْنَا` in both directions.
+- **Direction-independence now has data behind it.** Committed cells show `exp_dagger/ans_dagger` 118, `exp_dagger/ans_nodagger` 23, and **zero** `exp_nodagger/ans_dagger` — so `_answer_plene_form` is belt-and-braces rather than load-bearing, but it makes the spec's "both directions" constraint actually true. Latin/Hebrew invariance of the new plene path verified by hand (6 cases incl. soft hyphen and curly quotes), perf fine (50 non-match calls over a full verse in 25 ms — no backtracking blowup).
+- **Unwired discipline holds**: 576 passed / 2 skipped; the four committed-run guards and `ANCHOR_DIGEST` pass unmodified.
+
+## Findings
+
+**1. `_fold_containment_pattern` emits an unmatchable literal `\n`/`\t` — the fold branch is permanently dead for multi-line references.** The builder mirrors `normalize()`'s punctuation and casefold passes but not its final `_WS_RE.sub(" ", …)` collapse. A `\n` is neither punctuation (`[^\w\s]`) nor `" "`, so it survives as `re.escape("\n")` → a required literal newline, while the answer side (`score_normalize`) has already collapsed all whitespace to single spaces. Verified:
+
+```
+ref "ٱلْكِتَٰبِ\nسُبْحَٰنَ" vs ans "قال الكتاب سبحان ربنا"  → bounded False, fold False
+ref with " " instead of "\n"                              → fold True
+```
+
+This is not hypothetical: **23 Arabic `retrieve_quote` references in `original-2026-10-21` contain `\n`/`\t`** in `expected["text"]` (hadith chains — `retrieve_quote-094539b57f83`, `-131479631da4`, …). Those references can never take the fold branch. I measured the credit delta on the committed answers — 420 Arabic retrieval cells, 41 credited now, 41 with the bug fixed, **0 gained** — so there is no wrong number today, but Phase 2 freezes a witness over a capability that is silently inert for ~16% of that run's Arabic references, and #39 (the whole motivation) is hadith-heavy. Fix is one line (`s = _WS_RE.sub(" ", s)` after the NFKD/quote passes) plus a multi-line-reference unit test.
+
+**2. The corpus collision diagnostic no longer covers the mechanism that grants credit.** After the pivot, credit comes from `ا?` in the pattern and from `_answer_plene_form` — but `test_corpus_collision_diagnostic` sweeps only `score_normalize` *equality* buckets, so the 9-bucket pinned residue describes the symmetric letter folds and nothing else. This is the third iteration this blind spot has surfaced (iter-1: fold's own alphabet neutralised; iter-2: merge-only, blind to the loss class). I ran the missing sweep — merges introduced by the plene branch at single-word granularity, excluding anything the dagger deletion already merges today:
+
+```
+INTRODUCED distinct-word merges via the plene branch: 11 rows / 5 distinct skeleton-pairs
+  ٱلْوِلْدَٰنِ (today→الولدن)  now also credits  ٱلْوَٰلِدَانِ (=الولدان)
+  رَأَىٰ       (today→راى)     now also credits  رَءَا       (=راا)
+  أُنثَىٰ      (today→انثى)    now also credits  إِنَـٰثًا    (=انثا)
+  وَسَعَىٰ     (today→وسعى)    now also credits  وَٰسِعًا     (=وسعا)
+  وَأُنثَىٰ    (today→وانثى)   now also credits  وَإِنَـٰثًا  (=وانثا)
+```
+
+Benign at verse granularity and comparable in size to the accepted 9 — but none of it is in `_ACCEPTED_DISTINCT_WORD_MERGES`, the `score.py` known-limitation block names only maqsura and hamza, and the Phase-1 deliverable is explicitly "list any genuine distinct-word merges for Phase-2 hand-verification." A ~15-line extension of the existing sweep (the one I ran) plus pinning this set, and one sentence naming the optional-ā class in the `score.py` comment and the spec's known-limitation paragraph, closes it.
+
+**3. (comment) `_answer_plene_form` re-duplicates the `_normalize` body** — the exact duplication iteration 1 asked you to remove via `_normalize(text, *, fold)`. The quote/dash folds, punct pass and whitespace collapse are hand-copied a third time (`_fold_containment_pattern` being the second, which is where finding 1 came from — the copy drifted). Consider `_normalize(text, *, fold=False, plene=False)`. Also extend `test_latin_and_hebrew_invariant` to `_answer_plene_form`; it passes today (I checked) but nothing guards it.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The containment-only optional-ā design verifies as correct and corpus-validated, but the pattern builder omits `normalize()`'s whitespace collapse — killing the fold branch for the 23 newline-bearing Arabic references in `original-2026-10-21` — and the pinned collision diagnostic still describes only the equality folds, not the optional-ā/plene branches that actually grant credit (5 unpinned distinct-word merges enumerated).
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `_fold_containment_pattern` does not apply `_WS_RE`: a reference containing `\n`/`\t` compiles to a required literal newline that `score_normalize(answer)` can never contain, so the fold branch is permanently dead for 23 Arabic `retrieve_quote` references in `original-2026-10-21` (measured credit delta today: 0 cells, but Phase 2 would freeze the inert capability).
+- `test_corpus_collision_diagnostic` sweeps only `score_normalize` equality buckets, so it is structurally blind to the merges created by the `ا?` optional long-ā and `_answer_plene_form`; the plene branch introduces 5 distinct-word skeleton-pairs (`ٱلْوِلْدَٰنِ`/`ٱلْوَٰلِدَانِ`, `رَأَىٰ`/`رَءَا`, `أُنثَىٰ`/`إِنَـٰثًا`, `وَسَعَىٰ`/`وَٰسِعًا`, `وَأُنثَىٰ`/`وَإِنَـٰثًا`) that are absent from `_ACCEPTED_DISTINCT_WORD_MERGES` and from the known-limitation text in `score.py` and the spec.
+- (minor) `_answer_plene_form` is a third hand-copy of the `_normalize` pipeline — the drift that produced issue 1 — and is not covered by the Latin/Hebrew invariance test.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 2 paths changed while this lane was running:
+  - pipelines/sacredbench/score.py
+  - pipelines/tests/test_arabic_orthography_fold.py
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

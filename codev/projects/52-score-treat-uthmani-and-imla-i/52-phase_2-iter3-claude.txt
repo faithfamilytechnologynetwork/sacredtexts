@@ -1,0 +1,56 @@
+I'll review the Phase 2 implementation. Let me start by reading the core implementation files.Now let me see exactly what Phase 2 changed versus the Phase-1 baseline.I've verified the implementation by reading the code, re-deriving the oracle independently, and running both test suites. Here's my review.
+
+## What I verified (and what holds up)
+
+**The wiring is exactly what the plan prescribed, and minimal.** `score.py` changes only three call sites (`contains_reference`, `_single_citation_correct`, plus docstrings); `normalize()`, `exact`, `normalized`, `token_f1` are untouched. `fold_aware_contains` opens with `if bounded_contains(...): return True`, so the superset property is true by construction — credit can only be added, and `refused` can only decrease. `facct.py`, `outcomes.py`, `probes.py` all moved to the one shared predicate.
+
+**The oracle is genuinely non-circular — I checked this directly.** I recomputed the five `(exact, normalized, token_f1)` projection SHAs from `git show b93e881:runs/...` (the pre-#52 base) and all five match the pins in `test_orthography_rebaseline.py`. The mover sets are also re-derived from `answers.jsonl` rather than read back from `scores.jsonl`, so a compensating swap can't pass. This is the most important integrity property of a sanctioned rebaseline and it is solid.
+
+**Independent corroboration is strong.** Regenerated `jev_agreement`: containment agreement 0.9325 → 0.9825, judge-only 27 → 7, **deterministic-only 0 throughout** — the fold credited nothing the Jev judge rejected. `original`'s `summary.json` has no `coverage`/`refused` line changes, and `test_summary_agrees_with_scores` recomputes those from `scores.jsonl`, which turns the untouched summary into a real cross-run refusal pin.
+
+**Suites**: pipelines 634 passed / 2 skipped; viewer 187 passed (I ran `pnpm -C apps/viewer test` explicitly, per the plan). `analyze.py`'s hardcoded `sys.path` is now repo-relative. `.codev/checks/test.sh` already maps `runs/` → both lanes.
+
+## The one blocking issue
+
+The review doc's under-credit residual is wrong, in a way that matters:
+
+> "It surfaces as exactly one committed cell (`exp` `retrieve_quote-8c4ce779621f`) … so it does not bias any comparison."
+
+I ran a census (making a doubled-alef reference site optional, the `ءَا`↔`آ` hypothesis). **Eight** committed cells across four of the five score files would be credited:
+
+| run | cells |
+|---|---|
+| tutorial | haiku × `retrieve_quote-1d74fc87541b`, `retrieve_quote-a8df3e43d35d` |
+| original | haiku, opus × `retrieve_quote-8c4ce779621f` |
+| exp-ar / exp-en | sonnet, sol × `retrieve_quote-8c4ce779621f` |
+
+And it **does** bias a comparison. On both tutorial questions, `haiku-search` is credited (`contains_reference=1`) while `haiku` — reproducing the same verse word-for-word in Imla'i with a madda — is not:
+
+```
+retrieve_quote-1d74fc87541b   haiku contains=0 f1=0.857 | haiku-search contains=1
+retrieve_quote-a8df3e43d35d   haiku contains=0 f1=0.963 | haiku-search contains=1
+```
+
+So roughly 2 points of the 4-point "search lift" now pinned in `tutorialRun.test.ts` (`haiku 88% → haiku-search 92%`) is still an orthography artifact, not a search effect — the exact mis-measurement this spec exists to remove. The `exp` README's phrasing ("does not bias the en/ar comparison *this experiment is about*") is accurate; it's the review doc that over-generalizes it.
+
+I'm not asking you to extend the fold — `ءَا`↔`آ` needs its own collision analysis and that's the architect's scope call. I'm asking that the residual be counted honestly: correct the claim, enumerate the 8 cells, pin them as a drift-detecting set alongside the mover sets, and put the number in the architect packet. Also worth noting as evidence it's tractable: `probes.py:18` already maps `آ → ا` in its coarse clustering fold.
+
+## Non-blocking
+
+- **`probes.py` divergence undocumented.** The plan's Phase-2 deliverable said to document why `_LETTER_FOLD` diverges from the scoring fold; the call was swapped but no note added.
+- **`_single_citation_correct` is now fold-aware.** A no-op today (I confirmed 0 Arabic-letter citations across all four answer files), but for #39 a short Arabic citation would get `\s*`-flex plus optional alefs — loose for a 1–2 word string. Consider gating the fold branch on the text-retrieval tasks or a minimum reference length.
+- **Retired #48 isolation SHAs** — the rationale is sound (a stacked rebaseline genuinely invalidates a frozen pre-change projection, and un-applying both would couple the tests). But this erodes a prior witness each time. The convention `test_orthography_rebaseline` uses — freeze the *pre* projection against a named base commit — is the durable one; worth making that the house rule.
+- The regenerated `jev_agreement` also absorbed a stale pre-#48 refusal column (refused 127→122). Mentioned in passing; make it explicit so a reader diffing the artifact doesn't attribute it to #52.
+
+I did not modify anything in the tree; all checks above were read-only re-derivations.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Rebaseline mechanics, oracle non-circularity, and both suites verify clean — but the documented under-credit residual is off by 8× and wrongly claims no comparison bias, when it demonstrably skews haiku vs haiku-search in the committed tutorial headline.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- Review doc claims the `ءَا`↔`آ` under-credit residual is "exactly one committed cell (exp 8c4ce779621f)" and "does not bias any comparison". Census shows 8 committed cells across tutorial/original/exp-ar/exp-en; on tutorial `retrieve_quote-1d74fc87541b` and `-a8df3e43d35d`, haiku-search is credited while haiku's same-verse Imla'i answer is not — so ~2pts of the pinned haiku→haiku-search "search lift" is still an orthography artifact. Correct the count/claim, pin the residual set, surface it in the architect packet (extending the fold itself can stay a follow-up).
+- Minor: `probes.py` `_LETTER_FOLD`-vs-scoring-fold divergence not documented as the plan required (note that it already maps `آ → ا`).
+- Minor: `_single_citation_correct` now routes citations through the whitespace-flexed/optional-alef branch — a verified no-op on committed evidence, but loose for short Arabic citations once #39 introduces them.

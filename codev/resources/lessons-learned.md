@@ -67,14 +67,20 @@ Seeded from Spec 1 (Phase 1 benchmark).
   diluted by an English caveat lands ~0.45). Caveat: containment has **no anti-hedge rule** (unlike
   `cite_passage`/`identify_source`), so a verse that is the model's secondary hedge guess still
   counts correct — document the few such cells rather than special-casing them.
-- **Web retrieval surfaces real orthographic variance the normaliser can't fold.** A
-  correct āyah can come back in a *different* Uthmani Unicode encoding (U+06E1 vs U+0652,
-  Arabic Extended-A tanwīn U+08F0–08F2, U+0657, yeh/alef-maksura) that `normalize()` does
-  not fold to exact equality (token_f1 up to 0.95, `correct`=0) — present in search-OFF
-  answers too, so it is *not* a tool artifact. Spec 15 shipped the additive `contains_reference`
-  submetric rather than folding these encodings (folding risked the Latin byte-for-byte invariance);
-  the encoding near-miss stays visible as a `normalized=0` / `contains_reference=0` / high-`token_f1`
-  **incorrect** cell.
+- **Real orthographic variance needed a fold — but in the containment predicate, not `normalize()`.**
+  A correct āyah comes back in a *different* orthography (Uthmani↔Imla'i: dagger-alif ـٰ vs full
+  alef, dotless ى vs dotted ي, standalone hamza ء, hamzat-wasl ٱ; plus pure Unicode-encoding
+  variance U+06E1 vs U+0652, tanwīn codepoints) — present in search-OFF answers too, so *not* a tool
+  artifact. Spec 15 first shipped the additive `contains_reference` submetric rather than touch
+  `normalize()`. **Spec 52** then made the Uthmani↔Imla'i equivalence real by folding it inside the
+  containment predicate (`fold_aware_contains`/`score_normalize`), NOT in `normalize()` — the long-ā
+  alef is matched as OPTIONAL (`ا?`) because Imla'i writes it for the plene class (الكتاب) but omits
+  it for the defective class (هذا/ذلك/الرحمن), so a context-free `dagger→alef` fold is provably wrong
+  (it un-credits the defective class — the trap a competing #52 PR fell into). `normalize()` and every
+  equality submetric stay byte-stable (Latin invariance, the generation ANCHOR digest, and the
+  copyright audit untouched); only `contains_reference`/`correct`/`outcome` move, via a sanctioned
+  oracle-witnessed rebaseline. Residual not folded: word-initial hamza-alef ءَا ↔ alef-madda آ
+  (e.g. Q14:34), logged as a known limitation.
 - **A scoring-contract change is a SANCTIONED, evidenced rebaseline — not a forbidden re-score.**
   The byte-for-byte re-score guards exist to catch an *accidental* disturbance of committed numbers;
   a deliberate contract change (containment headline, refused outcome) reshapes `scores.jsonl` on
@@ -174,10 +180,11 @@ Seeded from Spec 1 (Phase 1 benchmark).
   real work before running the consult, so it reviews real code), but run porch one command at a
   time at a boundary and read each result (Spec 32).
 - **An analysis/visualisation stage reuses the scoring contract's own predicates, never a second
-  copy.** The FAccT card's edition counterfactual calls `score.bounded_contains` + `score.normalize`
-  (the public `contains_reference` predicate, promoted from the private `_bounded_equal`) rather than
-  a fresh `in` check — one containment definition, tested to agree with the scorer, so the card can't
-  drift from the headline (Spec 32, echoing Spec 15's single-refusal-definition discipline).
+  copy.** The FAccT card's edition counterfactual calls `score.fold_aware_contains` + `score.normalize`
+  (the public `contains_reference` predicate, promoted from the private `_bounded_equal`, fold-aware
+  since Spec 52) rather than a fresh `in` check — one containment definition, tested to agree with the
+  scorer, so the card can't drift from the headline (Spec 32, echoing Spec 15's
+  single-refusal-definition discipline).
 
 ## Map
 - (This cold archive pairs with `lessons-critical.md`'s hot tier; demote hot entries

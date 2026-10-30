@@ -1,0 +1,23 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The rebaseline is well witnessed, but the implementation does not satisfy the specified direction-independent equivalence.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- **Direction independence fails for mixed Imla'i references.** `fold_aware_contains()` carries optional-alef positions only in reference daggers, then tries two global answer forms (`pipelines/sacredbench/score.py:340-365`). Consequently, an Uthmani answer `هَٰذَا ٱلْكِتَٰبَ` does not match the Imla'i reference `هذا الكتاب` (`fold_aware_contains(...) == False`). This contradicts the both-directions success criterion (`codev/specs/52-…md:79-82`) and the PR’s “direction-independent” claim. Add coverage for this mixed reverse case and either implement it or explicitly narrow the spec and public claims.
+- Minor cleanup: `pipelines/tests/test_arabic_orthography_fold.py:7-9` still says the fold is “not yet wired,” although this PR wires it into default scoring.
+- The focused orthography and rebaseline suites passed locally: 38 tests. The complete suite could not be independently rerun in the read-only review sandbox because many tests require writable temporary directories.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds containment-only equivalence between Uthmani and Imla'i Arabic orthography while preserving the existing normalization and similarity metrics. It also rebaselines committed score artifacts with pinned mover sets and frozen similarity projections.
+
+  ## Key Changes
+  - Routes scoring, refusal detection, and supporting analyses through `fold_aware_contains`.
+  - Regenerates affected run artifacts and adds orthography, collision, and rebaseline witnesses.
+  - Documents accepted collision buckets and the deferred hamza-alef residual.
+
+  ## Test Plan
+  - Run the full pipelines pytest and viewer Vitest suites.
+  - Verify all committed-run regression and copyright-audit guards.
+  - Add a reverse-direction mixed-spelling test using Uthmani `هَٰذَا ٱلْكِتَٰبَ` against Imla'i `هذا الكتاب`.

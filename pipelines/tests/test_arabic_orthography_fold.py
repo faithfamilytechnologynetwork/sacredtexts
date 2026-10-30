@@ -4,9 +4,11 @@ live in `score_normalize`, and ALL the orthographic flexibility — including th
 that the defective-spelling class (هذا/ذلك/الرحمن) requires — lives in `fold_aware_contains`, which is
 a strict SUPERSET of `bounded_contains`. So this can only ADD credit, never remove it.
 
-These exercise the capability in isolation (Phase 1): `fold_aware_contains` is not yet wired into the
-default scoring path, so `normalize()` and every committed score stay byte-identical (guarded by the
-existing regression suites). Read-only; the corpus sweep reads the committed open-licensed QUL Qur'an.
+These exercise the fold capability in isolation. As of Phase 2 `fold_aware_contains` IS wired into
+the default scoring path (`contains_reference`, the `cite_passage` verdict, `outcomes.classify_refusal`,
+the FAccT counterfactual, and the probes); `normalize()` and the equality submetrics stay byte-identical
+(guarded by the committed-run regression and rebaseline suites). Read-only here; the corpus sweep reads
+the committed open-licensed QUL Qur'an.
 """
 from __future__ import annotations
 
@@ -83,15 +85,37 @@ def test_fold_contains_credits_word_boundary_compound():
 
 
 def test_fold_contains_is_direction_independent():
-    # Spec requires equivalence in BOTH directions. The common case is Uthmani reference (QUL) vs an
-    # Imla'i answer; the reverse (Imla'i reference ↔ Uthmani answer) must also hold — matched by also
-    # trying the answer's plene (dagger→alef) form.
+    # Equivalence holds in BOTH directions for a SINGLE-WORD long-ā: the common case is a Uthmani
+    # reference (QUL, dagger) vs an Imla'i answer, and the reverse (Imla'i reference ↔ Uthmani
+    # answer) also holds — matched by also trying the answer's plene (dagger→alef) form.
     assert fold_aware_contains("ٱلْكِتَٰبِ", "الكتاب")          # rev, plene long-ā
     assert fold_aware_contains("هَٰذَا", "هذا")                 # rev, defective long-ā
     assert fold_aware_contains("أَتَىٰكُمْ", "أتاكم")           # rev, ىٰ digraph
-    assert fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يَا بُنَيَّ")  # rev, word boundary
+    # The Uthmani one-word ↔ Imla'i two-word JOIN (vocative يٰ.../يا ...) matches either direction
+    # WHEN the reference carries the long-ā dagger (the join is marked), which is always the corpus
+    # case (Spec 52 PR review item 1 — whitespace flex confined to the long-ā boundary):
+    assert fold_aware_contains("قال السعي يا بني وقال", "يَـٰبُنَىَّ")       # Uthmani-ref join → Imla'i ans
+    assert fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يٰبُنَىَّ")     # Uthmani-ref join → Uthmani ans
     # per-position optionality handles a MIXED verse (defective هذا + plene الكتاب in one reference):
     assert fold_aware_contains("قال هذا الكتاب لقومه", "هَٰذَا ٱلْكِتَٰبَ")
+
+
+def test_mixed_daggerless_imlai_reference_is_the_documented_boundary():
+    # The per-position optionality is carried by the REFERENCE's daggers. Direction-independence
+    # therefore holds whenever the reference is in the corpus orthography (Uthmani for the Qur'an,
+    # carrying the daggers) — which is always the case on the committed corpora and under #39's
+    # Arabic subset. The ONE case it does NOT cover is a reference itself written in MIXED Imla'i
+    # (defective هذا + plene الكتاب, with no daggers to mark the optional positions): the two global
+    # answer forms (default dagger-deleted + plene) cannot reproduce a per-word mix. This pins that
+    # boundary (Spec 52 review consult iter-1, codex) — an accepted, architect-endorsed narrowing of
+    # the "both directions" phrasing, not a regression. It only ever withholds credit (never grants a
+    # wrong one), and it does not arise on any committed cell.
+    assert not fold_aware_contains("هَٰذَا ٱلْكِتَٰبَ", "هذا الكتاب")   # mixed daggerless ref → boundary
+    # a daggerless Imla'i reference with a WORD-JOIN (يا + بني) likewise cannot mark the join optional,
+    # so it does not match a Uthmani-joined answer — same boundary (the reference must carry the dagger):
+    assert not fold_aware_contains("قال السعي يَـٰبُنَىَّ وقال", "يَا بُنَيَّ")
+    assert fold_aware_contains("قال هذا الكتاب لقومه", "هَٰذَا ٱلْكِتَٰبَ")  # same words, daggered ref → OK
+    assert fold_aware_contains("ٱلْكِتَٰبِ", "الكتاب")                  # pure-plene daggerless ref → OK
 
 
 def test_fold_contains_handles_multiline_reference():
@@ -122,6 +146,18 @@ def test_fold_contains_negatives():
     assert not fold_aware_contains("وقال المهديون كلاما", "هدي")      # not a sub-word
     assert not fold_aware_contains("therapist notes", "the rapist")   # Latin, no ws flex
     assert not fold_aware_contains("الآية ١٣", "الآية ١ ٣")          # ١ ٣ ≠ ١٣ (digit separator)
+
+
+def test_fold_contains_rejects_distinct_segmentations():
+    # Spec 52 PR review item 1 (codex): whitespace flex is confined to the long-ā join, so a multiword
+    # reference must NOT match a distinct single word, and a single-word reference must NOT match a
+    # distinct multiword span. None of these pairs touches a long-ā boundary, so the gap stays required.
+    assert not fold_aware_contains("قل أعوذ برب الناس من شر الوسواس", "منشر")  # "من شر" ≠ منشر
+    assert not fold_aware_contains("منشر الخناس هنا", "من شر")                # منشر ≠ "من شر"
+    assert not fold_aware_contains("كتب الرسالة", "ك تب")                      # كتب ≠ "ك تب"
+    assert not fold_aware_contains("هو من الناس", "منال")                      # "من ال" ≠ منال
+    assert fold_aware_contains("فيه ذلك الكتاب حقا", "ذلك الكتاب")             # a REAL space stays matchable
+    assert not fold_aware_contains("ذلكالكتاب حقا", "ذلك الكتاب")              # but the words can't fuse
     assert not fold_aware_contains("سورة ١٣", "سورة ١:٣")
 
 

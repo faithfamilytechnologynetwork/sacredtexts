@@ -14,8 +14,8 @@ Reads a finished run — ``scores.jsonl``, ``summary.json``, ``answers.jsonl`` a
 It never re-scores, never calls a model, and **fails fast** (``FacctError``, no partial data) on
 inconsistent evidence. Outcomes come only from ``metrics.outcome`` (``outcomes.py`` is the single
 refusal definition): there is no second refusal rule and no ``fabrication`` label here. The
-counterfactual reuses ``score.bounded_contains`` + ``score.normalize`` — the exact containment
-predicate behind the headline — never a private matcher.
+counterfactual reuses ``score.fold_aware_contains`` + ``score.normalize`` — the exact containment
+predicate behind the headline (Spec 52: one shared contract) — never a private matcher.
 """
 
 from __future__ import annotations
@@ -288,7 +288,7 @@ def _counterfactual(
                 continue
             if passage.version in matched or not score.normalize(passage.text):
                 continue
-            if score.bounded_contains(answer_text, passage.text):
+            if score.fold_aware_contains(answer_text, passage.text):
                 matched.append(passage.version)
         if matched:
             per_model[model]["numerator"] += 1

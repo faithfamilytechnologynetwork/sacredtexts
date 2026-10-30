@@ -1,0 +1,54 @@
+I'll start by locating the worktree and reading the core implementation files.Now let me read the actual scorer changes and the new witness test.Now the core scorer changes:Several plan items appear absent from the file list (jev_agreement, the run regression guards, the test.sh dispatcher). Let me verify.The suite is green. Now let me check whether regenerating `jev_agreement` was actually feasible (i.e. whether the raw judge outputs are committed), since that determines if leaving it stale was justified.`judgments.jsonl` is committed, so regenerating is a free offline recompute. Let me measure how stale the artifact now is (read-only, no writes).Let me verify the remaining Phase-2 acceptance criteria: summary self-consistency coverage, viewer lane, and the hand-verification record.Both lanes green. Now let me independently verify the hand-spliced summaries actually agree with the regenerated scores (a surgical splice is error-prone, and no test guards `original`'s summary).Two critical verifications remain: that the frozen SHA constants are genuinely pre-change (not circular), and that no cell lost credit.One final check: whether `original`'s summary numbers and the planned witness item (4) "summary self-consistency" have durable guards.I have verified everything independently. Here is my review.
+
+## What I verified (not just read)
+
+**The core design is correctly implemented and the central safety claims hold up under independent checks:**
+
+| Claim | Verification |
+|---|---|
+| Containment-only wiring | ✅ All 5 call sites moved to `fold_aware_contains` (`score_answer`, `_single_citation_correct`, `outcomes:338`, `facct:288`, `probes:203`); `normalize`/`exact`/`normalized`/`token_f1` untouched |
+| Similarity frozen | ✅ I recomputed the SIM SHA from `git show b93e881:` on all 5 score files — **matches the frozen constants exactly**, so the witness is genuinely pre-change and **non-circular**, not derived from post-change files |
+| Fold only ADDS credit | ✅ Diffed every cell vs the pre-#52 base: 20+15+0+14+9 = **58 movers, all `incorrect→correct`, zero 1→0 losses, zero coverage change, zero refused reclassifications** |
+| Surgical summary splice | ✅ Recomputed accuracy/coverage from `scores.jsonl` for all three runs → **summaries agree**; `panel`/`usage`/`generated_at`/`expected_n` **byte-identical** to the pre-#52 base (the aspir-48 splice scar was avoided) |
+| Both lanes green | ✅ 625 pytest pass / 2 skip; 187 vitest pass. `.codev/checks/test.sh` already maps `runs/`→both lanes (pre-existing, line 54) |
+| `analyze.py` path fix | ✅ Now `parents[2]/"pipelines"` — the silent non-rebaseline trap is closed |
+
+The review doc is unusually honest — it documents the Q14:34 `ءَا↔آ` under-credit residual and the 10-bucket collision residue rather than hiding them.
+
+## The one blocking gap: `jev_agreement.{json,md}` left stale
+
+The plan's Phase-2 "Files to Create / Modify" names it explicitly ("its confusion matrix is computed against `contains_reference`… so it moves. **Regenerate and note the moved headline**"), and the phase acceptance criterion reads "No `summary.md`/`facct.md`/**`jev_agreement.md`** disagrees with its source scores." The thread records it as "LEFT historical per #48 precedent."
+
+I recomputed the containment matrix from the committed `judgments.jsonl` against the rebaselined `scores.jsonl`:
+
+| | committed `jev_agreement.md` | actual post-fold |
+|---|---|---|
+| agreement | **0.9325** (373/400) | **0.9825** (393/400) |
+| both | 239 | 259 |
+| judge-only | **27** | **7** |
+| deterministic-only | 0 | 0 |
+
+Three reasons the deviation doesn't hold:
+
+1. **It's free.** `judgments.jsonl` is committed, so this is a deterministic offline recompute — no paid judge call. Cost/feasibility isn't the constraint it was framed as.
+2. **The README disclaimer covers the wrong column.** It disclaims "its deterministic-**refusal** column and its '11 disagreements' figure… read **refusal counts** from `summary.json`." Containment is never mentioned — and containment is precisely what #52 moved. A reader gets a false 0.9325/judge-only-27 with no marker. No test guards this file (`test_jev_agreement.py` uses fixtures, not the committed run), which is why the suite stays green.
+3. **It discards your strongest independent evidence.** `judge_only` 27→7 with `deterministic_only` holding at **0** means the Jev judge independently agreed with **all 20** cells the fold newly credits, and the fold credited nothing the judge thought was wrong. That is exactly the independent no-wrong-credit corroboration the spec's gate is reaching for, and the spec predicted this movement by name ("the 27 `judge_only` orthographic near-misses are precisely this fold's target").
+
+**Fix:** regenerate both files and note the moved headline (0.9325→0.9825, judge-only 27→7) in the run README and the review doc's moved-numbers table. If you'd rather preserve the file as a frozen snapshot, the minimum acceptable alternative is to extend the disclaimer to the **containment** column and state the recomputed post-fold figures inline — but the plan says regenerate, and the regenerated numbers help your case.
+
+## Non-blocking
+
+- **Witness item (4) was dropped.** The plan specified "(4) derived-artifact self-consistency (`summary` agrees with `scores.jsonl`)"; `test_orthography_rebaseline.py`'s docstring lists four items but substitutes the exp-recovery test. `original-2026-10-21/summary.json` has **no durable pin anywhere** (only `facct` and the re-score are guarded). I verified consistency by hand, but a hand-splice is exactly the error-prone step the aspir-48 scar warns about — a ~10-line recompute-from-scores assert in the witness would make it permanent.
+- Deferring the `ءَا↔آ` rule to a follow-up with its own collision analysis is the right call; scope discipline noted and well-documented.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Containment-only fold, frozen-similarity witness, and surgical splices all verified correct and non-circular (58 movers, all 0→1, zero losses, both lanes green) — but `jev_agreement.{json,md}` was left stale against its own source scores, an explicit spec SC and phase acceptance criterion, and its free regeneration would supply the fold's strongest independent no-wrong-credit evidence.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- **Blocking:** `runs/tutorial-2026-10-11/jev_agreement.{json,md}` not regenerated despite being a named Phase-2 file and acceptance criterion ("No `jev_agreement.md` disagrees with its source scores"). Verified stale by exactly the 20 moved tutorial cells: containment agreement 0.9325→0.9825, judge-only 27→7. Regeneration is free (committed `judgments.jsonl`, deterministic, no paid judge call) and no test guards the file.
+- **Blocking (same item):** the run README's retained-as-historical disclaimer covers only the deterministic-**refusal** column and the "11 disagreements" figure — it does not disclaim the **containment** column, which is the one #52 moved. Either regenerate, or extend the disclaimer and state the recomputed post-fold containment figures.
+- **Non-blocking:** planned witness item (4) summary↔scores self-consistency assert was dropped; `original-2026-10-21/summary.json` has no durable pin, leaving the hand-splice (the aspir-48 scar) unguarded against future drift.
+- **Non-blocking:** regenerating `jev_agreement` yields `judge_only` 27→7 with `deterministic_only` still 0 — independent judge corroboration of all 20 newly credited cells. Worth surfacing in the review doc's moved-numbers table and the architect packet.

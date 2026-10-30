@@ -239,7 +239,11 @@ def fold_arabic_orthography(text: str) -> str:
     would collide the long-ā form with a genuine ``…ay…`` word (ءَاتَىٰنَا "He gave us" vs ءَاتَيْنَا
     "we gave"); the digraph's long ā is instead handled, optionally, in ``fold_aware_contains``.
     Expects NFKD-normalised input, runs BEFORE the Mn-mark deletion (which removes the dagger as
-    before). Arabic-only — Latin byte-for-byte unchanged."""
+    before). Arabic-only — Latin byte-for-byte unchanged.
+
+    NOT the same as ``probes.fold_arabic_letters``: that is a LOOSER, PROBE-ONLY fold (it also
+    collapses ``آ → ا`` and ``ة → ه`` outright) used for diagnostics, never for a scored headline —
+    keep the two deliberately distinct."""
     text = text.replace(_HAMZA, _ALEF)
     out: list[str] = []
     i = 0
@@ -275,9 +279,11 @@ def _fold_containment_pattern(expected: str) -> str:
     (a) makes the long-ā alef OPTIONAL (``ا?``) at each dagger-alif / ``ىٰ`` digraph position — so a
         plene (ٱلْكِتَٰبِ→الكتاب), defective (هَٰذَا→هذا) or Uthmani answer all match;
     (b) applies the symmetric folds (ى→ي, ء→ا, wasl ٱ→ا), drops marks/editorial;
-    (c) allows optional ``\\s*`` between adjacent Arabic letters, so the Uthmani one-word ↔ Imla'i
-        two-word compound (يَـٰبُنَىَّ ↔ يَا بُنَيَّ) matches either direction, while a space next to a
-        DIGIT stays required (so ``١ ٣`` ≠ ``١٣``);
+    (c) allows optional ``\\s*`` ONLY at a long-ā join boundary (a gap abutting an optional-long-ā
+        "AA" atom), so the attested Uthmani one-word ↔ Imla'i two-word compound (يَـٰبُنَىَّ ↔ يَا بُنَيَّ)
+        matches either direction — while elsewhere a reference space stays REQUIRED and adjacent
+        letters stay CONTIGUOUS, so a multiword reference does NOT match a distinct single word
+        (منشر ≠ ``من شر``, ``ك تب`` ≠ كتب) and a space next to a DIGIT stays required (``١ ٣`` ≠ ``١٣``);
     (d) is anchored ``(?<!\\w)…(?!\\w)`` so it stays a bounded containment (no sub-word credit)."""
     s = unicodedata.normalize("NFKD", expected)
     s = s.replace("‘", "'").replace("’", "'").replace("“", '"').replace("”", '"')
@@ -316,16 +322,29 @@ def _fold_containment_pattern(expected: str) -> str:
         collapsed.pop(0)
     while collapsed and collapsed[-1] == " ":
         collapsed.pop()
+    # Whitespace flexibility is CONFINED to the attested Uthmani↔Imla'i word-join: the long-ā
+    # boundary (vocative يٰ.../يا ..., dagger-join يَـٰبُنَىَّ↔يَا بُنَيَّ) — i.e. a position adjacent to an
+    # optional-long-ā ("AA") atom, which is the only boundary where the two orthographies attestedly
+    # join-vs-split. Everywhere else a reference space stays REQUIRED and adjacent letters stay
+    # CONTIGUOUS, so a multiword reference cannot match a distinct single word (منشر ≠ "من شر",
+    # "ك تب" ≠ كتب) and no distinct segmentation is credited. (Spec 52 PR review, architect round-1
+    # item 1 — codex segmentation over-credit.)
+    def aa_join(j: int) -> bool:  # does the gap at position j abut an optional-long-ā atom?
+        left = collapsed[j - 1] if j > 0 else None
+        right = collapsed[j + 1] if j + 1 < len(collapsed) else None
+        return left == "AA" or right == "AA"
     kept = [
         a for j, a in enumerate(collapsed)
         if not (a == " " and 0 < j < len(collapsed) - 1
-                and is_letterish(collapsed[j - 1]) and is_letterish(collapsed[j + 1]))
+                and is_letterish(collapsed[j - 1]) and is_letterish(collapsed[j + 1])
+                and aa_join(j))
     ]
     parts: list[str] = []
     for j, a in enumerate(kept):
         parts.append(re.escape(_ALEF) + "?" if a == "AA" else (r"\s+" if a == " " else re.escape(a)))
-        if j + 1 < len(kept) and is_letterish(a) and is_letterish(kept[j + 1]):
-            parts.append(r"\s*")
+        if (j + 1 < len(kept) and is_letterish(a) and is_letterish(kept[j + 1])
+                and (a == "AA" or kept[j + 1] == "AA")):
+            parts.append(r"\s*")           # optional space ONLY at a long-ā join boundary
     return r"(?<!\w)" + "".join(parts) + r"(?!\w)"
 
 
@@ -342,11 +361,21 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
     an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern built from
     the reference matches the answer. Being a superset keeps ``normalized=1 ⇒ contains=1`` and
-    guarantees the fold only ADDS credit. DIRECTION-INDEPENDENT: the pattern (optional ``ا?`` at each
-    reference dagger/``ىٰ``) is matched against the answer in BOTH its default (dagger-deleted) and
-    plene (dagger→alef) forms, so an Imla'i reference ↔ Uthmani answer also matches — per-position
-    optionality, which handles a mixed verse (defective ``هذا`` + plene ``الكتاب``) that a uniform
-    plene/defective fold cannot. Empty reference never matches."""
+    guarantees the fold only ADDS credit. The per-position optionality lives in the PATTERN (``ا?``
+    at each REFERENCE dagger/``ىٰ``), and the answer is matched in BOTH its default (dagger-deleted)
+    and plene (dagger→alef) forms — so any answer orthography (plene, defective, or mixed) matches a
+    reference, in either reproduction direction, and the dual answer form is load-bearing (it credits
+    answers that write a dagger where the reference wrote a full alef). LIMITATION: because the
+    per-position optionality is carried by the reference's daggers, a reference that is itself written
+    in MIXED Imla'i (e.g. defective ``هذا`` + plene ``الكتاب``, no daggers to mark) is NOT fully
+    matched — the two global answer forms cannot reproduce a per-word mix. This never arises on the
+    committed corpora (references are the corpus orthography — Uthmani for the Qur'an, carrying the
+    daggers); see the Spec 52 review's residuals. SCOPE of the "only ADDS credit" guarantee: it is
+    exact for the containment headline under the default graders. Under ``--evaluator strict`` the
+    ``_with_outcome`` rule ``classify_refusal(...) and not correct`` means a decline-prefixed Imla'i
+    delivery now folds to ``incorrect`` instead of ``refused`` (coverage ↑, accuracy ↓) — the same
+    rule ``bounded_contains`` already applied, just reaching more deliveries; no committed run uses
+    strict. Empty reference never matches."""
     if not normalize(expected):
         return False
     if bounded_contains(answer, expected):          # today's contract — superset floor
@@ -483,14 +512,18 @@ def _citation_candidates(answer: str, expected_citation: str) -> set[str]:
 
 
 def bounded_contains(answer: str, expected: str) -> bool:
-    """The full normalized ``expected`` appears in ``answer`` with word boundaries (so
-    ``Jude 1:3`` does not match ``Jude 1:30``), not mere substring containment. This is the
-    word-bounded normalised CONTAINMENT predicate that backs the ``contains_reference``
-    metric for the text-retrieval tasks (caller guards the empty case).
+    """LEGACY FLOOR / boundary-aware equality primitive — **not** the text-retrieval scoring
+    contract. The full normalized ``expected`` appears in ``answer`` with word boundaries (so
+    ``Jude 1:3`` does not match ``Jude 1:30``), not mere substring containment.
 
-    It is **public** so other analyses (e.g. the Spec 32 FAccT edition counterfactual) reuse
-    the exact scoring-contract containment rule — ``normalize`` + this boundary match — rather
-    than defining a second, divergent ``in`` check."""
+    Since Spec 52 the public text-retrieval containment contract is :func:`fold_aware_contains`
+    (a strict SUPERSET of this that also credits Uthmani↔Imla'i orthographic matches); this
+    predicate is its superset FLOOR. Call it directly ONLY where boundary-aware *equality* is the
+    intended semantics and the orthography fold must NOT apply — today that is ``cite_passage``
+    citation matching (`_single_citation_correct`) and the ``normalize``-only edition identity
+    checks. **New text-retrieval analyses must use** :func:`fold_aware_contains`, not this, or they
+    will silently score the obsolete pre-#52 (orthography-blind) semantics. (PR #62 review,
+    architect round-1 item 4.)"""
     ne = normalize(expected)
     return re.search(r"(?<!\w)" + re.escape(ne) + r"(?!\w)", normalize(answer)) is not None
 
@@ -511,6 +544,13 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
+    # cite_passage stays on bounded_contains, NOT the Spec 52 orthography fold (PR review, architect
+    # round-1 item 3): the task contract is boundary-aware citation EQUALITY, not verse-length
+    # containment, and the fold's whitespace-flex + optional-alef is looser than a citation match
+    # wants on SHORT strings — exactly where the collision residue bites hardest. A no-op on all
+    # committed evidence (citations are Latin/numeric, 0 Arabic), so nothing moves. When #39
+    # introduces Arabic-script citations, design a citation-appropriate equivalence then (its own
+    # collision analysis) rather than silently inheriting the verse-length fold.
     return int(bounded_contains(answer, expected_citation)), n
 
 
@@ -532,15 +572,16 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             raise GraderError("empty grader list passed to score_answer")
         target = expected["text"]
         # all primitives are computed; only the selected graders' fields (+ always-on token_f1)
-        # are emitted. contains_reference reuses bounded_contains (word-bounded normalised
-        # containment); the bool(normalize(target)) guard stops an empty reference (whose escaped
-        # regex matches everywhere) from scoring 1. Containment is confined to these two
-        # text-retrieval tasks — the provenance branches below never see it.
+        # are emitted. contains_reference uses fold_aware_contains (Spec 52) — a strict SUPERSET
+        # of bounded_contains that also credits an Uthmani↔Imla'i orthographic match; the
+        # bool(normalize(target)) guard stops an empty reference (whose escaped regex matches
+        # everywhere) from scoring 1. Containment is confined to these two text-retrieval tasks —
+        # the provenance branches below never see it.
         computed = {
             "exact": int(answer.strip() == target.strip()),
             "normalized": int(normalize(answer) == normalize(target)),
             "token_f1": round(token_f1(answer, target), 4),
-            "contains_reference": int(bool(normalize(target)) and bounded_contains(answer, target)),
+            "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))

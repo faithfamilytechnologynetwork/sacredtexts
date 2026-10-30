@@ -1,0 +1,43 @@
+I'll start by reading the key implementation files and the iteration-1 review artifacts.Now let me read the iter-1 consults, rebuttals, and the witness test.Let me verify the iter-2 fixes against the actual artifacts.Let me verify the core claims empirically (read-only), starting with whether the frozen SIM SHAs really match the pre-#52 base.The SHA computation returned the hash of an empty list — my path was wrong. Let me correct it.Now let me independently compute the full base→HEAD delta across all five runs, to confirm it matches the registered mover set exactly.Now let me verify the mover identities match the pins, and run the actual test suites.Pins match the real delta exactly. Now let me run both test lanes.Both lanes green. Now let me hand-check a sample of the `original` movers — the ones without Jev corroboration — for genuine orthographic equivalence.Let me systematically check all 58 movers for wrong credit — whether any differs beyond alef/hamza/maqsura orthography.My skeleton check was too crude (it can't model context-dependent long-ā), but eyeballing all 32 flagged spans shows they are all same-word orthographic variants (`ارايتم`/`ارءيتم`, `اتاكم`/`اتىكم`, `علا`/`على`, `موسا`/`موسى`). Let me check the remaining Phase-2 wiring deliverables.The splices correctly preserve panel/usage/generated_at. But the witness only checks `summary["models"]` — let me verify the hand-spliced `by_tradition`/`by_text` sub-tables too.Let me empirically verify the narrowed directionality claim and a few safety properties of the containment predicate.Let me investigate something I noticed: a reference `ىٰ` digraph appears not to match an answer's bare `ى` — the standard Imla'i form of `على`/`إلى`/`موسى`.Zero live impact — that gap is theoretical on current corpora. Let me check the 3 remaining Arabic judge-only cells against the documented residual explanation.# Phase 2 implementation review — Spec 52 (iteration 2)
+
+## What I verified independently
+
+I read the changed files from disk and re-derived the central claims rather than trusting the builder's own tests. All scratch scripts went to `/tmp`; I ran only read-only git commands and the two test suites. **I did not modify, create, or delete anything in the tree under review.**
+
+**The rebaseline is provably minimal and non-circular.**
+- All five `SIM_PROJECTION_SHA256` pins are byte-identical at `b93e881` *and* `HEAD`, and equal the committed values (rows 400/1428/400/56/56). The freeze is real, not a "current == current" tautology.
+- A full per-cell metrics diff base→HEAD across all five score files: key sets unchanged, **exactly 58 movers** (tutorial 20 / original 15 / first-run 0 / exp-ar 14 / exp-en 9), every mover's diff set ⊆ `{contains_reference, correct, outcome}`, every one `incorrect→correct` with `contains 0→1`. **Zero out-of-contract changes** — no refusal moved, no similarity submetric moved, no `cite_passage` cell moved.
+- `normalize()` and the equality submetrics are byte-stable, as claimed.
+
+**No wrong credit.** I hand-checked the four `original`-run movers (the one run with no judge corroboration) plus all 32 spans flagged by a deliberately crude context-free skeleton sweep of my own — every one is a genuine same-word Uthmani↔Imla'i variant. (My sweep was the thing that was wrong, not the code: the long-ā is context-dependent, so a reference `ى` is either consonantal yāʾ or half of the `ىٰ` digraph.) Predicate probes confirm `قال`≠`قيل`, `Jude 1:3`≠`Jude 1:30`, `١ ٣`≠`١٣`, empty reference never matches, Latin unaffected; only the *disclosed* `رَءَا`/`رَأَىٰ` residue merges.
+
+## The three iter-2 fixes
+
+**(1) `jev_agreement.{json,md}` regenerated — confirmed.** Containment agreement 0.9325→0.9825, both 239→259, judge-only 27→7, **deterministic-only 0 throughout**. That last number is the load-bearing one: the fold credited nothing the judge called a non-match, which is independent no-wrong-credit evidence rather than just a consistency repair. The report now labels containment and refusal columns separately, and the README note is rewritten from the "historical" framing to the current one. I attributed the 3 remaining Arabic judge-only cells: `1d74fc87541b` (`ءال`/`ال`) and `a8df3e43d35d` (`ءامن`/`امن`) are the documented `ءَا↔آ` residual; `e2d74279aaf0 × haiku` (distinct from the haiku-*search* mover of the same question id) diverges at `فى`/`في` **and** `الكللة`/`الكلالة` — the second is a real content difference, so that cell is correctly uncredited.
+
+**(2) Exact mover identities — confirmed, and stronger than counts.** `ORTHO_MOVERS` re-derives each `(model_id, question_id)` from committed answers via `fold_aware_contains ∧ ¬bounded_contains` and asserts exact set equality. I independently extracted the mover identities from the base→HEAD diff: **identical for all five runs, no extras, no missing**. A compensating add/remove swap can no longer pass. `test_summary_agrees_with_scores` is present and passing.
+
+**(3) Narrowed directionality claim — empirically accurate.** I probed it: a mixed Uthmani/Imla'i *answer* matches (True); a reference *itself* written in mixed defective/plene Imla'i does not (False). The disposition is right — the dual answer form is load-bearing (14 committed cells match only via the plene form), and the gap cannot arise on the committed corpora because references carry the corpus daggers.
+
+**Both lanes green at the claimed counts**: pipelines `629 passed, 2 skipped`; viewer `19 files / 187 tests`. `.codev/checks/test.sh` already routes `runs/**` to both lanes.
+
+**Splices correct beyond their test coverage.** `summary.json`'s leaf diff touches only `models`/`by_tradition`/`by_text` — panel, usage, `generated_at`, `evaluators` preserved, so the aspir-48 scar is avoided. I recomputed `by_tradition`, `by_text`, `_overall` and every submetric average from `scores.jsonl`: 0 mismatches. `summary.md` differs from the renderer only in the known pre-existing panel-column drift (`max_tokens`/`temperature`). `facct` deltas (+7 haiku, +8 opus) match the 15 original movers exactly and are guarded by a rebuild-and-compare test.
+
+## Comments (non-blocking)
+
+1. **`ىٰ`-digraph vs bare maqsura is an undocumented residual.** `_fold_containment_pattern` emits `ا?` for the long-ā atom, so inside the fold branch a reference `ىٰ` does not match an answer's bare `ى` — which is the standard Imla'i form for `على`/`إلى`/`موسى`. In isolation those pairs still pass via the `bounded_contains` floor. I quantified it with a relaxed `[اي]?` atom over every still-uncredited Arabic cell in all four score files: **0 additional cells credited**. So: zero live impact, and the error direction is conservative (under-credit). But it belongs in known-limitations beside the `ءَا↔آ` residual, because #39's scaled Arabic-prompted run will see Imla'i-written references where it could bite.
+
+2. **`test_summary_agrees_with_scores` guards only `summary["models"]`.** `by_tradition`, `by_text`, `_overall` and the submetric means are hand-spliced and currently correct (I verified all of them), but unguarded against future drift. Extending the recompute to those leaves is cheap and closes the same class of scar the test was added for.
+
+3. **The plan's "pin the Arabic-cell partition count" deliverable isn't a test.** No action needed in my view — the exact mover-identity pins are strictly stronger for the no-wrong-credit purpose — but worth a line in the review doc so it doesn't read as silently skipped.
+
+---
+VERDICT: APPROVE
+SUMMARY: All three iter-1 blocking items verifiably folded; the 58-cell rebaseline is minimal, non-circular, and independently corroborated with no wrong credit.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- None blocking.
+- COMMENT: the `ىٰ`-digraph atom compiles to `ا?` only, so a reference digraph does not match an answer's bare maqsura inside the fold branch (`على`/`إلى`/`موسى`). Verified 0 additional cells across all committed runs and the direction is conservative, but it is undocumented — add it to known-limitations beside the `ءَا↔آ` residual for #39's scaled Arabic run.
+- COMMENT: `test_summary_agrees_with_scores` recomputes only `summary["models"]`; the hand-spliced `by_tradition`/`by_text`/`_overall`/submetric leaves are correct today (independently verified) but remain unguarded.
+- COMMENT: the plan's Arabic-cell partition-count pin landed as exact mover-identity sets instead (strictly stronger) — worth noting in the review doc so it doesn't read as skipped.

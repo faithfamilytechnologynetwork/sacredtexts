@@ -1,0 +1,77 @@
+I'll review this plan against the actual codebase. Let me start by locating the relevant files.Note: there's a `test_original_run_regression.py` the plan doesn't mention. Let me read the key files.Key finding already: `bounded_contains` is documented as public and reused by FAccT. Let me check the tests the plan omits and other `normalize`/`bounded_contains` consumers.Significant blast radius beyond the plan. Let me check `generate.py` (digest risk), `outcomes.py` (refusal coupling), and the omitted test.Confirmed: `test_original_run_regression.py` is the primary Arabic `normalize()` guard and is absent from the plan. Let me verify the generate-digest cascade.Let me verify one technical claim — whether the spec's required non-collision test `سَأَلَ`≠`سَالَ` is even satisfiable today.I have enough to review. Let me verify the final technical point about mark-adjacency in word-final detection.I have verified everything I need. Here is my review.
+
+---
+
+## Review: Plan 52 — Uthmani/Imla'i orthography equivalence
+
+I read `score.py`, the test suite, `generate.py`, `outcomes.py`, `facct.py`, `audit.py`, and the run directories, and prototyped against the real Qur'an corpus. The plan's core strategy is right — Approach 1, position-aware, capability-then-contract sequencing, single atomic rebaseline — and the executive summary resolves both Critical open questions with genuine reasoning rather than hand-waving. The Phase 1 "unwired" design is a genuinely good call: it keeps committed evidence byte-identical while the hard logic gets reviewed.
+
+But the plan under-scopes the blast radius of changing `normalize()`. `normalize` and `bounded_contains` are shared primitives with six consumers, and the plan accounts for two of them.
+
+### 1. `test_original_run_regression.py` is omitted — and it is *the* Arabic guard
+
+The plan names `test_first_run_regression.py` and `test_tutorial_run.py` for re-pinning. It never mentions `pipelines/tests/test_original_run_regression.py`, whose own docstring says it is the guard proving "scoring changes did not move the only committed evidence that exercises Arabic/Aramaic `normalize()` … over 1,428 real answers." It holds a byte-for-byte re-score assert (line ~68) over `original-2026-10-21` — the run with 840 Arabic cells. Phase 2 will red this test with no plan step covering it. (The spec missed it too, so this isn't re-litigating the spec — it's a plan-completeness gap.)
+
+### 2. Changing `normalize()` is generator-code drift — the question-set digest may move
+
+`generate.py:70` imports `normalize`, and `generate.py:418-419` selects verify_source negatives by `if ne in asked.all_joined` over `normalize()`d entry text. Folding Arabic orthography makes previously-distinct Uthmani/Imla'i text match, so a cross-family candidate (a hadith entry quoting a Qur'anic verse) can newly be excluded as "already contained" — which shifts the `rng` sampling downstream and changes the question-set digest. `test_original_run_regression.py::test_regenerating_original_run_reproduces_digest` asserts `ANCHOR_DIGEST` with the message *"generator-code drift; this must be deliberate and re-pinned."*
+
+This is a bigger deal than a test fix: re-pinning `ANCHOR_DIGEST` means the committed reference run's question set is no longer reproducible from current code. It needs an explicit decision, and it belongs in the architect's moved-numbers packet. The alternative worth weighing: scope the fold to a **scoring-comparison** normalizer rather than the globally-shared `normalize()`, which would leave generation untouched. The spec mandates the pre-Mn ordering but does not mandate that the fold live in the shared `normalize()`.
+
+### 3. The containment fork is unresolved, and it falsifies the refusal-independence claim
+
+Phase 1 adds `arabic_whitespace_insensitive_contains` as a *new* function; Phase 2 routes only `contains_reference` through it. But `bounded_contains` has three other callers:
+
+- `outcomes.py:126-133` (refusal classification)
+- `probes.py:203`
+- `facct.py:277`
+
+Its docstring (`score.py:258-260`) explicitly says it is public so other analyses "reuse the exact scoring-contract containment rule … rather than defining a second, divergent `in` check" — and `test_facct.py:505-507` asserts facct calls `score.bounded_contains`, so that test will **still pass while facct silently diverges** from the new contract. Phase 2 regenerates `facct.json` under the old containment rule.
+
+Either way you resolve this, one plan claim breaks. If you extend `bounded_contains` itself (the consistent choice), `outcomes.classify_refusal` changes — an Arabic cell with a leading decline cue that now contains the reference flips `refused` → `correct`. That moves coverage denominators and means the flip set is **not** "refusal-independent," which is the plan's stated basis for the #48 merge-order being clean (risk table row 6, and witness item 2). The two changes touch the same population: Arabic retrieve_quote cells with decline cues. Please pick a side explicitly and correct the #48 reasoning.
+
+### 4. Word-final detection must look *through* marks — a 2,972-word trap
+
+The fold runs before mark deletion (correctly, per the ordering constraint), so at fold time the character after `ىٰ` is usually **another mark**, not a space. I counted in `texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json`: **2,972 words** where a final alef-maqsura is followed only by marks/editorial code points. Including stacked cases:
+
+```
+('عَلَىٰ',    ['U+0670'])                 # dagger, then boundary
+('وَعَلَىٰٓ',  ['U+0670', 'U+0653'])       # dagger + madda, then boundary
+('بِٱلْهُدَىٰ', ['U+0670'])
+```
+
+A naive "next char is space/end ⇒ final" predicate classifies `وَعَلَىٰٓ` as **medial** and folds it to ا — producing `وعلا`, which both breaks the `عَلَىٰ↔على` invariant the plan promises to preserve *and* newly collides with genuine ا words. The plan's only stated guards are unit tests on `أَتَىٰكُمْ` and `عَلَىٰ`, neither of which carries a trailing mark, so this ships untested. Add: the boundary predicate skips Mn + `_SCRIPT_EDITORIAL`, plus a unit test on `وَعَلَىٰٓ` specifically.
+
+### 5. The experiment run's file layout in Phase 2 is wrong
+
+Phase 2 says regenerate `runs/exp-arabic-prompts-2026-10-29/` → `scores.jsonl`, `summary.json`/`summary.md`. That run actually contains `scores-ar.jsonl`, `scores-en.jsonl`, `answers-ar.jsonl`, `answers-en.jsonl`, `answers-ar-normalized.jsonl`, and its own `analyze.py` — **no** `scores.jsonl` and no summary files. A builder following the plan literally will be confused. Also state what happens to `answers-ar-normalized.jsonl` (hand-normalized analysis evidence that the scorer fold arguably supersedes — keep it as provenance, but say so).
+
+### 6. A spec-mandated test is unsatisfiable and silently dropped
+
+The spec's Test Scenarios require `سَأَلَ`≠`سَالَ`. I ran current `normalize()`: both already produce `سال` (via NFKD hamza-seat decomposition + Mn deletion). This merge is **pre-existing**, not introduced by this change. Phase 1's deliverables list only `قَالَ`≠`قِيلَ` and `بَيْت`≠`بَات`, dropping the third without comment. That's the right call technically, but write the disposition down — otherwise a builder either chases an impossible test or quietly skips a spec scenario.
+
+### 7. Smaller items
+
+- **`audit.py:55`** calls `strip_script_marks` directly for the copyright content layer, with a comment claiming it is "shared with `score.normalize`". The plan's wording — "call `fold_arabic_orthography` inside `normalize()` **before** `strip_script_marks`'s mark deletion" — is ambiguous about whether the fold goes *inside* `strip_script_marks` (changing restricted-text fingerprint matching, i.e. the copyright gate) or in `normalize()` before the call (leaving audit divergent and that comment stale). Decide and fix the comment.
+- **`TUTORIAL.md:275-278`** quotes concrete numbers from `original-2026-10-21` ("69% overall", "100%", "86%", "12%"). Those are rebaselined in Phase 2 and nothing test-guards them, so they rot silently. Phase 3's doc list should include `TUTORIAL.md` and `CODE_WALKTHROUGH.md` (whose prose describes the Arabic pass; `test_code_walkthrough.py:99` guards only symbol names, not accuracy).
+- **Arabic `cite_passage` will also move.** `_single_citation_correct` dedups candidates via `normalize()`, so Arabic citation cells can flip, not just `retrieve_quote`. The plan's answer-script partition does cover them as "movable," so this is consistent — just make sure hand-verification budget anticipates cite_passage cells, not only retrieve_quote. (I checked `SURVEY_COUNT`/`SURVEY_SHA256`: safe, since zero-candidate membership depends on the regex over the raw answer, not on `normalize`.)
+
+### What's good
+
+The ordering argument, the medial/final rule derivation, the refusal-vs-grader separation, the "non-collision beats convergence" priority, the explicit rejection of whitespace-stripping inside `normalize()` to protect the Spec-15 submetrics, and the corpus diagnostic framed as "bounded and enumerated" rather than a false zero-collision assertion — all sound, and all better reasoned than most plans at this stage. The fixes above are additive scope, not a redesign.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Strategy and rule derivation are sound, but the plan under-scopes the shared-primitive blast radius: it omits the primary Arabic regression guard, misses a generate-digest cascade, leaves the containment fork unresolved (which falsifies its #48 refusal-independence claim), and lacks a mark-skipping word-boundary predicate that 2,972 real corpus words require.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `pipelines/tests/test_original_run_regression.py` — the designated Arabic `normalize()` guard over 1,428 answers / 840 Arabic cells — is absent from the plan; its byte-for-byte re-score assert will break in Phase 2 with no covering step.
+- Changing shared `normalize()` is generator-code drift: `generate.py:418-419` selects verify_source negatives via normalized containment, so `ANCHOR_DIGEST` in `test_regenerating_original_run_reproduces_digest` may move. Needs an explicit decision (re-pin vs. scope the fold to a scoring-only normalizer) and architect visibility.
+- Containment fork unresolved. `bounded_contains` is also called by `outcomes.py:126-133`, `probes.py:203`, `facct.py:277`; adding a parallel Arabic-containment function silently diverges facct (and `test_facct.py:505-507` still passes). Extending `bounded_contains` instead changes refusal classification — so the plan's "flip set is refusal-independent, #48 rebase stays clean" claim is wrong under that branch.
+- Word-final detection must skip Mn + `_SCRIPT_EDITORIAL` because the fold runs pre-mark-deletion. Verified 2,972 Qur'an words with a final maqsura followed only by marks (e.g. `وَعَلَىٰٓ` = ى+U+0670+U+0653); a naive adjacency check folds it to ا, breaking the `عَلَىٰ↔على` invariant the plan promises. Add the predicate rule and a stacked-mark unit test.
+- Phase 2's file list for `runs/exp-arabic-prompts-2026-10-29/` is factually wrong: the run has `scores-ar.jsonl`/`scores-en.jsonl` and no `scores.jsonl` or summary files. Also specify the disposition of `answers-ar-normalized.jsonl`.
+- Spec-mandated non-collision test `سَأَلَ`≠`سَالَ` is unsatisfiable (both already normalize to `سال` today via hamza-seat folding) and is dropped from Phase 1 without disposition — record it as a pre-existing, out-of-scope merge.
+- Placement ambiguity with copyright-gate consequence: `audit.py:55` uses `strip_script_marks` directly; state whether the fold lands inside `strip_script_marks` (changes restricted-text fingerprinting) or in `normalize()` before it, and update the now-stale "shared with score.normalize" comment.
+- Phase 3 documentation scope omits `TUTORIAL.md:275-278` (hard-coded accuracy numbers from a rebaselined run, not test-guarded) and `CODE_WALKTHROUGH.md` prose on the Arabic pass.

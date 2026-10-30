@@ -1,0 +1,68 @@
+I'll review the plan against the actual codebase. Let me start by reading the key files.I've verified the plan's claims against the actual code. Strategy, scoping decision, and sequencing hold up well — the three forced decisions from iteration 1 are correctly reflected and I confirmed the load-bearing facts (`generate.py:70,232,248` imports the shared `normalize`; `bounded_contains` callers at `outcomes.py:113-131`, `facct.py:277`, `probes.py:203`; `ANCHOR_DIGEST` is generation-only; the cite-survey pin is regex-determined and genuinely safe). Below are findings that are new, verified, and not previously disputed.
+
+## 1. The viewer suite pins rebaselined tutorial numbers — and the test dispatcher won't run it (high)
+
+`apps/viewer/src/local/tutorialRun.test.ts` reads the committed `runs/tutorial-2026-10-11` **off disk** and pins numbers this rebaseline moves:
+
+- `:145` leaderboard row order `["opus","opus-search","haiku-search","haiku"]` + `:147` non-increasing assert
+- `:149-150` `opus ≈ 1.0`, `haiku ≈ 0.7121` (the same value `EXPECTED_ACCURACY` pins)
+- `:180-183` `haiku-search` correct **52** / refused **35** / wrong **13**, of which `:187` says 33 are Sunni Islam — i.e. the Arabic cells
+
+I measured 132 Arabic-bearing cells in tutorial (33 per model, currently 109 correct / 22 incorrect / 1 refused), so several of these pins will move.
+
+Worse: `.codev/checks/test.sh` maps `runs` → **pipelines lane only** (`sed -E 's#^(runs|texts|configs|...)$#pipelines#'`). A PR touching `pipelines/**` + `runs/**` runs pytest and *not* vitest, so Phase 2's "full suite green" can be green while the viewer suite is red on main. Fix: add these asserts to Phase 2's re-pin list, run `pnpm -C apps/viewer test` explicitly, and consider mapping `runs` to **both** lanes in the dispatcher — the same treatment `fixtures/` already gets for exactly this reason.
+
+## 2. `analyze.py` imports the scorer from the main checkout, not the worktree (high)
+
+`runs/exp-arabic-prompts-2026-10-29/analyze.py:14`:
+
+```python
+sys.path.insert(0, "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/pipelines")
+from sacredbench.score import score_file
+```
+
+That is the **main** checkout, not `.builders/aspir-52/pipelines`. Phase 2 says "Re-run `analyze.py` to refresh both conditions" — run as-is from the worktree it imports the *unfolded* scorer and writes `scores-ar.jsonl`/`scores-en.jsonl` that look rebaselined but aren't. `insert(0)` beats `PYTHONPATH`, so the line must be made repo-relative. Add it to the Files-to-modify list.
+
+## 3. Phase 2's re-pin list for `test_contains_reference_rebaseline.py` is incomplete (medium)
+
+Named: projection oracle + refused sets. Also breaking:
+
+- `FLIP_SET` / `test_headline_flips_exactly_the_registered_cells` (`:130-140`) — the flip predicate is `correct==1 and normalized==0`, so any Arabic cell newly credited via containment enters it. first-run's 2 Arabic cells are under `gemma-3-4b` / `llama-3.1-8b` (both currently `incorrect`); the pinned set is claude-haiku-only.
+- `test_contains_reference_invariants` `:155-156` — "`correct == normalized` except on flipped cells".
+- `EXPECTED_ACCURACY` / `EXPECTED_COVERAGE` for tutorial `retrieve_quote` (all four models carry 33 Arabic cells).
+
+(`test_first_run_overall_and_lds_tradition_pinned` is safe — claude-haiku has no Arabic cells.) Also state that the rescoped non-Arabic SHA is computed from **pre-change** `git show HEAD:` scores filtered to non-Arabic; recomputing it from the regenerated file makes that oracle circular — which was codex's iteration-1 concern, still open for the *rescoped* pin.
+
+## 4. `token_f1` / `exact` wiring is misstated (medium)
+
+`token_f1()` (`score.py:139-140`) calls `normalize()` internally. Routing `score_answer` through `score_normalize` does **not** fold `token_f1` unless `token_f1` itself changes — and the spec requires Arabic `token_f1` to move. Conversely `exact` is raw `answer.strip() == target.strip()` (`:307`) and can't use any normaliser, so "`score_answer` uses `score_normalize` for `exact`/`normalized`/`token_f1`" is wrong on `exact`. (The witness correctly omits `exact`; just fix the wiring sentence and name `token_f1` as a file-level edit.)
+
+## 5. cite_passage dedup does not share `bounded_contains` (medium)
+
+The plan claims "the cite_passage candidate dedup all share it". It doesn't: `_citation_candidates` (`:247-249`) and the `boundary` regex over `normalize(expected_citation)` (`:274-276`) call `normalize` directly, while the verdict at `:281` calls `bounded_contains`. Fold one and not the other and `n_candidates` disagrees with the credit — e.g. the same citation written in two orthographies becomes two distinct candidates → hedge → 0. Decide explicitly which call sites move.
+
+## 6. `probes.py` already contains a second, looser Arabic fold (medium)
+
+`probes.py:18-40` defines `_LETTER_FOLD` / `fold_arabic_letters` — context-free `ى→ي`, `ئ→ي`, `ة→ه` applied *after* `normalize()`, used by `clustered_accuracy` (`:103-104`). That is precisely the fork the containment decision was meant to prevent, already present in the analysis layer, and *looser* than the position-aware scoring fold — so a probe can report an equivalence the scorer denies. Nothing committed depends on it (no probe artifact in any `runs/`), so this is scope-decidable, but the plan should name it, decide (re-express over `score_normalize` or document the divergence), and check `test_probes.py:5`.
+
+## Smaller notes
+
+- **Generation/scoring divergence has an unstated cost.** The scoping decision leaves `generate.py:232,248` verify_source negative selection on the unfolded `normalize`, so scoring now treats as equivalent text generation did not when picking negatives. At verse length across *different works* this is almost certainly harmless — say so rather than leaving the asymmetry implicit.
+- **A free independent check.** `runs/exp-arabic-prompts-2026-10-29/README.md:67-87` already records a prototype re-score (en 52/56, ar 52/56, with the omitted rules named). Use it as a cross-check on the Phase-2 result; and that README's pre-fold headline (82.1/78.6 vs 71.4/71.4) is the spec's motivating evidence — preserve it as pre-fold rather than overwrite.
+- **Pin the Arabic-cell count.** By answer-or-expected-text script I count 2 / 132 / 452 Arabic-bearing cells (first-run / tutorial / original) vs the spec's 840 for original — the difference is presumably source-language scoping, which counts verify_source cells whose expected is an English yes/no. Phase 2 should pin the count its own definition yields so a partition drift is visible, and note the hand-verification budget is bounded by *moved* cells, not by 452.
+
+Also worth noting for the refusal story: under the default `strict`+`containment` set (confirmed in all three committed `summary.json`s), `classify_refusal`'s `bounded_contains` change cannot independently move an outcome — `_with_outcome` gates on `not metrics["correct"]`, and a newly-contained cell already has `correct=1`. So the refusal reclassification you corrected in the rebuttal is real but flows entirely through the headline; the `classify_refusal` edit matters only under `--evaluator strict`. That makes the delta easier to reason about, not harder — worth stating in the witness rationale.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Strategy and scoping decisions are sound, but two verified traps would silently corrupt the rebaseline (the experiment run's `analyze.py` imports the main checkout's scorer; the viewer suite pins moved tutorial numbers and the dispatcher never runs it), plus an incomplete re-pin list and three wiring claims that don't match the code.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `apps/viewer/src/local/tutorialRun.test.ts:145-150,180-187` pins tutorial accuracies/counts that the rebaseline moves, and `.codev/checks/test.sh` maps `runs`→pipelines only, so "full suite green" can pass over a red vitest suite
+- `runs/exp-arabic-prompts-2026-10-29/analyze.py:14` hard-codes a `sys.path.insert` to the main checkout — re-running it from the worktree regenerates `scores-{en,ar}.jsonl` with the unfolded scorer
+- Phase 2's `test_contains_reference_rebaseline.py` re-pin list omits `FLIP_SET`, the "correct == normalized except flipped" invariant, and `EXPECTED_ACCURACY`/`EXPECTED_COVERAGE`; the rescoped non-Arabic SHA must be derived from pre-change `git show HEAD:` data or the oracle is circular
+- `token_f1()` normalises internally and `exact` is raw string equality — the stated "score_answer uses score_normalize for exact/normalized/token_f1" wiring is wrong on both
+- cite_passage candidate dedup (`_citation_candidates`, `:274-276`) calls `normalize` directly, not `bounded_contains`; folding only the verdict makes `n_candidates` and the credit disagree
+- `probes.py:18-40` already holds a looser context-free Arabic fold used by `clustered_accuracy` — the same fork risk the containment decision closed, unaddressed in the analysis layer

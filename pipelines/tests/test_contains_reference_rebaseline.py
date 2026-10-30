@@ -38,19 +38,45 @@ FLIP_SET = {
     "first-run-2026-10-11": {
         ("claude-haiku", "retrieve_quote-88403db0a16b"),
     },
+    # Spec 52 (orthography fold) ADDED 20 cells to this set: a cell is a flip iff `correct==1` while
+    # `normalized==0`, and the fold credits 20 Imla'i-orthography retrieve_quote answers (11 haiku,
+    # 9 haiku-search Qur'an cells) that strict normalisation misses. The 20 pre-existing cells are
+    # the Spec-15/#48 search-arm deliveries. One cell — haiku-search e2d74279aaf0 — was refused
+    # (pre-#48) → incorrect (#48, delivered-not-refusal) → correct (#52, verbatim Imla'i): it enters
+    # this set now that it is `correct` with `normalized==0`.
     "tutorial-2026-10-11": {
+        ("haiku", "retrieve_quote-1e51194b8420"),
+        ("haiku", "retrieve_quote-528c5b83569e"),
+        ("haiku", "retrieve_quote-571bf774a203"),
+        ("haiku", "retrieve_quote-60993d0becf0"),
+        ("haiku", "retrieve_quote-66d7a26e7e93"),
+        ("haiku", "retrieve_quote-91c4ddd54da1"),
+        ("haiku", "retrieve_quote-b70583402f8f"),
+        ("haiku", "retrieve_quote-c211a13b8670"),
+        ("haiku", "retrieve_quote-f4e378e5065d"),
+        ("haiku", "retrieve_quote-fb0ce4da6218"),
+        ("haiku", "retrieve_quote-fd566a54bc82"),
         ("haiku-search", "retrieve_quote-07ca676a80ab"),
         ("haiku-search", "retrieve_quote-1d74fc87541b"),
         ("haiku-search", "retrieve_quote-25ae2e85e747"),
         ("haiku-search", "retrieve_quote-4c99a8581f81"),
+        ("haiku-search", "retrieve_quote-528c5b83569e"),
         ("haiku-search", "retrieve_quote-5384ab60ec95"),
+        ("haiku-search", "retrieve_quote-60993d0becf0"),
+        ("haiku-search", "retrieve_quote-66d7a26e7e93"),
         ("haiku-search", "retrieve_quote-732d66e552f2"),
         ("haiku-search", "retrieve_quote-77bcd8c4be1e"),
         ("haiku-search", "retrieve_quote-7c4d9a37b9c2"),
         ("haiku-search", "retrieve_quote-98dd7af93ecf"),
+        ("haiku-search", "retrieve_quote-b70583402f8f"),
         ("haiku-search", "retrieve_quote-c211a13b8670"),
         ("haiku-search", "retrieve_quote-c557e75e3df0"),
+        ("haiku-search", "retrieve_quote-e2d74279aaf0"),
+        ("haiku-search", "retrieve_quote-ed21c10a072e"),
         ("haiku-search", "retrieve_quote-f0c6eb9da8cc"),
+        ("haiku-search", "retrieve_quote-f4e378e5065d"),
+        ("haiku-search", "retrieve_quote-fb0ce4da6218"),
+        ("haiku-search", "retrieve_quote-fd566a54bc82"),
         ("opus-search", "retrieve_quote-219c7089a034"),
         ("opus-search", "retrieve_quote-4ad4392645da"),
         ("opus-search", "retrieve_quote-642fbf516c7a"),
@@ -67,11 +93,13 @@ FLIP_SET = {
 EXPECTED_ACCURACY = {
     "first-run-2026-10-11": {("claude-haiku", "retrieve_quote"): 0.5556},  # was 0.25 (correct/n)
     "tutorial-2026-10-11": {
-        # Spec 48 rebaseline: the search arms drop as 5 hedged-but-delivering cells re-enter the
-        # accuracy denominator as `incorrect` (opus-search 4 Judaism, haiku-search 1 Sunni Islam).
-        ("haiku-search", "retrieve_quote"): 0.7879,  # was 0.80 (Spec 48: refused 35->34)
-        ("haiku", "retrieve_quote"): 0.7121,         # unchanged (no search, no flips)
-        ("opus-search", "retrieve_quote"): 0.9250,   # was 0.9737 (Spec 48: refused 24->20)
+        # Spec 52 (orthography fold) lifts the arms that answer in Imla'i: haiku +11 and
+        # haiku-search +9 Qur'an cells are now credited (contains_reference), so accuracy rises
+        # with coverage UNCHANGED (incorrect->correct, no refusal moved). opus/opus-search carry
+        # no orthographic movers. (Prior Spec-48 values were haiku-search 0.7879, haiku 0.7121.)
+        ("haiku-search", "retrieve_quote"): 0.9242,  # was 0.7879 (Spec 52: +9 Imla'i cells)
+        ("haiku", "retrieve_quote"): 0.8788,         # was 0.7121 (Spec 52: +11 Imla'i cells)
+        ("opus-search", "retrieve_quote"): 0.9250,   # unchanged (no orthographic movers)
         ("opus", "retrieve_quote"): 1.0,             # unchanged — perfect WHEN it answers (cov 0.66)
     },
 }

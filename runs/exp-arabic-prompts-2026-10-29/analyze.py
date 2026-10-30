@@ -11,7 +11,9 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/pipelines")
+# repo-relative so the committed scorer (this checkout's) is used, not a hardcoded absolute path:
+# analyze.py lives at <repo>/runs/<run>/analyze.py → parents[2] is the repo root.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "pipelines"))
 from sacredbench.score import score_file  # noqa: E402
 
 RUN = Path(sys.argv[1])

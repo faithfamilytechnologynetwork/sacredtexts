@@ -211,7 +211,13 @@ change to a pre-registered, hand-verified set.
 - Regenerate, for `first-run-2026-10-11`, `tutorial-2026-10-11`, `original-2026-10-21`:
   `scores.jsonl`, `summary.json`/`summary.md`; `original-2026-10-21/facct.json`/`.md`;
   `tutorial-2026-10-11/jev_agreement.json`/`.md`. (Panel/usage fed back verbatim; never re-run
-  `collect`/`generate`.)
+  `collect`/`generate`.) **SUMMARY SCAR (learned from aspir-48's thread 2026-10-29):** a naive
+  `score_file`/renderer regeneration **nulls the summary panel** and the current renderer emits
+  extra `max_tokens`/`temperature` panel columns that break `test_committed_summary_md`/`test_panel`.
+  So `summary.json`/`summary.md` must be **surgically spliced** — overlay only the moved numeric
+  leaves, keeping `panel`/`usage`/`generated_at`/`expected_n` byte-verbatim and the summary.md panel
+  table byte-identical. Because #48 merges first and already spliced **tutorial**'s summary for its
+  refusal changes, my orthography splice for tutorial lands on top of #48's spliced file.
 - `runs/exp-arabic-prompts-2026-10-29/analyze.py` — **fix the hard-coded `sys.path.insert(0, "/Users/
   …/sacredtexts/pipelines")` (`:14`) to a repo-relative path first.** As written it imports the
   **main checkout's** scorer, so re-running it from this worktree would regenerate `scores-{en,ar}.jsonl`

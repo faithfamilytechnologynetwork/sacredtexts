@@ -288,6 +288,21 @@ punctuation/case/whitespace pass. The word-overlap metric is `token_f1`
 semantic metric — the designated slot if your task needs similarity scoring (a judge-based grader
 arrives as the separate-pass seam, issue #21).
 
+**Arabic orthography is folded in the containment grader, NOT in `normalize()` (Spec 52).** A correct
+āyah can come back in a different orthography (Uthmani↔Imla'i: dagger-alif ـٰ vs full alef ا, hamzat
+al-wasl ٱ vs plain alef, dotless ى vs dotted ي, one-word vs two-word spacing), so `contains_reference`
+routes through `fold_aware_contains` (`pipelines/sacredbench/score.py:340`) — a **strict superset** of
+`bounded_contains`: it first tries today's word-bounded containment, then (for an Arabic reference) a
+pattern with the long-ā alef made **optional at each dagger / `ىٰ` position** (`_fold_containment_pattern`),
+matching the answer in both its dagger-deleted and plene forms so the match is direction-independent.
+The answer-side normaliser is `score_normalize` (`score.py:255`) = `normalize()` plus the symmetric
+letter folds, interleaved *before* the mark pass (the dagger is deleted as a mark, so the fold must run
+first). Because the fold only ADDS credit and lives on the scoring side, `normalize()` and every
+equality submetric (`exact`/`normalized`/`token_f1`) stay byte-for-byte unchanged — the question-set
+`ANCHOR_DIGEST` never moves (no generator drift) and `normalized=1 ⇒ contains=1` still holds. The same
+`fold_aware_contains` backs the `cite_passage` verdict, `outcomes.classify_refusal`, the FAccT card,
+and the probes, so one orthography contract serves every containment call-site.
+
 > **Do not reorder those passes, and do not casually change `normalize()`.** English text
 > is byte-for-byte unchanged by design, and the shipped English run was scored under the
 > current rules. The guard that proves a scoring change didn't move old numbers is
@@ -297,11 +312,11 @@ arrives as the separate-pass seam, issue #21).
 > evidence, not perturb the old — don't route around this test.
 >
 > **Sanctioned exception:** a deliberate scoring-contract change (e.g. Spec 15's containment headline
-> + refused outcome) *does* reshape committed `scores.jsonl` on purpose. Do it once, with a durable
-> projection-SHA oracle + an exact pre-registered flip/refused set
-> (`pipelines/tests/test_contains_reference_rebaseline.py`) witnessing that only the intended fields
-> moved, panel/usage fed back verbatim (a keyless re-score nulling them is the scar), and the moved
-> numbers surfaced to the architect first.
+> + refused outcome, or Spec 52's Arabic-orthography fold) *does* reshape committed `scores.jsonl` on
+> purpose. Do it once, with a durable projection-SHA oracle + an exact pre-registered flip/refused set
+> (`pipelines/tests/test_contains_reference_rebaseline.py`; `test_orthography_rebaseline.py` for Spec 52)
+> witnessing that only the intended fields moved, panel/usage fed back verbatim (a keyless re-score
+> nulling them is the scar), and the moved numbers surfaced to the architect first.
 
 ### 5. What flows through for free — and what NOT to touch
 

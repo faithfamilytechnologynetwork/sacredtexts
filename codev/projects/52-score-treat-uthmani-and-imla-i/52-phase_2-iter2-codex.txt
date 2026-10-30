@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Core rebaseline and regenerated artifacts are consistent, but one explicit Phase-2 witness requirement remains missing.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `test_orthography_rebaseline.py` does not define “Arabic cell” or pin the resulting per-run partition counts, despite the Phase-2 deliverable explicitly requiring this drift guard. Add an answer-or-expected-text Arabic-script predicate and exact count assertions for each relevant run. The precise predicate matters: current data yields differing original-run counts depending on whether Arabic-block punctuation or only letters qualify.

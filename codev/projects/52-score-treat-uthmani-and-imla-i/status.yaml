@@ -1,25 +1,27 @@
 id: '52'
 title: score-treat-uthmani-and-imla-i
 protocol: aspir
-phase: implement
+phase: review
 plan_phases:
   - id: phase_1
     title: score_normalize fold capability (logic + tests, unwired)
     status: complete
   - id: phase_2
     title: Adopt fold as scoring contract + sanctioned rebaseline
-    status: in_progress
+    status: complete
   - id: phase_3
     title: Governance docs, number refresh, architect moved-numbers packet
-    status: pending
-current_plan_phase: phase_2
+    status: complete
+current_plan_phase: null
 gates:
   pr:
-    status: pending
+    status: approved
+    requested_at: '2026-10-30T00:15:26.673Z'
+    approved_at: '2026-10-30T02:14:02.818Z'
   verify-approval:
     status: pending
 iteration: 1
-build_complete: false
+build_complete: true
 history:
   - iteration: 1
     build_output: ''
@@ -68,15 +70,63 @@ history:
         verdict: REQUEST_CHANGES
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter3-claude.txt
+  - iteration: 1
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-claude.txt
+  - iteration: 2
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter2-codex.txt
+      - model: claude
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter2-claude.txt
+  - iteration: 3
+    plan_phase: phase_2
+    build_output: ''
+    reviews:
+      - model: codex
+        verdict: APPROVE
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter3-codex.txt
+      - model: claude
+        verdict: REQUEST_CHANGES
+        file: >-
+          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter3-claude.txt
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-29T18:35:37.652Z'
+updated_at: '2026-10-30T02:14:02.819Z'
 force_advanced:
-  phase: phase_1
+  phase: phase_2
   iteration: 3
   max_iterations: 3
-  rebuttal_file: 52-phase_1-iter3-rebuttals.md
-  at: '2026-10-29T18:35:24.734Z'
+  rebuttal_file: 52-phase_2-iter3-rebuttals.md
+  at: '2026-10-29T23:33:36.811Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-10-29T18:35:26.602Z'
     acknowledged_at: '2026-10-29T18:35:37.652Z'
+  - boundary: plan-phase:phase_3
+    at: '2026-10-29T23:33:38.775Z'
+    acknowledged_at: '2026-10-29T23:35:35.682Z'
+  - boundary: enter:review
+    at: '2026-10-29T23:52:12.603Z'
+    acknowledged_at: '2026-10-29T23:53:24.223Z'
+pr_history:
+  - phase: review
+    pr_number: 62
+    branch: builder/aspir-52
+    created_at: '2026-10-30T00:02:19.023Z'
+pr_ready_for_human: false

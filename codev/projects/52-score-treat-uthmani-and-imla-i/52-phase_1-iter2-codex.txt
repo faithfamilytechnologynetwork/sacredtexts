@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Fold logic is sound, but containment still creates Arabic-numeral false positives and the collision allow-list does not fully freeze bucket membership.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `arabic_ws_insensitive_contains` treats Arabic-Indic digits as Arabic and removes every normalized space before inserting `\s*` (`score.py:245-268`). Consequently `١ ٣` matches `١٣`, and `الآية ١:٣` matches `الآية ١٣`, recreating the exact bounded-containment failure the iteration addressed. Whitespace flexibility should be limited to Arabic-letter boundaries while preserving numeric separators; add Arabic-Indic digit negatives.
+- `_ACCEPTED_DISTINCT_WORD_MERGES` freezes only normalized bucket keys, not their members (`test_arabic_orthography_fold.py:162-220`). A newly merged word entering an existing accepted bucket leaves `distinct_word_merges` unchanged and passes, contrary to the spec’s frozen-residue guarantee. Pin each accepted bucket’s exact corpus members or strict skeleton/member sets.

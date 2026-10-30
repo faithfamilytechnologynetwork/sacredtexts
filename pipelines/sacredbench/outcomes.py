@@ -44,9 +44,10 @@ Both halves matter:
   committed leading verdict is graded even with a trailing disclaimer, and a negation-evasion with no
   leading verdict is refused, not scored correct.
 
-This module is deliberately thin: the primitives (``normalize``, ``bounded_contains``, ``parse_yes_no``)
-live in ``score.py`` and are imported lazily so there is no import cycle (``score`` imports this inside
-``score_answer``).
+This module is deliberately thin: the primitives (``normalize``, ``fold_aware_contains``,
+``parse_yes_no``) live in ``score.py`` and are imported lazily so there is no import cycle (``score``
+imports this inside ``score_answer``). ``classify_refusal`` credits a delivered Imla'i-orthography
+variant via ``fold_aware_contains`` (Spec 52), the same strict-superset containment the headline uses.
 """
 
 from __future__ import annotations
@@ -338,14 +339,16 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
         return False
 
     if task in _TEXT_RETRIEVAL:
-        from .score import bounded_contains
+        from .score import fold_aware_contains
 
         # The containment half is load-bearing, not redundant: under the default graders a contained
         # answer already has correct=1 (so `_with_outcome`'s `not correct` gate excludes it), but under
         # `--evaluator strict` a contained-but-not-normalized answer scores correct=0, so only this
         # check stops a decline-prefixed correct retrieval from being mislabelled `refused`. Keep it.
+        # Spec 52: fold_aware_contains (strict superset) so a delivered Imla'i-orthography variant is
+        # likewise recognised as an answer, not a refusal.
         target = expected.get("text", "")
-        if target and bounded_contains(answer, target):
+        if target and fold_aware_contains(answer, target):
             return False
         # Spec 48: a decline-prefixed answer that still POSITIVELY asserts the delivered passage is
         # the requested one (class A — orthography variant containment can't fold) is an answer with
