@@ -1,0 +1,205 @@
+{
+ "overall": {
+  "sonnet": {
+   "off": {
+    "correct": 30,
+    "incorrect": 20,
+    "refused": 6
+   },
+   "on": {
+    "correct": 29,
+    "incorrect": 23,
+    "refused": 4
+   }
+  },
+  "sol": {
+   "off": {
+    "correct": 32,
+    "incorrect": 24
+   },
+   "on": {
+    "correct": 37,
+    "incorrect": 19
+   }
+  }
+ },
+ "by_text": {
+  "Qur'an": {
+   "sonnet": {
+    "off": {
+     "correct": 21,
+     "incorrect": 7
+    },
+    "on": {
+     "correct": 21,
+     "incorrect": 7
+    }
+   },
+   "sol": {
+    "off": {
+     "correct": 22,
+     "incorrect": 6
+    },
+    "on": {
+     "correct": 24,
+     "incorrect": 4
+    }
+   }
+  },
+  "Bukhari": {
+   "sonnet": {
+    "off": {
+     "incorrect": 13,
+     "correct": 9,
+     "refused": 6
+    },
+    "on": {
+     "incorrect": 16,
+     "correct": 8,
+     "refused": 4
+    }
+   },
+   "sol": {
+    "off": {
+     "incorrect": 18,
+     "correct": 10
+    },
+    "on": {
+     "incorrect": 15,
+     "correct": 13
+    }
+   }
+  }
+ },
+ "by_task": {
+  "retrieve_quote": {
+   "sonnet": {
+    "off": {
+     "incorrect": 8,
+     "refused": 6
+    },
+    "on": {
+     "refused": 4,
+     "incorrect": 10
+    }
+   },
+   "sol": {
+    "off": {
+     "incorrect": 12,
+     "correct": 2
+    },
+    "on": {
+     "incorrect": 11,
+     "correct": 3
+    }
+   }
+  },
+  "complete_unit": {
+   "sonnet": {
+    "off": {
+     "correct": 9,
+     "incorrect": 5
+    },
+    "on": {
+     "correct": 8,
+     "incorrect": 6
+    }
+   },
+   "sol": {
+    "off": {
+     "correct": 9,
+     "incorrect": 5
+    },
+    "on": {
+     "correct": 13,
+     "incorrect": 1
+    }
+   }
+  },
+  "cite_passage": {
+   "sonnet": {
+    "off": {
+     "correct": 7,
+     "incorrect": 7
+    },
+    "on": {
+     "correct": 7,
+     "incorrect": 7
+    }
+   },
+   "sol": {
+    "off": {
+     "correct": 7,
+     "incorrect": 7
+    },
+    "on": {
+     "correct": 7,
+     "incorrect": 7
+    }
+   }
+  },
+  "verify_source": {
+   "sonnet": {
+    "off": {
+     "correct": 14
+    },
+    "on": {
+     "correct": 14
+    }
+   },
+   "sol": {
+    "off": {
+     "correct": 14
+    },
+    "on": {
+     "correct": 14
+    }
+   }
+  }
+ },
+ "kinds": {
+  "sonnet": {
+   "wrong_locus": 7,
+   "wrong_passage": 1,
+   "near_copy": 4,
+   "addition": 2,
+   "paraphrase": 4,
+   "omission": 1,
+   "other_script": 3
+  },
+  "sonnet-search": {
+   "wrong_locus": 7,
+   "paraphrase": 7,
+   "wrong_passage": 1,
+   "near_copy": 4,
+   "omission": 1,
+   "other_script": 3
+  },
+  "sol": {
+   "wrong_locus": 7,
+   "wrong_passage": 1,
+   "paraphrase": 4,
+   "near_copy": 5,
+   "other_script": 7
+  },
+  "sol-search": {
+   "wrong_locus": 7,
+   "addition": 4,
+   "paraphrase": 5,
+   "other_script": 4,
+   "wrong_passage": 3
+  }
+ },
+ "provenance": {
+  "sol-search": {
+   "searched": 49,
+   "with_cites": 23,
+   "n_cites": 23
+  },
+  "sonnet-search": {
+   "searched": 14,
+   "with_cites": 7,
+   "n_cites": 10
+  }
+ }
+}

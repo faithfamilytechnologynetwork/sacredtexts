@@ -1,0 +1,65 @@
+# Provider-native search experiment panel (#54, 2026-10-29).
+#
+# Two models, each run BOTH WAYS — search-off and search-on — through OpenRouter, which
+# forwards each model's request to that provider's NATIVE server-side search (verified per
+# arm; see README "Nativeness verification"). The ONLY delta within a model's arm pair is
+# search: same questions, same model slug, same host, temperature 0.
+#   - anthropic/claude-sonnet-5.5  -> Anthropic's native web_search (block forwarded verbatim)
+#   - openai/gpt-6.1-sol           -> OpenAI's native Responses web_search
+#
+# 4 entries x 56 questions = 224 cells. Panel matches the signed-off main panel + the
+# exp-arabic experiment (sonnet + sol) for comparability.
+#
+# GEMINI IS DROPPED from this run: google/gemini-3.8-flash does NOT reliably fire native
+# search through OpenRouter (routing-variance — Google AI Studio shared-pool 429s, Google
+# Vertex returns finish=error with no server-tool evidence; see README). It is deferred to a
+# native GEMINI_API_KEY, where the pipeline's google_search grounding path (built + tested)
+# runs it. A flaky arm is not experiment-grade.
+#
+# NATIVE ONLY: web_search here is each provider's own search, forwarded by OpenRouter — NOT
+# OpenRouter's :online / Exa layer. config.py rejects web_search on this host for any model
+# family it does not forward natively.
+#
+# UNPRICED by design: web search is billed per request (not in in/out tokens), so
+# price_in/price_out are omitted and `score` reports token totals only, never a cost. The
+# answer rows record per-cell search-request counts + provider-of-record from OpenRouter for
+# provenance. NOTE: per-cell COST capture was added to the provider seam AFTER this run, so
+# THIS run's 224 rows have no `cost` key (collected evidence is not retrofitted); future
+# collects record `usage.cost`.
+#
+# Key from the ENVIRONMENT only (OPENROUTER_API_KEY).
+concurrency: 4
+models:
+  # --- Anthropic (Claude) — native web_search forwarded by OpenRouter ---
+  - id: sonnet-search
+    provider: openai
+    model: anthropic/claude-sonnet-5.5
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0
+    tools: [web_search]
+  - id: sonnet
+    provider: openai
+    model: anthropic/claude-sonnet-5.5
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0
+
+  # --- OpenAI (ChatGPT) — native Responses web_search forwarded by OpenRouter ---
+  - id: sol-search
+    provider: openai
+    model: openai/gpt-6.1-sol
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0
+    tools: [web_search]
+  - id: sol
+    provider: openai
+    model: openai/gpt-6.1-sol
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    max_tokens: 4096
+    temperature: 0

@@ -1,0 +1,23 @@
+id: '54'
+title: experiment-provider-native-sea
+protocol: experiment
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  experiment-complete:
+    status: approved
+    requested_at: '2026-10-29T22:44:38.559Z'
+    approved_at: '2026-10-29T23:39:43.515Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-10-29T17:11:28.046Z'
+updated_at: '2026-10-30T00:33:15.238Z'
+pr_history:
+  - phase: analyze
+    pr_number: 59
+    branch: builder/experiment-54
+    created_at: '2026-10-30T00:33:07.148Z'
+    merged: true
+    merged_at: '2026-10-30T00:33:11.250Z'
