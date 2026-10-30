@@ -203,7 +203,12 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(pairs.map((p) => p.base)).toEqual(["claude-haiku-5-5", "claude-opus-5-5"]);
     const haiku = pairs.find((p) => p.base === "claude-haiku-5-5")!;
     expect([haiku.off.modelId, haiku.on.modelId]).toEqual(["haiku", "haiku-search"]);
-    // search lifts haiku's accuracy (haiku 88% → haiku-search 92% under the Spec-52 fold)
+    // haiku's measured accuracy is higher with search on (88% → 92%), and this asserts only that the
+    // paired contrast SURFACES that ordering — NOT that search caused a retrieval gain. On the Qur'an
+    // cut the entire 88%→92% gap is a scorer artifact, not retrieval: haiku-off's three Qur'an misses
+    // are all verbatim-correct āyāt uncredited by residuals (two hamza-alef «ءَا↔آ», one verse-number
+    // glue), pre-registered in test_orthography_rebaseline.py and tracked for #60. See that run's
+    // README; do not read this assertion as evidence that web search improves Qur'an retrieval.
     expect(haiku.on.overall!.accuracy!).toBeGreaterThan(haiku.off.overall!.accuracy!);
     // opus: search trades a little accuracy (100% → 93%) for more coverage (66% → 80%) — exactly the
     // story coverage exists to tell, now visible from the paired rows without a README.

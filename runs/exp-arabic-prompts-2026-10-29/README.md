@@ -34,26 +34,31 @@ were transformed. Raw answers are untouched in `answers-ar.jsonl`.
 |-----------|--------|---------:|---------:|-----------|
 | en | sol (gpt-6.1-sol)      | 96.4% | 100% | 27 / 0 / 1 |
 | en | sonnet (claude-5.5)    | 96.4% | 100% | 27 / 0 / 1 |
-| ar | sol                    | 96.4% | 100% | 27 / 0 / 1 |
-| ar | sonnet                 | 96.4% | 100% | 27 / 0 / 1 |
+| ar | sol                    | 92.9% | 100% | 26 / 0 / 2 |
+| ar | sonnet                 | 92.9% | 100% | 26 / 0 / 2 |
 
-**0 of 56 cells flip between conditions** (en outcome == ar outcome for every cell, both
-models). Per task: cite_passage 7/7, verify_source 7/7, complete_unit 7/7 everywhere; the only
-miss is one retrieve_quote cell (below), identical in both conditions. The ~8–11-point Arabic
-drop seen before the fold (next section) is gone: it was entirely a scorer artifact, and the
-orthography fold is the fix. This is the direct evidence that clears the #39 prerequisite.
+**The ~8–11-point Arabic drop (next section) resolves down to a SINGLE pre-registered residual
+cell.** en reaches 96.4% (27/28), ar 92.9% (26/28): exactly **one question flips between conditions**
+— `retrieve_quote-317f7f727f3c` (Q27:59), en-correct → ar-incorrect for both models — and it is a
+`ءَآ↔آ` hamza-alef residual (#60), **not** a retrieval difference. Per task otherwise: cite_passage
+7/7, verify_source 7/7, complete_unit 7/7 everywhere. So the drop was almost entirely a scorer
+artifact, removed by the fold except for this one known residual — the direct evidence that clears
+the #39 prerequisite.
 
-**The one residual — `retrieve_quote-8c4ce779621f` (Q14:34), incorrect in all four cells, NOT a
-content error.** Both models reproduce the verse word-for-word; the only difference is a
-word-initial orthography pair the fold deliberately does not cover: Uthmani writes the glottal
-stop + long-ā as **hamza-then-alef** «وَءَاتَىٰكُم», Imla'i as **alef-madda** «وَآتَاكُم»
-(`ءَا` ↔ `آ`). `score_normalize` renders these as `وااتىكم` vs `واتاكم` — a one-alef difference
-the hamza→alef rule doesn't bridge. It is pre-registered in the witness
-(`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`) as one of 8 committed cells with this
-pattern, and deferred to the fold-extension follow-up **#60** (needs its own collision analysis).
-Here it is identical across prompt languages (both models, both conditions miss it), so it does
-**not** bias the en/ar comparison this experiment is about — unlike the tutorial run, where the same
-pattern is asymmetric between haiku and haiku-search (see that run's README and #60).
+**Two residual cells, both hamza-alef `ءَآ↔آ` (Uthmani hamza-then-alef vs Imla'i alef-madda), NOT
+content errors**, both deferred to **#60** and pinned in
+`test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`:
+- **`retrieve_quote-8c4ce779621f` (Q14:34)** — incorrect in all four cells (both models, both
+  conditions). *Symmetric*, so it does **not** bias the en/ar comparison. Uthmani «وَءَاتَىٰكُم» vs
+  Imla'i «وَآتَاكُم»: `score_normalize` renders `وااتىكم` vs `واتاكم`, a one-alef difference the
+  hamza→alef rule doesn't bridge.
+- **`retrieve_quote-317f7f727f3c` (Q27:59)** — the *asymmetric* one, and the single cross-condition
+  flip. The en answers wrote «ءَآللَّهُ» (credited) while the AR scaffold elicited Imla'i «آللَّهُ»
+  (uncredited) → en correct, ar incorrect. Same `ءَآ↔آ` phenomenon. This mirrors the tutorial run's
+  haiku/haiku-search asymmetry (see that run's README). **It was accidentally credited before the
+  PR-review whitespace tightening** (an over-permissive `\s*` was bridging the uncovered gap via the
+  plene form); the tightened predicate correctly leaves it uncredited, which is why ar is 92.9% here
+  and not 96.4%.
 
 ## Pre-fold finding (historical — the motivation for Spec 52)
 
@@ -83,18 +88,20 @@ these scored incorrect. Spec 52 moves exactly that equivalence into the containm
 ## Conclusions
 
 1. **Knowledge/content: no detectable difference.** Both models retrieve, complete, cite, and
-   verify the Qur'an equally well when asked in Arabic; zero content-level flips in either
-   direction on this sample — true both before and after the fold.
+   verify the Qur'an equally well when asked in Arabic; **no content-level flip** in either
+   direction on this sample — true both before and after the fold (the one post-fold flip is an
+   orthography residual, not content).
 2. **Real behavioral difference: output orthography follows prompt language.** English prompts
    elicit faithful Uthmani-script reproduction; Arabic prompts switch both models to standard
-   Imla'i orthography — an ~8–11-point *measured* accuracy drop that was **entirely a scorer
-   artifact**. Spec 52's Uthmani↔Imla'i fold removes it (en and ar now identical at 96.4%).
+   Imla'i orthography — an ~8–11-point *measured* accuracy drop that was **almost entirely a scorer
+   artifact**. Spec 52's Uthmani↔Imla'i fold removes it down to a single residual cell (en 96.4% /
+   ar 92.9%; the one remaining ar flip is the `ءَآ↔آ` residual deferred to **#60**).
 3. **Implication for #39 (Arabic-instruction subset)**: the scorer fix this experiment called for
    has landed (Spec 52). Arabic-prompted runs are no longer systematically under-credited for
-   orthography, so #39 can run at scale without that bias. One narrow residual remains
-   (word-initial `ءَا`↔`آ`, §Results), identical across prompt languages here so it does not skew the
-   en/ar comparison — but #39 should land the fold extension (**#60**) first, since the same pattern
-   is asymmetric on the tutorial run's haiku vs haiku-search contrast.
+   orthography, so #39 can run at scale without that bias. A narrow residual remains (word-initial
+   `ءَا`↔`آ`, §Results) — and here it IS mildly asymmetric (one cell, Q27:59, credits en but not ar),
+   so #39 should land the fold extension (**#60**) first; the same pattern is also asymmetric on the
+   tutorial run's haiku vs haiku-search contrast.
 
 **Caveats**: n=7 per task per model, one seed, temperature 0, two models, scaffold translation
 written by the architect (not a native-speaker-reviewed instrument). Directional evidence only.

@@ -61,12 +61,21 @@ at 92% accuracy** — web search mostly converts refusals into correct retrieval
 lifting a strict-match rate, though under the Spec 48 rule four of the newly-answered Talmud
 cells are confident deliveries that are *wrong* (now scored `incorrect`, not hidden as `refused`),
 which is why accuracy is 92% and not the 97% an earlier refusal rule reported. `haiku`: web search
-appears to lift accuracy **88% → 92%** while holding coverage (~66%) — but **~2–3 pts of that gap is
-a scorer residual, not retrieval**: on two Qur'an verses (8:52, 2:285) haiku-off wrote the correct
-āyah with alef-madda «آ» while haiku-search wrote hamza-alef «ءَا», and the Spec-52 fold credits the
-latter but not the former (`آ`↔`ءَا` is the one Uthmani↔Imla'i pair the fold does not yet equate).
-So haiku is under-credited here; the true search lift is smaller. Tracked for the fold extension in
-**#60** (pre-registered in `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`).
+appears to lift accuracy **88% → 92%** while holding coverage (~66%) — but **the entire
+haiku→haiku-search Qur'an gap is a scorer artifact, not retrieval.** haiku-off's three remaining
+Qur'an misses are ALL verbatim-correct āyāt uncredited only by a scorer residual, zero genuine:
+- **8:52** and **2:285** — haiku-off wrote the āyah with alef-madda «آ» while haiku-search wrote
+  hamza-alef «ءَا»; the Spec-52 fold credits the latter, not the former (`آ`↔`ءَا` is the one
+  Uthmani↔Imla'i pair the fold does not yet equate). Pre-registered in
+  `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`.
+- **4:176** (`retrieve_quote-e2d74279aaf0`) — a **second** residual class: the verbatim āyah with the
+  **verse-number sign glued to the final word** (U+06DD + Arabic-Indic digits, `…عليم۝١٧٦`), which
+  breaks the trailing word boundary so the word-bounded containment misses an otherwise-perfect
+  reproduction. Pinned in `test_orthography_rebaseline.py::VERSE_NUMBER_RESIDUAL`.
+
+So haiku is under-credited on all three and the true search lift on the Qur'an cut is **zero**. Both
+residual classes are tracked for the fold/pre-processing extension in **#60**; neither code fix is in
+Spec 52 (the digit-stripping fix in particular is deferred to #60).
 
 Two per-tradition cuts show where the retrieval comes from (containment counts under the Spec-52
 fold):

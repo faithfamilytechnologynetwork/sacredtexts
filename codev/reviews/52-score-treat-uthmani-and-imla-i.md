@@ -12,10 +12,10 @@ call-sites and ran a sanctioned oracle-witnessed rebaseline, **phase_3** routed 
 facts. The equivalence lives **entirely in the containment predicate** (`fold_aware_contains`), a
 strict superset of the previous `bounded_contains`: `normalize()` and the similarity submetrics
 (`exact`/`normalized`/`token_f1`) are byte-for-byte unchanged, so the only scores that move are
-`contains_reference`, the headline `correct`, and `outcome`. Net outcome: **58 committed cells move
+`contains_reference`, the headline `correct`, and `outcome`. Net outcome: **56 committed cells move
 `incorrect→correct`, zero losses, zero coverage change, zero similarity drift**; the motivating
-Arabic-prompt A/B converges both conditions on 96.4% (0 cross-condition flips), clearing the #39
-prerequisite.
+Arabic-prompt A/B resolves from an ~8–11pt gap to **en 96.4% / ar 92.9%** with a single residual
+cross-condition flip (a #60 hamza-alef cell, not retrieval), clearing the #39 prerequisite.
 
 ## Spec Compliance
 
@@ -27,10 +27,11 @@ prerequisite.
   long ā is matched as an optional alef (`ا?`). `normalize()` and the equality submetrics unchanged.
 - [x] **No-wrong-credit gate (operative)** (phase_1/phase_2) — `fold_aware_contains` is a strict
   superset of `bounded_contains` (`normalized=1 ⇒ contains_reference=1` by construction), and every
-  one of the 58 moved cells was hand-verified a true Uthmani↔Imla'i equivalence at scoring
+  one of the 56 moved cells was hand-verified a true Uthmani↔Imla'i equivalence at scoring
   granularity before pre-registration.
-- [x] **exp-arabic-prompts-2026-10-29 converges** (phase_2) — both conditions reach 96.4% with 0
-  cross-condition flips; the pre-registered flip set reproduces exactly.
+- [x] **exp-arabic-prompts-2026-10-29 converges** (phase_2, refined in review) — en 96.4% / ar
+  92.9% with a single residual cross-condition flip (Q27:59, a #60 hamza-alef cell, not retrieval);
+  the pre-registered flip set reproduces exactly.
 - [x] **Latin `normalize()` byte-for-byte unchanged; Hebrew/other-RTL regression coverage added**
   (phase_1) — Latin-invariance guard passes; `test_normalize_nonlatin.py` extended, invariance test
   extended to `_answer_plene_form`.
@@ -116,7 +117,7 @@ Per-phase 3-way consult (codex + claude; Gemini excluded — it cannot see the w
   `dd35f56`.
 
 ### Review Phase — PR #62 consult (Round 1)
-- **claude — APPROVE (HIGH)**: independently re-verified every quantitative claim (58 cells all
+- **claude — APPROVE (HIGH)**: independently re-verified every quantitative claim (then-58 cells all
   `incorrect→correct`; SIM SHAs frozen *non-circularly* against the pre-#52 base; `facct`/`jev_agreement`
   recompute byte-identically; no ReDoS). Four non-blocking minors, all folded (see below).
 - **codex — REQUEST_CHANGES (HIGH)**: "direction independence fails for mixed Imla'i references"
@@ -132,6 +133,32 @@ Per-phase 3-way consult (codex + claude; Gemini excluded — it cannot see the w
   `_single_citation_correct` verse-length-fold inheritance → **Rebutted** (verified no-op, 0 Arabic
   citations, guarded by the partition pin; citation predicate is a #39 decision); haiku ceiling signal
   → **N/A** (working-group note). Full dispositions in `52-review-iter1-rebuttals.md`.
+
+### Review Phase — PR #62 architect integration review (Round 2)
+Both PR consults REQUEST_CHANGES/HIGH; the architect verified hands-on and directed folding all six
+items (none merged). All **Addressed**:
+1. **Segmentation over-credit** (codex) → the whitespace flex in `_fold_containment_pattern` was
+   confined to the long-ā join boundary (abutting an optional-long-ā atom), so a multiword reference
+   no longer matches a distinct single word (منشر ≠ "من شر", "ك تب" ≠ كتب). **RE-VERIFIED all movers:
+   1514 text cells across the 3 scores.jsonl runs unchanged; exp-ar dropped 2 cells** — surfaced to
+   the architect, who approved the rebaseline (they were accidental over-credits bridging the #60
+   `ءَآ↔آ` gap; see Appendix C). codex's negative tests added.
+2. **False narrative in committed evidence** (claude) → a SECOND residual class (verse-number sign
+   glued to the final word, U+06DD + Arabic-Indic digits) leaves tutorial `haiku/e2d74279aaf0`
+   (4:176) verbatim-correct but uncredited. With it, haiku-off's three Qur'an misses are ALL scorer
+   residuals, 0 genuine — so the entire haiku→haiku-search Qur'an gap is artifactual. Fixed the
+   tutorial README prose, pinned the cell in `VERSE_NUMBER_RESIDUAL`, caveated the viewer test; the
+   digit-strip code fix is deferred to #60.
+3. **cite_passage call-site** (claude) → reverted `_single_citation_correct` to `bounded_contains`
+   (citation EQUALITY, not the verse-length fold); candid comment kept, pointed at #39. No-op on
+   committed evidence (0 Arabic citations).
+4. **Public-API clarity** (codex) → `fold_aware_contains` documented as THE public text-retrieval
+   containment contract; `bounded_contains` marked the legacy/equality floor (used only by citations
+   + as the superset floor), with a "new text-retrieval analyses must use fold_aware_contains" warning.
+5. **Stale Phase-1 docstring** (confirm) → fixed in `03a9443` (lands in this PR).
+6. **Watch items to #60** → filed as additions to #60 (U+06DD digit-strip; `failureKind.ts` token
+   arithmetic under whitespace-flexed credits); added the `score.py`→`probes.fold_arabic_letters`
+   cross-pointer now. Full dispositions in `52-review-iter2-rebuttals.md`.
 
 **Force-advance note.** phase_1 and phase_2 reached porch's `max_iterations` ceiling (3). The final
 rebuttals show every remaining concern resolved in the force-advance commit (phase_1 `4a5c3a2`
@@ -205,14 +232,23 @@ No flaky tests encountered. The 2 skips in the pipelines suite are pre-existing 
 
 ## Follow-up Items
 
-- **#60** (filed) — extend the fold to the word-initial **hamza-alef ءَا ↔ alef-madda آ** equivalence
-  plus the `ىٰ`↔bare-maqsura case. 8 committed cells are currently UNDER-credited (strict superset
-  preserved — never wrong credit), pre-registered in
-  `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL` as the follow-up's ready-made oracle. On the
-  tutorial run the residual is **asymmetric** (haiku-search wrote «ءَا» and was credited; haiku wrote
-  «آ» and was not), so ~2–3 pts of the committed haiku 88%→haiku-search 92% "search lift" is this
-  residual, not retrieval — documented in that run's README. Architect-approved defer (option B),
-  2026-10-29.
+- **#60** (filed) — the follow-up now carries **two pre-registered under-credit residual classes**,
+  both strict-superset-safe (never a wrong credit) and both the follow-up's ready-made before/after
+  oracle:
+  - **Hamza-alef `ءَا ↔ آ`** (`HAMZA_ALEF_RESIDUAL`) — extend the fold to equate word-initial Uthmani
+    hamza-then-alef with Imla'i alef-madda, plus the `ىٰ`↔bare-maqsura case. **10 committed cells**
+    (the original 8 plus the 2 exp-ar `retrieve_quote-317f7f727f3c` cells exposed by the round-2
+    whitespace tightening). **Asymmetric** on both the tutorial run (haiku-search «ءَا» credited,
+    haiku «آ» not → the *entire* haiku→haiku-search Qur'an "search lift" is this + the verse-number
+    residual, not retrieval) and the exp A/B (en «ءَآ» credited, ar «آ» not → the one exp
+    cross-condition flip, ar 92.9% vs en 96.4%).
+  - **Verse-number gluing** (`VERSE_NUMBER_RESIDUAL`, PR-review round 2) — a trailing U+06DD +
+    Arabic-Indic verse number fused to the final word breaks the word boundary (tutorial
+    `haiku/e2d74279aaf0`, 4:176, verbatim-correct). The fix (strip a trailing verse-number before the
+    boundary match) is deferred to #60.
+  - **Watch items filed to #60**: the digit-strip code fix above; `failureKind.ts` token arithmetic
+    under whitespace-flexed credits.
+  Architect-approved defer (option B), 2026-10-29.
 - **#39** — the Arabic-instruction subset this spec unblocks; a native-speaker review of the Arabic
   scaffolds (#41) should precede any scaled run (Nancy's ~20% AI-translation-subtlety caution).
 - **Digraph vs bare maqsura** (conservative, 0 committed cells) — a reference `ىٰ` digraph does not
@@ -224,10 +260,11 @@ No flaky tests encountered. The 2 skips in the pipelines suite are pre-existing 
 ## Appendix A — Moved numbers (Phase 2 rebaseline, witnessed over the post-#48 + post-#51 baseline)
 
 Captured 2026-10-29 by re-scoring each run's committed answers with the wired scorer (dry run,
-nothing written to `runs/` until the architect saw these). **58 moved cells total, every one
+nothing written to `runs/` until the architect saw these). **56 moved cells total, every one
 `0→1` (`contains_reference`/`correct`), `incorrect→correct`; zero losses, zero coverage change,
 zero similarity drift** (the `(exact, normalized, token_f1)` projection SHA is byte-identical on
-all five score files — the frozen oracle holds).
+all five score files — the frozen oracle holds). [Was 58: the PR-review whitespace tightening
+(round-2 item 1) removed 2 accidental exp-ar over-credits — see Appendix C.]
 
 | Run | n | accuracy before → after | coverage | moved cells |
 |---|---|---|---|---|
@@ -240,9 +277,12 @@ all five score files — the frozen oracle holds).
 
 **exp-arabic-prompts-2026-10-29** (the motivating A/B, scored via its own `analyze.py` over the
 normalized-answers copy): pre-fold en 82.1% (sol) / 78.6% (sonnet), ar 71.4% / 71.4%, **5 cells
-flipped en→ar (all orthographic)**; post-fold **all four conditions 96.4%, 0 cross-condition
-flips** — the ~8–11pt Arabic-prompt accuracy drop is fully resolved, which is the direct proof of
-the fix and the prerequisite clearance for #39. (en 9 movers, ar 14 movers.)
+flipped en→ar (all orthographic)**; post-fold **en 96.4% / ar 92.9%, with ONE residual
+cross-condition flip** — `retrieve_quote-317f7f727f3c` (Q27:59), en-correct→ar-incorrect for both
+models, a `ءَآ↔آ` hamza-alef residual (#60), NOT a retrieval difference. So the ~8–11pt
+Arabic-prompt drop resolves down to a single pre-registered residual cell — the direct proof of the
+fix and the prerequisite clearance for #39. (en 9 movers, ar 12 movers; the 2 removed ar movers were
+the accidental over-credits caught by the round-2 whitespace tightening — Appendix C.)
 
 **Coverage never moves**: the shared `outcomes.classify_refusal` edit cannot independently
 reclassify a committed cell under the default graders (a contained cell already has `correct=1`),
@@ -277,24 +317,33 @@ skeleton; pinned in `test_arabic_orthography_fold.py`:
 Benign at verse-length references; the no-wrong-credit gate catches any that would mis-credit a
 committed answer.
 
-**Under-credit residual (distinct from the collisions above) — [#60].** The fold does NOT cover the
+**Under-credit residual class 1 — hamza-alef `ءَا ↔ آ` — [#60].** The fold does NOT cover the
 word-initial **hamza-alef ءَا (Uthmani) ↔ alef-madda آ (Imla'i)** equivalence: `score_normalize`
 renders e.g. Q14:34 «وَءَاتَىٰكُم» vs «وَآتَاكُم» as `وااتىكم` vs `واتاكم` (the `ء→ا` rule yields two
-alefs where madda yields one), so they do not match. **This is 8 committed cells, not one** (a
-census-corrected count — the earlier "one cell / no bias" claim was wrong; caught by the claude
-phase-2 iter-3 consult and self-corrected). Pre-registered by exact id in
+alefs where madda yields one), so they do not match. **10 committed cells** — the original 8 plus 2
+exp-ar cells on Q27:59 that the round-2 whitespace tightening EXPOSED (the old over-permissive `\s*`
+had accidentally bridged them via the plene form; see Appendix C). Pre-registered by exact id in
 `test_orthography_rebaseline.py::HAMZA_ALEF_RESIDUAL`:
 - tutorial: `haiku/retrieve_quote-1d74fc87541b` (8:52), `haiku/retrieve_quote-a8df3e43d35d` (2:285)
 - original: `haiku` & `opus` `/retrieve_quote-8c4ce779621f` (14:34)
 - exp-ar & exp-en: `sonnet` & `sol` `/retrieve_quote-8c4ce779621f` (14:34)
+- exp-ar: `sonnet` & `sol` `/retrieve_quote-317f7f727f3c` (27:59 «ءَآللَّهُ») — EN stays credited
 
 All are under-credits (the answer IS the correct verse; the committed rebaseline stays a strict
-superset — nothing is wrongly credited). But the two tutorial cells are **asymmetric**: on the same
-verse `haiku-search` wrote «ءَا» (credited) while `haiku` wrote «آ» (uncredited), so **~2–3 pts of the
-committed haiku 88% → haiku-search 92% "search lift" is this orthography residual, not retrieval, and
-`haiku` is slightly under-credited.** NOT fixed here — the `ءَا↔آ` (and `ىٰ`↔maqsura) extension needs
-its own collision analysis; deferred to **[#60]** with the pinned set as its ready-made oracle
-(architect-approved defer 2026-10-29). This is the honest boundary of the fold.
+superset — nothing is wrongly credited). Two asymmetries fall out of it: (a) on the tutorial run
+`haiku-search` wrote «ءَا» (credited) while `haiku` wrote «آ» (uncredited); combined with residual
+class 2 below, **the entire haiku 88%→92% Qur'an "search lift" is scorer residual, not retrieval**;
+(b) in the exp A/B the EN answers wrote «ءَآللَّهُ» (credited) while the AR scaffold elicited «آللَّهُ»
+(uncredited) — the one exp cross-condition flip (ar 92.9% vs en 96.4%). NOT fixed here — the `ءَا↔آ`
+(and `ىٰ`↔maqsura) extension needs its own collision analysis; deferred to **[#60]**.
+
+**Under-credit residual class 2 — verse-number gluing — [#60].** A verbatim-correct āyah left
+uncredited because a trailing **verse-number sign is fused to the final word** (U+06DD end-of-āyah +
+Arabic-Indic digits, e.g. `…عليم۝١٧٦`), breaking the word-bounded containment's trailing boundary.
+A tokenisation gap, distinct from class 1. Tutorial `haiku/retrieve_quote-e2d74279aaf0` (4:176) — the
+third of haiku-off's three Qur'an misses, all scorer residuals. Pinned in `VERSE_NUMBER_RESIDUAL`;
+the digit-strip fix is deferred to **#60** (not a Spec 52 code change). Both classes architect-
+approved to defer, 2026-10-29. This is the honest boundary of the fold.
 
 **Directionality boundary.** The per-position optional-ā is carried by the *reference's* daggers, so
 the fold matches any answer orthography (plene/defective/mixed) against a reference in either

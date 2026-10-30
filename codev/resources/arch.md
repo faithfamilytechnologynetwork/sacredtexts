@@ -81,17 +81,24 @@ round-trip that proves no invention/reordering.
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
   beside it (for `verify_source`, `refused ⟺ parsed is None`). A deliberate contract change is a
   sanctioned, oracle-witnessed rebaseline, not a forbidden re-score. **Arabic orthography
-  (Uthmani↔Imla'i) is folded in the CONTAINMENT path only (Spec 52):** `contains_reference` — and
-  the `cite_passage` verdict, `outcomes.classify_refusal`, the FAccT counterfactual and the probes —
+  (Uthmani↔Imla'i) is folded in the CONTAINMENT path only (Spec 52):** the text-retrieval
+  `contains_reference` — and `outcomes.classify_refusal`, the FAccT counterfactual and the probes —
   share `fold_aware_contains`, which credits the same verse written in either orthography: the long-ā
   alef is made OPTIONAL at each dagger-alif/`ىٰ`-digraph position, with symmetric ى→ي / ء→ا /
-  wasl ٱ→alef folds and flexible one-word↔two-word spacing, matching an answer normalised by
-  `score_normalize` (= `normalize()` + the symmetric folds, interleaved *before* the mark pass) in
-  both its dagger-deleted and plene forms. It is a strict **SUPERSET** of `bounded_contains`, so the
-  fold only ADDS credit and `normalized=1 ⇒ contains=1` still holds; `normalize()` and every equality
-  submetric (`exact`/`normalized`/`token_f1`) stay byte-for-byte unchanged, so the question-set
-  `ANCHOR_DIGEST` never moves (no generator drift). Known under-credit residual (hamza-seat ءَا↔آ):
-  issue #60, pinned in `test_orthography_rebaseline.py`. (verify_source is hardened —
+  wasl ٱ→alef folds and one-word↔two-word spacing **confined to the long-ā join boundary** (whitespace
+  flex only abuts an optional-long-ā position, so a multiword reference can't match a distinct single
+  word — PR #62 review), matching an answer normalised by `score_normalize` (= `normalize()` + the
+  symmetric folds, interleaved *before* the mark pass) in both its dagger-deleted and plene forms.
+  `cite_passage` deliberately stays on `bounded_contains` (boundary-aware citation EQUALITY, not the
+  verse-length fold — revisit for #39's Arabic citations); `fold_aware_contains` is the PUBLIC
+  text-retrieval containment contract and `bounded_contains` its legacy/equality floor. It is a strict
+  **SUPERSET** of `bounded_contains`, so the fold only ADDS credit and `normalized=1 ⇒ contains=1`
+  still holds; `normalize()` and every equality submetric (`exact`/`normalized`/`token_f1`) stay
+  byte-for-byte unchanged, so the question-set `ANCHOR_DIGEST` never moves (no generator drift). Two
+  pre-registered under-credit residual classes, both deferred to **#60** and pinned in
+  `test_orthography_rebaseline.py`: the hamza-seat `ءَا↔آ` letter gap (`HAMZA_ALEF_RESIDUAL`) and a
+  verse-number-gluing tokenisation gap (`VERSE_NUMBER_RESIDUAL`, a trailing U+06DD + Arabic-Indic
+  digits breaking the final word boundary). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised

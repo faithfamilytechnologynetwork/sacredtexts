@@ -47,7 +47,9 @@ SIM_PROJECTION_SHA256 = {
 }
 
 # Exact (model_id, question_id) sets the orthography fold newly credits, per run. Hand-verified
-# against each verse (Spec 52 review). Total = 58 (tutorial 20, original 15, first-run 0, exp 14+9).
+# against each verse (Spec 52 review). Total = 56 (tutorial 20, original 15, first-run 0, exp-ar 12,
+# exp-en 9). [Was 58: the item-1 whitespace tightening (PR #62 review) removed 2 accidental exp-ar
+# over-credits on retrieve_quote-317f7f727f3c — the #60 ءَآ↔آ residual, now in HAMZA_ALEF_RESIDUAL.]
 # Each run: (scores file, answers file to re-derive containment from).
 _EMPTY: set = set()
 ORTHO_MOVERS = {
@@ -77,10 +79,10 @@ ORTHO_MOVERS = {
     "exp-ar": ("exp-arabic-prompts-2026-10-29/scores-ar.jsonl",
                "exp-arabic-prompts-2026-10-29/answers-ar-normalized.jsonl", {
         ("sol", "complete_unit-b730bac6761f"), ("sol", "retrieve_quote-2fd43836a10b"),
-        ("sol", "retrieve_quote-317f7f727f3c"), ("sol", "retrieve_quote-5d482247f058"),
+        ("sol", "retrieve_quote-5d482247f058"),
         ("sol", "retrieve_quote-ab683e42cd74"), ("sol", "retrieve_quote-d0747fb44a9a"),
         ("sol", "retrieve_quote-d15c8a86c98f"), ("sonnet", "complete_unit-b730bac6761f"),
-        ("sonnet", "retrieve_quote-2fd43836a10b"), ("sonnet", "retrieve_quote-317f7f727f3c"),
+        ("sonnet", "retrieve_quote-2fd43836a10b"),
         ("sonnet", "retrieve_quote-5d482247f058"), ("sonnet", "retrieve_quote-ab683e42cd74"),
         ("sonnet", "retrieve_quote-d0747fb44a9a"), ("sonnet", "retrieve_quote-d15c8a86c98f"),
     }),
@@ -115,9 +117,31 @@ HAMZA_ALEF_RESIDUAL = {
     },
     "exp-arabic-prompts-2026-10-29/scores-ar.jsonl": {
         ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
+        # 27:59 «ءَآللَّهُ» — the AR scaffold elicits Imla'i «آللَّهُ» (madda) → the same ءَا↔آ residual.
+        # EXPOSED by the item-1 whitespace tightening (PR #62 review): the old over-permissive \s*
+        # was accidentally bridging this uncovered #60 gap via the plene form; the tightened predicate
+        # correctly leaves it uncredited. ASYMMETRIC: the EN answers wrote «ءَآللَّهُ» and STAY credited
+        # (so this pair is NOT in the scores-en set), which is why exp lands en 96.4% / ar 92.9% with a
+        # single residual cross-condition flip on this question.
+        ("sonnet", "retrieve_quote-317f7f727f3c"), ("sol", "retrieve_quote-317f7f727f3c"),
     },
     "exp-arabic-prompts-2026-10-29/scores-en.jsonl": {
         ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
+    },
+}
+
+# SECOND pre-registered residual class (PR #62 review item 2, claude): a verbatim-correct āyah left
+# uncredited because the VERSE-NUMBER SIGN is glued to the final word (U+06DD end-of-āyah + the
+# Arabic-Indic digits, e.g. «…عليم۝١٧٦»), breaking the trailing word boundary of the word-bounded
+# containment. Distinct from HAMZA_ALEF_RESIDUAL (a letter-identity gap) — this is a tokenisation gap.
+# `contains_reference == 0` today; the fix (strip a trailing verse-number before the boundary match)
+# is DEFERRED to #60, which inherits this cell alongside the hamza-alef set as its before/after oracle.
+# On the tutorial run this is the third of haiku-off's three Qur'an misses — all three scorer
+# residuals, zero genuine — so the apparent haiku→haiku-search Qur'an "search lift" is entirely
+# artifactual (see runs/tutorial-2026-10-11/README.md).
+VERSE_NUMBER_RESIDUAL = {
+    "tutorial-2026-10-11/scores.jsonl": {
+        ("haiku", "retrieve_quote-e2d74279aaf0"),   # 4:176, «…عليم۝١٧٦» — verse number glued to عليم
     },
 }
 
@@ -266,14 +290,54 @@ def test_hamza_alef_residual_is_pre_registered_and_uncredited(path):
         )
 
 
+@pytest.mark.parametrize("path", list(VERSE_NUMBER_RESIDUAL))
+def test_verse_number_residual_is_pre_registered_and_uncredited(path):
+    # The verbatim-correct āyah(s) uncredited only because a trailing verse-number sign breaks the
+    # word boundary (second residual class). All `contains_reference == 0` today; #60's digit-strip
+    # fix flips them, cell-for-cell. Independent sanity: stripping a trailing verse-number from the
+    # answer credits the cell (so the ONLY blocker is the glued number).
+    import re as _re
+    from sacredbench.score import fold_aware_contains
+    by_key = {(r["model_id"], r["question_id"]): r["metrics"] for r in _rows(path)}
+    ans = _answers(path.replace("scores.jsonl", "answers.jsonl"))
+    for key in VERSE_NUMBER_RESIDUAL[path]:
+        assert key in by_key, f"{path}: residual cell {key} absent"
+        assert by_key[key].get("contains_reference") == 0, (
+            f"{path}: verse-number residual {key} is now credited — if #60's digit-strip landed, "
+            "move it out of VERSE_NUMBER_RESIDUAL"
+        )
+        answer, expected = ans[key]
+        stripped = _re.sub(r"[۝٠-٩۰-۹\d]+\s*$", "", answer.strip())
+        assert fold_aware_contains(stripped, expected["text"]), (
+            f"{path}: {key} is NOT credited even after stripping the trailing verse-number — "
+            "its miss is more than the digit glue, so this pin is mis-attributed"
+        )
+
+
 def test_exp_arabic_prompt_artifact_is_resolved():
+    # The ~8–11pt Arabic-prompt accuracy drop was almost entirely a scorer artifact and resolves under
+    # the fold — DOWN TO a single pre-registered residual cell. EN reaches 27/28 per model (96.4%); AR
+    # reaches 26/28 (92.9%) because of ONE residual cross-condition flip: retrieve_quote-317f7f727f3c
+    # (Q27:59) for BOTH models, a #60 hamza-alef «ءَآ↔آ» cell (the AR scaffold elicits Imla'i «آللَّهُ»),
+    # NOT a retrieval difference. This pins the full before/after oracle for #60's eventual fold:
+    # when «ءَآ↔آ» lands, this flip closes and AR rejoins EN at 96.4%. (PR #62 review items 1–2.)
     en = {(r["model_id"], r["question_id"]): r for r in _rows("exp-arabic-prompts-2026-10-29/scores-en.jsonl")}
     ar = {(r["model_id"], r["question_id"]): r for r in _rows("exp-arabic-prompts-2026-10-29/scores-ar.jsonl")}
     assert en.keys() == ar.keys() and len(en) == 56
-    for cond in (en, ar):
-        per_model: dict[str, int] = {}
-        for (mid, _qid), r in cond.items():
-            per_model[mid] = per_model.get(mid, 0) + int(r["metrics"]["outcome"] == "correct")
-        assert set(per_model.values()) == {27}, f"expected 27 correct/model, got {per_model}"
-    flips = sum(1 for k in en if en[k]["metrics"]["outcome"] != ar[k]["metrics"]["outcome"])
-    assert flips == 0, f"{flips} en↔ar outcome flips survived the fold (expected 0)"
+    en_correct = {mid: 0 for (mid, _q) in en}
+    ar_correct = {mid: 0 for (mid, _q) in ar}
+    for (mid, _q), r in en.items():
+        en_correct[mid] += int(r["metrics"]["outcome"] == "correct")
+    for (mid, _q), r in ar.items():
+        ar_correct[mid] += int(r["metrics"]["outcome"] == "correct")
+    assert set(en_correct.values()) == {27}, f"EN expected 27 correct/model, got {en_correct}"
+    assert set(ar_correct.values()) == {26}, f"AR expected 26 correct/model, got {ar_correct}"
+    # exactly one question flips en→ar, for both models, and it is the pre-registered #60 residual
+    flips = {k for k in en if en[k]["metrics"]["outcome"] != ar[k]["metrics"]["outcome"]}
+    assert flips == {("sonnet", "retrieve_quote-317f7f727f3c"), ("sol", "retrieve_quote-317f7f727f3c")}, (
+        f"unexpected en↔ar flip set: {flips}"
+    )
+    for k in flips:
+        assert en[k]["metrics"]["outcome"] == "correct" and ar[k]["metrics"]["outcome"] == "incorrect"
+        assert ("sonnet" if k[0] == "sonnet" else "sol", k[1]) in HAMZA_ALEF_RESIDUAL[
+            "exp-arabic-prompts-2026-10-29/scores-ar.jsonl"]

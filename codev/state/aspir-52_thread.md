@@ -454,3 +454,31 @@ Re-entered at the `review` phase after a context refresh. Reconciled the full on
 Next: create the new PR (Closes #52), `porch done 52 --pr <N>`, signal PR_READY, send the architect
 the moved-numbers + #60 residual packet. STOP at the pr gate — HUMAN approval only; I do NOT
 self-approve.
+
+## PR #62 architect integration review — round 2 (2026-10-30)
+
+Both PR consults REQUEST_CHANGES/HIGH; architect verified hands-on and directed folding all 6 items.
+All folded; full gate green (pipelines 643/2, viewer pass, audit OK). Highlights:
+- **Item 1 (segmentation over-credit)**: confined whitespace flex in `_fold_containment_pattern` to
+  the long-ā join boundary (abuts an `AA` atom); added negative tests. RE-VERIFIED every mover by
+  dry re-score: 3 scores.jsonl runs 1514 cells 0-changed; **exp-ar dropped 2 cells (Q27:59)** —
+  root-caused as the `ءَآ↔آ` #60 residual the OLD over-permissive `\s*` was accidentally bridging via
+  the plene form (proved: patching only آ→ءَآ restores credit). Surfaced; **architect APPROVED** the
+  exp-ar rebaseline (96.4%→92.9%, en unchanged, one residual cross-condition flip now visible).
+  Movers total 58→56.
+- **Item 2 (false narrative)**: confirmed a SECOND residual class (U+06DD + verse-number digits glued
+  to final word) — tutorial `haiku/e2d74279aaf0` (4:176) verbatim-correct but uncredited. So all 3
+  haiku Qur'an misses are scorer residuals, 0 genuine; the whole haiku→haiku-search Qur'an gap is
+  artifactual. Fixed README prose, pinned `VERSE_NUMBER_RESIDUAL` (+ test that digit-strip restores
+  credit), caveated the viewer test. Digit-strip CODE fix → #60.
+- **Item 3**: reverted cite_passage to `bounded_contains` (equality, not fold); no-op on committed.
+- **Item 4**: documented `fold_aware_contains` as the public text-retrieval contract, `bounded_contains`
+  as the legacy/equality floor.
+- **Item 5**: stale docstring fix confirmed (03a9443).
+- **Item 6**: added score.py→probes.fold_arabic_letters cross-pointer; filed #60 watch items
+  (digit-strip; failureKind.ts token arithmetic) as a #60 comment.
+Governance/docs refreshed: arch.md § score.py (cite off the fold, whitespace confined, 2 residual
+classes), exp + tutorial READMEs, review doc (round-2 dispositions, 56 movers, 2 residual classes),
+PR body. Witness pins the new exp partition + single-flip identity.
+
+Still HOLDING at the pr gate — architect runs `porch approve` after Waleed's OK; I merge after.
