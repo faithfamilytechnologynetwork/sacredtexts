@@ -482,3 +482,16 @@ classes), exp + tutorial READMEs, review doc (round-2 dispositions, 56 movers, 2
 PR body. Witness pins the new exp partition + single-flip identity.
 
 Still HOLDING at the pr gate — architect runs `porch approve` after Waleed's OK; I merge after.
+
+## Verify phase — PR #62 MERGED (2026-10-30)
+
+Waleed approved; architect ran `porch approve 52 pr`. On merging, PR #62 had gone CONFLICTING
+(main advanced: #59 Spec 54, #61 CI). Merged origin/main into the branch — ONE conflict in
+`arch-critical.md` (Spec 54 and Spec 52 each edited the Scoring/Tool-use bullets; additive +
+non-overlapping, so kept BOTH: my Arabic-fold sentence in Scoring, #54 native-web_search in
+Tool-use). Merge commit c4d23d2. Re-ran full gate over merged tree: 660 pass / 2 skip (up from
+643 — #54 suite now coexists with the scoring change), viewer green. Pushed; CI (#61 workflow)
+ran green on the merge; PR CLEAN/MERGEABLE. Merged via `gh pr merge 62 --merge` (no squash).
+
+**Merge SHA: 0ed8cca** (Merge pull request #62). `porch done 52 --merged 62` recorded it.
+Entering verify → verify-approval gate (architect approves).
