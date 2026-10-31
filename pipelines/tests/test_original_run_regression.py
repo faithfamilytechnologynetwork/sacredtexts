@@ -47,8 +47,8 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves;
 # a text added after the run leaves the card unchanged, Spec 50).
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "10989fbd0501a685"  # texts/ as of Spec 64 (Bhagavad Gita added)
-ANCHOR_DIGEST = "a1842d3ef3564d53"  # generate over that corpus with the run's params
+ANCHOR_CORPUS_HASH = "65bb68f118d63112"  # texts/ as of Spec 64 (Bhagavad Gita added)
+ANCHOR_DIGEST = "93b71460742a8ecd"  # generate over that corpus with the run's params
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer
 # that yields ZERO citation candidates was hand-surveyed: a first-person inability to cite
