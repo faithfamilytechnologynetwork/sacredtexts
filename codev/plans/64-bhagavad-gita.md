@@ -72,5 +72,5 @@ No live run. Issue #50 part 2 must land first.
 
 | Risk | Mitigation |
 |---|---|
-| Dhammapada lands first and moves the same lines | Rebase, then re-pin the anchor again |
+| Dhammapada lands first and moves the same lines | Stack on it; re-pin the anchor over both texts |
 | Generate takes ~40 min | Run in the background; the anchor test skips without `texts/standardized/` |

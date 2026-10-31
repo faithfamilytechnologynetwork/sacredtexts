@@ -115,7 +115,8 @@ the Sanskrit for reference and is not benchmarked. Measured on revisions current
 ## Open Questions
 
 1. **Vulgate or critical edition?** Scholars cite the critical edition, and most readers know the
-   vulgate. Models were likely trained on the vulgate. **Recommend the vulgate; report collation counts.**
+   vulgate. Models were likely trained on the vulgate. **The vulgate. Collation counts are a follow-up, not
+   part of this PR.**
 2. **Same-script negatives.** No other `sa` text exists, so every negative is cross-language and
    trivially rejected, as in #29. **Out of scope.**
 3. **Repeated verses.** Some half-verses recur. `cite_passage` accepts one citation, as with Sri Guru
@@ -129,7 +130,7 @@ the Sanskrit for reference and is not benchmarked. Measured on revisions current
 | A stripped character is part of a word | Apparatus-only test over all 700 verses |
 | Stotra Samhita changes | Commit and SHA-256 pinned |
 | Devanagari mis-scored before part 2 lands | Canary gates `sa` |
-| Merge conflict with the Dhammapada PR | Same gate table and anchor; this PR rebases after it |
+| Merge conflict with the Dhammapada PR | Same gate table and anchor; this PR stacks on it |
 
 ## References
 
