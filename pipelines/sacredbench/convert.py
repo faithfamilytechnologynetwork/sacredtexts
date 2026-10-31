@@ -25,6 +25,8 @@ Phase 3):
   one scripture document.
 - ``shabados_sggs`` (Spec 50): the Sri Guru Granth Sahib extract from Shabad OS →
   one document of panktis cited ``Ang N:k``, Shabad OS apparatus removed.
+- ``vri_dhammapada``: VRI's romanized Dhammapada (TEI) → one document of verses cited
+  ``Dhammapada N``, VRI's notes, page markers and closing matter removed.
 
 Converters are fail-fast: an unexpected shape raises ``ConvertError`` naming the
 file. Adding a source format = one function + one ``CONVERTERS`` registry line.
@@ -35,6 +37,7 @@ from __future__ import annotations
 import html as _html
 import json
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -482,6 +485,67 @@ def convert_shabados_sggs(paths: list[Path], target: "Target") -> list[Document]
     return [_doc(target, entries)]
 
 
+# --- Dhammapada (vri_dhammapada) ------------------------------------------------
+
+_VRI_GATHA_RENDS = ("gatha1", "gatha2", "gatha3", "gathalast")
+
+
+def clean_vri_gatha(p: ET.Element) -> str:
+    """One VRI verse line -> its words: ``<note>`` (variant readings) and ``<pb>`` (page
+    markers of other editions) removed, and VRI's parentheses dropped while the words inside
+    them stay (Dhp 160, Dhp 359). Any other child element is unknown markup and fails."""
+    parts = [p.text or ""]
+    for child in p:
+        if child.tag not in ("note", "pb"):
+            raise ConvertError(f"unexpected <{child.tag}> in a verse line")
+        parts.append(child.tail or "")
+    return " ".join("".join(parts).replace("(", "").replace(")", "").split())
+
+
+def convert_vri_dhammapada(paths: list[Path], target: "Target") -> list[Document]:
+    """VRI ``s0502m.mul.xml`` (TEI, UTF-16) → one document of verses cited ``Dhammapada N``.
+
+    A ``hangnum`` paragraph opens verse N and the gatha lines after it are that verse. A
+    chapter's ``<trailer>`` closes the open verse, so the closing summaries after verse 423
+    belong to no verse. Fail-fast: numbering that is not 1, 2, 3 ..., a verse with no lines, a
+    prose paragraph inside a verse, or unknown markup in a verse line."""
+    if len(paths) != 1:
+        raise ConvertError(f"vri_dhammapada expects one payload file, got {len(paths)}")
+    path = paths[0]
+    try:
+        root = ET.fromstring(path.read_bytes())
+    except ET.ParseError as e:
+        raise ConvertError(f"{path}: not valid XML ({e})") from e
+    verses: list[list[str]] = []
+    is_open = False
+    for el in root.iter():
+        rend = el.get("rend")
+        if el.tag == "trailer":
+            is_open = False
+        elif el.tag != "p":
+            continue
+        elif rend == "hangnum":
+            if el.get("n") != str(len(verses) + 1):
+                raise ConvertError(f"{path}: verse n={el.get('n')!r} after verse {len(verses)}")
+            verses.append([])
+            is_open = True
+        elif rend in _VRI_GATHA_RENDS and is_open:
+            try:
+                verses[-1].append(clean_vri_gatha(el))
+            except ConvertError as e:
+                raise ConvertError(f"{path}: verse {len(verses)}: {e}") from e
+        elif is_open and rend not in _VRI_GATHA_RENDS:
+            raise ConvertError(f"{path}: verse {len(verses)}: unexpected {rend!r} paragraph")
+    entries: list[Entry] = []
+    for n, lines in enumerate(verses, 1):
+        if not lines:
+            raise ConvertError(f"{path}: verse {n} has no lines")
+        entries.append(Entry(unit_type="verse", citation=f"Dhammapada {n}", text=" ".join(lines)))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    return [_doc(target, entries)]
+
+
 CONVERTERS = {
     "bible_flat": convert_bible_flat,
     "lds_nested": convert_lds_nested,
@@ -491,6 +555,7 @@ CONVERTERS = {
     "hadith_sunnah": convert_hadith_sunnah,
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,
+    "vri_dhammapada": convert_vri_dhammapada,
 }
 
 

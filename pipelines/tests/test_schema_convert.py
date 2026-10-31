@@ -15,6 +15,7 @@ from sacredbench.convert import (
     convert_sefaria_talmud,
     convert_shabados_sggs,
     convert_target,
+    convert_vri_dhammapada,
 )
 from sacredbench.schema import SchemaError, load_document, parse_document, write_document
 from tests.conftest import ENCYCLICAL_SHAPE, NABRE_SHAPE, make_doc
@@ -495,3 +496,68 @@ def test_real_sggs_converts_every_line_and_removes_only_apparatus():
         words = [w for w in fixed.split() if _gurmukhi_letters(w)]
         assert len(words) == len([w for w in e.text.split() if _gurmukhi_letters(w)]), r["id"]
         assert not re.search(r"[;.,॥।₀-₉‍︀]", e.text), r["id"]
+
+
+# --- Dhammapada (vri_dhammapada) ------------------------------------------------
+
+
+def _vri_payload(tmp_path: Path, body: str) -> Path:
+    p = tmp_path / "dhp.xml"
+    p.write_text(f'<?xml version="1.0" encoding="UTF-16"?><TEI.2><text><body>{body}</body></text></TEI.2>',
+                 encoding="utf-16")
+    return p
+
+
+def _vri_verse(n: int, *lines: str) -> str:
+    return (f'<p rend="hangnum" n="{n}"><hi rend="paranum">{n}</hi><hi rend="dot">.</hi></p>'
+            + "".join(f'<p rend="gatha1">{line}</p>' for line in lines))
+
+
+def test_vri_dhammapada_joins_lines_and_removes_apparatus_only(tmp_path):
+    p = _vri_payload(tmp_path, '<head rend="chapter">1. Yamakavaggo</head>' + _vri_verse(
+        1, ' Mano <pb ed="M" n="0.0013" /><pb ed="P" n="0.0001" /> dhammā, seṭṭhā;',
+        "Tato naṃ<note>nā (ka.)</note> padaṃ.",
+    ) + _vri_verse(2, " Attā nātho, (ko hi nātho siyā);", "Attanā.") + '<trailer rend="centre">Vaggo.</trailer>'
+        + '<p rend="gatha2">Uddāna gāthā.</p>')
+    [doc] = convert_vri_dhammapada([p], _target(converter="vri_dhammapada", language="pi"))
+    assert [(e.unit_type, e.citation, e.text) for e in doc.entries] == [
+        ("verse", "Dhammapada 1", "Mano dhammā, seṭṭhā; Tato naṃ padaṃ."),
+        ("verse", "Dhammapada 2", "Attā nātho, ko hi nātho siyā; Attanā."),
+    ]
+
+
+@pytest.mark.parametrize("body,match", [
+    (_vri_verse(1, "Mano.") + _vri_verse(3, "Tato."), "verse n='3' after verse 1"),
+    ('<p rend="hangnum" n="1">1</p>', "verse 1 has no lines"),
+    (_vri_verse(1, "Mano <b>x</b>."), "unexpected <b>"),
+    (_vri_verse(1, "Mano.") + '<p rend="bodytext">Prose.</p>', "unexpected 'bodytext'"),
+    ("", "produced no verses"),
+])
+def test_vri_dhammapada_fails_loudly(tmp_path, body, match):
+    with pytest.raises(ConvertError, match=match):
+        convert_vri_dhammapada([_vri_payload(tmp_path, body)], _target(converter="vri_dhammapada"))
+
+
+def test_real_dhammapada_converts_every_verse_and_removes_only_apparatus():
+    """All 423 verses. Independently of the converter, for EVERY verse the letters of the raw
+    gatha lines, read with notes and page markers cut out by regex, equal the entry's letters
+    -- no word added, deleted or altered -- and the closing summaries reach no verse."""
+    import re
+
+    t = _real_target("Buddhism")
+    [doc] = convert_target(t.payload_paths(RAW), t)
+    assert [e.citation for e in doc.entries] == [f"Dhammapada {n}" for n in range(1, 424)]
+    raw = t.payload_paths(RAW)[0].read_bytes().decode("utf-16")
+    raw = raw[: raw.index("</trailer>", raw.index('n="423"'))]
+    letters = lambda s: re.sub(r"[^\w]|\d|_", "", s)
+    chunks = re.split(r'<p rend="hangnum" n="\d+">', raw)[1:]
+    assert len(chunks) == len(doc.entries)
+    for chunk, e in zip(chunks, doc.entries):
+        lines = re.findall(r'<p rend="gatha\w+">(.*?)</p>', chunk, re.S)
+        kept = re.sub(r"<note>.*?</note>|<[^>]+>", "", "".join(lines), flags=re.S)
+        assert letters(kept) == letters(e.text), e.citation
+        assert not re.search(r"[()\d<>]", e.text), e.citation
+    by_citation = {e.citation: e.text for e in doc.entries}
+    assert by_citation["Dhammapada 1"].startswith("Manopubbaṅgamā dhammā, manoseṭṭhā manomayā;")
+    assert by_citation["Dhammapada 359"].count("Tiṇadosāni") == 2  # both stanzas VRI prints
+    assert by_citation["Dhammapada 423"].endswith("tamahaṃ brūmi brāhmaṇaṃ.")

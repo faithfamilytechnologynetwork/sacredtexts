@@ -512,14 +512,14 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
     assert "disagree on canonical_language" in str(e.value)
 
 
-def test_real_catalogue_default_pool_is_eighteen():
-    """The committed corpus: 22 targets, default pool (language == canonical_language,
-    non-restricted) is exactly these 18 texts (Spec 50 added Sri Guru Granth Sahib); every target carries both new fields; the two
+def test_real_catalogue_default_pool_is_nineteen():
+    """The committed corpus: 23 targets, default pool (language == canonical_language,
+    non-restricted) is exactly these 19 texts (Spec 50 added Sri Guru Granth Sahib); every target carries both new fields; the two
     LDS KJV targets are gone (issue #27 Q3). Pins membership, not just the count, so a
     canonical_language typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 22
+    assert len(targets) == 23
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language
@@ -547,6 +547,7 @@ def test_real_catalogue_default_pool_is_eighteen():
         ("The Bible", "ASV (1901)", "en"),
         ("The Bible", "WEB", "en"),
         ("Sri Guru Granth Sahib", "Shabad OS (SGPC Shabadaarth)", "pa"),
+        ("Dhammapada", "Chaṭṭha Saṅgāyana (VRI)", "pi"),
     }
 
 
@@ -568,6 +569,8 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         "texts/raw/The Church of Jesus Christ of Latter-Day Saints/source.yaml",
         "texts/raw/Sikhism/source.yaml",
         "texts/raw/Sikhism/sggs_shabados.json",
+        "texts/raw/Buddhism/source.yaml",
+        "texts/raw/Buddhism/s0502m.mul.xml",
     ]:
         assert (REPO_ROOT / rel).exists(), f"missing committed catalogue file: {rel}"
         assert not _check_ignored(rel), f"source.yaml must be trackable: {rel}"
@@ -579,20 +582,27 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
         assert _check_ignored(rel), f"restricted/standardized path must be ignored: {rel}"
 
 
-def test_canary_gates_collect_and_score_while_normalize_is_gurmukhi_unaware(tmp_path):
+@pytest.mark.parametrize("lang,name,tradition,work,text,citation,collide", [
+    ("pa", "Gurmukhi", "Sikhism", "Sri Guru Granth Sahib", "ਆਦਿ ਸਚੁ", "Ang 1:1", ("ਕਰਤਾ", "ਕਰਤੀ")),
+    ("pi", "Pali", "Buddhism", "Dhammapada", "Manopubbaṅgamā dhammā", "Dhammapada 1", ("dhammā", "dhamma")),
+])
+def test_canary_gates_collect_and_score_while_normalize_is_unaware(
+    tmp_path, lang, name, tradition, work, text, citation, collide
+):
     """Spec 50 part-1 canary (PR #51 review): generation stays open, but the PAID step
-    (collect) and the metric-writing step (score) refuse Gurmukhi rows for exactly as
-    long as normalize() collapses Gurmukhi vowel signs. Both branches are asserted
-    against the live normalize(), so when issue #50 part 2 lands the gates must open."""
-    from sacredbench.score import gurmukhi_scoring_unaware, normalize
+    (collect) and the metric-writing step (score) refuse a gated language's rows for exactly
+    as long as normalize() collapses its marks. Both branches are asserted against the
+    live normalize(), so when issue #50 part 2 lands the gates must open."""
+    from sacredbench.score import gated_languages, normalize
 
-    assert gurmukhi_scoring_unaware() == (normalize("ਕਰਤਾ") == normalize("ਕਰਤੀ"))
+    unaware = lang in gated_languages()
+    assert unaware == (normalize(collide[0]) == normalize(collide[1]))
     q = {
         "id": "retrieve_quote-000000000000", "task": "retrieve_quote",
-        "prompt": "What is the text of the Guru Granth Sahib Ang 1:1?",
-        "expected": {"text": "ਆਦਿ ਸਚੁ", "citation": "Ang 1:1"},
-        "source": {"tradition": ["Sikhism"], "work": "Sri Guru Granth Sahib",
-                   "version": "Test", "language": "pa", "document_type": "scripture"},
+        "prompt": f"What is the text of {work} {citation}?",
+        "expected": {"text": text, "citation": citation},
+        "source": {"tradition": [tradition], "work": work,
+                   "version": "Test", "language": lang, "document_type": "scripture"},
     }
     questions = tmp_path / "questions.jsonl"
     questions.write_text(json.dumps(q) + "\n", encoding="utf-8")
@@ -605,14 +615,14 @@ def test_canary_gates_collect_and_score_while_normalize_is_gurmukhi_unaware(tmp_
     )
     answers = tmp_path / "answers.jsonl"
     answers.write_text(json.dumps({"question_id": q["id"], "model_id": "m", "task": q["task"],
-                                   "answer": "ਆਦਿ ਸਚੁ", "question": q}) + "\n", encoding="utf-8")
+                                   "answer": text, "question": q}) + "\n", encoding="utf-8")
 
     r_collect = runner.invoke(app, ["collect", str(questions), str(cfg), "--out", str(tmp_path / "a.jsonl")])
     r_score = runner.invoke(app, ["score", str(answers), "--scores-out", str(tmp_path / "s.jsonl"),
                                   "--summary-out", str(tmp_path / "s.json")])
-    if gurmukhi_scoring_unaware():  # gates CLOSED
-        assert r_collect.exit_code != 0 and "Gurmukhi" in r_collect.output and "#50" in r_collect.output
-        assert r_score.exit_code != 0 and "Gurmukhi" in r_score.output and "#50" in r_score.output
+    if unaware:  # gates CLOSED
+        assert r_collect.exit_code != 0 and name in r_collect.output and "#50" in r_collect.output
+        assert r_score.exit_code != 0 and name in r_score.output and "#50" in r_score.output
     else:  # part 2 landed: gates OPEN (collect may then fail on the fake host — different error)
-        assert "Gurmukhi" not in r_collect.output
-        assert "Gurmukhi" not in r_score.output
+        assert name not in r_collect.output
+        assert name not in r_score.output
