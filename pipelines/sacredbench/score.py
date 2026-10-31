@@ -7,10 +7,12 @@ Metrics emitted per answer:
 - ``normalized``  equality after normalisation: unicode quotes/dashes folded,
                   Arabic/Hebrew combining marks + annotation symbols removed and
                   alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
-                  matches), case-folded, punctuation stripped, whitespace collapsed
-                  (0/1) — see ``strip_script_marks``. Uthmani/Imla'i orthography is
-                  NOT folded here (Spec 52); it is credited only by
-                  ``fold_aware_contains``.
+                  matches), Devanagari/Gurmukhi vowel signs KEPT in the word and their
+                  digits folded to ASCII, romanized Pali diacritics folded, case-folded,
+                  punctuation stripped, whitespace collapsed (0/1) — see
+                  ``strip_script_marks``, ``fold_indic`` and ``fold_pali``.
+                  Uthmani/Imla'i orthography is NOT folded here (Spec 52); it is
+                  credited only by ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
                   (0..1) — the v1 "semantic similarity" stand-in; embedding- or
                   judge-based semantic scoring is a later, pluggable metric
@@ -69,8 +71,46 @@ class ScoreError(Exception):
     pass
 
 
-_PUNCT_RE = re.compile(r"[^\w\s]", re.UNICODE)
 _WS_RE = re.compile(r"\s+")
+
+# The Indic blocks: Devanagari (Sanskrit) and Gurmukhi. Their vowel signs, viramas and
+# nasal marks (categories Mn/Mc) are SPELLING, not optional pointing: ਨਾਮ and ਨਮ are
+# different words. So unlike the Arabic/Hebrew marks they are KEPT — exempted from the
+# punctuation pass, which would otherwise turn every one into a word split (Python's `\w`
+# rejects Mn/Mc). Danda/double danda (Po) stay separators. Scoped to these blocks, so
+# Latin/Arabic/Hebrew output is byte-for-byte unchanged.
+_INDIC_BLOCKS = ((0x0900, 0x097F), (0x0A00, 0x0A7F))
+INDIC_MARKS = "".join(
+    chr(c)
+    for lo, hi in _INDIC_BLOCKS
+    for c in range(lo, hi + 1)
+    if unicodedata.category(chr(c)).startswith("M")
+)
+_PUNCT_RE = re.compile(r"[^\w\s" + re.escape(INDIC_MARKS) + "]", re.UNICODE)
+# Word edges for the bounded matches: an Indic mark is inside a word, so ਕਰਤ is not a word
+# within ਕਰਤਾ. Identical to `(?<!\w)`/`(?!\w)` outside the Indic blocks.
+_EDGE_L = r"(?<![\w" + re.escape(INDIC_MARKS) + "])"
+_EDGE_R = r"(?![\w" + re.escape(INDIC_MARKS) + "])"
+# Native digits fold to ASCII, so a Gurmukhi/Devanagari numeral matches its Latin twin.
+_INDIC_DIGITS = str.maketrans(
+    {**{0x0966 + i: str(i) for i in range(10)}, **{0x0A66 + i: str(i) for i in range(10)}}
+)
+# ZWJ/ZWNJ after an Indic character only steers conjunct rendering; delete it there so it
+# does not split the word. Elsewhere it is left alone (see the bidi note below).
+_INDIC_JOINER_RE = re.compile(r"(?<=[ऀ-ॿ਀-੿])[‌‍]")
+
+# Romanized Pali: NFKD splits ā into a + U+0304 and the punctuation pass turned the mark into a
+# space, so `saṅgha` split into `san gha`. Pali's diacritics are a transliteration detail, as Arabic
+# harakat are vocalisation, so they FOLD to the base letter: `dhammā` == `dhamma`, and ṁ == ṃ, the
+# two spellings of one letter across editions. Scoped by the REFERENCE (``is_pali``): an English
+# answer that writes `Bukhārī` against a non-Pali reference is scored as before, so Latin output
+# and every committed score stay byte-for-byte unchanged. ``exact`` stays strict.
+_PALI_LETTERS = "āīūṃṁṅñṭḍṇḷ"
+_PALI_BASE = {
+    unicodedata.normalize("NFKD", c): unicodedata.normalize("NFKD", c)[0]
+    for c in _PALI_LETTERS + _PALI_LETTERS.upper()
+}
+_PALI_RE = re.compile("|".join(_PALI_BASE))
 
 # The RTL Unicode blocks (U+0590–U+08FF is Hebrew + Arabic + their extensions — and also
 # Syriac/Thaana/N'Ko/Samaritan/Mandaic, whose marks we strip too; harmless for this
@@ -120,6 +160,25 @@ def strip_script_marks(text: str) -> str:
         )
     )
 
+
+def fold_indic(text: str) -> str:
+    """Fold Devanagari/Gurmukhi digits to ASCII and drop a joiner that follows an Indic
+    character. The Indic vowel signs themselves are kept (see ``INDIC_MARKS``). A no-op
+    on text with no Indic characters."""
+    return _INDIC_JOINER_RE.sub("", text.translate(_INDIC_DIGITS))
+
+
+def fold_pali(text: str) -> str:
+    """Fold Pali's diacritic letters to their base letter after NFKD. A no-op on text without
+    those letter + mark pairs."""
+    return _PALI_RE.sub(lambda m: _PALI_BASE[m.group(0)], text)
+
+
+def is_pali(reference: str) -> bool:
+    """True if a reference carries a Pali diacritic letter: its comparison then normalizes BOTH
+    sides with ``pali=True``."""
+    return _PALI_RE.search(unicodedata.normalize("NFKD", reference)) is not None
+
 # Fixed sub-metrics for the NON-graded tasks. The text-retrieval tasks (retrieve_quote /
 # complete_unit) derive their submetric set from the selected graders (see graders.submetrics_for);
 # verify_source and cite_passage carry no fixed submetrics. (identify_version / identify_source were
@@ -127,14 +186,14 @@ def strip_script_marks(text: str) -> str:
 _SUBMETRICS: dict[str, tuple[str, ...]] = {}
 
 
-def normalize(text: str) -> str:
+def normalize(text: str, *, pali: bool = False) -> str:
     """The shared normaliser (generation, scoring, audit-adjacent). Byte-stable by contract —
     its Arabic behaviour must NOT change (Spec 52 keeps the orthography fold out of this path, in
     ``score_normalize``). Thin delegate to ``_normalize`` so it cannot drift from it."""
-    return _normalize(text, fold=False)
+    return _normalize(text, fold=False, pali=pali)
 
 
-def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
+def _normalize(text: str, *, fold: bool, plene: bool = False, pali: bool = False) -> str:
     """Shared normalisation pipeline — ONE implementation so the entry points cannot drift (iter-2/3).
     ``fold=False`` is the historical ``normalize()`` behaviour, byte-for-byte. ``fold=True`` adds the
     symmetric Arabic folds (ء→ا, bare ى→ي) after NFKD + quote/dash and BEFORE the Mn-mark deletion.
@@ -142,6 +201,8 @@ def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
     the lone dagger-alif → full alef — instead of letting the mark pass delete the dagger; used for
     the direction-independent answer form in ``fold_aware_contains``."""
     text = unicodedata.normalize("NFKD", text)
+    if pali:
+        text = fold_pali(text)
     text = text.replace("‘", "'").replace("’", "'")
     text = text.replace("“", '"').replace("”", '"')
     text = text.replace("–", "-").replace("—", "-")
@@ -151,6 +212,7 @@ def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
         text = fold_arabic_orthography(text)
     text = strip_script_marks(text)  # Arabic/Hebrew marks BEFORE the punctuation pass,
     #                                  so they are removed, not turned into word splits
+    text = fold_indic(text)  # Indic digits + joiners; Indic marks survive _PUNCT_RE
     text = _PUNCT_RE.sub(" ", text.casefold())
     return _WS_RE.sub(" ", text).strip()
 
@@ -399,11 +461,9 @@ def gurmukhi_scoring_unaware() -> bool:
 
 
 def pali_scoring_unaware() -> bool:
-    """True while ``normalize()`` folds romanized Pali diacritics (dhammā == dhamma): NFKD
-    splits a diacritic off its letter and the punctuation pass turns it into a space, so
-    long vowels vanish and words split (manopubbaṅgamā -> ``manopubban gama``). Issue #50
-    part 2 covers this too; the gates keyed on this canary open by themselves."""
-    return normalize("dhammā") == normalize("dhamma")
+    """True while ``normalize()`` splits a romanized Pali word at a diacritic (saṅgha -> ``san gha``):
+    NFKD splits a diacritic off its letter and the punctuation pass turns it into a space."""
+    return normalize("saṅgha", pali=True) == normalize("san gha", pali=True)
 
 
 def devanagari_scoring_unaware() -> bool:
@@ -428,7 +488,8 @@ def gated_languages() -> dict[str, tuple[str, str]]:
 
 
 def token_f1(answer: str, expected: str) -> float:
-    a, e = normalize(answer).split(), normalize(expected).split()
+    pali = is_pali(expected)
+    a, e = normalize(answer, pali=pali).split(), normalize(expected, pali=pali).split()
     if not a or not e:
         return 0.0
     overlap = sum((Counter(a) & Counter(e)).values())
@@ -553,8 +614,9 @@ def bounded_contains(answer: str, expected: str) -> bool:
     checks. **New text-retrieval analyses must use** :func:`fold_aware_contains`, not this, or they
     will silently score the obsolete pre-#52 (orthography-blind) semantics. (PR #62 review,
     architect round-1 item 4.)"""
-    ne = normalize(expected)
-    return re.search(r"(?<!\w)" + re.escape(ne) + r"(?!\w)", normalize(answer)) is not None
+    pali = is_pali(expected)
+    ne = normalize(expected, pali=pali)
+    return re.search(_EDGE_L + re.escape(ne) + _EDGE_R, normalize(answer, pali=pali)) is not None
 
 
 
@@ -567,7 +629,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     not a hedge; only distinct OTHER citations are."""
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
-    boundary = re.compile(r"(?<!\w)" + re.escape(ne) + r"(?!\w)")
+    boundary = re.compile(_EDGE_L + re.escape(ne) + _EDGE_R)
     matching = {c for c in cands if boundary.search(c)}
     others = cands - matching
     n = (1 if matching else 0) + len(others)
@@ -608,7 +670,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         # the provenance branches below never see it.
         computed = {
             "exact": int(answer.strip() == target.strip()),
-            "normalized": int(normalize(answer) == normalize(target)),
+            "normalized": int(normalize(answer, pali=is_pali(target)) == normalize(target, pali=is_pali(target))),
             "token_f1": round(token_f1(answer, target), 4),
             "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
         }

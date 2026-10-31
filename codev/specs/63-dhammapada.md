@@ -25,8 +25,7 @@ numbered verses, known across every Buddhist tradition.
 - A text enters the pool when `language == canonical_language`, and gets 28 questions. An entry
   needs ≥12 words to be asked about, ≥16 for `complete_unit`.
 - `normalize()` mangles romanized Pali. NFKD splits each diacritic off its letter, and the
-  punctuation pass turns it into a space: `dhammā` == `dhamma`, and `manopubbaṅgamā` becomes
-  `manopubban gama`.
+  punctuation pass turns it into a space: `manopubbaṅgamā` becomes `manopubban gama`.
 - `collect` and `score` refuse `pa` rows through a canary. Nothing guards `pi`.
 
 ## Source
@@ -67,9 +66,10 @@ Facts measured on VRI at commit `2d134ff` (file SHA-256 `17bd8e40…`):
 - **Raw payload.** VRI's file, byte for byte, with commit and SHA-256 in `source.yaml`.
 - **Entry text.** VRI's romanized words and punctuation, without notes, page markers or the
   parentheses. Closing summaries are not verses. Dhp 359 keeps both stanzas.
-- **Canary.** `pi` joins the `collect` and `score` gates, keyed on `dhammā` == `dhamma`, and the
-  gates open by themselves when `normalize()` keeps Pali diacritics apart. All `normalize()` script fixes
-  (Gurmukhi, Devanagari, Pali) go in one branch, issue #50 part 2.
+- **Canary.** `pi` joins the `collect` and `score` gates. Issue #50 part 2 folds Pali diacritics, so
+  `dhamma` and `dhammā` score the same, and it rekeys the canary on the split word (`saṅgha` ==
+  `san gha`). The gates then open by themselves. All `normalize()` script fixes (Gurmukhi,
+  Devanagari, Pali) go in one branch, issue #50 part 2.
 
 ## Success Criteria
 
@@ -92,9 +92,9 @@ Facts measured on VRI at commit `2d134ff` (file SHA-256 `17bd8e40…`):
 
 1. **Script.** Romanized text is the form scholarship uses, but it is VRI's conversion of its
    Devanagari master. **Decided: romanized.**
-2. **Edition spelling.** An answer from a Mahāsaṅgīti-style edition writes `ṁ` for `ṃ`, and may
-   differ in the 24 verses above. How far to credit another edition's reading is a scoring
-   question. **Out of scope.**
+2. **Edition spelling.** An answer from a Mahāsaṅgīti-style edition writes `ṁ` for `ṃ`, which issue
+   #50 part 2 credits, and may differ in the 24 verses above. How far to credit another edition's
+   reading is a scoring question. **Out of scope.**
 3. **Same-language negatives.** No other `pi` text exists, so every `verify_source` negative is
    in another language, as with Sri Guru Granth Sahib (#29). **Out of scope.**
 
