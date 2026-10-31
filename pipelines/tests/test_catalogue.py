@@ -601,7 +601,8 @@ def test_canary_gates_collect_and_score_while_normalize_is_unaware(
     from sacredbench.score import gated_languages, normalize
 
     unaware = lang in gated_languages()
-    assert unaware == (normalize(collide[0]) == normalize(collide[1]))
+    pali = lang == "pi"  # Pali letters recompose only against a Pali reference
+    assert unaware == (normalize(collide[0], pali=pali) == normalize(collide[1], pali=pali))
     q = {
         "id": "retrieve_quote-000000000000", "task": "retrieve_quote",
         "prompt": f"What is the text of {work} {citation}?",
