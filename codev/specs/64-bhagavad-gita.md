@@ -54,6 +54,25 @@ research use, not a licence. The author can be asked; a grant would replace this
 - 18 ZWNJ and ZWJ characters, and one `{\mbox{}न्न}` line-break guard (5.8).
 - Median verse 10 words; 152 have ≥12 words, 16 have ≥16.
 
+### Translation
+
+| Candidate | Verse-aligned | Licence | Verdict |
+|---|---|---|---|
+| **Annie Besant, 1922** (G. A. Natesan; English Wikisource) | Yes, `(N)` after each verse | Public domain | **Chosen** |
+| Telang, 1882 (*Sacred Books of the East* 8) | No: continuous prose, no verse numbers | Public domain | Rejected: splitting it would be our own judgement |
+| Arnold, 1885 | No: verse poetry | Public domain | Rejected |
+| `gita/gita` `translation.json` | Yes | Mostly modern translators | Rejected |
+| `iddev5/bhagavad-gita-besant` | Yes, but merges three verses and shifts numbers | Public domain | Cross-check only |
+
+Besant's was a popular translation with a Theosophical slant, not a scholarly one. It sits beside
+the Sanskrit for reference and is not benchmarked. Measured on revisions current at 2026-10-30:
+
+- 701 verses, numbered as printed, with the extra verse as 13.1.
+- 686 of 701 verses match `iddev5/bhagavad-gita-besant` word for word. The other 15 are its typos,
+  its three merged verses, and one heading it caught in ours (fixed).
+- Eight English verse markers are misprinted: six flagged by the transcribers, and 17.19 and 18.14,
+  confirmed against the adjacent Devanagari numbers.
+
 ## Desired State
 
 | Field | Value |
@@ -70,6 +89,9 @@ research use, not a licence. The author can be asked; a grant would replace this
   SHA-256 recorded. A committed script rebuilds it byte for byte.
 - **Entry text.** Half-verses joined by a space, without the `\mbox` guard or ZWNJ/ZWJ. No speaker
   lines, chapter titles or colophons.
+- **Translation target.** Same `work`, `version: Annie Besant (1922)`, `language: en`,
+  `canonical_language: sa`, `license: public-domain`. It is outside the pool, as the Talmud's English
+  is. It shares the Sanskrit's citations; Besant's 13.1 is set aside, leaving 700 entries.
 - **Canary.** `collect` and `score` refuse `sa` rows while `normalize()` collapses Devanagari.
 
 ## Success Criteria
@@ -77,6 +99,7 @@ research use, not a licence. The author can be asked; a grant would replace this
 - [ ] The catalogue loads; `Bhagavad Gita` is in the default pool.
 - [ ] Convert yields 700 verses with unique citations, 13:1..13:34 included.
 - [ ] A test over all 700 verses proves only the declared apparatus is removed.
+- [ ] Besant's 700 entries carry exactly the Sanskrit's citations, with no leftover markup.
 - [ ] Generate gives the Gita 28 questions with no shortfall.
 - [ ] The canary test covers `sa` and fails if the gate is removed.
 - [ ] The committed 2026-10-21 FAccT card is unchanged.

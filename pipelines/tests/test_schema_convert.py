@@ -1,5 +1,6 @@
 import collections
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ from sacredbench.convert import (
     convert_quran_qul,
     convert_sefaria_talmud,
     convert_shabados_sggs,
+    convert_besant_gita,
     convert_stotrasamhita_gita,
     convert_target,
     convert_vri_dhammapada,
@@ -643,3 +645,41 @@ def test_real_gita_removes_only_declared_apparatus():
     ]
     assert {e.citation for e in doc.entries} >= {"2:47", "13:1", "13:34", "18:78"}
     assert "13:35" not in {e.citation for e in doc.entries}
+
+
+def _besant_convert(tmp_path: Path, verses: list[dict]):
+    p = tmp_path / "besant.json"
+    p.write_text(json.dumps({"upstream": {}, "verses": verses}, ensure_ascii=False), encoding="utf-8")
+    return convert_besant_gita([p], _target(converter="besant_gita"))
+
+
+def test_besant_gita_sets_aside_the_extra_verse_and_moves_chapter_13_down(tmp_path):
+    [doc] = _besant_convert(tmp_path, [
+        {"chapter": 12, "number": 20, "text": "They verily who"},
+        {"chapter": 13, "number": 1, "text": "Matter and Spirit, even the Field"},
+        {"chapter": 13, "number": 2, "text": "This body, son of Kuntî"},
+        {"chapter": 14, "number": 1, "text": "I will again proclaim"},
+    ])
+    assert [(e.citation, e.text) for e in doc.entries] == [
+        ("12:20", "They verily who"), ("13:1", "This body, son of Kuntî"), ("14:1", "I will again proclaim"),
+    ]
+
+
+def test_besant_gita_fails_when_13_1_is_not_the_extra_verse(tmp_path):
+    with pytest.raises(ConvertError, match="not the extra verse"):
+        _besant_convert(tmp_path, [{"chapter": 13, "number": 1, "text": "This body, son of Kuntî"}])
+
+
+def test_real_besant_shares_every_citation_with_the_sanskrit():
+    """The translation lines up with the Sanskrit verse for verse, and carries no leftovers."""
+    root = Path(__file__).resolve().parents[2] / "texts" / "raw" / "Hinduism"
+    [sanskrit] = _gita_convert(root / "gita_stotrasamhita.json")
+    [english] = convert_besant_gita([root / "gita_besant.json"], _target(converter="besant_gita"))
+    assert [e.citation for e in english.entries] == [e.citation for e in sanskrit.entries]
+    by_citation = {e.citation: e.text for e in english.entries}
+    assert by_citation["2:47"].startswith("Thy business is with the action only")
+    assert by_citation["13:1"].startswith("This body, son of Kuntî")
+    assert by_citation["16:1"].startswith("Fearlessness, cleanness of life")
+    assert by_citation["18:78"].startswith("Wherever is Krishna")
+    for e in english.entries:
+        assert not re.search(r"[ऀ-ॿ{}|<>=]|DISCOURSE| said:$", e.text), e.citation

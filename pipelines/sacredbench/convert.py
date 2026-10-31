@@ -29,6 +29,8 @@ Phase 3):
   ``Dhammapada N``, VRI's notes, page markers and closing matter removed.
 - ``stotrasamhita_gita`` (Spec 64): the Bhagavad Gita extract from Stotra Samhita →
   one document of verses cited ``C:V`` in Gita Press numbering.
+- ``besant_gita`` (Spec 64): Annie Besant's 1922 English of the Bhagavad Gita → one document
+  of verses with the same citations as the Sanskrit.
 
 Converters are fail-fast: an unexpected shape raises ``ConvertError`` naming the
 file. Adding a source format = one function + one ``CONVERTERS`` registry line.
@@ -597,6 +599,46 @@ def convert_stotrasamhita_gita(paths: list[Path], target: "Target") -> list[Docu
     return [_doc(target, entries)]
 
 
+_BESANT_EXTRA_VERSE_OPENS = "Matter and Spirit"  # Besant's 13.1: not in the Gita Press count
+
+
+def convert_besant_gita(paths: list[Path], target: "Target") -> list[Document]:
+    """``gita_besant.json`` (``{upstream, verses[{chapter, number, text}]}``, see
+    ``texts/raw/Hinduism/build_besant.py``) → one document, citing ``C:V`` as the Sanskrit does.
+
+    Besant numbers the extra verse "prakriti purusha" as 13.1, so her 13.k+1 is Gita Press 13.k.
+    That verse is set aside and the rest of chapter 13 moves down one. Fail-fast: a malformed
+    record, or a 13.1 that is no longer the extra verse."""
+    if len(paths) != 1:
+        raise ConvertError(f"besant_gita expects one payload file, got {len(paths)}")
+    path = paths[0]
+    data = _load_json(path)
+    verses = data.get("verses") if isinstance(data, dict) else None
+    if not isinstance(verses, list):
+        raise ConvertError(f"{path}: expected an object with a 'verses' list (besant_gita)")
+    entries: list[Entry] = []
+    for i, rec in enumerate(verses):
+        if (
+            not isinstance(rec, dict)
+            or not isinstance(rec.get("chapter"), int)
+            or not isinstance(rec.get("number"), int)
+            or not isinstance(rec.get("text"), str)
+        ):
+            raise ConvertError(f"{path}: verses[{i}] missing or malformed 'chapter'/'number'/'text'")
+        chapter, number = rec["chapter"], rec["number"]
+        if chapter == 13 and number == 1:
+            if not rec["text"].startswith(_BESANT_EXTRA_VERSE_OPENS):
+                raise ConvertError(f"{path}: 13.1 is not the extra verse: {rec['text'][:40]!r}")
+            continue
+        if chapter == 13:
+            number -= _GITA_CHAPTER_13_OFFSET
+        entries.append(Entry(unit_type="verse", citation=f"{chapter}:{number}", text=rec["text"].strip()))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    _require_unique_citations(entries, str(path))
+    return [_doc(target, entries)]
+
+
 CONVERTERS = {
     "bible_flat": convert_bible_flat,
     "lds_nested": convert_lds_nested,
@@ -608,6 +650,7 @@ CONVERTERS = {
     "shabados_sggs": convert_shabados_sggs,
     "vri_dhammapada": convert_vri_dhammapada,
     "stotrasamhita_gita": convert_stotrasamhita_gita,
+    "besant_gita": convert_besant_gita,
 }
 
 

@@ -4,9 +4,9 @@
 
 ## Executive Summary
 
-Four phases, each one commit, each green on its own. Payload first, because nothing reads it until
+Five phases, each one commit, each green on its own. Payload first, because nothing reads it until
 a catalogue entry exists. Then the canary, so `sa` rows are refused before any `sa` text can reach
-them. Then the converter and catalogue entry together. Last, the pools, docs and re-pinned anchor.
+them. Then the converter and catalogue entry together, then the translation. Last, the pools, docs and re-pinned anchor.
 
 No live run. Issue #50 part 2 must land first.
 
@@ -20,7 +20,8 @@ No live run. Issue #50 part 2 must land first.
     {"id": "phase_1", "title": "Raw payload: Stotra Samhita extract and build script"},
     {"id": "phase_2", "title": "Canary gates Sanskrit"},
     {"id": "phase_3", "title": "Converter and catalogue entry"},
-    {"id": "phase_4", "title": "Pool tests, docs, re-pinned anchor"}
+    {"id": "phase_4", "title": "Besant translation target"},
+    {"id": "phase_5", "title": "Pool tests, docs, re-pinned anchor"}
   ]
 }
 ```
@@ -49,7 +50,16 @@ No live run. Issue #50 part 2 must land first.
 - Tests: fixtures, plus a property test over all 700 verses.
 - **Done when:** convert yields 700 unique citations; the property test fails if one vowel sign drops.
 
-### Phase 4: Pool tests, docs, re-pinned anchor
+### Phase 4: Besant translation target
+
+- `texts/raw/Hinduism/build_besant.py`: stdlib only. Pins one revision per Wikisource page and
+  expands the wikitext, failing on an unknown template, a numbering gap or leftover markup.
+- `texts/raw/Hinduism/gita_besant.json`: its output.
+- `convert.py`: `convert_besant_gita`, a registry line. `source.yaml`: the second target.
+- **Done when:** the script rebuilds the file byte for byte from the pinned revisions; the 700
+  citations equal the Sanskrit's; the leftovers test fails on a planted heading.
+
+### Phase 5: Pool tests, docs, re-pinned anchor
 
 - `test_generate.py`: 152 entries ≥12 words, 16 ≥16.
 - `facct.py`: `"sa": "Sanskrit"`.
