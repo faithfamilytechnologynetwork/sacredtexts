@@ -532,3 +532,22 @@ def test_real_guru_granth_sahib_pools_fill_every_template():
     assert not excluded and text.language == "pa"
     assert len(text.entries) == 1452
     assert sum(len(e.text.split()) >= MIN_WORDS_COMPLETABLE for e in text.entries) == 100
+
+
+def test_real_bhagavad_gita_pools_fill_every_template():
+    """Spec 64: the Gita's eligible pools, through generate's own selection: 152 verses >= 12
+    words (every template), 16 >= 16 (complete_unit) — both above the per-template quota of 7."""
+    from pathlib import Path
+
+    from sacredbench import catalogue as cat
+    from sacredbench.convert import convert_target
+    from sacredbench.generate import MIN_WORDS_COMPLETABLE, _build_texts
+
+    raw = Path(__file__).resolve().parents[2] / "texts" / "raw"
+    sources = cat.discover_catalogue(raw)
+    [t] = [t for t in cat.all_targets(sources) if t.source_id == "Hinduism" and t.language == "sa"]
+    docs = convert_target(t.payload_paths(raw), t)
+    [text], excluded = _build_texts(docs, cat.text_metadata(sources))
+    assert not excluded and text.language == "sa"
+    assert len(text.entries) == 152
+    assert sum(len(e.text.split()) >= MIN_WORDS_COMPLETABLE for e in text.entries) == 16
