@@ -6,7 +6,7 @@
 
 ### Phase 1: Indic scripts and Pali in the scorer
 
-- `score.py`: `INDIC_MARKS`, word edges, `fold_indic`, `compose_pali`, `is_pali`, and a `pali` flag
+- `score.py`: `INDIC_MARKS`, word edges, `fold_indic`, `fold_pali`, `is_pali`, and a `pali` flag
   on `normalize()`. `token_f1`, `bounded_contains` and the `normalized` metric pass it.
 - `failure_kind.py`, `failureKind.ts`, `fixtures/failure_kind_cases.json`: the Indic rule and two new
   scripts for `other_script`.

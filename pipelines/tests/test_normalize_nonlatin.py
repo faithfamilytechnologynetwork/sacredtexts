@@ -27,7 +27,7 @@ import pytest
 from sacredbench.catalogue import discover_catalogue
 from sacredbench.convert import convert_target
 from sacredbench.score import (
-    compose_pali,
+    fold_pali,
     gated_languages,
     is_pali,
     normalize,
@@ -245,25 +245,29 @@ def test_scorer_and_failure_kind_tokenize_indic_alike(text):
 
 # --- Romanized Pali (issue #50 part 2) -----------------------------------------
 # Pali is Latin script, so the Indic rule cannot reach it. NFKD splits ā into a + U+0304 and the
-# punctuation pass turned the mark into a space: "manopubbaṅgamā" -> "manopubban gama".
+# punctuation pass turned the mark into a space: "manopubbaṅgamā" -> "manopubban gama". Its
+# diacritics are a transliteration detail, like Arabic harakat, so they fold to the base letter.
 
 
 def test_pali_words_stay_whole():
     verse = "Manopubbaṅgamā dhammā, manoseṭṭhā manomayā;"
-    assert normalize(verse, pali=True) == "manopubbaṅgamā dhammā manoseṭṭhā manomayā"
+    assert normalize(verse, pali=True) == "manopubbangama dhamma manosettha manomaya"
 
 
-@pytest.mark.parametrize("letter", list("āīūṃṅñṭḍṇḷ"))
-def test_every_pali_letter_stays_inside_its_word(letter):
-    assert normalize("ka" + letter + "ka", pali=True) == "ka" + letter + "ka"
-    assert normalize("KA" + letter.upper() + "KA", pali=True) == "ka" + letter + "ka"
+@pytest.mark.parametrize("letter,base", list(zip("āīūṃṁṅñṭḍṇḷ", "aiummnntdnl")))
+def test_every_pali_letter_folds_inside_its_word(letter, base):
+    assert normalize("ka" + letter + "ka", pali=True) == "ka" + base + "ka"
+    assert normalize("KA" + letter.upper() + "KA", pali=True) == "ka" + base + "ka"
 
 
-def test_pali_diacritics_are_spelling():
-    assert score_answer("retrieve_quote", "dhamma", {"text": "dhammā"})["normalized"] == 0
-    assert score_answer("retrieve_quote", "thana", {"text": "ṭhāna"})["normalized"] == 0
-    assert score_answer("retrieve_quote", "dhammā", {"text": "dhammā"})["normalized"] == 1
-    assert token_f1("dhamma", "dhammā") == 0.0
+def test_pali_answer_without_diacritics_scores_the_same():
+    for answer in ("dhammā", "dhamma"):
+        r = score_answer("retrieve_quote", answer, {"text": "dhammā"})
+        assert r["normalized"] == 1 and r["correct"] == 1 and r["token_f1"] == 1.0
+    assert score_answer("retrieve_quote", "thana", {"text": "ṭhāna"})["normalized"] == 1
+    assert token_f1("sangha", "saṅgha") == 1.0  # a mid-word diacritic must not split the reference
+    assert score_answer("retrieve_quote", "dhamma", {"text": "dhammā"})["exact"] == 0  # exact stays strict
+    assert score_answer("retrieve_quote", "buddho", {"text": "dhammā"})["correct"] == 0
 
 
 def test_pali_precomposed_and_decomposed_input_agree():
@@ -281,8 +285,8 @@ def test_pali_dot_above_anusvara_folds_to_dot_below():
 def test_pali_containment_respects_word_boundaries():
     r = score_answer("retrieve_quote", "manopubbaṅgamā dhammā", {"text": "dhamm"})
     assert r["contains_reference"] == 0
-    r = score_answer("retrieve_quote", "So said: manopubbaṅgamā dhammā.", {"text": "manopubbaṅgamā"})
-    assert r["contains_reference"] == 1
+    for answer in ("So said: manopubbaṅgamā dhammā.", "So said: manopubbangama dhamma."):
+        assert score_answer("retrieve_quote", answer, {"text": "manopubbaṅgamā"})["contains_reference"] == 1
 
 
 def test_pali_composition_is_scoped_by_the_reference():
@@ -292,10 +296,10 @@ def test_pali_composition_is_scoped_by_the_reference():
     assert is_pali("Manopubbaṅgamā dhammā") and is_pali("buddhaṁ")
 
 
-def test_compose_pali_reaches_only_pali_letters():
+def test_fold_pali_reaches_only_pali_letters():
     for text in ("naïve", "café", "coöperate"):
         nfkd = unicodedata.normalize("NFKD", text)
-        assert compose_pali(nfkd) == nfkd
+        assert fold_pali(nfkd) == nfkd
 
 
 # --- the real corpora -----------------------------------------------------------
@@ -320,7 +324,8 @@ def test_real_dhammapada_every_word_stays_whole():
     entries = _real_entries("Buddhism", "vri_dhammapada")
     assert len(entries) == 423
     for e in entries:
-        words = re.sub(r"[^\w\s]|\d", " ", unicodedata.normalize("NFC", e.text)).casefold().split()
+        bare = "".join(c for c in unicodedata.normalize("NFKD", e.text) if unicodedata.category(c) != "Mn")
+        words = re.sub(r"[^\w\s]|\d", " ", bare).casefold().split()
         assert normalize(e.text, pali=True).split() == words, e.citation
 
 

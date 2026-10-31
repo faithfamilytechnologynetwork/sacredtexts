@@ -8,9 +8,9 @@ Metrics emitted per answer:
                   Arabic/Hebrew combining marks + annotation symbols removed and
                   alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
                   matches), Devanagari/Gurmukhi vowel signs KEPT in the word and their
-                  digits folded to ASCII, romanized Pali letters kept whole, case-folded,
+                  digits folded to ASCII, romanized Pali diacritics folded, case-folded,
                   punctuation stripped, whitespace collapsed (0/1) — see
-                  ``strip_script_marks``, ``fold_indic`` and ``compose_pali``.
+                  ``strip_script_marks``, ``fold_indic`` and ``fold_pali``.
                   Uthmani/Imla'i orthography is NOT folded here (Spec 52); it is
                   credited only by ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
@@ -99,19 +99,18 @@ _INDIC_DIGITS = str.maketrans(
 # does not split the word. Elsewhere it is left alone (see the bidi note below).
 _INDIC_JOINER_RE = re.compile(r"(?<=[ऀ-ॿ਀-੿])[‌‍]")
 
-# Romanized Pali: NFKD splits ā into a + U+0304 and the punctuation pass turns the mark into a
-# space, so `dhammā` loses its long vowel and `saṅgha` splits. Recomposing ONLY Pali's ten
-# diacritic letters right after NFKD keeps them whole as `\w` letters. ṁ is ṃ in another
-# edition's spelling (Mahāsaṅgīti, not VRI), so it folds to ṃ. Scoped by the REFERENCE
-# (``is_pali``): an English answer that writes `Bukhārī` against a non-Pali reference is scored
-# as before, so Latin output and every committed score stay byte-for-byte unchanged.
-_PALI_LETTERS = "āīūṃṅñṭḍṇḷ"
-_PALI_COMPOSE = {
-    **{unicodedata.normalize("NFKD", c): c for c in _PALI_LETTERS + _PALI_LETTERS.upper()},
-    "m\u0307": "ṃ",
-    "M\u0307": "Ṃ",
+# Romanized Pali: NFKD splits ā into a + U+0304 and the punctuation pass turned the mark into a
+# space, so `saṅgha` split into `san gha`. Pali's diacritics are a transliteration detail, as Arabic
+# harakat are vocalisation, so they FOLD to the base letter: `dhammā` == `dhamma`, and ṁ == ṃ, the
+# two spellings of one letter across editions. Scoped by the REFERENCE (``is_pali``): an English
+# answer that writes `Bukhārī` against a non-Pali reference is scored as before, so Latin output
+# and every committed score stay byte-for-byte unchanged. ``exact`` stays strict.
+_PALI_LETTERS = "āīūṃṁṅñṭḍṇḷ"
+_PALI_BASE = {
+    unicodedata.normalize("NFKD", c): unicodedata.normalize("NFKD", c)[0]
+    for c in _PALI_LETTERS + _PALI_LETTERS.upper()
 }
-_PALI_RE = re.compile("|".join(_PALI_COMPOSE))
+_PALI_RE = re.compile("|".join(_PALI_BASE))
 
 # The RTL Unicode blocks (U+0590–U+08FF is Hebrew + Arabic + their extensions — and also
 # Syriac/Thaana/N'Ko/Samaritan/Mandaic, whose marks we strip too; harmless for this
@@ -169,10 +168,10 @@ def fold_indic(text: str) -> str:
     return _INDIC_JOINER_RE.sub("", text.translate(_INDIC_DIGITS))
 
 
-def compose_pali(text: str) -> str:
-    """Recompose Pali's diacritic letters after NFKD (ṁ folds to ṃ). A no-op on text without
+def fold_pali(text: str) -> str:
+    """Fold Pali's diacritic letters to their base letter after NFKD. A no-op on text without
     those letter + mark pairs."""
-    return _PALI_RE.sub(lambda m: _PALI_COMPOSE[m.group(0)], text)
+    return _PALI_RE.sub(lambda m: _PALI_BASE[m.group(0)], text)
 
 
 def is_pali(reference: str) -> bool:
@@ -203,7 +202,7 @@ def _normalize(text: str, *, fold: bool, plene: bool = False, pali: bool = False
     the direction-independent answer form in ``fold_aware_contains``."""
     text = unicodedata.normalize("NFKD", text)
     if pali:
-        text = compose_pali(text)
+        text = fold_pali(text)
     text = text.replace("‘", "'").replace("’", "'")
     text = text.replace("“", '"').replace("”", '"')
     text = text.replace("–", "-").replace("—", "-")
@@ -462,11 +461,9 @@ def gurmukhi_scoring_unaware() -> bool:
 
 
 def pali_scoring_unaware() -> bool:
-    """True while ``normalize()`` folds romanized Pali diacritics (dhammā == dhamma): NFKD
-    splits a diacritic off its letter and the punctuation pass turns it into a space, so
-    long vowels vanish and words split (manopubbaṅgamā -> ``manopubban gama``). Issue #50
-    part 2 covers this too; the gates keyed on this canary open by themselves."""
-    return normalize("dhammā", pali=True) == normalize("dhamma", pali=True)
+    """True while ``normalize()`` splits a romanized Pali word at a diacritic (saṅgha -> ``san gha``):
+    NFKD splits a diacritic off its letter and the punctuation pass turns it into a space."""
+    return normalize("saṅgha", pali=True) == normalize("san gha", pali=True)
 
 
 def devanagari_scoring_unaware() -> bool:

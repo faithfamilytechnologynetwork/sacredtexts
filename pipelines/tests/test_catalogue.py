@@ -588,7 +588,7 @@ def test_real_source_yaml_are_trackable_and_payloads_ignored():
 
 @pytest.mark.parametrize("lang,name,tradition,work,text,citation,collide", [
     ("pa", "Gurmukhi", "Sikhism", "Sri Guru Granth Sahib", "ਆਦਿ ਸਚੁ", "Ang 1:1", ("ਕਰਤਾ", "ਕਰਤੀ")),
-    ("pi", "Pali", "Buddhism", "Dhammapada", "Manopubbaṅgamā dhammā", "Dhammapada 1", ("dhammā", "dhamma")),
+    ("pi", "Pali", "Buddhism", "Dhammapada", "Manopubbaṅgamā dhammā", "Dhammapada 1", ("saṅgha", "san gha")),
     ("sa", "Devanagari", "Hinduism", "Bhagavad Gita", "धर्मक्षेत्रे कुरुक्षेत्रे", "1:1", ("कर्ता", "कर्ती")),
 ])
 def test_canary_gates_collect_and_score_while_normalize_is_unaware(
@@ -601,7 +601,7 @@ def test_canary_gates_collect_and_score_while_normalize_is_unaware(
     from sacredbench.score import gated_languages, normalize
 
     unaware = lang in gated_languages()
-    pali = lang == "pi"  # Pali letters recompose only against a Pali reference
+    pali = lang == "pi"  # Pali diacritics fold only against a Pali reference
     assert unaware == (normalize(collide[0], pali=pali) == normalize(collide[1], pali=pali))
     q = {
         "id": "retrieve_quote-000000000000", "task": "retrieve_quote",

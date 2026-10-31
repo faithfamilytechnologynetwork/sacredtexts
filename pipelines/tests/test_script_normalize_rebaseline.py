@@ -2,9 +2,9 @@
 
 Sibling of ``test_orthography_rebaseline.py``. Every answer in every committed run is re-scored live
 and the full metrics dict of each row is hashed. The pin was taken from the pre-fix scorer, so any
-metric of any committed row that moves, ``token_f1`` included, fails here. A global Pali recompose
+metric of any committed row that moves, ``token_f1`` included, fails here. A global Pali rule
 moved three ``token_f1`` values in ``original-2026-10-21`` (English answers naming Bukhārī); that is
-why the recompose is scoped by the reference.
+why the Pali rule is scoped by the reference.
 
 Read-only. Skips cleanly if the evidence is absent.
 """
