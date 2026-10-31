@@ -8,7 +8,7 @@ I read `edition_index.py`, `test_edition_index.py`, the `cli.py`/`README.md` dif
 - **Frozen schema matches the spec letter-for-letter.** Row `{work, citation, language, wordings:[{version,text}]}`, wordings sorted by version, single-wording rows omitted, rows sorted by `(work, citation, language)`; manifest exactly the four pinned keys with `corpus_hash = generate.corpus_hash(docs)` over all indexed docs *before* omission and `digest = sha256[:16]` of the written bytes.
 - **Real-corpus behaviour is coherent** (I ran it): 31,102 rows, all `work: The Bible`; 31,095 with 3 wordings and 7 with 2 — those 7 are Acts 8:37 / 15:34 / 24:7, Luke 17:36, Romans 16:25 etc., i.e. exactly the verses WEB omits on textual-criticism grounds. `excluded_restricted == ['NABRE','TLG']`. Both restricted targets are correctly caught; the English Talmud (`en`/canonical `he`) and Papal Encyclicals (`en`/canonical `la`) are correctly kept out.
 - **Tests pass**: 7/7 for this file, 393 passed / 1 skipped for the whole suite. Determinism and hash-sensitivity are genuinely covered (byte-equality plus a mutated wording moving both hashes).
-- **Authorship preserved** — `5a4c64b` is authored `Jonathan Karr <jka83321@gmail.com>`, no `Co-Authored-By`/`Generated with` lines.
+- **Authorship preserved** — `5a4c64b` is authored `a contributor`, no `Co-Authored-By`/`Generated with` lines.
 
 ### Issues to fix before Phase 2
 

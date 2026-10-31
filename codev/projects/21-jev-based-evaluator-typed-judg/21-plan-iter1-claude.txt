@@ -6,7 +6,7 @@ I'll verify the plan against the actual codebase before judging it.I read the pl
 - **Audit safety checks out.** `audit.py:_iter_source_dicts` yields only rows with a `source` (or `question.source`); judgment rows per the spec schema have neither, so the origin layer skips them, and since the schema carries digests rather than text, the local content layer can't trip either. `git check-ignore runs/tutorial-2026-10-11/judgments.jsonl` is clean (`.gitignore:31-34` un-ignores the three committed run dirs), so Phase 4's artifacts are committable with no `.gitignore` work.
 - **Viewer is unaffected**: `localResults.ts:348-351` fetches exactly `summary.json`/`scores.jsonl`/`answers.jsonl`/`questions.jsonl`; a new sidecar file doesn't perturb it.
 - **Budget math is comfortable**: the tutorial run is 100 questions × 4 models = 400 answers, **all `retrieve_quote`**, so the live pass is ~400 cells ≈ **$0.011** at the verified $2.7e-5/call. Worth stating that number in Phase 4 as the expected pre-flight figure.
-- Phase dependency graph (3 off 1; 4 off 1+2) is sound, and the per-phase single-commit-with-Karr-authorship shape is right.
+- Phase dependency graph (3 off 1; 4 off 1+2) is sound, and the per-phase single-commit-with-the contributor-authorship shape is right.
 
 ## Issues
 
@@ -18,9 +18,9 @@ I'll verify the plan against the actual codebase before judging it.I read the pl
 
 **4. Phase 3's `corpus_hash` fail-fast has no defined input.** The judge takes `answers.jsonl`; answer rows carry `question_set_digest` but **not** `corpus_hash` (verified in `runs/tutorial-2026-10-11/answers.jsonl`). `corpus_hash` exists only in `runs/<id>/questions.jsonl.manifest.json` — named after the questions file, not a generic `manifest.json`. The plan says "the run manifest's `corpus_hash`" as though a single known file; it must specify how that file is located (an explicit `--questions`/`--run-manifest` option, not co-location guessing), or this spec success criterion is unimplementable as written.
 
-**5. No step to obtain PR #30's code.** `jev.py` exists nowhere in this worktree and no local ref carries it; PR #30 is open from the fork `JonathanKarr33:faact_mprovements_karr`. Phase 1 should name the retrieval path (`gh pr diff 30`, or `gh api .../contents/...?ref=`) plus the `--author` commit mechanics. Helpful finding to fold in: jev.py's only non-stdlib imports are `sacredbench.cross_translation` (`EditionIndex`, `cite_key`) and `sacredbench.score.normalize` — so nothing from PR #30's `providers.py`/`config.py`/`collect.py` needs carrying. But note `cite_key` also comes from `cross_translation` and must be re-implemented locally since the import is dropped.
+**5. No step to obtain PR #30's code.** `jev.py` exists nowhere in this worktree and no local ref carries it; PR #30 is open from the fork `the contributor:the fork branch`. Phase 1 should name the retrieval path (`gh pr diff 30`, or `gh api .../contents/...?ref=`) plus the `--author` commit mechanics. Helpful finding to fold in: jev.py's only non-stdlib imports are `sacredbench.cross_translation` (`EditionIndex`, `cite_key`) and `sacredbench.score.normalize` — so nothing from PR #30's `providers.py`/`config.py`/`collect.py` needs carrying. But note `cite_key` also comes from `cross_translation` and must be re-implemented locally since the import is dropped.
 
-**6. `summarize()` is unplanned.** Karr's jev.py already defines `summarize(path)`, and the spec's test scenarios include *"No-op on a fully-judged file: `summarize` over a complete output reports the right counts and resolved build(s) without calls."* No phase has a deliverable, CLI surface, or test for it.
+**6. `summarize()` is unplanned.** the contributor's jev.py already defines `summarize(path)`, and the spec's test scenarios include *"No-op on a fully-judged file: `summarize` over a complete output reports the right counts and resolved build(s) without calls."* No phase has a deliverable, CLI surface, or test for it.
 
 **7. Two spec scenarios missing from test plans**: credential fail-fast (missing `OPENROUTER_API_KEY` raises before any call) and an explicit assertion that `score`/`collect` never invoke the judge.
 
@@ -39,7 +39,7 @@ KEY_ISSUES:
 - `summary["evaluators"]` is a `list[str]` consumed by `LeaderboardTable.tsx:48` and pinned by `test_score.py:256`; Phase 2 must state the judge build goes in a new sibling key, and avoid any `cost` field (`test_tutorial_run.py:66`).
 - Implicit "sidecar exists beside the run" discovery in `score.py` means a re-score of the tutorial run stops reproducing its committed `summary.json` after Phase 4, silently (no test catches it); use an explicit `score --judgments <path>`.
 - Phase 3's `corpus_hash` fail-fast has no defined input: answers rows lack `corpus_hash`; it lives only in `runs/<id>/questions.jsonl.manifest.json`. Specify an explicit option rather than co-location.
-- No step for retrieving PR #30's code (not in the worktree; fork `JonathanKarr33:faact_mprovements_karr`); note that only `cross_translation` and `score.normalize` are imported, and `cite_key` must be re-implemented locally.
+- No step for retrieving PR #30's code (not in the worktree; fork `the contributor:the fork branch`); note that only `cross_translation` and `score.normalize` are imported, and `cite_key` must be re-implemented locally.
 - `summarize()` (spec's "no-op on a fully-judged file" scenario) has no deliverable, CLI surface, or test in any phase.
 - Missing test-plan items: `OPENROUTER_API_KEY` fail-fast; judge never invoked by `score`/`collect`.
 - Consider a ~$0.00003 single-cell live smoke in Phase 1 rather than deferring all live contact to Phase 4.

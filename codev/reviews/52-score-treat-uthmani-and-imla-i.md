@@ -365,9 +365,9 @@ mover-sets subsumed it — kept both.)
 
 ## Appendix C — Reconciliation with the competing #57 / #58 implementation
 
-While Phase 2 was executing, Jonathan Karr merged a competing #52 implementation (PR #57, `154e0ef`)
+While Phase 2 was executing, a contributor merged a competing #52 implementation (PR #57, `154e0ef`)
 directly to `main`, then a "fix double code branch" commit (`08f43b8`) and PR #58 (which merged this
-builder's Phase-1 branch). Waleed greenlit reconciliation; the architect's directive was to converge
+builder's Phase-1 branch). the maintainer greenlit reconciliation; the architect's directive was to converge
 to the reviewed containment-only design as the single source of truth.
 
 **What converged, and why mine prevailed on the evidence.** #57's approach folded the orthography
@@ -380,7 +380,7 @@ audit path). By the time I rebased, `08f43b8` had already resolved the "double b
 design — frozen `normalize()`, my symmetric `fold_arabic_orthography`, `score_normalize` /
 `fold_aware_contains` / the optional-`ا?` containment pattern, and the original skeleton
 `test_normalize_nonlatin` (his materialise-fold assertions reverted) — leaving only the wiring
-(`contains_reference` still on `bounded_contains`) for me to supply. **Kept from #57:** Jonathan's
+(`contains_reference` still on `bounded_contains`) for me to supply. **Kept from #57:** the contributor's
 unrelated `outcomes.py` `_INTRODUCER` regex-escape fix (`\-`→`-`, removes a `SyntaxWarning`).
 
 **Witness unchanged by the rebase.** Re-run over the post-#57/#58/#51 base, the 58-cell transform

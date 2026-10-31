@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -22,7 +23,7 @@ from pathlib import Path
 
 from sacredbench.config import RunConfig
 from sacredbench.generate import Question, question_set_digest
-from sacredbench.providers import complete
+from sacredbench.providers import complete, is_quota_error
 
 
 class CollectError(Exception):
@@ -80,13 +81,19 @@ def collect(
     config: RunConfig,
     answers_path: Path,
     on_result=None,
+    digest_from: list[Question] | None = None,
 ) -> tuple[int, int, list[str]]:
     """Run all pending (question, model) cells. Returns (done, failed, failure_messages).
 
     The question-set digest is stamped into every answer row; resuming against an
     ``answers.jsonl`` built for a different question set is refused (``CollectError``)
-    so a stale or mixed run can never be silently appended to or scored."""
-    digest = question_set_digest(questions)
+    so a stale or mixed run can never be silently appended to or scored.
+
+    ``questions`` is what this invocation calls. ``digest_from`` is the whole file
+    when this invocation is a pilot (one tradition, one model). The stamp stays the
+    file's digest, so a later full run can resume the same answers file.
+    """
+    digest = question_set_digest(digest_from if digest_from is not None else questions)
     done_keys, existing_digests, missing, existing_fps, existing_fp_missing = _existing(answers_path)
     if (existing_digests - {digest}) or missing:
         raise CollectError(
@@ -122,10 +129,21 @@ def collect(
     write_lock = threading.Lock()
     failures: list[str] = []
     done = 0
+    stop = threading.Event()
 
     def run_cell(q: Question, m) -> None:
         nonlocal done
-        text, usage, attempts = complete(m, q.prompt)  # raises on failure
+        if stop.is_set():
+            return
+        started = datetime.now(timezone.utc)
+        t0 = time.perf_counter()
+        try:
+            text, usage, attempts = complete(m, q.prompt)  # raises on failure
+        except Exception as e:
+            if is_quota_error(e):
+                stop.set()
+            raise
+        finished = datetime.now(timezone.utc)
         row = {
             "question_id": q.id,
             "model_id": m.id,
@@ -139,7 +157,9 @@ def collect(
             "usage": usage,
             "attempts": attempts,
             "question_set_digest": digest,
-            "collected_at": datetime.now(timezone.utc).isoformat(),
+            "started_at": started.isoformat(),
+            "collected_at": finished.isoformat(),
+            "duration_s": round(time.perf_counter() - t0, 3),
             "question": asdict(q),
         }
         with write_lock:
@@ -157,5 +177,10 @@ def collect(
                 fut.result()
             except Exception as e:  # noqa: BLE001 — record any failure, keep the cell pending
                 failures.append(f"{q.id} x {m.id}: {e}")
+                if is_quota_error(e):
+                    stop.set()
+                    for pending in futures:
+                        pending.cancel()
+                    break
 
     return done, len(failures), failures

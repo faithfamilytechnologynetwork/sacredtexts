@@ -469,7 +469,9 @@ def test_cli_judge_corrupt_answers_is_a_clean_error(tmp_path, monkeypatch):
     answers.write_text("{not json\n", encoding="utf-8")
     r = CliRunner().invoke(app, ["judge", str(answers), "--out", str(tmp_path / "j.jsonl")])
     assert r.exit_code != 0
-    assert "not valid JSONL" in r.output
+    # Rich wraps the error box, so the phrase can be split across lines.
+    flat = re.sub(r"[^A-Za-z0-9]+", " ", r.output)
+    assert "not valid JSONL" in " ".join(flat.split())
 
 
 # ---- the judge is never on the default scoring path ----------------------

@@ -601,8 +601,8 @@ Pinged architect with merge SHA + counts + bit-for-bit confirmation. Awaiting ro
   (legacy no-evaluators + Spec-15 fixture). Viewer 157 / check-types 0.
 - Review doc: added the Integration-with-main note + current counts (it had no literal 346/134).
 
-## 2026-10-20 — PR #24 MERGED (human Waleed approved pr gate) → verify phase
-- porch approve 15 pr --a-human-explicitly-approved-this (Waleed's explicit decision, relayed by architect).
+## 2026-10-20 — PR #24 MERGED (human the maintainer approved pr gate) → verify phase
+- porch approve 15 pr --a-human-explicitly-approved-this (the maintainer's explicit decision, relayed by architect).
 - gh pr merge 24 --merge (merge commit, no squash — oracle-witnessed rebaseline history preserved).
   **main merge commit 1324755** (132475527ddcdb8b39cf58d8f8dfd06df55b1c37). origin/main == merge tip ✓.
 - porch done 15 --merged 24 recorded; branch tip 06906b1 = 7ec06c9 + chore(porch) "PR #24 merged"
@@ -611,7 +611,7 @@ Pinged architect with merge SHA + counts + bit-for-bit confirmation. Awaiting ro
   GATE (human). porch gate 15 requested; WAITING for architect's verify-approval (NOT self-approving).
 - Leaving backup/pre-trailer-strip + worktree in place (cleanup = separate human decision).
 
-## 2026-10-23 — verify-approval APPROVED (human Waleed) → 🎉 PROTOCOL COMPLETE
+## 2026-10-23 — verify-approval APPROVED (human the maintainer) → 🎉 PROTOCOL COMPLETE
 porch approve 15 verify-approval --a-human-explicitly-approved-this (gate id is "verify-approval";
 the "verify" shorthand errored). porch: "PROTOCOL COMPLETE — Project 15 has completed the aspir
 protocol." Spec 15 fully landed on main (merge 1324755). Worktree + backup/pre-trailer-strip left in

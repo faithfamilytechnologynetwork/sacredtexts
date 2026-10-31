@@ -292,6 +292,75 @@ def format_breakdown(groups: dict[str, Counter]) -> str:
     return "\n".join(lines)
 
 
+def analysis_markdown(
+    run_dir: Path,
+    *,
+    probes: str | None = None,
+    splits: str | None = None,
+    skipped: tuple[str, ...] = (),
+) -> str:
+    """One report: outcomes, minor/major kinds, breakdown, then the optional probes.
+
+    Reads scores and answers only. Does not change a score and does not call a model.
+    """
+    report = report_run(run_dir)
+    overall = report["overall"]
+    groups = breakdown_run(run_dir)
+    outcomes = " ".join(
+        f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("outcome:")
+    )
+    severities = " ".join(
+        f"{k.split(':', 1)[1]}={overall[k]}" for k in sorted(overall) if k.startswith("severity:")
+    )
+    kinds = "\n".join(
+        f"- {k.split(':', 1)[1]}: {overall[k]}" for k in sorted(overall) if k.startswith("kind:")
+    )
+    lines = [
+        "# Analysis",
+        "",
+        "Scored outcomes come from `score`. Minor and major are labels on those",
+        "scores. A refusal has no minor or major kind. Nothing here calls a model",
+        "or changes `correct`.",
+        "",
+        "## Outcomes and severity",
+        "",
+        outcomes or "no scored cells",
+        "",
+        f"Severity: {severities or 'none'}.",
+        "",
+        "Minor stays on the passage that was asked (near copy, paraphrase, omission, addition).",
+        "Major replaces it (wrong passage, other script, wrong locus, wrong verdict, no citation, hedge).",
+        "",
+        "### Kinds",
+        "",
+        kinds or "- none",
+        "",
+        f"{len(report['by_text'])} text(s). One text is one work, version, and language.",
+        "",
+        "## Breakdown",
+        "",
+    ]
+    for title, key in (
+        ("By document type", "document_type"),
+        ("By tradition", "tradition"),
+        ("By tradition and type", "tradition_and_type"),
+        ("By task", "task"),
+    ):
+        lines.append(f"### {title}")
+        lines.append("")
+        lines.append("```")
+        lines.append(format_breakdown(groups[key]))
+        lines.append("```")
+        lines.append("")
+    if probes:
+        lines.extend(["## Probes", "", "```", probes.rstrip(), "```", ""])
+    if splits:
+        lines.extend(["## Splits", "", "```", splits.rstrip(), "```", ""])
+    if skipped:
+        lines.extend(["## Skipped", "", *[f"- {item}" for item in skipped], ""])
+    return "\n".join(lines)
+
+
 def report_run(run_dir: Path) -> dict:
     """Count outcomes and failure kinds for one run, per text.
 

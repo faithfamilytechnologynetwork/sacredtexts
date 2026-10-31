@@ -10,14 +10,14 @@ out of the spec — those belong in codev/plans/26-*.md.
 ## Problem Statement
 
 The benchmark asks models to recognize, retrieve, and generate sacred text (Phase 1). Today the
-question set is shaped by two choices that no longer match how Waleed wants the benchmark to
+question set is shaped by two choices that no longer match how the maintainer wants the benchmark to
 measure fidelity:
 
 1. **It mixes original-language editions with translations.** When we ask a model to reproduce
    "the KJV of John 3:16," a correct answer tests the model's memory of one *English translation* —
    an editorial artifact — not its fidelity to the text as composed. A translation has many valid
    renderings; the benchmark's exact/normalized-containment scoring treats one chosen edition as
-   ground truth, which is the wrong measurement for a translated work. Waleed's decision
+   ground truth, which is the wrong measurement for a translated work. the maintainer's decision
    (2026-10-20): **a text is in scope only when the edition we hold is in the language it was
    composed in.**
 
@@ -34,7 +34,7 @@ currently matches the *first* yes/no token anywhere in the answer, so a negation
 `verify_source` is the benchmark's false-premise instrument. Because Spec 26 promotes
 `verify_source` to one of four headline tasks, this gate must close here.
 
-**Who is affected:** Waleed and the working group (benchmark validity); anyone reading a run's
+**Who is affected:** the maintainer and the working group (benchmark validity); anyone reading a run's
 scores or the viewer; future contributors adding corpora (the metadata contract changes).
 
 ## Current State
@@ -112,7 +112,7 @@ scores or the viewer; future contributors adding corpora (the metadata contract 
   the per-file slug-agreement check cannot see; both are extended with the two fields.
 - **Exactly four templates, rendered in natural language.** `<edition>` is a **seeded uniform choice**
   from the text's `requested_as` list, recorded in `question.source.requested_as`. **The rendered
-  prompt strings below are the authoritative contract** (they feed the question-set digest); Waleed's
+  prompt strings below are the authoritative contract** (they feed the question-set digest); the maintainer's
   four-line shorthand in Constraints conveys intent, and where they differ in punctuation/wording the
   rendered string here governs.
 
@@ -210,7 +210,7 @@ scores or the viewer; future contributors adding corpora (the metadata contract 
 
 ## Constraints
 
-**Baked decisions (from Waleed via issue #26 — fixed; not relitigated here). The metadata/quota
+**Baked decisions (from the maintainer via issue #26 — fixed; not relitigated here). The metadata/quota
 specifics below reflect the architect's FINAL field table posted on #26 (2026-10-20), which supersedes
 the original issue-body wording (`ask_as`/`original_language`/`citation_hint`, default 20):**
 
@@ -222,7 +222,7 @@ the original issue-body wording (`ask_as`/`original_language`/`citation_hint`, d
 2. **15–30 questions per text, default 28** (→ 7 per template over the four templates), where one text =
    one `(work, version, language)` group — replacing per-tradition balancing. Split evenly over the
    active templates. Fail fast when a text can't fill its quota.
-3. **Exactly four templates, verbatim shapes from Waleed:**
+3. **Exactly four templates, verbatim shapes from the maintainer:**
    1. What is the text of \<edition\> \<citation\>?
    2. Please complete this quote from \<edition\>? \<excerpt\>
    3. Where in \<edition\> can I find this quote? \<text\> — the citation **form is shown by example**
@@ -261,7 +261,7 @@ the original issue-body wording (`ask_as`/`original_language`/`citation_hint`, d
   partner**; a text with no same-language different-family partner (e.g. Talmud Aramaic) falls back to
   cross-language, and the manifest records per text how many negatives were cross-language. The residual
   (near-verbatim but non-identical shared passages) is a documented first-run limitation.
-- **Authoritative prompt strings.** Where Waleed's four-line shorthand (baked decision 3) and the
+- **Authoritative prompt strings.** Where the maintainer's four-line shorthand (baked decision 3) and the
   rendered template strings in Desired State differ in punctuation or wording, the Desired-State
   rendered strings govern (they feed the digest and the acceptance tests). The shorthand conveys
   intent, not the exact byte contract.

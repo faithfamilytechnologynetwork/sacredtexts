@@ -13,7 +13,7 @@ Claude's other four iteration-2 items are also genuinely fixed: `judge-summary` 
 
 - **Suite**: `410 passed, 1 skipped` — matches the builder's claim.
 - **Evidence integrity**: `git diff $(merge-base)...HEAD -- runs/` is empty. Committed tutorial/original evidence untouched.
-- **Karr authorship**: `a7d33b2` author is `Jonathan Karr <jka83321@gmail.com>`. Intact after the iteration-1 amend.
+- **the contributor authorship**: `a7d33b2` author is `a contributor`. Intact after the iteration-1 amend.
 - **No `cross_translation`**: grep across `pipelines/` returns nothing.
 - **Restricted guard matches real data**: `_partition` keys on `(work, version, language)`; `audit.restricted_keys` returns exactly that tuple, and real `runs/tutorial-2026-10-11/answers.jsonl` rows carry `question.source.{work,version,language}` — so the guard is live, not dead code.
 - **Scope discipline**: `--equivalence-index` correctly absent (Phase 3); rows record `equivalence: "not_evaluated"`.
@@ -30,7 +30,7 @@ Claude's other four iteration-2 items are also genuinely fixed: `judge-summary` 
 
 ---
 VERDICT: APPROVE
-SUMMARY: The iteration-2 mixed-build resume blocker is genuinely fixed and tested; all phase-1 deliverables are present, 410 tests pass, committed evidence is untouched, and Karr's authorship survived the amend.
+SUMMARY: The iteration-2 mixed-build resume blocker is genuinely fixed and tested; all phase-1 deliverables are present, 410 tests pass, committed evidence is untouched, and the contributor's authorship survived the amend.
 CONFIDENCE: HIGH
 ---
 

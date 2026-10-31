@@ -7,13 +7,13 @@ I'll review this spec against the actual codebase before judging it.I verified t
 | `graders.py` models a non-inline, verdict-less, `default=False` seam; `resolve_evaluators` fails fast on it | **Accurate** (`graders.py:36-38, 49-55, 102-106`). The `jev` descriptor is present *as a comment* at :54 — "the slot exists, nothing fills it" is fair. |
 | `DEFAULT_EVALUATORS` auto-excludes a non-inline/non-default grader | **Accurate** (:70-72) — success criterion 1 is mechanically verifiable. |
 | Refusal is owned by `outcomes.py`, excluded from accuracy | **Accurate** (`outcomes.py:1-39, 111-136`). |
-| PR #30 contains `jev.py`, `test_jev.py`, `cross_translation.py`, a `judge` CLI; unmerged | **Accurate** (fork `JonathanKarr33/sacredtexts@ea08f17`). |
-| Karr's `jev.py` hardcodes `typesafe/jev-1.13` and imports `EditionIndex`/`cite_key` from `cross_translation` | **Accurate** — and note the import is **top-level, non-optional**, so Open Question (a) requires an actual edit, not just passing `index=None`. |
+| PR #30 contains `jev.py`, `test_jev.py`, `cross_translation.py`, a `judge` CLI; unmerged | **Accurate** (fork `the contributor/sacredtexts@ea08f17`). |
+| the contributor's `jev.py` hardcodes `typesafe/jev-1.13` and imports `EditionIndex`/`cite_key` from `cross_translation` | **Accurate** — and note the import is **top-level, non-optional**, so Open Question (a) requires an actual edit, not just passing `index=None`. |
 | Tutorial answers embed `question.source.citation` + `question.expected.text` | **Accurate** — confirmed `question` keys `[id, task, prompt, expected, source]`, `source.citation = "Chullin 26b:12"`. `judgment_state` will populate. |
 | Spec follows the delivered template | **Accurate** — matches `/opt/homebrew/lib/node_modules/@cluesmith/codev/skeleton/protocols/spir/templates/spec.md` heading-for-heading, in order, and matches sibling specs 15/26. No structural defect. |
 | `CODE_WALKTHROUGH.md` has an "Adding an evaluator" recipe to extend | **Accurate** (:233). |
 
-I did **not** attempt to re-verify the live `jev-latest` → `typesafe/jev-1.14-20261014` claim (no paid calls, and the key isn't mine to spend). Karr's `interpret()` does match the response shape the spec transcribes, which is corroborating.
+I did **not** attempt to re-verify the live `jev-latest` → `typesafe/jev-1.14-20261014` claim (no paid calls, and the key isn't mine to spend). the contributor's `interpret()` does match the response shape the spec transcribes, which is corroborating.
 
 **Disclosure:** running a read-only inspection script via `uv --project pipelines run` caused uv to create `pipelines/.venv/` in your worktree. It is gitignored (`.gitignore:40`) and `git status` shows no tracked-file change. I left it in place rather than deleting it.
 

@@ -1,0 +1,69 @@
+# Familiar passages. The question files do not reserve slots for these.
+# A drawn row is labeled famous when its citation is listed here.
+# `version` is the edition the citation is taken from. `english_version`
+# is named in the prompt when the answer is English; leave it blank when
+# `version` is already that English edition. It may name a different edition
+# from `version` (Uthmani Arabic versus an English Qur'an). Do not set
+# `english_version` to an edition this corpus does not hold.
+items:
+  - work: The Bible
+    version: NRSV
+    citation: John 3:16
+    weight: 5
+  - work: The Bible
+    version: NRSV
+    citation: Genesis 1:1
+    weight: 3
+  - work: The Bible
+    version: NRSV
+    citation: Psalms 23:1
+    weight: 3
+  - work: The Bible
+    version: NRSV
+    citation: Matthew 6:9
+    weight: 2
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "1:1"
+    weight: 4
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "2:255"
+    weight: 5
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "112:1"
+    weight: 3
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "2:286"
+    weight: 3
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "24:35"
+    weight: 3
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "1:2"
+    weight: 2
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "67:1"
+    weight: 2
+  - work: Talmud Bavli
+    version: William Davidson Edition - Aramaic
+    citation: Berakhot 2a:1
+    weight: 3
+    english_version: William Davidson Edition - English
+  - work: Sri Guru Granth Sahib
+    version: Shabad OS (SGPC Shabadaarth)
+    citation: "Ang 1:1"
+    weight: 5
+  - work: Sri Guru Granth Sahib
+    version: Shabad OS (SGPC Shabadaarth)
+    citation: "Ang 8:33"
+    weight: 3
+  - work: Sri Guru Granth Sahib
+    version: Shabad OS (SGPC Shabadaarth)
+    citation: "Ang 262:31"
+    weight: 4

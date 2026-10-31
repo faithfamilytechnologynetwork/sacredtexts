@@ -1,12 +1,12 @@
 ### Iteration 1 Reviews
 - codex: REQUEST_CHANGES — Core judge flow is sound, but Phase 1 misses required spend reporting and has fail-open response/sidecar identity validation.
-- claude: REQUEST_CHANGES — Core judge pass, resume/build-identity, restricted guard and Karr authorship are correct, but total spend is never surfaced, a manifest-less sidecar can silently go mixed-build, the row schema deviates from the spec's pinned shape, and the required single-cell live smoke was not run.
+- claude: REQUEST_CHANGES — Core judge pass, resume/build-identity, restricted guard and the contributor authorship are correct, but total spend is never surfaced, a manifest-less sidecar can silently go mixed-build, the row schema deviates from the spec's pinned shape, and the required single-cell live smoke was not run.
 
 ### Builder Response to Iteration 1
 # Spec 21 — Phase 1 (Jev judge pass + CLI) iteration 1 rebuttal
 
 Two reviews, both **REQUEST_CHANGES**, both verified against the code and strongly convergent. All
-substantive points accepted and fixed; the Phase 1 commit (authored by Jonathan Karr) was amended.
+substantive points accepted and fixed; the Phase 1 commit (authored by a contributor) was amended.
 Full suite now **403 passed, 1 pre-existing skip**, and the required live smoke was run.
 
 ## Accepted and fixed
@@ -66,8 +66,8 @@ None. Every point was a real fail-open or a real coverage gap.
 
 ## Note
 
-The hardening above is substantial, but the module's origin is Karr's PR #30, so the amended Phase 1
-commit keeps his authorship per the architect's instruction. (Also: I had been adding `Co-Authored-By`
+The hardening above is substantial, but the module's origin is the contributor's PR #30, so the amended Phase 1
+commit keeps that authorship per the architect's instruction. (Also: I had been adding `Co-Authored-By`
 trailers earlier in the project against the global CLAUDE.md and the architect's "no Co-Authored-By"
 instruction; stopped as of Phase 1, and the earlier commits will be cleaned, message-only, before the
 PR.)

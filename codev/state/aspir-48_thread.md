@@ -145,7 +145,7 @@ Executed exactly as surfaced + architect's 5 conditions:
 - Re-pinned test_contains_reference_rebaseline.py: tutorial REFUSED_COUNTS (hs 35→34, os 24→20), EXPECTED_ACC (hs .80→.7879, os .9737→.9250), EXPECTED_COV (hs .65→.66, os .76→.80), REFUSED_SET_SHA256 2a560379….
 - Reframed my whole-corpus gate to the durable post-rebaseline form: no committed refusal asserts delivery (all 4 runs).
 
-FULL pipelines suite: 585 passed, 2 skipped. Numbers match Waleed-seen plan pins exactly.
+FULL pipelines suite: 585 passed, 2 skipped. Numbers match the maintainer-seen plan pins exactly.
 
 ### Phase_1 DONE — 3 impl-consult iterations (2026-10-29)
 
@@ -296,20 +296,20 @@ Architect reviewed PR #55 (fresh clone green), endorsed codex's 2 findings as re
 
 ### External merge — gate left pending for human to regularize (2026-10-29)
 
-Architect FYI: **PR #55 was merged to main by Jonathan Karr (external collaborator) at 21:29:43Z —
-NOT via the porch `pr` gate**, which Waleed had not yet approved. Merge content == the reviewed
+Architect FYI: **PR #55 was merged to main by a contributor (external collaborator) at 21:29:43Z —
+NOT via the porch `pr` gate**, which the maintainer had not yet approved. Merge content == the reviewed
 branch (no redo needed). Per architect: do NOT self-approve the porch gate; project 48 stays at
-**gate-pending** and Waleed will regularize the gate record when back. Treating the protocol as
+**gate-pending** and the maintainer will regularize the gate record when back. Treating the protocol as
 functionally post-merge.
 - Did NOT run `porch approve 48 pr`, `porch done 48 --pr`, or `porch done 48 --merged` — the gate
   record is the human's to reconcile; a builder never advances a human gate on an external action.
 - Review doc + thread are complete and committed; archival done so cleanup is possible later.
-- Branch `builder/aspir-48` is the merged content. Nothing further for the builder until Waleed
+- Branch `builder/aspir-48` is the merged content. Nothing further for the builder until the maintainer
   regularizes the gate (then: the normal `porch done --pr 55 --merged 55` bookkeeping + verify).
 
 ### Protocol complete — verified (2026-10-29)
 
-Waleed approved both gates retroactively (pr, then verify-approval), architect ran the approvals.
+the maintainer approved both gates retroactively (pr, then verify-approval), architect ran the approvals.
 porch bookkeeping done: PR #55 recorded + marked merged; review checks green; verify confirmed the
 fix is live on `main` (51/51 core #48 tests pass in-worktree). **porch phase = `verified` (terminal).**
 Worktree is now cleanup-eligible — NOT removing anything myself; cleanup is a separate human-approved

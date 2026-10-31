@@ -13,7 +13,7 @@ I'll review phase_6 — the live run and committed evidence. Let me start by rea
 | No duplicated edition name | ✅ `D&C 134:12`, `Sahih al-Bukhari 1606`, `Quran 7:12` all render the edition once |
 | `requested_as` recorded, raw `version` not leaked | ✅ (the 22 "leaks" are `KJV`/`WEB`, which are legitimately in `requested_as`) |
 
-The OpenRouter substitution is **properly authorized** — the builder hit the blocker, stopped, reported, and Waleed directed the switch (thread L278–302, README L30–39, panel YAML header). Budget discipline was followed: smoke → extrapolate ($6.4) → pre-authorized ≤$40 ceiling → actual ≈$12.9. The README is unusually honest (missing cell vs. refused, unpriced, negative-sampling skew, containment caveats).
+The OpenRouter substitution is **properly authorized** — the builder hit the blocker, stopped, reported, and the maintainer directed the switch (thread L278–302, README L30–39, panel YAML header). Budget discipline was followed: smoke → extrapolate ($6.4) → pre-authorized ≤$40 ceiling → actual ≈$12.9. The README is unusually honest (missing cell vs. refused, unpriced, negative-sampling skew, containment caveats).
 
 ## Issues
 

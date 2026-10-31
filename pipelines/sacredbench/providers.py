@@ -79,6 +79,23 @@ def sampling_kwargs(model: ModelSpec) -> dict:
     return {"temperature": model.temperature}
 
 
+def is_quota_error(exc: BaseException) -> bool:
+    """True when the host refused the call for credit or quota, not a transient blip."""
+    if getattr(exc, "status_code", None) == 402:
+        return True
+    text = str(exc).lower()
+    return any(
+        phrase in text
+        for phrase in (
+            "insufficient credit",
+            "insufficient credits",
+            "payment required",
+            "out of credits",
+            "exceeded your current quota",
+        )
+    )
+
+
 def complete(model: ModelSpec, prompt: str, retries: int = 2) -> tuple[str, dict, int]:
     """Single-turn completion. Returns ``(text, usage, attempts)``; raises ``ProviderError``."""
     if model.provider == "anthropic":
@@ -101,6 +118,10 @@ def complete(model: ModelSpec, prompt: str, retries: int = 2) -> tuple[str, dict
         except ProviderError:
             raise  # credentials / config: not transient, don't retry
         except Exception as e:  # noqa: BLE001 — transient API/transport; retry then fail
+            if is_quota_error(e):
+                raise ProviderError(
+                    f"{model.id}: OpenRouter quota or credit stopped the call: {e}"
+                ) from e
             last = e
             if attempt < retries:
                 time.sleep(_BACKOFF_BASE_SECONDS * (attempt + 1))

@@ -19,7 +19,7 @@ Codex's question-set binding point is now exact equality including None-vs-prese
 
 - **Suite**: 403 passed, 1 pre-existing skip. `.codev/checks/test.sh` passes.
 - **Real user path**: `judge runs/tutorial-2026-10-11/answers.jsonl` → `pre-flight: 400 cell(s) … (~$0.0108); 0 already judged` then `PAID live pass — re-run with --yes to proceed.` Matches the plan's estimate exactly and refuses to spend.
-- **Karr authorship** on both Phase-1 commits (`fe1e929`, `a7d33b2`).
+- **the contributor authorship** on both Phase-1 commits (`fe1e929`, `a7d33b2`).
 - **`grep cross_translation pipelines/`** → empty (plan acceptance criterion).
 - **`git diff HEAD -- runs/`** → empty; committed evidence untouched.
 - **Fixture** contains only probabilities/usage — no scripture text, no key material.
@@ -37,7 +37,7 @@ Codex's question-set binding point is now exact equality including None-vs-prese
 
 ---
 VERDICT: APPROVE
-SUMMARY: All iteration-1 findings from both reviewers are genuinely fixed and verified; Phase 1 meets its spec/plan deliverables with 403 passing tests, a working CLI path, Karr authorship intact, and committed evidence untouched.
+SUMMARY: All iteration-1 findings from both reviewers are genuinely fixed and verified; Phase 1 meets its spec/plan deliverables with 403 passing tests, a working CLI path, the contributor authorship intact, and committed evidence untouched.
 CONFIDENCE: HIGH
 ---
 

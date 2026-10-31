@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from sacredbench.failure_kind import breakdown_run, classify_failure, rates, severity
+from sacredbench.failure_kind import analysis_markdown, breakdown_run, classify_failure, rates, severity
 
 # The shared parity fixture: the SAME cases the viewer's vitest suite asserts against
 # (apps/viewer/src/lib/failureKind.test.ts), so classify_failure/classifyFailure AND
@@ -50,6 +50,27 @@ def test_breakdown_counts_a_shared_text_under_each_listed_tradition(tmp_path):
     # counted once, not once per tradition, for document type and task
     assert groups["document_type"]["scripture"]["correct"] == 1
     assert groups["task"]["retrieve_quote"]["correct"] == 1
+
+
+def test_analysis_markdown_names_outcomes_and_leaves_refusal_unlabeled(tmp_path):
+    (tmp_path / "answers.jsonl").write_text(json.dumps({
+        "question_id": "q1", "model_id": "m", "answer": "I cannot provide that",
+        "question": {
+            "expected": {"text": "the reference verse text itself"},
+            "source": {
+                "document_type": "scripture", "work": "W", "version": "V", "language": "en",
+                "tradition": ["Christianity"],
+            },
+        },
+    }) + "\n")
+    (tmp_path / "scores.jsonl").write_text(json.dumps({
+        "question_id": "q1", "model_id": "m", "task": "retrieve_quote",
+        "metrics": {"outcome": "refused", "correct": 0},
+    }) + "\n")
+    text = analysis_markdown(tmp_path)
+    assert "refused=1" in text
+    assert "Severity: none." in text
+    assert "minor" in text and "major" in text
 
 
 def test_refused_and_exact_correct_are_unlabeled():

@@ -1,6 +1,6 @@
 # Builder aspir-32 thread — FAccT benchmark card + cross-edition reading (#32)
 
-Part 3 of 3 of Jonathan Karr's PR #30. Rework his card against main's scoring contract.
+Part 3 of 3 of a contributor's PR #30. Rework his card against main's scoring contract.
 
 ## Key facts established (specify phase, 2026-10-23)
 - Data source: `runs/original-2026-10-21/` (3 models: gpt-oss-20b, haiku, opus; 476 Q; 17 texts). Read as-is, NEVER re-score/collect/generate.
@@ -11,7 +11,7 @@ Part 3 of 3 of Jonathan Karr's PR #30. Rework his card against main's scoring co
 - Edition counterfactual: only the 3 English Bibles (KJV/ASV1901/WEB) have sibling editions in this pool → counterfactual is inherently Bible-scoped. `cite_key` already parses Bible-style citations. Arabic/Hebrew citations excluded by construction (no sibling edition) — card must SAY so, never mis-parse them into a Bible match. Tag qualifying misses `other_edition`.
 - Prose in ONE editable place (Jonathan drafting paper). Chose: constants block in facct.py (Approach 1).
 - Output path: `runs/<id>/facct.{json,md}`. Zero API spend. Audit (audit.py) must pass — no NABRE/TLG text. Public repo.
-- Preserve Jonathan's authorship on carried-over commits (`git commit --author`). PR: "Part 3 of 3 of #30", closes #32. NO Generated-with/Co-Authored-By.
+- Preserve the contributor's authorship on carried-over commits (`git commit --author`). PR: "Part 3 of 3 of #30", closes #32. NO Generated-with/Co-Authored-By.
 - Viewer per-run card view = optional (reads facct.json, no new scoring). Likely defer.
 
 ## Spec consult (specify iter1, 2026-10-23) — both REQUEST_CHANGES, HIGH. All folded in.
@@ -39,7 +39,7 @@ Structure verified conformant to spir/templates/spec.md (claude).
 2. facct.py card data → facct.json (census, outcomes-from-scores, Bible retrieve_quote counterfactual, fail-fast). Promotes score's contains_reference predicate to public + reuses it.
 3. facct.md: one prose block, both files written by default within run_dir (atomic both-or-neither), anti-drift.
 4. Generate+commit card for runs/original-2026-10-21; EXTEND audit.py to scan .md + test; byte-digest integrity; real-run drift guard.
-Carry-over phases (1-3) committed --author="Jonathan Karr <jka83321@gmail.com>".
+Carry-over phases (1-3) committed --author="a contributor".
 Scope decision: 3-edition agreement table EXCLUDED (keep docs bar simple).
 
 ## Plan consult (plan iter1, 2026-10-23) — both REQUEST_CHANGES HIGH, all folded
@@ -51,10 +51,10 @@ Both verified real data; claude confirmed ≈32 incorrect Bible retrieve_quote c
 Dispositions: (1) pin containment to score's predicate+normalize (2) pin corpus_hash/digest/ordering/excluded_restricted (3) extend audit to .md+test (4) write both files by default atomically within run_dir (5) byte-digest integrity not git status (6) raw-source pin (7) both-files (8) exclude agreement table + add real-run drift guard. Rebuttal committed.
 
 ## IMPLEMENT phase_1 DONE (2026-10-23)
-Created pipelines/sacredbench/edition_index.py (carries over Jonathan's cite_key/Passage/EditionIndex/index_documents from PR#30 cross_translation.py; added language to Passage, load_edition_documents, export_rows, write_export/build_manifest). CLI `edition-index` wired + EditionIndexError in main() handler. Tests: test_edition_index.py (7 pass). README line added.
+Created pipelines/sacredbench/edition_index.py (carries over the contributor's cite_key/Passage/EditionIndex/index_documents from PR#30 cross_translation.py; added language to Passage, load_edition_documents, export_rows, write_export/build_manifest). CLI `edition-index` wired + EditionIndexError in main() handler. Tests: test_edition_index.py (7 pass). README line added.
 Verified real catalogue: 31,102 Bible rows (KJV/ASV/WEB share every citation), excluded_restricted=['NABRE','TLG']. NABRE=The Bible/NABRE/en/en (restricted, 4th English Bible) — filtered by license even with payload present (test proves it). Full suite 393 passed/1 skip.
 Export default path: texts/edition_index.jsonl (NOT committed — derived on demand; card uses module in-process; #21 regenerates).
-Commit authored to Jonathan Karr <jka83321@gmail.com> (carries his code).
+Commit authored to a contributor (carries his code).
 
 ## Phase_1 impl review (2026-10-23): codex APPROVE, claude REQUEST_CHANGES — both fixed
 - Fix1: canonical-language guard (language==canonical) was untested → added assertions (real catalogue: Talmud-English/Encyclicals absent; tmp fixture: non-canonical Davidson-English edition). Removing guard now fails.
@@ -109,7 +109,7 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - facct.py: added CARD_PROSE block (ONE editable place, Jonathan owns wording) + report_markdown(report). Every number interpolated from report (anti-drift); _pct/_n helpers. Prose sections: census intro, zero_language_note (grc=held-back TLG not coverage gap), excluded_note, outcomes intro (accuracy-beside-coverage), counterfactual intro, claims/failure/non-conclusions/review. Embeds citations+numbers only, NO verse bodies.
 - cli.py: facct writes BOTH facct.json + facct.md into run_dir by DEFAULT. --json/--md overrides validated WITHIN run_dir via _within(). Build+render BOTH before writing EITHER (both-or-neither).
 - test_facct.py now 28 tests: +prose-sections, +drift-guard (flip cell in scores+summary → md number moves; 40.0% not present before), +no-fabrication/no-verse-bodies, +CLI both-files, +CLI rejects out-of-run path, +both-or-neither on bad evidence.
-- Real card rendered & eyeballed (scratch): clean one-linear-read, opus overall 68.6%/85.7%, haiku 48.6%/76.9%, counterfactual table 0/17,3/15,0/0. Matches Waleed docs bar.
+- Real card rendered & eyeballed (scratch): clean one-linear-read, opus overall 68.6%/85.7%, haiku 48.6%/76.9%, counterfactual table 0/17,3/15,0/0. Matches the maintainer docs bar.
 - README section 8 added. Suite 423 pass/1 skip. Commit author Jonathan.
 
 ## Phase_3 impl review (2026-10-23): codex + claude both REQUEST_CHANGES — all fixed (426 pass)
@@ -138,9 +138,9 @@ Phase3 after: facct.md both-files-by-default atomic within run_dir, one prose bl
 - Review doc written: codev/reviews/32-facct-benchmark-card-cross-edi.md (all 15 ACs met; consultation feedback per phase; deviations; lessons).
 - Governance routed to COLD (HOT caps respected): arch.md gets "FAccT card + edition index" section + audit-.md note in Test gate; lessons-learned.md Process/SPIR gets the porch-chaining lesson + reuse-score-predicate lesson.
 - Consult .txt + context.md files ARE committed (repo convention: spec 1 has them). .builder-* NOT tracked → leave untracked.
-- PR: base main, "Part 3 of 3 of #30", "Closes #32", loop @JonathanKarr33 on provisional card wording. NO Generated-with/Co-Authored-By (architect + CLAUDE.md override the attribution reminder).
+- PR: base main, "Part 3 of 3 of #30", "Closes #32", loop @the contributor on provisional card wording. NO Generated-with/Co-Authored-By (architect + CLAUDE.md override the attribution reminder).
 
-## PR #34 opened (base main, "Part 3 of 3 of #30", Closes #32, @JonathanKarr33 on wording). Review-phase checks green. porch done --pr 34 recorded.
+## PR #34 opened (base main, "Part 3 of 3 of #30", Closes #32, @the contributor on wording). Review-phase checks green. porch done --pr 34 recorded.
 
 ## PR #34 review round 1 + 1b (2026-10-24): codex RC + claude APPROVE consult; architect integration review 3 blocking + 2 non-blocking (r1) + items 6-9 (r1b). ALL FOLDED. Not merged. Suite 442 pass/1 skip.
 - B1 corpus_hash: export now = gen.corpus_hash over FULL non-restricted set (load_edition_documents→(indexed,all,excluded)); ==run manifest 5ae493e7e249575c. VERIFIED.

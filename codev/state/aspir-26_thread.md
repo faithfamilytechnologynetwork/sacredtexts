@@ -28,10 +28,10 @@ four templates, add `original_language`/`ask_as`/`citation_hint` to source.yaml.
 - Then draft spec, signal SPEC_DRAFTED (porch runs 3-way consult).
 
 ### Spec drafted + committed (iter 1)
-- Wrote spec `codev/specs/26-original-language-only-questio.md`. Baked decisions (Waleed's 3
+- Wrote spec `codev/specs/26-original-language-only-questio.md`. Baked decisions (the maintainer's 3
   + four verbatim templates + 3 metadata fields + retire identify_version/identify_source +
   fold #23) encoded in Constraints. Recommended per-text even-split with fail-fast (Approach 1).
-- Committed `[Spec 26] Initial specification draft` (no Co-Authored-By; Waleed CLAUDE.md
+- Committed `[Spec 26] Initial specification draft` (no Co-Authored-By; the maintainer CLAUDE.md
   overrides the attribution reminder).
 - `porch done 26` → checks green → porch handed 2-way consult (codex + claude; gemini excluded,
   can't see worktree). Both running in background. Await completion → incorporate → porch next.
@@ -86,7 +86,7 @@ four templates, add `original_language`/`ask_as`/`citation_hint` to source.yaml.
 - Tests: catalogue 40 green incl. new validation/text_metadata/slug-agreement/pool=17; fixed
   test_schema_convert _target helper; removed obsolete real-LDS-KJV export test (merge/roundtrip
   still covered synthetically). Full pipeline suite 335 passed; gate green.
-- Commit 519f387 (amended to drop an accidental Co-Authored-By trailer — Waleed CLAUDE.md forbids).
+- Commit 519f387 (amended to drop an accidental Co-Authored-By trailer — the maintainer CLAUDE.md forbids).
 - FOLLOW-UP for architect: the two LDS-KJV payload JSONs (old/new-testament-reference-KJV-
   ben-crowder.json) are still committed but now orphaned (no target). Left in place; asked whether
   to delete.
@@ -287,8 +287,8 @@ four templates, add `original_language`/`ask_as`/`citation_hint` to source.yaml.
   (haiku+opus × search on/off) ≈ 1,904 live cells. Live collect/score + committed run blocked.
 - Reported to architect; awaiting key or direction. Do NOT proceed with collect without the key.
 
-### IMPLEMENT Phase 6 — UNBLOCKED: OpenRouter, search-off (Waleed decision 2026-10-21)
-- Waleed: use OPENROUTER_API_KEY. No web_search arms (search-off only, since web_search is
+### IMPLEMENT Phase 6 — UNBLOCKED: OpenRouter, search-off (the maintainer decision 2026-10-21)
+- the maintainer: use OPENROUTER_API_KEY. No web_search arms (search-off only, since web_search is
   Anthropic-only + config.py fail-fasts it on a non-anthropic provider). Panel = provider openai,
   base_url openrouter, 3 models: anthropic/claude-haiku-5-5, anthropic/claude-opus-5-5,
   openai/gpt-oss-20b. Run is UNPRICED (no per-token prices supplied). HARD BUDGET: smoke →
@@ -326,7 +326,7 @@ four templates, add `original_language`/`ask_as`/`citation_hint` to source.yaml.
      (negation-evasion). Covered by unit tests in test_score.py; README is upfront about it.
   2. Panel deviation from plan (Anthropic haiku+opus × search on/off → 3 OpenRouter models,
      search-off) is a SANCTIONED deviation: builder blocked on absent ANTHROPIC_API_KEY, reported,
-     and Waleed explicitly directed OpenRouter + ≤$40 on 2026-10-21. No search-on/off contrast in
+     and the maintainer explicitly directed OpenRouter + ≤$40 on 2026-10-21. No search-on/off contrast in
      this run (documented in run README §"Why no search arms").
   3. Smoke cost-extrapolation method is ~2× low for models with heavy reasoning output + retries.
 

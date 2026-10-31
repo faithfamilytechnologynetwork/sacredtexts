@@ -12,7 +12,7 @@ I'll start by understanding the repo layout and reading the key artifacts.The di
 
 **Security** — no secrets in the diff, `.env` ignored, 0 standardized texts tracked, panel config references `api_key_env` only.
 
-The OpenRouter substitution is correctly handled: the builder *blocked* on the absent `ANTHROPIC_API_KEY` as the spec demanded, reported, and proceeded only on Waleed's explicit 2026-10-21 direction under a ≤$40 gate (actual $12.9). Thread evidence at `codev/state/aspir-26_thread.md:278-302`. That's fail-fast done right, not a silent fallback.
+The OpenRouter substitution is correctly handled: the builder *blocked* on the absent `ANTHROPIC_API_KEY` as the spec demanded, reported, and proceeded only on the maintainer's explicit 2026-10-21 direction under a ≤$40 gate (actual $12.9). Thread evidence at `codev/state/aspir-26_thread.md:278-302`. That's fail-fast done right, not a silent fallback.
 
 ## Three findings worth folding in (none blocking)
 

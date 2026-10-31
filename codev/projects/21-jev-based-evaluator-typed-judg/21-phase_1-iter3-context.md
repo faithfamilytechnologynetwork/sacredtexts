@@ -1,6 +1,6 @@
 ### Iteration 2 Reviews
 - codex: REQUEST_CHANGES — Prior findings addressed, but resume still accepted malformed or mixed-build sidecar rows (`_load_existing` validated only `rubric_id`, never each existing row's `judge_model_resolved` against the manifest), violating the no-mixed-build invariant.
-- claude: APPROVE — All iteration-1 findings from both reviewers genuinely fixed and verified (403 passing, working CLI path, Karr authorship intact, committed evidence untouched). Five non-blocking items: judge-summary/judge fail-open on a missing path; `_load_manifest` not requiring a non-empty resolved build; the `--yes` budget gate untested; `_single_question_set_digest` tolerating a present/absent mix; the thread stale at "399 passed".
+- claude: APPROVE — All iteration-1 findings from both reviewers genuinely fixed and verified (403 passing, working CLI path, the contributor authorship intact, committed evidence untouched). Five non-blocking items: judge-summary/judge fail-open on a missing path; `_load_manifest` not requiring a non-empty resolved build; the `--yes` budget gate untested; `_single_question_set_digest` tolerating a present/absent mix; the thread stale at "399 passed".
 
 ### Builder Response to Iteration 2
 # Spec 21 — Phase 1 (Jev judge pass + CLI) iteration 2 rebuttal

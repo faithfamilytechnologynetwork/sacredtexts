@@ -80,7 +80,7 @@ split applied over the subset; `--negatives-share` keeps default 0.5.
 ### S7 (codex) — Verbatim shorthand vs rendered strings conflict (template 2 `?` vs `:`; template 4
 reworded) — ACCEPTED
 **Change:** Desired State and Constraints now declare the **rendered template strings authoritative**
-(they feed the digest and acceptance tests); Waleed's four-line shorthand conveys intent. This removes
+(they feed the digest and acceptance tests); the maintainer's four-line shorthand conveys intent. This removes
 the `?`/`:` ambiguity.
 
 ### S8 (codex) — `verify_source` negative aggregation + question `source` metadata — ACCEPTED
