@@ -18,9 +18,9 @@ Thirty passages per tradition. The draw is uniform, seed `20261030`, from
 passages of at least 16 words. Every citation in `well_known.yaml` is removed
 before the draw, so a famous line cannot also occupy a population slot.
 
-Christianity has no NRSV file in `texts/raw`. The draw uses the Protestant
-verse list in `kjv.json` to choose citations. The scored wording is the NRSV
-text of those citations, in `christianity/english/population/questions.jsonl`.
+The full NRSV file is gitignored. The draw uses the Protestant verse list in
+`kjv.json` to choose citations. The scored wording is the NRSV text of those
+citations, in `christianity/english/population/questions.jsonl`.
 
 ## Familiarity panel
 
@@ -42,15 +42,28 @@ panel with its own count.
 Each passage is asked as four tasks: `retrieve_quote`, `complete_unit`,
 `cite_passage`, and `verify_source`.
 
-Christianity is already English, so each passage is one question per task.
-Judaism is asked twice, because the Aramaic Davidson edition and the English
-Davidson edition are different wording. Islam and Sikhism are asked once.
-This corpus has no English Qur'an and no English Guru Granth Sahib.
+Christianity is one set of 30. The English edition is the NRSV. The same
+citations are also asked in their original language: the Masoretic text
+(Westminster Leningrad Codex) for Hebrew Bible verses, including the Aramaic
+of Daniel 2, and the Greek New Testament (Scrivener 1894) for New Testament
+verses. That is not a second sample of 30, and the Old Testament verses are
+not also asked from the Septuagint. The licensed Greek Orthodox TLG files
+are still not in the repo.
 
-The prompt names the edition. For a non-English text it also states the
-question in that text's language. Those second-language lines are drafts for
-a native speaker. The model call has no language field. OpenRouter does not
-add one.
+Judaism's Aramaic edition and its English edition are the same 30 citations.
+The Aramaic edition is two calls: an English prompt and a native-language
+prompt. The English edition is one call. Islam and Sikhism are the native
+edition only, also as two calls. This corpus has no English Qur'an and no
+English Guru Granth Sahib.
+
+The prompt names the edition. A native edition is not asked in both languages
+inside one prompt. The native-language lines are drafts for a native speaker.
+The model call has no language field. OpenRouter does not add one.
+
+`complete_unit` expects the remaining words of the passage. Continuing into
+later verses is still correct: the headline treats the answer as correct when
+those remaining words are contained in it. A `cite_passage` item that should
+be declined because the quotation is from another edition is not in this run.
 
 Within each sample, half of the `verify_source` questions quote a real passage
 from a different tradition and expect `no`. A familiarity list of one passage

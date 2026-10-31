@@ -98,8 +98,18 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         for task in TASKS:
             if task == "complete_unit" and not rest.strip():
                 continue
-            prompt = f"{en_q[task]}\n{nat_q[task]}\nAnswer in the language of {edition_name(version)}."
-            out.append({**base, "task": task, "condition": "native_answer", "prompt": prompt, "expected": expected[task]})
+            # Two calls, not one bilingual prompt. The English call still says which
+            # language to answer in. The native call is only the native-language question.
+            out.append({
+                **base, "task": task, "condition": "ask_english",
+                "prompt": f"{en_q[task]}\nAnswer in the language of {edition_name(version)}.",
+                "expected": expected[task],
+            })
+            out.append({
+                **base, "task": task, "condition": "ask_native",
+                "prompt": nat_q[task],
+                "expected": expected[task],
+            })
         if english is None:
             continue
         head_e, rest_e = split_words(english)
@@ -121,11 +131,8 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         for task in TASKS:
             if task == "complete_unit" and not rest_e.strip():
                 continue
-            prompt = (
-                f"{en_q2[task]}\n{nat_q2[task]}\n"
-                f"Answer in English from {edition_name(english_version)}. "
-                f"That English edition is a translation and can differ from {edition_name(version)}."
-            )
+            # One English question. The edition name is already in that line.
+            prompt = en_q2[task]
             out.append({
                 **base, "task": task, "condition": "en_ask_en_answer",
                 "english_version": english_version, "prompt": prompt, "expected": expected_e[task],
@@ -338,7 +345,7 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     donors = []
     for rows in by_name.values():
         for row in rows:
-            if row["task"] == "retrieve_quote" and row["condition"] in {"native_answer", "en_ask_en_answer"}:
+            if row["task"] == "retrieve_quote" and row["condition"] in {"ask_english", "ask_native", "en_ask_en_answer"}:
                 donors.append(row)
     rng = random.Random(20261030)
     for rows in by_name.values():
@@ -400,7 +407,11 @@ def _collect_row(row: dict) -> dict:
         "sample": row["sample"],
         "condition": row["condition"],
     }
-    ident = "|".join([row["tradition"], row["sample"], row["condition"], row["task"], row["citation"]])
+    # The prompt is part of the id. A verify "no" row clears its citation, so the
+    # citation alone would give every negative the same id.
+    ident = "|".join([
+        row["tradition"], row["sample"], row["condition"], row["task"], row["citation"], row["prompt"],
+    ])
     return {
         "id": hashlib.sha256(ident.encode()).hexdigest()[:16],
         "task": row["task"],
@@ -419,7 +430,9 @@ def _language_dir(row: dict) -> Path:
     tradition = row["source"]["tradition"][0].lower()
     kind = "english" if row["source"]["language"] == "en" else "native"
     sample = row["source"].get("sample") or "population"
-    return REVIEW.parent / tradition / kind / sample
+    base = REVIEW.parent / tradition / kind / sample
+    prompt_lang = {"ask_english": "prompt-english", "ask_native": "prompt-native"}.get(row["source"].get("condition"))
+    return base / prompt_lang if prompt_lang else base
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:

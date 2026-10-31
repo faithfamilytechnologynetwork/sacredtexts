@@ -26,28 +26,48 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 RUNNABLE = (
     ROOT / "christianity" / "english" / "population" / "questions.jsonl",
-    ROOT / "judaism" / "native" / "population" / "questions.jsonl",
+    ROOT / "christianity" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "christianity" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "christianity" / "greek" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "christianity" / "greek" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "judaism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "judaism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "judaism" / "english" / "population" / "questions.jsonl",
-    ROOT / "islam" / "native" / "population" / "questions.jsonl",
+    ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
 )
 PANEL = ROOT / "models" / "openrouter.yaml"
 SUBSET = ROOT / "models" / "openrouter-subset.yaml"
 OUT = ROOT / "COST.md"
 # Population files on disk. Sikhism is written and is not in the collect join.
 WRITTEN = (
-    ("Christianity", [ROOT / "christianity" / "english" / "population" / "questions.jsonl"]),
+    ("Christianity", [
+        ROOT / "christianity" / "english" / "population" / "questions.jsonl",
+        ROOT / "christianity" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "christianity" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "christianity" / "greek" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "christianity" / "greek" / "population" / "prompt-native" / "questions.jsonl",
+    ]),
     ("Judaism", [
-        ROOT / "judaism" / "native" / "population" / "questions.jsonl",
+        ROOT / "judaism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "judaism" / "native" / "population" / "prompt-native" / "questions.jsonl",
         ROOT / "judaism" / "english" / "population" / "questions.jsonl",
     ]),
-    ("Islam", [ROOT / "islam" / "native" / "population" / "questions.jsonl"]),
-    ("Sikhism", [ROOT / "sikhism" / "native" / "population" / "questions.jsonl"]),
+    ("Islam", [
+        ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ]),
+    ("Sikhism", [
+        ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "sikhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ]),
 )
-# Finished population design: 30 passages × 4 tasks per edition.
-# Christianity stays one English edition (120). Every other tradition is two
-# editions, native and English (240), the way Judaism is asked twice.
+# 30 passages × 4 tasks. A native edition is two prompt languages (240).
+# An English edition of that same work is 120 more. A finished tradition,
+# including Christianity once the original-language verses are in, is 360.
 ONE_EDITION = 30 * 4
-TWO_EDITIONS = ONE_EDITION * 2
+NATIVE_BOTH_PROMPTS = ONE_EDITION * 2
+FINISHED_OTHER = NATIVE_BOTH_PROMPTS + ONE_EDITION
 MODELS_URL = "https://openrouter.ai/api/v1/models"
 
 # Measured on the committed 476-question run, 3 models, search off.
@@ -74,29 +94,29 @@ def question_count(path: Path) -> int:
 
 
 def six_traditions() -> list[tuple[str, int, str]]:
-    """Finished population counts. Christianity is one edition. The rest are two.
+    """Finished population counts. Each tradition is 360 questions.
 
-    Christianity and Judaism are already at those counts. A mismatch means the
-    question files changed and this table would be describing a different set.
+    Christianity is the NRSV plus the same 30 verses in their original language.
+    Judaism is already at 360. A mismatch means the files changed.
     """
     on_disk = {name: sum(question_count(path) for path in paths) for name, paths in WRITTEN}
-    if on_disk["Christianity"] != ONE_EDITION:
-        raise SystemExit(f"Christianity population file has {on_disk['Christianity']} questions, expected {ONE_EDITION}")
-    if on_disk["Judaism"] != TWO_EDITIONS:
-        raise SystemExit(f"Judaism population files have {on_disk['Judaism']} questions, expected {TWO_EDITIONS}")
+    if on_disk["Christianity"] != FINISHED_OTHER:
+        raise SystemExit(f"Christianity population files have {on_disk['Christianity']} questions, expected {FINISHED_OTHER}")
+    if on_disk["Judaism"] != FINISHED_OTHER:
+        raise SystemExit(f"Judaism population files have {on_disk['Judaism']} questions, expected {FINISHED_OTHER}")
     rows = [
-        ("Christianity", ONE_EDITION, "English only, counted from the question file"),
-        ("Judaism", TWO_EDITIONS, "both editions counted from the question files"),
+        ("Christianity", FINISHED_OTHER, "NRSV, plus the same 30 in Masoretic or Greek, both prompts"),
+        ("Judaism", FINISHED_OTHER, "Aramaic in both prompt languages, plus the English edition"),
     ]
     for name in ("Islam", "Sikhism"):
         have = on_disk[name]
         rows.append((
             name,
-            TWO_EDITIONS,
-            f"{have} on disk; 240 once the English edition is added",
+            FINISHED_OTHER,
+            f"{have} on disk (native, both prompts); 360 once an English edition is added",
         ))
     for name in ("Hinduism", "Buddhism"):
-        rows.append((name, TWO_EDITIONS, "estimated: native and English, 30 passages, 4 tasks"))
+        rows.append((name, FINISHED_OTHER, "estimated: native in both prompt languages, plus an English edition"))
     return rows
 
 
@@ -204,10 +224,12 @@ def main() -> None:
         "gpt-oss-20b output rate, which is the verbose-reasoner headroom.",
         "",
         "These prompts are not the committed run's prompts. The scale assumes a call",
-        "costs about the same per question. Christianity stays one English edition.",
-        "Every other tradition is two editions once the data is in: native and English,",
-        "240 questions each. Islam and Sikhism have only the native edition on disk.",
-        "Hinduism and Buddhism have no passages yet.",
+        "costs about the same per question. Each finished tradition is 360 questions:",
+        "the native text asked in English and in its own language (240), plus an",
+        "English edition (120). Christianity's native text is the same 30 verses,",
+        "Masoretic where the verse is from the Hebrew Bible and Greek where it is",
+        "from the New Testament. Islam and Sikhism have only the native edition",
+        "on disk. Hinduism and Buddhism have no passages yet.",
         "",
         "## All six traditions",
         "",

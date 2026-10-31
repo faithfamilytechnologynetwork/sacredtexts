@@ -5,7 +5,7 @@
 - Language: Arabic
 - Raw file: `texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: 148 questions. Population sample: 30 passages. Familiarity panel: 7 passages. Report those two separately.
+- Size: 296 questions. Population sample: 30 passages. Familiarity panel: 7 passages. Report those two separately.
 
 ## Passages to check
 

@@ -1,14 +1,17 @@
 # Items for test
 
-This folder is the test set for the six traditions. Read these three files first.
+This folder is the test set for the six traditions. Start with the methodology, then the population folders below.
 
 | File | What it is |
 |---|---|
 | `METHODOLOGY.md` | How the sample was drawn, and what to report |
-| `christianity/english/population/` | The 30 NRSV passages that run. No native folder |
-| `judaism/native/population/`, `judaism/english/population/` | The 30 that run, Aramaic then English |
-| `islam/native/population/` | The 30 Arabic passages that run |
-| `sikhism/native/population/` | The 30 Gurmukhi passages. Not collected |
+| `christianity/english/population/` | The 30 NRSV passages that run |
+| `christianity/masoretic/population/` | Those of the 30 whose original is the Hebrew Bible |
+| `christianity/greek/population/` | Those of the 30 whose original is the New Testament |
+| `judaism/native/population/prompt-english/` and `prompt-native/` | The same 30 Aramaic passages, two prompts |
+| `judaism/english/population/` | Those 30 again, English edition |
+| `islam/native/population/prompt-english/` and `prompt-native/` | The same 30 Arabic passages, two prompts |
+| `sikhism/native/population/prompt-english/` and `prompt-native/` | The same 30 Gurmukhi passages. Not collected |
 | `*/familiarity/` | The pre-registered list. Not in the run |
 | `cost.py` | Cost calculator. Writes `COST.md` from OpenRouter's prices |
 | `models/openrouter.yaml` | List A: 16 OpenRouter models, search off |
@@ -34,19 +37,16 @@ A verify question can quote some other tradition; those quotes are not copied he
 
 ## Counts
 
-The run is the `population/` folder: 30 passages, four tasks, 120 questions.
-`passages.json` in that folder is those 30, and `run` is true. The
-`familiarity/` folder is the pre-registered list and is not collected with
-the run. That list is why an older combined file was larger than 30:
-Christianity 4, Judaism 1, Islam 7, Sikhism 3. Judaism's 30 passages are
-asked twice, once under `native/population` and once under `english/population`.
+The run is the `population/` folder. `passages.json` there is the 30 passages, and `run` is true. The `familiarity/` folder is not collected with the run (Christianity 4, Judaism 1, Islam 7, Sikhism 3).
 
-| Tradition | Questions | Population | Familiarity | File |
+A native edition is the same passages asked twice: `prompt-english/` and `prompt-native/`. Christianity's native text is not a second draw and not two full Bibles. The same 30 citations are split by original language: Hebrew Bible verses in `masoretic/`, New Testament verses in `greek/`. The NRSV file is the English edition of all 30.
+
+| Tradition | Questions in the run | Population | Familiarity | File |
 |---|---|---|---|---|
-| Christianity (NRSV, English only) | 120 | 30 | 4, not in the run | `christianity/english/population/` |
-| Judaism (Aramaic, then English) | 120 + 120 | 30 | 1, not in the run | `judaism/native/population/`, `judaism/english/population/` |
-| Islam (Arabic only) | 120 | 30 | 7, not in the run | `islam/native/population/` |
-| Sikhism (Gurmukhi only) | 120, not collected | 30 | 3, not in the run | `sikhism/native/population/` |
+| Christianity (NRSV, then original language) | 120 + 240 | 30 | 4, not in the run | `christianity/english/population/`, `masoretic/`, `greek/` |
+| Judaism (Aramaic, two prompts, then English) | 120 + 120 + 120 | 30 | 1, not in the run | `judaism/native/population/prompt-english/`, `prompt-native/`, `judaism/english/population/` |
+| Islam (Arabic, two prompts) | 120 + 120 | 30 | 7, not in the run | `islam/native/population/prompt-english/`, `prompt-native/` |
+| Sikhism (Gurmukhi, two prompts) | 240, not collected | 30 | 3, not in the run | `sikhism/native/population/prompt-english/`, `prompt-native/` |
 | Hinduism | 0 | — | — | no Bhagavad Gita in `texts/raw` |
 | Buddhism | 0 | — | — | no Dhammapada in `texts/raw` |
 
@@ -70,25 +70,26 @@ A cite prompt shows one other citation from the same edition, so the answer has 
 
 The edition is named inside the prompt. The model call has no language field.
 
-**English edition** (Christianity, and the English half of Judaism). One line. It names that edition and asks for the answer in English.
+**English edition, already English** (the NRSV file). One line. It names that edition and asks for the answer in English.
+
+The same 30 citations are also in `christianity/masoretic/` (Hebrew Bible, including Aramaic Daniel 2) and `christianity/greek/` (New Testament). Those use the two-call native form below. Together they are one set of 30, not a second draw.
 
 ```
 What is the text of Exodus 28:43 in the New Revised Standard Version (NRSV)? Reply with the exact text of that edition and nothing else.
 ```
 
-**Native-language answer** (Islam, Sikhism, and the Aramaic half of Judaism). Three lines.
-
-1. The question in English, naming the native edition.
-2. The same question in the text's language, naming that edition. These lines are drafts for a native speaker.
-3. An instruction to answer in the language of that edition.
+**Native edition, two calls** (Islam, Sikhism, and the Aramaic half of Judaism). The same question is not stacked in one prompt. `prompt-english/` is the English question plus one line saying which language to answer in. `prompt-native/` is only the question in the text's language. Those native lines are drafts for a native speaker.
 
 ```
 What is the text of 34:54 in the Uthmani (QUL) edition? Reply with the exact text of that edition and nothing else.
-ما نص 34:54 من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.
 Answer in the language of the Uthmani (QUL) edition.
 ```
 
-**English answer when the English edition is a different book** (Judaism only). Three lines. The English question and the native-language question both name the English edition. The last line says to answer in English from that edition, and that its wording can differ from the native edition.
+```
+ما نص 34:54 من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.
+```
+
+**English edition of a non-English work** (Judaism). One English line, the same shape as Christianity. It names the English edition. It does not repeat the question in Hebrew, and it does not warn that the translation can differ.
 
 Judaism's native edition is one text, the Aramaic Davidson edition. Hebrew and Aramaic are mixed in that text; they are not two scored languages. The English Davidson edition is a second scored answer. `complete_unit` cuts each edition at half of its own words (`split_quote` in `generate.py`, the same cut the main generator uses). The two remainders are the same fraction of each wording. They are not the same point in the passage, because the translation is not the same length.
 
@@ -96,7 +97,7 @@ Islam and Sikhism do not have this third prompt. This corpus has no English edit
 
 ## Run the panel
 
-The run joins the four `population/questions.jsonl` files. Sikhism stays out because `collect` refuses a Gurmukhi question while scoring still drops Gurmukhi vowel signs. `review/` has check pages and does not keep a second copy of the questions.
+The run joins the population question files in `RUNNING.md`. Sikhism stays out because `collect` refuses a Gurmukhi question while scoring still drops Gurmukhi vowel signs. `review/` has check pages and does not keep a second copy of the questions.
 
 List A is `models/openrouter.yaml` (16 models), and that is the run. List B is `models/openrouter-subset.yaml` (7 models). Both go through OpenRouter with temperature 0. One `OPENROUTER_API_KEY` covers every model. No Anthropic, OpenAI, or Gemini key. The reference file `configs/models.openrouter.yaml` is the old three-model run and is not this panel.
 
@@ -104,6 +105,8 @@ Search is the `search` key at the top of the panel file. It is `false`, which st
 
 OpenRouter has no language field. The prompt already names the edition and the answer language. One collect writes every model in the chosen file into the same answers file; each row is marked with its `model_id`.
 
-`COST.md` prices List A. The number to budget is the higher one for all six traditions complete. Christianity stays 120 questions. Every other tradition is 240 once both a native edition and an English edition are in (30 passages, four tasks, twice). Familiarity lists are not in that total. The file on disk is still Christianity, both Judaism editions, and Islam's native edition. Refresh with `python items/for-test/cost.py`.
+`COST.md` prices List A. Christianity and Judaism are 360 population questions each. Islam on disk is the native 240. Familiarity lists are not in that total. Refresh with `python items/for-test/cost.py`.
+
+`complete_unit` scores the remaining words of that passage. An answer that then continues into later verses still counts as correct, because the remainder is contained in the answer. A cite task that asks for a passage from the wrong edition is not in this run.
 
 How to run, pause, and resume is in `RUNNING.md` at the top of the repo. A pilot collects `christianity/english/population/questions.jsonl` with `--model haiku` into its own answers file. Finished answers are kept if you stop midway.

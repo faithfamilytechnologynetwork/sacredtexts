@@ -13,18 +13,14 @@ reference run is about $13.
 
 ## Test set
 
-The run is the population sample: 30 passages in each file below, four tasks
-each. Familiarity lists are in the sibling `familiarity/` folders and are not
+The run is the population sample: the same 30 passages, four tasks each.
+A native edition is two files, an English prompt and a native-language prompt.
+Familiarity lists are in the sibling `familiarity/` folders and are not
 part of this command. Sikhism is written but not collected. Hinduism and
 Buddhism have no passages yet. The panel is 16 models, search off.
 
 ```bash
-mkdir -p runs/for-test
-cat items/for-test/christianity/english/population/questions.jsonl \
-    items/for-test/judaism/native/population/questions.jsonl \
-    items/for-test/judaism/english/population/questions.jsonl \
-    items/for-test/islam/native/population/questions.jsonl \
-  > runs/for-test/questions.jsonl
+python items/for-test/join_run.py
 uv --project pipelines run python -m sacredbench collect \
   runs/for-test/questions.jsonl items/for-test/models/openrouter.yaml \
   --out runs/for-test/answers.jsonl
@@ -52,7 +48,7 @@ uv --project pipelines run python -m sacredbench collect \
 That answers file is only the Christianity questions. Run the same command
 again without `--model` to add the other models, and the `haiku` rows are
 skipped. The other traditions are separate files. Collect the joined
-`runs/for-test/questions.jsonl` into `runs/for-test/` when you want all four files.
+`runs/for-test/questions.jsonl` into `runs/for-test/` when you want the full join.
 
 Each answer row records the model id, the OpenRouter slug, the provider,
 temperature, max tokens, and the panel fingerprint (provider, model,

@@ -1,0 +1,197 @@
+{
+  "tradition": "Christianity",
+  "sample": "population",
+  "run": true,
+  "passages": [
+    {
+      "tradition": "Christianity",
+      "citation": "Exodus 28:43",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/הָיוּ֩ עַל־אַהֲרֹ֨ן וְ/עַל־בָּנָ֜י/ו בְּ/בֹאָ֣/ם ׀ אֶל־אֹ֣הֶל מוֹעֵ֗ד א֣וֹ בְ/גִשְׁתָּ֤/ם אֶל־הַ/מִּזְבֵּ֨חַ֙ לְ/שָׁרֵ֣ת בַּ/קֹּ֔דֶשׁ וְ/לֹא־יִשְׂא֥וּ עָוֺ֖ן וָ/מֵ֑תוּ חֻקַּ֥ת עוֹלָ֛ם ל֖/וֹ וּ/לְ/זַרְע֥/וֹ אַחֲרָֽי/ו׃ ס"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Ezekiel 23:16",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "ו/תעגבו/תעגבוַ/תַּעְגְּבָ֥/ה עֲלֵי/הֶ֖ם לְ/מַרְאֵ֣ה עֵינֶ֑י/הָ וַ/תִּשְׁלַ֧ח מַלְאָכִ֛ים אֲלֵי/הֶ֖ם כַּשְׂדִּֽימָ/ה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Leviticus 14:19",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/עָשָׂ֤ה הַ/כֹּהֵן֙ אֶת־הַ֣/חַטָּ֔את וְ/כִפֶּ֕ר עַל־הַ/מִּטַּהֵ֖ר מִ/טֻּמְאָת֑/וֹ וְ/אַחַ֖ר יִשְׁחַ֥ט אֶת־הָ/עֹלָֽה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Exodus 29:40",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/עִשָּׂרֹ֨ן סֹ֜לֶת בָּל֨וּל בְּ/שֶׁ֤מֶן כָּתִית֙ רֶ֣בַע הַ/הִ֔ין וְ/נֵ֕סֶךְ רְבִעִ֥ית הַ/הִ֖ין יָ֑יִן לַ/כֶּ֖בֶשׂ הָ/אֶחָֽד׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "1 Samuel 31:6",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יָּ֣מָת שָׁא֡וּל וּ/שְׁלֹ֣שֶׁת בָּנָי/ו֩ וְ/נֹשֵׂ֨א כֵלָ֜י/ו גַּ֧ם כָּל־אֲנָשָׁ֛י/ו בַּ/יּ֥וֹם הַ/ה֖וּא יַחְדָּֽו׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "2 Chronicles 26:15",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יַּ֣עַשׂ ׀ בִּ/ירוּשָׁלִַ֨ם חִשְּׁבֹנ֜וֹת מַחֲשֶׁ֣בֶת חוֹשֵׁ֗ב לִ/הְי֤וֹת עַל־הַ/מִּגְדָּלִים֙ וְ/עַל־הַ/פִּנּ֔וֹת לִ/ירוֹא֙ בַּֽ/חִצִּ֔ים וּ/בָ/אֲבָנִ֖ים גְּדֹל֑וֹת וַ/יֵּצֵ֤א שְׁמ/וֹ֙ עַד־לְ/מֵ֣/רָח֔וֹק כִּֽי־הִפְלִ֥יא לְ/הֵעָזֵ֖ר עַ֥ד כִּֽי־חָזָֽק׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "1 Kings 22:39",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/יֶתֶר֩ דִּבְרֵ֨י אַחְאָ֜ב וְ/כָל־אֲשֶׁ֣ר עָשָׂ֗ה וּ/בֵ֤ית הַ/שֵּׁן֙ אֲשֶׁ֣ר בָּנָ֔ה וְ/כָל־הֶ/עָרִ֖ים אֲשֶׁ֣ר בָּנָ֑ה הֲ/לֽוֹא־הֵ֣ם כְּתוּבִ֗ים עַל־סֵ֛פֶר דִּבְרֵ֥י הַ/יָּמִ֖ים לְ/מַלְכֵ֥י יִשְׂרָאֵֽל׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Leviticus 11:21",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "אַ֤ךְ אֶת־זֶה֙ תֹּֽאכְל֔וּ מִ/כֹּל֙ שֶׁ֣רֶץ הָ/ע֔וֹף הַ/הֹלֵ֖ךְ עַל־אַרְבַּ֑ע אֲשֶׁר־לאלאל֤/וֹ כְרָעַ֨יִם֙ מִ/מַּ֣עַל לְ/רַגְלָ֔י/ו לְ/נַתֵּ֥ר בָּ/הֵ֖ן עַל־הָ/אָֽרֶץ׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Ezekiel 16:19",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/לַחְמִ/י֩ אֲשֶׁר־נָתַ֨תִּי לָ֜/ךְ סֹ֣לֶת וָ/שֶׁ֤מֶן וּ/דְבַשׁ֙ הֶֽאֱכַלְתִּ֔י/ךְ וּ/נְתַתִּ֧י/הוּ לִ/פְנֵי/הֶ֛ם לְ/רֵ֥יחַ נִיחֹ֖חַ וַ/יֶּ֑הִי נְאֻ֖ם אֲדֹנָ֥/י יְהוִֽה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Judges 17:11",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יּ֥וֹאֶל הַ/לֵּוִ֖י לָ/שֶׁ֣בֶת אֶת־הָ/אִ֑ישׁ וַ/יְהִ֤י הַ/נַּ֨עַר֙ ל֔/וֹ כְּ/אַחַ֖ד מִ/בָּנָֽי/ו׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Daniel 2:42",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/אֶצְבְּעָת֙ רַגְלַיָּ֔/א מנ/הוןמנ/הוןמִנְּ/הֵ֥ין פַּרְזֶ֖ל ו/מנ/הוןו/מנ/הוןוּ/מִנְּ/הֵ֣ין חֲסַ֑ף מִן־קְצָ֤ת מַלְכוּתָ/א֙ תֶּהֱוֵ֣ה תַקִּיפָ֔ה וּ/מִנַּ֖/הּ תֶּהֱוֵ֥ה תְבִירָֽה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "1 Kings 1:23",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יַּגִּ֤ידוּ לַ/מֶּ֨לֶךְ֙ לֵ/אמֹ֔ר הִנֵּ֖ה נָתָ֣ן הַ/נָּבִ֑יא וַ/יָּבֹא֙ לִ/פְנֵ֣י הַ/מֶּ֔לֶךְ וַ/יִּשְׁתַּ֧חוּ לַ/מֶּ֛לֶךְ עַל־אַפָּ֖י/ו אָֽרְצָ/ה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "2 Samuel 18:5",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יְצַ֣ו הַ/מֶּ֡לֶךְ אֶת־י֠וֹאָב וְ/אֶת־אֲבִישַׁ֤י וְ/אֶת־אִתַּי֙ לֵ/אמֹ֔ר לְ/אַט־לִ֖/י לַ/נַּ֣עַר לְ/אַבְשָׁל֑וֹם וְ/כָל־הָ/עָ֣ם שָׁמְע֗וּ בְּ/צַוֺּ֥ת הַ/מֶּ֛לֶךְ אֶת־כָּל־הַ/שָּׂרִ֖ים עַל־דְּבַ֥ר אַבְשָׁלֽוֹם׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "1 Chronicles 9:22",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "כֻּלָּ֤/ם הַ/בְּרוּרִים֙ לְ/שֹׁעֲרִ֣ים בַּ/סִּפִּ֔ים מָאתַ֖יִם וּ/שְׁנֵ֣ים עָשָׂ֑ר הֵ֤מָּה בְ/חַצְרֵי/הֶם֙ הִתְיַחְשָׂ֔/ם הֵ֣מָּה יִסַּ֥ד דָּוִ֛יד וּ/שְׁמוּאֵ֥ל הָ/רֹאֶ֖ה בֶּ/אֱמוּנָתָֽ/ם׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Isaiah 49:7",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "כֹּ֣ה אָֽמַר־יְהוָה֩ גֹּאֵ֨ל יִשְׂרָאֵ֜ל קְדוֹשׁ֗/וֹ לִ/בְזֹה־נֶ֜פֶשׁ לִ/מְתָ֤עֵֽב גּוֹי֙ לְ/עֶ֣בֶד מֹשְׁלִ֔ים מְלָכִים֙ יִרְא֣וּ וָ/קָ֔מוּ שָׂרִ֖ים וְ/יִֽשְׁתַּחֲוּ֑וּ BHS has been faithful to the Leningrad Codex where there might be a question of the validity of the form and we keep the same form as BHS. לְמַ֤עַן יְהוָה֙ אֲשֶׁ֣ר נֶאֱמָ֔ן קְדֹ֥שׁ יִשְׂרָאֵ֖ל וַ/יִּבְחָרֶֽ/ךָּ׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Jeremiah 50:23",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "אֵ֤יךְ נִגְדַּע֙ וַ/יִּשָּׁבֵ֔ר פַּטִּ֖ישׁ כָּל־הָ/אָ֑רֶץ אֵ֣יךְ הָיְתָ֧ה לְ/שַׁמָּ֛ה בָּבֶ֖ל בַּ/גּוֹיִֽם׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Joshua 23:2",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וַ/יִּקְרָ֤א יְהוֹשֻׁ֨עַ֙ לְ/כָל־יִשְׂרָאֵ֔ל לִ/זְקֵנָי/ו֙ וּ/לְ/רָאשָׁ֔י/ו וּ/לְ/שֹׁפְטָ֖י/ו וּ/לְ/שֹֽׁטְרָ֑י/ו וַ/יֹּ֣אמֶר אֲלֵ/הֶ֔ם אֲנִ֣י זָקַ֔נְתִּי בָּ֖אתִי בַּ/יָּמִֽים׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Ezekiel 43:24",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/הִקְרַבְתָּ֖/ם לִ/פְנֵ֣י יְהוָ֑ה וְ/הִשְׁלִ֨יכוּ הַ/כֹּהֲנִ֤ים עֲלֵי/הֶם֙ מֶ֔לַח וְ/הֶעֱל֥וּ אוֹתָ֛/ם עֹלָ֖ה לַֽ/יהוָֽה׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Nehemiah 6:7",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "וְ/גַם־נְבִיאִ֡ים הֶעֱמַ֣דְתָּ לִ/קְרֹא֩ עָלֶ֨י/ךָ בִֽ/ירוּשָׁלִַ֜ם לֵ/אמֹ֗ר מֶ֚לֶךְ בִּֽ/יהוּדָ֔ה וְ/עַתָּה֙ יִשָּׁמַ֣ע לַ/מֶּ֔לֶךְ כַּ/דְּבָרִ֣ים הָ/אֵ֑לֶּה וְ/עַתָּ֣ה לְכָ֔/ה וְ/נִֽוָּעֲצָ֖ה יַחְדָּֽו׃ ס"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Isaiah 37:17",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "הַטֵּ֨ה יְהוָ֤ה ׀ אָזְנְ/ךָ֙ וּֽ/שְׁמָ֔ע פְּקַ֧ח יְהוָ֛ה עֵינֶ֖/ךָ וּ/רְאֵ֑ה וּ/שְׁמַ֗ע אֵ֚ת כָּל־דִּבְרֵ֣י סַנְחֵרִ֔יב אֲשֶׁ֣ר שָׁלַ֔ח לְ/חָרֵ֖ף אֱלֹהִ֥ים חָֽי׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Exodus 30:38",
+      "sample": "population",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "אִ֛ישׁ אֲשֶׁר־יַעֲשֶׂ֥ה כָמ֖וֹ/הָ לְ/הָרִ֣יחַ בָּ֑/הּ וְ/נִכְרַ֖ת מֵ/עַמָּֽי/ו׃ ס"
+      }
+    }
+  ],
+  "notice": "Masoretic text from the Westminster Leningrad Codex, via the Open Scriptures Hebrew Bible. The same 30 Christian population citations that are Hebrew Bible verses, not a second draw. Daniel 2 is Aramaic in this text."
+}

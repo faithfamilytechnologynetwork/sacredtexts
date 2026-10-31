@@ -100,25 +100,34 @@ def _in_script_blocks(ch: str) -> bool:
     return any(lo <= o <= hi for lo, hi in _SCRIPT_BLOCKS)
 
 
+def _is_greek_base(ch: str) -> bool:
+    o = ord(ch)
+    return 0x0370 <= o <= 0x03FF or 0x1F00 <= o <= 0x1FFF
+
+
 def strip_script_marks(text: str) -> str:
     """Fold Arabic/Hebrew letter variants and remove their combining marks so quote
-    scoring compares bare consonantal text. Latin (and every other script) is
-    untouched. Applied to BOTH the answer and the expected text, so the direction of
-    vocalisation does not matter (a vocalised model answer vs. an unvocalised expected
-    scores the same as the reverse)."""
+    scoring compares bare consonantal text. Greek accents and breathings are removed
+    too, so they do not become word breaks. Applied to BOTH the answer and the
+    expected text, so the direction of vocalisation does not matter."""
     text = text.replace("ٱ", "ا")  # Arabic alef-wasla -> bare alef (atomic;
     #                                           alef-madda/hamza fold via NFKD + marks)
     text = text.replace("־", " ")  # Hebrew maqaf -> word boundary (NOT deleted:
     #                                      it joins words, so it must stay a separator)
-    # delete combining marks (Mn) + the non-Mn editorial code points, but only within
-    # the RTL blocks — so the mark/annotation stripping never reaches Latin.
-    return "".join(
-        ch for ch in text
-        if not (
-            _in_script_blocks(ch)
-            and (unicodedata.category(ch) == "Mn" or ch in _SCRIPT_EDITORIAL)
-        )
-    )
+    # Combining marks in the RTL blocks are deleted. Greek accents live in the
+    # combining block, so they are deleted only when they sit on a Greek letter.
+    # That leaves Latin combining marks on the path they already had.
+    out = []
+    prev_greek = False
+    for ch in text:
+        drop_rtl = _in_script_blocks(ch) and (unicodedata.category(ch) == "Mn" or ch in _SCRIPT_EDITORIAL)
+        drop_greek = prev_greek and unicodedata.category(ch) == "Mn"
+        if drop_rtl or drop_greek:
+            continue
+        out.append(ch)
+        if unicodedata.category(ch) != "Mn":
+            prev_greek = _is_greek_base(ch)
+    return "".join(out)
 
 # Fixed sub-metrics for the NON-graded tasks. The text-retrieval tasks (retrieve_quote /
 # complete_unit) derive their submetric set from the selected graders (see graders.submetrics_for);
