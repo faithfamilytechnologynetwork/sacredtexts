@@ -6,6 +6,8 @@
   licensing and exist only locally (see `.gitignore`):
   - `raw/Roman Catholic/nabre.json` — NABRE is a copyrighted translation
     (Confraternity of Christian Doctrine / USCCB).
+  - `raw/Protestant Christian/nrsv.json` — NRSV is a copyrighted translation
+    (National Council of the Churches of Christ in the USA, 1989).
   - `raw/Greek Orthodox/` — direct extracts of the licensed TLG corpus
     (and the underlying Rahlfs Septuagint / Nestle-Aland editions are
     themselves copyrighted).
@@ -24,6 +26,10 @@ layout matches the committed tree:
   `texts/raw/Roman Catholic/nabre.json`. Alternatively rebuild it from
   [`Religion-at-Notre-Dame/catholic_text_json`](https://github.com/Religion-at-Notre-Dame/catholic_text_json)
   (the upstream source of the group's copy).
+- **NRSV** → place a copy you are allowed to hold at
+  `texts/raw/Protestant Christian/nrsv.json`, in the same `{book, chapter, verse, text}`
+  shape as `kjv.json`. The National Council of Churches holds the copyright;
+  this repo does not redistribute the text.
 - **Greek Orthodox (TLG)** → download the whole `Greek Orthodox/` folder from
   Box and save it as `texts/raw/Greek Orthodox/`. These files are extracts of
   the licensed [TLG](https://stephanus.tlg.uci.edu/) corpus — you (or your

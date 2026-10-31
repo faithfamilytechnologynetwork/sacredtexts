@@ -513,13 +513,13 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
 
 
 def test_real_catalogue_default_pool_is_eighteen():
-    """The committed corpus: 22 targets, default pool (language == canonical_language,
+    """The committed corpus: 23 targets, default pool (language == canonical_language,
     non-restricted) is exactly these 18 texts (Spec 50 added Sri Guru Granth Sahib); every target carries both new fields; the two
     LDS KJV targets are gone (issue #27 Q3). Pins membership, not just the count, so a
     canonical_language typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 22
+    assert len(targets) == 23
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language

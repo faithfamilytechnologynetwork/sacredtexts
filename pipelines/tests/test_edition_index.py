@@ -341,7 +341,7 @@ def test_real_catalogue_indexes_bibles_and_excludes_restricted():
     assert ("The Bible", "WEB") in versions
     # NABRE (restricted) is not
     assert ("The Bible", "NABRE") not in versions
-    assert excluded == ["NABRE", "TLG"]  # both restricted same-canonical-language editions, pinned
+    assert excluded == ["NABRE", "NRSV", "TLG"]  # restricted same-canonical-language editions, pinned
     # the canonical-language guard keeps non-canonical editions OUT of the index:
     # the English Talmud (en / canonical he) and the Papal Encyclicals (en / canonical la)
     assert ("Talmud Bavli", "William Davidson Edition - English") not in versions

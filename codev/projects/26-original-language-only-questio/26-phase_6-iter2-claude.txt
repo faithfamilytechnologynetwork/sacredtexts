@@ -15,7 +15,7 @@ I'll review Phase 6 (live run + committed evidence) by reading the actual artifa
 
 **Corrected claims now check out.** opus English range is 86–100% (D&C 86%, BoM/WEB 93%, PoGP/ASV/KJV 100%); KJV is 100% for opus *and* haiku with `gpt-oss-20b` at 16%; `verify_source` refused = 0 across all 357 cells (3×119). Every headline number in the run README reconciles against `summary.md`.
 
-**Panel deviation is properly authorized.** The plan specified Anthropic haiku+opus × search on/off; the shipped run is three OpenRouter models, search-off. The thread shows the builder *first blocked* on the absent `ANTHROPIC_API_KEY` and reported it (exactly as the spec constraint demands — "do not substitute OpenRouter"), then proceeded only on Waleed's explicit 2026-10-21 decision with a hard ≤$40 rule, after two scratchpad smokes. The README's §"Why no search arms" documents the resulting loss of the search-on/off contrast honestly rather than papering over it. That is the right handling of this constraint.
+**Panel deviation is properly authorized.** The plan specified Anthropic haiku+opus × search on/off; the shipped run is three OpenRouter models, search-off. The thread shows the builder *first blocked* on the absent `ANTHROPIC_API_KEY` and reported it (exactly as the spec constraint demands — "do not substitute OpenRouter"), then proceeded only on the maintainer's explicit 2026-10-21 decision with a hard ≤$40 rule, after two scratchpad smokes. The README's §"Why no search arms" documents the resulting loss of the search-on/off contrast honestly rather than papering over it. That is the right handling of this constraint.
 
 ## Minor findings (non-blocking)
 

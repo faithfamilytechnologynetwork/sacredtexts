@@ -52,7 +52,7 @@ fail-open/consistency/coverage fixes.
 
 ## Note
 
-jev.py's origin is Karr's PR #30, carried under his authorship on the feat commit (`a7d33b2`). This
+jev.py's origin is the contributor's PR #30, carried under that authorship on the feat commit (`a7d33b2`). This
 iteration's review-driven hardening is committed under my authorship, consistent with the iter-1
 review/rebuttal commit (`a9769c7`). No `Co-Authored-By`/`Generated-with` trailers (global CLAUDE.md +
 architect brief); the earlier commits that wrongly carried one will be cleaned message-only before the

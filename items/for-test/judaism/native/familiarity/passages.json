@@ -1,0 +1,17 @@
+{
+  "tradition": "Judaism",
+  "sample": "familiarity",
+  "run": false,
+  "passages": [
+    {
+      "tradition": "Judaism",
+      "citation": "Berakhot 2a:1",
+      "sample": "familiarity",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "מאימתי קורין את שמע בערבין משעה שהכהנים נכנסים לאכול בתרומתן עד סוף האשמורה הראשונה דברי רבי אליעזר"
+      }
+    }
+  ],
+  "notice": "William Davidson Edition on Sefaria, CC-BY-NC."
+}

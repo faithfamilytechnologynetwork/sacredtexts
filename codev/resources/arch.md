@@ -186,7 +186,7 @@ test then fails — remedy: regenerate) and is unaffected by unrelated catalogue
 drop-in tradition leaves a historic card buildable and byte-identical. It is recorded, not enforced. It never re-scores
 or calls a model, fails fast with no partial write, and writes both files atomically (the shared
 `edition_index.atomic_write_texts`). All card prose is in one editable block `facct.CARD_PROSE`
-(Jonathan Karr owns the wording for the FAccT paper); every number is interpolated from the run,
+(a contributor owns the wording for the FAccT paper); every number is interpolated from the run,
 pinned by `test_original_run_regression.py::test_committed_facct_card_matches_the_run`.
 
 ## Test gate

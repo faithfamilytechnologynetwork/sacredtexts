@@ -72,7 +72,7 @@ invocation, making the cap enforceable rather than aspirational.
 live-verified Decisions response is committed as the fixture** `interpret()`'s fail-fast tests run
 against, per the project's "mocking the provider seam hides live-only failures" lesson.
 
-**Also noted (claude, not an issue):** the `cross_translation` import in Karr's `jev.py` is top-level
+**Also noted (claude, not an issue):** the `cross_translation` import in the contributor's `jev.py` is top-level
 and non-optional, so option (a) requires an actual code edit (make the import optional), not just
 `index=None`. Captured in Approach 1's "Required edits" list.
 

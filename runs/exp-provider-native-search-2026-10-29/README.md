@@ -1,6 +1,6 @@
 # Experiment: does each provider's NATIVE search change scripture fidelity?
 
-**Date**: 2026-10-29 · **Requested by**: Waleed · **Issue**: #54
+**Date**: 2026-10-29 · **Requested by**: the maintainer · **Issue**: #54
 **Status**: harness complete + nativeness-verified; **live run authorized** (OpenRouter key)
 
 Full hypotheses, success criteria, and design: `codev/specs/54-experiment-provider-native-sea.md`.

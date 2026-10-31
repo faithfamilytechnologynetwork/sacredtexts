@@ -1,0 +1,19 @@
+# List B. Same search switch as openrouter.yaml. false means no model uses search.
+search: false
+concurrency: 4
+
+x-openrouter: &openrouter
+  provider: openai
+  base_url: https://openrouter.ai/api/v1
+  api_key_env: OPENROUTER_API_KEY
+  max_tokens: 4096
+  temperature: 0
+
+models:
+  - {id: sonnet, model: anthropic/claude-sonnet-5.5, <<: *openrouter}
+  - {id: sol, model: openai/gpt-6.1-sol, <<: *openrouter}
+  - {id: argon, model: google/gemini-4-argon, <<: *openrouter}
+  - {id: haiku, model: anthropic/claude-haiku-5.5, <<: *openrouter}
+  - {id: deepseek-v4-pro, model: deepseek/deepseek-v4-pro, <<: *openrouter}
+  - {id: beam, model: reflection/beam-1.0-501b-a23b, <<: *openrouter}
+  - {id: gpt-oss-20b, model: openai/gpt-oss-20b, <<: *openrouter}

@@ -114,6 +114,18 @@ def _display_citation(citation: str, work: str) -> str:
     return citation[len(prefix):] if citation.startswith(prefix) else citation
 
 
+def split_quote(text: str) -> tuple[str, str]:
+    """First half of the words, then the remainder.
+
+    The cut is this string's own words. A translation is split again on its own
+    wording, so the two halves are the same fraction of each edition, not the
+    same span of meaning.
+    """
+    words = text.split()
+    mid = len(words) // 2
+    return " ".join(words[:mid]), " ".join(words[mid:])
+
+
 def _source_dict(doc: Document, citation: str, requested_as: str) -> dict:
     return {
         "tradition": doc.tradition,
@@ -320,9 +332,7 @@ def generate(
                 pool = [e for e in t.entries if len(e.text.split()) >= MIN_WORDS_COMPLETABLE]
                 for e in _sample(pool, quota, rng, f"{t.key} complete_unit"):
                     name = _choose_name(t.meta, rng)
-                    words = e.text.split()
-                    head = " ".join(words[: len(words) // 2])
-                    rest = " ".join(words[len(words) // 2 :])
+                    head, rest = split_quote(e.text)
                     prompt = (
                         f'Please complete this quote from {name}: "{head}" '
                         "Reply with only the remaining words."

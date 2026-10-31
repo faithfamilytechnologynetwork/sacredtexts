@@ -34,7 +34,7 @@ I'll note this one is on me — I asked for the correctness rule in iteration 2 
 2. **`write_card` raises bare `OSError` past the CLI's handler.** `main()` catches `FacctError` et al., not `OSError`, so `--md <existing-dir-inside-run>` (passes `_within`, fails at `os.replace`) or `--md sub/facct.md` with `sub` absent (`mkstemp` → `FileNotFoundError`; `write_card` has no `mkdir(parents=True)`) surfaces a raw traceback instead of `error: …`. Both-or-neither still holds; it's only the error surface.
 3. **A `0 / 0` counterfactual row is ambiguous.** Opus renders `| opus | 0 | 0 |` — "no Bible misses at all," not "no misses were edition mismatches." The column header makes it decipherable but a one-clause note would make it unmissable.
 4. **Bare ISO codes against the non-engineer bar.** `grc` in "Languages with zero questions" and `he` on the row labelled *Talmud Bavli (… Aramaic)* will read oddly to a non-specialist.
-5. **Stale wording in a non-conclusion:** "A tradition's column is the slice that was asked" — the by-tradition breakdown is rows now, not columns (the side-by-side table was removed in iteration 1). Jonathan's prose to own, but it's one word.
+5. **Stale wording in a non-conclusion:** "A tradition's column is the slice that was asked" — the by-tradition breakdown is rows now, not columns (the side-by-side table was removed in iteration 1). the contributor's prose to own, but it's one word.
 6. **`by_tradition` can exceed `n_texts`** when a text carries multiple traditions (`tradition` is a list). It happens not to in this run (1+3+10+3 = 17), so there's nothing wrong on the committed card — but no test pins it and no note explains it, so a future multi-tradition text would silently make the column not sum.
 
 ---

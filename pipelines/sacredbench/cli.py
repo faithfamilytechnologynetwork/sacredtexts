@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -22,12 +23,13 @@ from sacredbench import generate as gen
 from sacredbench import schema
 from sacredbench.collect import CollectError, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
+from sacredbench.providers import is_quota_error
 from sacredbench.config import ConfigError, load_config
 from sacredbench.edition_index import EditionIndexError, load_edition_documents, write_export
 from sacredbench.facct import FacctError, build_facct, write_card
 from sacredbench.generate import generate as run_generate
 from sacredbench.generate import load_questions, write_questions
-from sacredbench.failure_kind import breakdown_run, format_breakdown, report_run
+from sacredbench.failure_kind import analysis_markdown, breakdown_run, format_breakdown, report_run
 from sacredbench.probes import format_probe, probe_run
 from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
@@ -320,9 +322,25 @@ def collect(
     questions: Path = typer.Argument(help="questions.jsonl from `generate`"),
     config: Path = typer.Argument(help="run config YAML (model panel)"),
     out: Path = typer.Option(Path("runs/answers.jsonl")),
+    model: str = typer.Option(None, "--model", help="run only this model id from the panel; omit to run every model"),
+    tradition: str = typer.Option(None, "--tradition", help="run only questions whose source tradition list contains this name"),
 ) -> None:
-    """Fan questions out to the configured model panel (resumable; exits non-zero on failed cells)."""
-    qs = load_questions(questions)
+    """Fan questions out to the configured model panel (resumable; exits non-zero on failed cells).
+
+    Each finished answer is appended to --out immediately. A failed cell is not
+    written. Run the same command again to continue; finished cells are skipped.
+    """
+    all_qs = load_questions(questions)
+    qs = all_qs
+    if tradition is not None:
+        def _has_tradition(q) -> bool:
+            trads = q.source.get("tradition") or []
+            if isinstance(trads, str):
+                trads = [trads]
+            return tradition in trads
+        qs = [q for q in qs if _has_tradition(q)]
+        if not qs:
+            raise typer.BadParameter(f"no questions for tradition {tradition!r} in {questions}")
     # Spec 50 part-1 canary gate (PR #51 review): collecting Gurmukhi questions while
     # normalize() is Gurmukhi-unaware spends money on answers that cannot be scored.
     # Generation stays open (questions are verbatim text); the PAID step is gated.
@@ -336,13 +354,34 @@ def collect(
             "texts/standardized/Sikhism."
         )
     cfg = load_config(config)
-    typer.echo(f"{len(qs)} questions x {len(cfg.models)} models (concurrency {cfg.concurrency})")
+    if model is not None:
+        chosen = [m for m in cfg.models if m.id == model]
+        if not chosen:
+            ids = ", ".join(m.id for m in cfg.models)
+            raise typer.BadParameter(f"no model id {model!r} in {config} (ids: {ids})")
+        cfg = replace(cfg, models=tuple(chosen))
+    already, *_ = _existing(out)
+    pending = sum(1 for q in qs for m in cfg.models if (q.id, m.id) not in already)
+    skipped = len(qs) * len(cfg.models) - pending
+    typer.echo(
+        f"{len(qs)} questions x {len(cfg.models)} models, "
+        f"{pending} to call, {skipped} already saved "
+        f"(concurrency {cfg.concurrency})"
+    )
     done, failed, messages = run_collect(
         qs, cfg, out,
         on_result=lambda q, m, text: typer.echo(f"  done {q.id} x {m.id}"),
+        digest_from=all_qs,
     )
     typer.echo(f"collected {done} answers -> {out}")
     if failed:
+        if any(is_quota_error(Exception(msg)) for msg in messages):
+            typer.secho(
+                "stopped: OpenRouter quota or credit. Finished answers are saved. "
+                "Add credit and run the same command again.",
+                fg="red",
+                err=True,
+            )
         typer.secho(f"{failed} cell(s) FAILED (still pending; re-run to retry):", fg="red", err=True)
         for msg in messages:
             typer.secho(f"  {msg}", fg="red", err=True)
@@ -543,6 +582,46 @@ def facct(
     typer.echo(f"wrote {json_path} and {md_path} — {report['census']['n_texts']} texts, "
                f"{report['census']['n_questions']} questions, {other_edition} other_edition tag(s) "
                f"across {len(cf)} model(s)")
+
+
+@app.command()
+def analyze(
+    run_dir: Path = typer.Argument(..., help="a run directory with scores.jsonl and answers.jsonl"),
+    out: Path = typer.Option(None, help="analysis.md path (default: <run_dir>/analysis.md)"),
+    kjv: Path = typer.Option(Path("texts/raw/Protestant Christian/kjv.json"), help="raw KJV JSON for probes and splits"),
+    quran: Path = typer.Option(
+        Path("texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json"),
+        help="Uthmani Qur'an JSON for citation distance",
+    ),
+) -> None:
+    """Write analysis.md for a scored run.
+
+    Outcomes and refusal come from the score file. Minor and major kinds are
+    counted here and do not change accuracy. Probes and splits are included when
+    their reference files exist. Does not call a model.
+    """
+    if not (run_dir / "scores.jsonl").is_file() or not (run_dir / "answers.jsonl").is_file():
+        raise ScoreError(f"{run_dir} needs scores.jsonl and answers.jsonl")
+    dest = _within(run_dir, out if out is not None else Path("analysis.md"))
+    skipped: list[str] = []
+    probe_text = None
+    split_text = None
+    if kjv.is_file():
+        probe_text = format_probe(probe_run(run_dir, kjv))
+    else:
+        skipped.append(f"probes: missing {kjv}")
+    if kjv.is_file() and quran.is_file():
+        split_text = format_splits(split_run(run_dir, quran, kjv))
+    else:
+        if not quran.is_file():
+            skipped.append(f"splits: missing {quran}")
+        elif not kjv.is_file():
+            skipped.append(f"splits: missing {kjv}")
+    dest.write_text(
+        analysis_markdown(run_dir, probes=probe_text, splits=split_text, skipped=tuple(skipped)),
+        encoding="utf-8",
+    )
+    typer.echo(f"wrote {dest}")
 
 
 @app.command()

@@ -48,7 +48,7 @@ committed three-model reference run.
 
 - **Phase 6 panel (sanctioned).** The plan specified an Anthropic `haiku`+`opus` × search-on/off
   panel (≈1,904 cells) and instructed *"if `ANTHROPIC_API_KEY` is absent, stop and do not substitute
-  OpenRouter."* The key was absent. The builder blocked, reported to the architect, and **Waleed
+  OpenRouter."* The key was absent. The builder blocked, reported to the architect, and **the maintainer
   explicitly directed** (2026-10-21) a switch to **OpenRouter** with three models
   (`anthropic/claude-haiku-5-5`, `anthropic/claude-opus-5-5`, `openai/gpt-oss-20b`), **search-off
   only** (web_search is Anthropic-only; `config.py` fail-fasts it on a non-anthropic provider), under

@@ -1,0 +1,17 @@
+{
+  "tradition": "Judaism",
+  "sample": "familiarity",
+  "run": false,
+  "passages": [
+    {
+      "tradition": "Judaism",
+      "citation": "Berakhot 2a:1",
+      "sample": "familiarity",
+      "version": "William Davidson Edition - English",
+      "text": {
+        "english": "The beginning of tractate Berakhot, the first tractate in the first of the six orders of Mishna, opens with a discussion of the recitation of Shema, as the recitation of Shema encompasses an acceptance of the yoke of Heaven and of the mitzvot, and as such, forms the basis for all subsequent teachings. The Mishna opens with the laws regarding the appropriate time to recite Shema: MISHNA: From when, that is, from what time, does one recite Shema in the evening? From the time when the priests enter to partake of their teruma. Until when does the time for the recitation of the evening Shema extend? Until the end of the first watch. The term used in the Torah (Deuteronomy 6:7) to indicate the time for the recitation of the evening Shema is beshokhbekha, when you lie down, which refers to the time in which individuals go to sleep. Therefore, the time for the recitation of Shema is the first portion of the night, when individuals typically prepare for sleep. That is the statement of Rabbi Eliezer."
+      }
+    }
+  ],
+  "notice": "William Davidson Edition on Sefaria, CC-BY-NC."
+}

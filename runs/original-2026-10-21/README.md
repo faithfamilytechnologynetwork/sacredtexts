@@ -144,7 +144,7 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
   and never calls a model;
   every number is derived from `scores.jsonl` / `summary.json`, pinned by
   `test_original_run_regression.py::test_committed_facct_card_matches_the_run`. The card wording is
-  provisional pending Jonathan Karr's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).
+  provisional pending a contributor's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).
 
 ## Reproducing / re-scoring
 

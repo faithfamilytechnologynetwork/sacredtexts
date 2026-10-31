@@ -16,7 +16,7 @@ and nine Arabic hadith collections — it counts a refusal and a wrong verse as 
 unless you look closely, and it says nothing about *who* the questions represent. (The broader
 catalogue also holds Vatican-style encyclicals and an English Talmud, but those are **excluded** from
 this run because their language is not their canonical language — a fact the card must surface, not
-misreport as run content.) A reader — especially a reviewer of the FAccT paper Jonathan Karr is
+misreport as run content.) A reader — especially a reviewer of the FAccT paper a contributor is
 drafting — cannot tell from the percentage alone what the benchmark is allowed to conclude.
 
 Two specific blind spots matter most:
@@ -30,7 +30,7 @@ Two specific blind spots matter most:
    for the KJV scores as a miss, even though it produced a faithful edition of the same citation.
    The percentage punishes that as if the model had invented text.
 
-Jonathan Karr's PR #30 built exactly this card (`facct.py`) and a cross-edition reading
+a contributor's PR #30 built exactly this card (`facct.py`) and a cross-edition reading
 (`cross_translation.py`), but against the **October-11 scoring contract**: an eight-way label set
 with its own refusal regex and a `fabrication` label, exact-match headline. The contract on `main`
 has since changed (Spec 15, Spec 26): outcomes are the three values `correct` / `incorrect` /
@@ -56,7 +56,7 @@ second, conflicting definition of a refusal.
   a `reason` string naming the `language != canonical_language` rule). The catalogue
   (`texts/raw/*/source.yaml`) carries each text's license and canonical language, and therefore which
   catalogue languages have zero questions.
-- **Jonathan's PR #30 code is available but not merged** and not on `main`. It assumes the old
+- **the contributor's PR #30 code is available but not merged** and not on `main`. It assumes the old
   contract: `facct.py` declares an eight-label set (`exact`, `right_verse_plus_extra`,
   `other_tradition`, `other_edition`, `near_miss`, `refusal`, `empty`, `fabrication`), its own
   `_REFUSAL` regex and `is_refusal()`, and an exact-match headline. `cross_translation.py` builds an
@@ -120,14 +120,14 @@ same module in-process.
 - [ ] The card fails fast — non-zero exit, with neither `facct.json` nor `facct.md` partially written — when the evidence is inconsistent or incomplete: a missing run file, an answer/score row that will not join, a `scores.jsonl` count that disagrees with `summary.json`, or an unresolved catalogue target.
 - [ ] All card prose (claims, failure conditions, non-conclusions, review-not-attached) lives in one editable location, separate from the counting logic.
 - [ ] The copyright audit (`pipelines/sacredbench/audit.py`, run by `.codev/checks/test.sh`) passes: no committed card artifact embeds NABRE or Greek Orthodox TLG text or derives from a restricted source.
-- [ ] Where Jonathan's PR #30 code is carried over, his authorship is preserved on the carrying commit.
+- [ ] Where the contributor's PR #30 code is carried over, his authorship is preserved on the carrying commit.
 - [ ] Tests cover the card builder against a small fixture run and assert the outcome counts match the fixture's `scores.jsonl`.
 
 ## Constraints
 
 Fixed decisions from issue #32 and the architect's brief (treated as baked):
 
-- **Part 3 of 3 of PR #30.** Start from Jonathan Karr's card layout and `cross_translation` idea;
+- **Part 3 of 3 of PR #30.** Start from a contributor's card layout and `cross_translation` idea;
   preserve his authorship on any commit carrying his code (`git commit --author`). The PR
   description reads "Part 3 of 3 of #30" and closes #32. No `Generated with` / `Co-Authored-By`
   lines.
@@ -146,7 +146,7 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
 - **Zero live API spend expected.** If the work appears to need any, stop and ping the architect
   first.
 - **Repo is public.** The card must not embed NABRE or TLG text; `audit.py` must pass.
-- **Docs bar is Waleed's**: one linear recipe, non-engineer readable, no asides.
+- **Docs bar is the maintainer's**: one linear recipe, non-engineer readable, no asides.
 - **Card wording is provisional** (Jonathan is drafting the paper): the card's prose lives in one
   editable place.
 - **EditionIndex is a shared producer** (architect decision, 2026-10-24), because issue #21 needs the
@@ -193,7 +193,7 @@ Fixed decisions from issue #32 and the architect's brief (treated as baked):
 
 ### Approach 1: Rework `facct.py` + `cross_translation.py` in the pipeline; prose in a constants block (recommended)
 
-Carry over Jonathan's `facct.py` and `cross_translation.py`, strip the old contract out of them
+Carry over the contributor's `facct.py` and `cross_translation.py`, strip the old contract out of them
 (delete the eight-label set, the `_REFUSAL` regex / `is_refusal`, the `fabrication` and exact-match
 headline), and re-point the card at `scores.jsonl` / `summary.json` for the three outcomes. Lift his
 `EditionIndex` / citation machinery into a **standalone shared module** (so #21 can consume the same
@@ -203,7 +203,7 @@ non-uses, claims, review-not-attached) in one clearly-marked constants block in 
 the card as a `facct` CLI subcommand that writes `facct.{json,md}` beside the run, with every number
 computed from `scores.jsonl` / `summary.json` at build time.
 
-- **Pros:** Preserves the valuable core and Jonathan's authorship; one contract, one refusal
+- **Pros:** Preserves the valuable core and the contributor's authorship; one contract, one refusal
   definition; the counterfactual reuses proven index code; prose is in one file Jonathan can edit.
 - **Cons:** Requires careful surgery to remove the old contract without breaking the index code;
   the constants block is "one editable place" but still inside a `.py` file (acceptable per the
@@ -244,7 +244,7 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
   would only be needed if the card joined a *standardized* encyclical document back to a target,
   which this card does not do.)
 - **Nice-to-know** — Should the card also surface the three-edition agreement table (how often
-  KJV/ASV/WEB agree after normalization) that Jonathan's `cross_translation.py` already computes? It
+  KJV/ASV/WEB agree after normalization) that the contributor's `cross_translation.py` already computes? It
   is informative context for the edition counterfactual; include if it fits the one-recipe doc bar.
 
 ## Test Scenarios
@@ -305,7 +305,7 @@ Resolved during spec review (recorded here so the plan does not re-decide them):
 - Issue #32 — FAccT benchmark card + cross-edition reading (part 3 of 3 of PR #30).
 - Issue #21 — Jev passage-equivalence judge; consumes the shared EditionIndex export (schema frozen
   in Constraints).
-- PR #30 (Jonathan Karr) — original `facct.py`, `cross_translation.py`, viewer `FacctReading`, under
+- PR #30 (a contributor) — original `facct.py`, `cross_translation.py`, viewer `FacctReading`, under
   the Oct-11 contract. (The viewer piece is out of scope for this spec.)
 - Spec 15 — scoring = named graders + always-on outcome; refusal is an outcome; containment headline.
 - Spec 26 — 17-text original-language pool; `verify_source` hardening.

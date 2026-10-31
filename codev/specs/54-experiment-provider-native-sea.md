@@ -1,6 +1,6 @@
 # Experiment 54 — Provider-native search arm: does real search change scripture fidelity?
 
-**Protocol**: EXPERIMENT (soft mode) · **Issue**: #54 · **Requested by**: Waleed (2026-10-29)
+**Protocol**: EXPERIMENT (soft mode) · **Issue**: #54 · **Requested by**: the maintainer (2026-10-29)
 **Status**: COMPLETE (2-model pilot via OpenRouter; gemini deferred) — see the Design update
 below and `codev/reviews/54-experiment-provider-native-sea.md`
 **Run dir**: `runs/exp-provider-native-search-2026-10-29/`
@@ -103,7 +103,7 @@ declared, not hidden.
   deps.
 - **Keys** (the one hard blocker): `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`.
   `.env` currently has only `OPENROUTER_API_KEY`. Harness + dry-run proceed keyless; the live
-  collect does not. Waleed to provision.
+  collect does not. the maintainer to provision.
 
 ### Implementation plan
 
@@ -147,7 +147,7 @@ the counter-evidence shown. Conclusions land in `codev/reviews/54-...md` and the
 ## Design update (2026-10-29, architect-directed) — OpenRouter transport, gemini deferred
 
 The pre-registered **hypotheses and success criteria above are unchanged.** Only the mechanism
-and panel changed, on the architect's call (Waleed asked "can't we still use OpenRouter"):
+and panel changed, on the architect's call (the maintainer asked "can't we still use OpenRouter"):
 
 - **Transport**: run through OpenRouter on the existing `OPENROUTER_API_KEY` instead of three
   native keys. This is legitimate **only because** each arm is verified per-run to forward to

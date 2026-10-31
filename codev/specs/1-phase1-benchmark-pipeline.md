@@ -13,13 +13,13 @@ The CEFE-AI "Sacred Texts" working group (organiser: Nancy Fulda, BYU) needs a
 > as reject false premises and incorrect texts?
 
 A paper is planned for **ACM FAccT 2027** (abstract Oct 27, full paper Nov 3) with
-an earlier arXiv preprint in October. Waleed Kadous and Jonathan Karr (Notre Dame)
+an earlier arXiv preprint in October. a maintainer and a contributor (Notre Dame)
 are tech co-leads for the pipeline: JSON conversion, benchmark generation, scoring,
 analysis and visualisation. As of Oct 10 no pipeline repo has been shared by the
 group (Jonathan said Oct 5 he would share two repos "later today"; nothing arrived),
 and the next working-group meeting (**Mon Oct 12**) expects a pipeline update.
 
-Evidence the problem is real: Waleed's JaleesBench quranquote harness found Gemma 4
+Evidence the problem is real: the maintainer's JaleesBench quranquote harness found Gemma 4
 "just makes stuff up" on ~30% of tested Quran verses. Two non-peer-reviewed blog
 studies (apologistproject.org, fideai.org) measured scripture-quotation fidelity for
 Christian scripture only. No multi-tradition, provenance-aware benchmark exists.
@@ -67,7 +67,7 @@ explicitly **out of scope**.
 A `sacredtexts` pipeline with the FaithfulBench/multibench four-subsystem shape,
 **multi-faith from day one** in the way multibench is multi-tradition:
 
-1. **Two-tier `texts/` layout** (amended 2026-10-10, Waleed's direction):
+1. **Two-tier `texts/` layout** (amended 2026-10-10, the maintainer's direction):
    - `texts/raw/<source-id>/` — the **raw source data exactly as obtained**
      (the Box drop, organised by tradition), plus a committed **`source.yaml`**
      per source describing it: tradition list, work, version, language,
@@ -301,7 +301,7 @@ must match it (it already gives the three similarity metrics only to
 
 - The working group's raw corpora have **already landed** in `texts/raw/` (7
   traditions, committed 2026-10-10); converters are built against those real
-  committed shapes. Jonathan's code repo may still appear; if it does we
+  committed shapes. the contributor's code repo may still appear; if it does we
   reconcile rather than compete, and the exporter emits interchange JSON his
   tooling can consume.
 - The QUL Uthmani Quran is committed (`open`); if a licensing question arises an
@@ -333,10 +333,10 @@ no per-unit shards. Pros: nothing to assemble. Cons: large single-array JSON fil
 (`source.yaml`); no separation of the gitignored raw payload from committed
 metadata; harder to gate incrementally with a validator.
 
-### Approach 3: wait for Jonathan's repos
+### Approach 3: wait for the contributor's repos
 
 Pros: no duplicated effort. Cons: nothing has arrived since Oct 5; the Monday
-meeting needs a pipeline update; Waleed already offered (Oct 8) to take a shot.
+meeting needs a pipeline update; the maintainer already offered (Oct 8) to take a shot.
 
 ## Open Questions
 
@@ -386,17 +386,17 @@ meeting needs a pipeline update; Waleed already offered (Oct 8) to take a shot.
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Duplicate effort vs Jonathan's unshared repos | Medium | Medium | Converter consumes his dataset repo; exporter emits group format; share early at Monday's meeting |
+| Duplicate effort vs the contributor's unshared repos | Medium | Medium | Converter consumes his dataset repo; exporter emits group format; share early at Monday's meeting |
 | `restricted` translations (NABRE, TLG) in a public repo | Medium | High | `license: restricted` → raw gitignored/local-only, excluded from convert/generate unless `--include-restricted`, derived corpora never committed |
 | `restricted` text leaking into committed derived artifacts (questions/answers/scores/smoke) | Medium | High | Gate covers derived artifacts; redact/hash restricted text; committed live evidence uses public-domain/open/synthetic corpora |
 | A new Box source arrives in an unanticipated shape | Medium | Low | Two-tier `raw/` absorbs it as drop-in; one new converter + registry line, no pipeline reshape; `validate` gates the result |
 | Strict-match scores unfairly punish verbose models | High | Medium | Both tiers + token-F1 reported; answer-format instruction in prompts; semantic metric pluggable |
-| Benchmark saturation on primary sources (Waleed, Aug 5) | Medium | Medium | Phase 1 measures provenance/rejection too (verify_source negatives); secondary sources are Phase 2 fodder |
+| Benchmark saturation on primary sources (the maintainer, Aug 5) | Medium | Medium | Phase 1 measures provenance/rejection too (verify_source negatives); secondary sources are Phase 2 fodder |
 | Live-run cost overrun | Low | Medium | Budgeted smoke; usage computed from data before any larger run |
 
 ## References
 
-- Status report compiled from waleedk@gmail.com email (2026-10-10, in-session).
+- Status report compiled from a maintainer email (2026-10-10, in-session).
 - Group docs: Sacred Texts Benchmark doc; JSON-fields doc; Box "Phase I / raw
   JSON"; Overleaf FAccT draft (links in the status report / email threads).
 - `Religion-at-Notre-Dame/catholic_text_json` (real input shapes, verified).

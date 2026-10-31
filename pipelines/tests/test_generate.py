@@ -10,11 +10,17 @@ from sacredbench.generate import (
     build_manifest,
     corpus_hash,
     generate,
+    split_quote,
     load_questions,
     question_set_digest,
     write_questions,
 )
 from sacredbench.schema import Document, Entry
+
+
+def test_split_quote_puts_the_extra_word_in_the_remainder():
+    head, rest = split_quote("one two three four five")
+    assert (head, rest) == ("one two", "three four five")
 
 
 def _doc(work, version="V", language="en", document_type="scripture", n=30,

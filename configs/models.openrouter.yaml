@@ -1,6 +1,6 @@
 # Spec 26 run panel — OpenRouter (search-OFF only).
 #
-# Waleed's decision (2026-10-21): the Spec 26 committed run uses the OpenRouter key because
+# Decision (2026-10-21): the Spec 26 committed run uses the OpenRouter key because
 # ANTHROPIC_API_KEY was not available. web_search is an Anthropic server-side tool and
 # config.py fail-fasts it on a non-anthropic provider, so this panel is SEARCH-OFF ONLY —
 # there are no tool-assisted-retrieval arms. The run is therefore UNPRICED (no per-token

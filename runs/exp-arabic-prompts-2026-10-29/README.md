@@ -1,6 +1,6 @@
 # Experiment: does asking the Qur'an questions *in Arabic* change the answers?
 
-**Date**: 2026-10-29 · **Requested by**: Waleed · **Status**: complete, one-shot A/B.
+**Date**: 2026-10-29 · **Requested by**: the maintainer · **Status**: complete, one-shot A/B.
 **Scores rebaselined under the Spec-52 orthography fold** (see *Scoring* and the two results
 sections below) — the committed `scores-{ar,en}.jsonl` now reflect the current scorer.
 

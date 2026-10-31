@@ -56,6 +56,6 @@ Left as the plain sidecar-row count; noted here so it isn't lost.
 
 ## Note
 
-jev.py's origin is Karr's PR #30, carried under his authorship on the feat commit (`a7d33b2`). This
+jev.py's origin is the contributor's PR #30, carried under that authorship on the feat commit (`a7d33b2`). This
 iteration's review-driven hardening is committed under my authorship, consistent with the iter-1/iter-2
 review commits. No `Co-Authored-By`/`Generated-with` trailers on the new commits.

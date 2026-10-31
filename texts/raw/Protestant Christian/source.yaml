@@ -8,7 +8,9 @@ provenance:
   fetch_date: "2026-10-10"
 notes: >-
   KJV and ASV from bibleapi-bibles-json; WEB from TehShrike/world-english-bible.
-  All three are public domain (see README.md).
+  Those three are public domain (see README.md). NRSV is copyrighted
+  (National Council of the Churches of Christ in the USA) and is held back:
+  the catalogue entry is committed, the payload is gitignored and local-only.
 targets:
   - payload: kjv.json
     converter: bible_flat
@@ -42,4 +44,24 @@ targets:
     license: public-domain
     license_detail: World English Bible — public domain
     requested_as: ["the World English Bible", "the WEB"]
+    canonical_language: en
+  - payload: nrsv.json
+    converter: bible_flat
+    work: The Bible
+    version: NRSV
+    language: en
+    document_type: scripture
+    tradition: [Protestant Christian]
+    license: restricted
+    provenance:
+      retrieved_from: National Council of the Churches of Christ in the USA (NRSV)
+      fetch_method: licensed text, held back; not committed to this public repo
+      fetch_date: unknown
+    license_detail: >-
+      New Revised Standard Version — (c) 1989 National Council of the Churches
+      of Christ in the United States of America. Used by permission. All rights
+      reserved. Payload held back from this public repo. Local file, if you
+      hold rights to it, must be the bible_flat shape
+      ({book, chapter, verse, text}).
+    requested_as: ["the New Revised Standard Version", "the NRSV"]
     canonical_language: en

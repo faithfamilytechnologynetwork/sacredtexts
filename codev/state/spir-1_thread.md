@@ -783,7 +783,7 @@ SPIR, strict mode (porch-driven).
   as `license: open` for now, group sign-off before the preprint (item 8 + Follow-up).
 - `porch approve 1 pr --a-human-explicitly-approved-this` → all 4 checks green, gate approved.
 - Merged PR #3 with a regular merge commit (NOT squash, per verify task + rebuttal):
-  merge commit 64d20b6 on origin/main, merged by waleedkadous.
+  merge commit 64d20b6 on origin/main, merged by a maintainer.
 - `porch done 1 --merged 3` → recorded.
 - Post-merge verification (origin/main): merge commit present; committed evidence
   intact (digest ef837474ed7b22ec, 400 answer rows); copyright-clean — only the

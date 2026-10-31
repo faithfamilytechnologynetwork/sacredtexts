@@ -5,7 +5,7 @@
 ## Executive Summary
 
 Implements the spec's **Approach 1** (sidecar judgments file + non-inline grader registration): carry
-over Jonathan Karr's `jev.py` from PR #30 — the live-verified Decisions-API judge — with the
+over a contributor's `jev.py` from PR #30 — the live-verified Decisions-API judge — with the
 corrections and hardening the spec requires, write typed verdicts to a resumable **sidecar**
 (`judgments.jsonl` + a header manifest) beside a run, register a non-inline `jev` grader so the Spec 15
 seam / CLI / recipe stay coherent, and validate on the committed tutorial run. The deterministic
@@ -17,8 +17,8 @@ Four phases, each a single atomic commit inside **one PR** ("Part 2 of 3 of #30"
 1. **Jev judge pass + CLI** — the core judge over an answers file (containment + refusal-diagnostic;
    equivalence records `not_evaluated` with no index), resumable/stale-safe, resolved-build-as-identity
    with fail-fast on a build-mismatched resume, task-type filter, restricted-target guard, pre-flight
-   cost estimate + `--limit`, spend from the API's `usage.cost`. The commit that carries Karr's code
-   preserves **his authorship** (`git commit --author="Jonathan Karr <jka83321@gmail.com>"`).
+   cost estimate + `--limit`, spend from the API's `usage.cost`. The commit that carries the contributor's code
+   preserves **that authorship** (`git commit --author="a contributor"`).
 2. **Grader seam registration + evaluator provenance + recipe** — register the `jev` descriptor in
    `graders.py`; surface the resolved judge build in the evaluator provenance a summary emits; extend
    the `CODE_WALKTHROUGH.md` "add an evaluator" recipe.
@@ -61,11 +61,11 @@ Decisions API, independent of any edition index.
 #### Retrieving the carried-over code
 
 `jev.py` is **not** in this worktree — it lives only in PR #30 (fork
-`JonathanKarr33:faact_mprovements_karr`). Obtain it via `gh pr diff 30` (or
-`gh api repos/<owner>/<repo>/contents/pipelines/sacredbench/jev.py?ref=faact_mprovements_karr`). Its
+`the contributor:the fork branch`). Obtain it via `gh pr diff 30` (or
+`gh api repos/<owner>/<repo>/contents/pipelines/sacredbench/jev.py?ref=the fork branch`). Its
 only non-stdlib imports are `sacredbench.cross_translation` (`EditionIndex`, `cite_key`) and
 `sacredbench.score.normalize`; nothing from PR #30's `providers.py`/`config.py`/`collect.py` is needed.
-The commit carrying it uses `git commit --author="Jonathan Karr <jka83321@gmail.com>"`.
+The commit carrying it uses `git commit --author="a contributor"`.
 
 #### Files to Create / Modify
 
@@ -83,7 +83,7 @@ The commit carrying it uses `git commit --author="Jonathan Karr <jka83321@gmail.
   restricted-target guard (refuse/skip a cell whose `(work, version, language)` maps to a `restricted`
   catalogue target before any send); a pre-flight estimate (pending × typical per-cell cost) printed
   before calls; a `--limit` on cells per invocation; spend summed from the API-returned `usage.cost`.
-  Keep Karr's `summarize(path)` and surface it (below).
+  Keep the contributor's `summarize(path)` and surface it (below).
 - Modify `pipelines/sacredbench/cli.py` — add the `judge` command (answers path → sidecar out;
   `--limit`, `--model`, `--concurrency`, pre-flight estimate) and a `judge-summary` surface (or
   `judge --summarize`) that reports counts + resolved build(s) over a finished sidecar **without
@@ -116,9 +116,9 @@ The commit carrying it uses `git commit --author="Jonathan Karr <jka83321@gmail.
       scope, budget guard, and restricted-target guard hold.
 - [ ] `grep -r cross_translation pipelines/sacredbench/jev.py` is empty.
 - [ ] `.codev/checks/test.sh` (pipelines → uv pytest) passes; no live call in unit tests (judge is
-      injected a fake decider, per Karr's `decide=` seam).
-- [ ] The commit carrying `jev.py`/`test_jev.py` uses `git commit --author="Jonathan Karr
-      <jka83321@gmail.com>"`.
+      injected a fake decider, per the contributor's `decide=` seam).
+- [ ] The commit carrying `jev.py`/`test_jev.py` uses `git commit --author="a contributor
+      <a contributor>"`.
 
 #### Test Plan
 
@@ -322,7 +322,7 @@ agreement report + manual disagreement review the paper can cite.
 | Implicit sidecar discovery silently changes a re-score of committed evidence | Low | High | Provenance is an **explicit `score --judgments <path>`** opt-in; default `score` never reads adjacent sidecars |
 | Mixed-index sidecar when `corpus_hash` is reused but wordings change | Low | Medium | `index_digest` is part of the sidecar manifest identity and the resume check fails fast on mismatch |
 | `test_graders.py` fixture deletes the real `jev` registration | Medium | Medium | Phase 2 fixes the fixture; suite must pass in file-order |
-| Karr authorship lost on carried code | Low | Low | Phase 1 commit uses `git commit --author="Jonathan Karr <jka83321@gmail.com>"` |
+| the contributor authorship lost on carried code | Low | Low | Phase 1 commit uses `git commit --author="a contributor"` |
 
 ## Documentation Updates
 
