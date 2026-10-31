@@ -1,0 +1,89 @@
+{
+  "tradition": "Christianity",
+  "sample": "population",
+  "run": true,
+  "passages": [
+    {
+      "tradition": "Christianity",
+      "citation": "Acts 24:1",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "Μετὰ δὲ πέντε ἡμέρας κατέβη ὁ ἀρχιερεὺς Ἀνανίας μετὰ τῶν πρεσβυτέρων καὶ ῥήτορος Τερτύλλου τινός, οἵτινες ἐνεφάνισαν τῷ ἡγεμόνι κατὰ τοῦ Παύλου."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "John 8:41",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "ὑμεῖς ποιεῖτε τὰ ἔργα τοῦ πατρὸς ὑμῶν. εἶπον οὖν αὐτῷ, Ἡμεῖς ἐκ πορνείας οὐ γεγεννήμεθα· ἕνα πατέρα ἔχομεν, τὸν Θεόν."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Luke 12:41",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "Εἶπε δὲ αὐτῷ ὁ Πέτρος, Κύριε, πρὸς ἡμᾶς τὴν παραβολὴν ταύτην λέγεις, ἢ καὶ πρὸς πάντας;"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Galatians 3:22",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "ἀλλὰ συνέκλεισεν ἡ γραφὴ τὰ πάντα ὑπὸ ἁμαρτίαν, ἵνα ἡ ἐπαγγελία ἐκ πίστεως Ἰησοῦ Χριστοῦ δοθῇ τοῖς πιστεύουσι."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Revelation 9:14",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "λέγουσαν τῷ ἕκτῳ ἀγγέλῳ ὃς εἶχε τὴν σάλπιγγα, Λῦσον τοὺς τέσσαρας ἀγγέλους τοὺς δεδεμένους ἐπὶ τῷ ποταμῷ τῷ μεγάλῳ Εὐφράτῃ."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Mark 10:11",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "καὶ λέγει αὐτοῖς, Ὃς ἐὰν ἀπολύσῃ τὴν γυναῖκα αὐτοῦ καὶ γαμήσῃ ἄλλην, μοιχᾶται ἐπ᾽ αὐτήν·"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "John 12:13",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "ἔλαβον τὰ βαΐα τῶν φοινίκων, καὶ ἐξῆλθον εἰς ὑπάντησιν αὐτῷ, καὶ ἔκραζον, Ὡσαννά· εὐλογημένος ὁ ἐρχόμενος ἐν ὀνόματι Κυρίου, ὁ βασιλεὺς τοῦ Ἰσραήλ."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Hebrews 1:2",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "ἐπ᾽ ἐσχάτων τῶν ἡμερῶν τούτων ἐλάλησεν ἡμῖν ἐν υἱῷ, ὃν ἔθηκε κληρονόμον πάντων, δι᾽ οὗ καὶ τοὺς αἰῶνας ἐποίησεν,"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "2 Thessalonians 2:16",
+      "sample": "population",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "Αὐτὸς δὲ ὁ Κύριος ἡμῶν Ἰησοῦς Χριστός, καὶ ὁ Θεὸς καὶ πατὴρ ἡμῶν ὁ ἀγαπήσας ἡμᾶς καὶ δοὺς παράκλησιν αἰωνίαν καὶ ἐλπίδα ἀγαθὴν ἐν χάριτι,"
+      }
+    }
+  ],
+  "notice": "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text."
+}

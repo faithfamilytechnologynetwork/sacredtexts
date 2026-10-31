@@ -14,6 +14,7 @@ questions.jsonl × model panel ─collect─▶ answers.jsonl ─score─▶ sco
 
 ## Layout
 
+- `items/for-test/` — the prepared six-tradition test set. How to collect it is `RUNNING.md`.
 - `pipelines/` — the benchmark pipeline (`sacredbench`, Python/uv/Typer):
   converters to the group's standard flat JSON, question generation (six
   templates, incl. false-premise negatives), multi-provider collection

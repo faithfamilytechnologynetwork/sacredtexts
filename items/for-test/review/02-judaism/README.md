@@ -1,11 +1,11 @@
 # Judaism
 
 - Canonical edition named in the question: **Talmud Bavli, William Davidson Edition - Aramaic**
-- English edition: **William Davidson Edition - English (a different file; the wording can differ)**
+- English edition: **William Davidson Edition - English (same citations, a separate file)**
 - Language: Aramaic / Hebrew
 - Raw file: `texts/raw/Judaism/Talmud Bavli/`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: 248 questions. Population sample: 30 passages. Familiarity panel: 1 passages. Report those two separately.
+- Size: 372 questions. Population sample: 30 passages. Familiarity panel: 1 passages. Report those two separately.
 
 ## Passages to check
 

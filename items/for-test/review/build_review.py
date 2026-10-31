@@ -23,10 +23,13 @@ def load_questions(tradition: str, kind: str) -> list[dict]:
     """Questions for one tradition and language, population file then familiarity file."""
     rows = []
     for sample in ("population", "familiarity"):
-        path = OUT.parent / tradition / kind / sample / "questions.jsonl"
-        if not path.exists():
-            continue
-        rows.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+        folder = OUT.parent / tradition / kind / sample
+        files = [folder / "questions.jsonl"]
+        files += sorted(folder.glob("prompt-*/questions.jsonl"))
+        for path in files:
+            if not path.exists():
+                continue
+            rows.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
     return rows
 
 
@@ -38,7 +41,7 @@ def passage_lines(rows: list[dict]) -> tuple[list[str], str]:
             continue
         source = row.get("source") or row
         condition = source.get("condition") or row.get("condition")
-        if condition not in {"native_answer", "en_ask_en_answer"}:
+        if condition not in {"native_answer", "en_ask_en_answer", "ask_english", "ask_native"}:
             continue
         sample = source.get("sample") or row.get("sample")
         citation = source.get("citation") or row.get("citation")
@@ -83,11 +86,13 @@ def write_index(religions: list[tuple[str, str]]) -> None:
         "The population sample is 30 passages, drawn uniformly (seed 20261030),",
         "with the pre-registered familiar citations removed first.",
         "The familiarity panel is every citation in `well_known.yaml` for that edition.",
-        "Christianity is English only (NRSV). Judaism is asked twice, once for the",
-        "Aramaic edition and once for the English edition, because those answers differ.",
-        "Islam and Sikhism on disk are the native edition only. A finished set adds",
-        "an English edition for every tradition except Christianity, which stays",
-        "English only (120 questions). Each other tradition is then 240.",
+        "Christianity is one set of 30. The NRSV is the English edition. Hebrew Bible",
+        "verses of that set are the Masoretic text, and New Testament verses are the",
+        "Greek New Testament (Scrivener 1894). Each native passage is an English prompt",
+        "and a native-language prompt. Judaism is the same 30 in Aramaic (both prompts)",
+        "and in English. Islam and Sikhism on disk are the native edition, both prompts.",
+        "A finished non-Christian tradition adds an English edition. Each tradition is",
+        "then 360 population questions. Christianity is already 360.",
         "The familiarity panels are different lengths on purpose (Islam 7, Christianity 4,",
         "Sikhism 3, Judaism 1). Compare traditions on the population sample of 30.",
         "Do not pad or cut the familiar lists to make those counts match.",
@@ -127,7 +132,19 @@ def write_passages() -> None:
         "Christianity": "New Revised Standard Version Bible, copyright © 1989 National Council of the Churches of Christ in the United States of America. Used by permission. All rights reserved worldwide.",
         "Judaism": "William Davidson Edition on Sefaria, CC-BY-NC.",
     }
-    for path in sorted(root.glob("*/*/*/questions.jsonl")):
+    edition_notices = (
+        ("Masoretic", "Masoretic text from the Westminster Leningrad Codex, via the Open Scriptures Hebrew Bible. The same 30 Christian population citations that are Hebrew Bible verses, not a second draw. Daniel 2 is Aramaic in this text."),
+        ("Greek New Testament", "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text."),
+    )
+    paths = sorted(root.glob("*/*/*/questions.jsonl")) + sorted(root.glob("*/*/*/*/questions.jsonl"))
+    seen = set()
+    for path in paths:
+        # One passages.json per sample. The two prompt-language files share it.
+        sample_dir = path.parent.parent if path.parent.name.startswith("prompt-") else path.parent
+        if sample_dir in seen:
+            continue
+        seen.add(sample_dir)
+        path = next(p for p in paths if (p.parent.parent if p.parent.name.startswith("prompt-") else p.parent) == sample_dir)
         rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
         passages = []
         for row in rows:
@@ -146,23 +163,37 @@ def write_passages() -> None:
         tradition = passages[0]["tradition"] if passages else ""
         payload = {
             "tradition": tradition,
-            "sample": path.parent.name,
-            "run": path.parent.name == "population",
+            "sample": sample_dir.name,
+            "run": sample_dir.name == "population",
             "passages": passages,
         }
-        if tradition in notices:
+        version = passages[0]["version"] if passages else ""
+        edition_notice = next((text for key, text in edition_notices if key in version), None)
+        if edition_notice:
+            payload["notice"] = edition_notice
+        elif tradition in notices:
             payload["notice"] = notices[tradition]
-        dest = path.parent / "passages.json"
+        dest = sample_dir / "passages.json"
         dest.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(dest.relative_to(root), len(passages))
 
 
 def christianity() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("christianity", "english"))
+    size += (
+        " Original language of that same population sample, not a second draw: "
+        "21 Masoretic passages (168 questions) and 9 Greek New Testament passages (72 questions)."
+    )
     rows.append("")
     rows.append(
         "The verse inventory for the draw is the Protestant list in `kjv.json`. "
-        "The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`."
+        "The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`. "
+        "The same 30 citations are in `christianity/masoretic/` when the verse is from the "
+        "Hebrew Bible (Westminster Leningrad Codex; Daniel 2 is Aramaic) and in "
+        "`christianity/greek/` when it is from the New Testament (Scrivener 1894). "
+        "That is one set, split by original language, and each of those files has an "
+        "English prompt and a native-language prompt. The licensed Greek Orthodox TLG "
+        "files are not in the repo, so these verses are not the Septuagint."
     )
     return "01-christianity", page(
         title="Christianity",
@@ -208,7 +239,7 @@ def judaism() -> tuple[str, str]:
     return "02-judaism", page(
         title="Judaism",
         version="Talmud Bavli, William Davidson Edition - Aramaic",
-        english_version="William Davidson Edition - English (a different file; the wording can differ)",
+        english_version="William Davidson Edition - English (same citations, a separate file)",
         language="Aramaic / Hebrew",
         native_prompts=native,
         rows=rows,

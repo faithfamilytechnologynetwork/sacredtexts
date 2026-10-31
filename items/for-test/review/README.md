@@ -4,11 +4,13 @@ Each tradition has two samples. Report them separately.
 The population sample is 30 passages, drawn uniformly (seed 20261030),
 with the pre-registered familiar citations removed first.
 The familiarity panel is every citation in `well_known.yaml` for that edition.
-Christianity is English only (NRSV). Judaism is asked twice, once for the
-Aramaic edition and once for the English edition, because those answers differ.
-Islam and Sikhism on disk are the native edition only. A finished set adds
-an English edition for every tradition except Christianity, which stays
-English only (120 questions). Each other tradition is then 240.
+Christianity is one set of 30. The NRSV is the English edition. Hebrew Bible
+verses of that set are the Masoretic text, and New Testament verses are the
+Greek New Testament (Scrivener 1894). Each native passage is an English prompt
+and a native-language prompt. Judaism is the same 30 in Aramaic (both prompts)
+and in English. Islam and Sikhism on disk are the native edition, both prompts.
+A finished non-Christian tradition adds an English edition. Each tradition is
+then 360 population questions. Christianity is already 360.
 The familiarity panels are different lengths on purpose (Islam 7, Christianity 4,
 Sikhism 3, Judaism 1). Compare traditions on the population sample of 30.
 Do not pad or cut the familiar lists to make those counts match.

@@ -5,7 +5,7 @@
 - Language: English
 - Raw file: `texts/raw/Protestant Christian/nrsv.json (gitignored; not in the public repo)`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: 136 questions. Population sample: 30 passages. Familiarity panel: 4 passages. Report those two separately.
+- Size: 136 questions. Population sample: 30 passages. Familiarity panel: 4 passages. Report those two separately. Original language of that same population sample, not a second draw: 21 Masoretic passages (168 questions) and 9 Greek New Testament passages (72 questions).
 
 ## Passages to check
 
@@ -44,7 +44,7 @@
 - `Matthew 6:9` (familiarity)
 - `Psalms 23:1` (familiarity)
 
-The verse inventory for the draw is the Protestant list in `kjv.json`. The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`.
+The verse inventory for the draw is the Protestant list in `kjv.json`. The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`. The same 30 citations are in `christianity/masoretic/` when the verse is from the Hebrew Bible (Westminster Leningrad Codex; Daniel 2 is Aramaic) and in `christianity/greek/` when it is from the New Testament (Scrivener 1894). That is one set, split by original language, and each of those files has an English prompt and a native-language prompt. The licensed Greek Orthodox TLG files are not in the repo, so these verses are not the Septuagint.
 
 These citations are the question file. Population and familiarity are separate samples.
 
