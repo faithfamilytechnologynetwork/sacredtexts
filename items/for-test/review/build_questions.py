@@ -340,8 +340,56 @@ def christianity() -> list[dict]:
     return rows
 
 
+def _script(text: str) -> str:
+    for ch in text:
+        o = ord(ch)
+        if 0x0590 <= o <= 0x05FF:
+            return "he"
+        if 0x0600 <= o <= 0x06FF:
+            return "ar"
+        if 0x0900 <= o <= 0x097F:
+            return "sa"
+        if 0x0A00 <= o <= 0x0A7F:
+            return "pa"
+        if 0x0370 <= o <= 0x03FF:
+            return "grc"
+    return "lat"
+
+
+_NT = {
+    "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
+    "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
+    "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter",
+    "1 John", "2 John", "3 John", "Jude", "Revelation",
+}
+
+
+def _donor_rank(row: dict, donor: dict) -> int:
+    """0 is the nearest same-language other work. 2 is a different script."""
+    row_script = _script(row["expected"]["text"] if row["task"] == "retrieve_quote" else row["prompt"])
+    donor_script = _script(donor["expected"]["text"])
+    if donor["tradition"] == row["tradition"] or donor_script != row_script:
+        return 2
+    version = donor.get("version", "")
+    if row["tradition"] == "Judaism" and row_script == "he" and "Masoretic" in version:
+        return 0
+    if row["tradition"] == "Judaism" and row.get("condition") == "en_ask_en_answer" and version == "NRSV":
+        book = donor["citation"].rsplit(" ", 1)[0]
+        return 0 if book not in _NT else 2
+    if row["tradition"] == "Christianity" and "Masoretic" in row.get("version", "") and donor["tradition"] == "Judaism":
+        return 0
+    if row["tradition"] == "Christianity" and row.get("condition") == "en_ask_en_answer" and donor.get("work") == "Book of Mormon":
+        return 0
+    return 1
+
+
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
-    """Half of each condition's verify_source rows quote a different work."""
+    """Half of each condition's verify_source rows quote a different work.
+
+    The donor is the same script as the passage being checked, and a nearer
+    work when this corpus has one. A different tradition in another script is
+    the fallback for a language that has only one work.
+    """
     donors = []
     for rows in by_name.values():
         for row in rows:
@@ -357,11 +405,9 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
             group.sort(key=lambda r: r["citation"])
             flip = group[: len(group) // 2]
             for row in flip:
-                same_lang = [
-                    d for d in donors
-                    if d["tradition"] != row["tradition"] and d["condition"] == row["condition"]
-                ]
-                pool = same_lang or [d for d in donors if d["tradition"] != row["tradition"]]
+                ranked = [d for d in donors if d["tradition"] != row["tradition"]]
+                best = min((_donor_rank(row, d) for d in ranked), default=2)
+                pool = [d for d in ranked if _donor_rank(row, d) == best] or ranked
                 donor = rng.choice(pool)
                 text = donor["expected"]["text"]
                 row["expected"] = {

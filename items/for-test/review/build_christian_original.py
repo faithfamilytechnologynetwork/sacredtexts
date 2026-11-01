@@ -216,11 +216,11 @@ def main() -> None:
     if len(masoretic) + len(nt) != 30:
         raise SystemExit("the original-language map is not the same 30 passages")
     write_group(
-        ROOT / "christianity" / "masoretic" / "population", masoretic, HE,
+        ROOT / "christianity" / "native" / "masoretic" / "population", masoretic, HE,
         "Masoretic text from the Westminster Leningrad Codex, via the Open Scriptures Hebrew Bible. The same 30 Christian population citations that are Hebrew Bible verses, not a second draw. Daniel 2 is Aramaic in this text.",
     )
     write_group(
-        ROOT / "christianity" / "greek" / "population", nt, GR,
+        ROOT / "christianity" / "native" / "greek" / "population", nt, GR,
         "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text.",
     )
 

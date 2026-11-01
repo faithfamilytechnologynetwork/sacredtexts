@@ -118,8 +118,8 @@ def write_index(religions: list[tuple[str, str]]) -> None:
         "| `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |",
         "| `03-islam` | yes | Qur'an, Uthmani (QUL) | no English Qur'an in this corpus |",
         "| `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |",
-        "| `05-hinduism` | no | The Bhagavad Gita — edition not chosen | not in raw data |",
-        "| `06-buddhism` | no | The Dhammapada — edition not chosen | not in raw data |",
+        "| `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |",
+        "| `06-buddhism` | yes | Dhammapada, Chaṭṭha Saṅgāyana (VRI) | no English Dhammapada in this corpus |",
         "",
     ]
     (OUT / "README.md").write_text("\n".join(lines), encoding="utf-8")
@@ -188,9 +188,9 @@ def christianity() -> tuple[str, str]:
     rows.append(
         "The verse inventory for the draw is the Protestant list in `kjv.json`. "
         "The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`. "
-        "The same 30 citations are in `christianity/masoretic/` when the verse is from the "
+        "The same 30 citations are in `christianity/native/masoretic/` when the verse is from the "
         "Hebrew Bible (Westminster Leningrad Codex; Daniel 2 is Aramaic) and in "
-        "`christianity/greek/` when it is from the New Testament (Scrivener 1894). "
+        "`christianity/native/greek/` when it is from the New Testament (Scrivener 1894). "
         "That is one set, split by original language, and each of those files has an "
         "English prompt and a native-language prompt. The licensed Greek Orthodox TLG "
         "files are not in the repo, so these verses are not the Septuagint."

@@ -26,15 +26,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 RUNNABLE = (
     ROOT / "christianity" / "english" / "population" / "questions.jsonl",
-    ROOT / "christianity" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
-    ROOT / "christianity" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
-    ROOT / "christianity" / "greek" / "population" / "prompt-english" / "questions.jsonl",
-    ROOT / "christianity" / "greek" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "christianity" / "native" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "christianity" / "native" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "christianity" / "native" / "greek" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "christianity" / "native" / "greek" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "judaism" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "judaism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "judaism" / "english" / "population" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "hinduism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "hinduism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "hinduism" / "english" / "population" / "questions.jsonl",
+    ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
 )
 PANEL = ROOT / "models" / "openrouter.yaml"
 SUBSET = ROOT / "models" / "openrouter-subset.yaml"
@@ -43,10 +48,10 @@ OUT = ROOT / "COST.md"
 WRITTEN = (
     ("Christianity", [
         ROOT / "christianity" / "english" / "population" / "questions.jsonl",
-        ROOT / "christianity" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
-        ROOT / "christianity" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
-        ROOT / "christianity" / "greek" / "population" / "prompt-english" / "questions.jsonl",
-        ROOT / "christianity" / "greek" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "christianity" / "native" / "masoretic" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "christianity" / "native" / "masoretic" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "christianity" / "native" / "greek" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "christianity" / "native" / "greek" / "population" / "prompt-native" / "questions.jsonl",
     ]),
     ("Judaism", [
         ROOT / "judaism" / "native" / "population" / "prompt-english" / "questions.jsonl",
@@ -60,6 +65,15 @@ WRITTEN = (
     ("Sikhism", [
         ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
         ROOT / "sikhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ]),
+    ("Hinduism", [
+        ROOT / "hinduism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "hinduism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "hinduism" / "english" / "population" / "questions.jsonl",
+    ]),
+    ("Buddhism", [
+        ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+        ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ]),
 )
 # 30 passages × 4 tasks. A native edition is two prompt languages (240).

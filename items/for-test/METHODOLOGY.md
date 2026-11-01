@@ -66,14 +66,36 @@ those remaining words are contained in it. A `cite_passage` item that should
 be declined because the quotation is from another edition is not in this run.
 
 Within each sample, half of the `verify_source` questions quote a real passage
-from a different tradition and expect `no`. A familiarity list of one passage
-stays `yes`, because half of one rounds to zero.
+from a different work and expect `no`. The donor is the same language as the
+edition in the question, and the nearest other work this corpus holds. A
+familiarity list of one passage stays `yes`, because half of one rounds to zero.
+`true_tradition` is a scorer label. The prompt only asks yes or no.
+
+| Edition being asked | Donor for `no` | Why |
+|---|---|---|
+| Aramaic Talmud | Masoretic text | Hebrew or Aramaic that is not the Talmud. No Midrash is in the corpus |
+| English Talmud | NRSV, Hebrew Bible verses only | The English Tanakh this corpus holds. New Testament verses are not the donor. No English Midrash is in the corpus |
+| NRSV | Book of Mormon, 2013 edition | Another English scripture |
+| Masoretic text | Aramaic Talmud | The other Hebrew-Aramaic work |
+| Greek New Testament, Qur'an, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada | A passage from another tradition | No second work in that language. The script differs, so these `no` items are easier |
+
+The English Gita already uses other English works. The modern supplemental
+pair swaps the Book of Mormon and the encyclicals.
 
 ## What to report
 
 Report population accuracy on its own. Report familiarity accuracy on its own,
-with the number of passages. Do not pool the two. Hinduism and Buddhism are
-not in this set: the Bhagavad Gita and the Dhammapada are not in `texts/raw`.
+with the number of passages. Do not pool the two.
+
+Hinduism is the same 30 citations in both editions. The 16-word floor is
+applied to Annie Besant's English, because only 16 Sanskrit verses reach 16
+words. Buddhism is 30 Pali verses of at least 16 words. This corpus has no
+English Dhammapada. Neither work has a familiarity list in `well_known.yaml`.
+
+`christianity/modern/english/` is a separate modern sample: 15 Book of
+Mormon verses (2013 edition) and 15 numbered paragraphs from the Vatican
+English encyclicals. English only. It is not part of the population run and
+is not averaged into the NRSV estimate.
 
 ## Models
 
