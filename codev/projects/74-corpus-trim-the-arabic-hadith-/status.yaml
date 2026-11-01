@@ -1,7 +1,7 @@
 id: '74'
 title: corpus-trim-the-arabic-hadith-
 protocol: air
-phase: implement
+phase: pr
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,7 +11,7 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-01T15:30:11.737Z'
-updated_at: '2026-11-01T16:55:43.508Z'
+updated_at: '2026-11-01T17:18:40.592Z'
 pr_history:
   - phase: implement
     pr_number: 81
