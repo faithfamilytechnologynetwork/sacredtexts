@@ -16,8 +16,7 @@ reference run is about $13.
 The run is the population sample: the same 30 passages, four tasks each.
 A native edition is two files, an English prompt and a native-language prompt.
 Familiarity lists are in the sibling `familiarity/` folders and are not
-part of this command. Sikhism is written but not collected. Hinduism and
-Buddhism have no passages yet. The panel is 16 models, search off.
+part of this command. The panel is 16 models, search off.
 
 ```bash
 python items/for-test/join_run.py

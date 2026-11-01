@@ -137,6 +137,7 @@ def classify_failure(
     normalized: float | None,
     contains_reference: float | None,
     n_candidates: float | None,
+    token_f1_base: float | None = None,
     paraphrase_f1: float = PARAPHRASE_F1,
 ) -> str | None:
     """Return a failure kind, or None when the outcome is the whole story.
@@ -156,7 +157,10 @@ def classify_failure(
             return "other_script"
         if _omission(answer, expected):
             return "omission"
-        f1 = token_f1 or 0
+        # The base-letter overlap, when the score recorded it, treats a dropped
+        # vowel sign as a near copy rather than a different passage. Callers that
+        # only pass token_f1 keep the strict overlap.
+        f1 = token_f1_base if token_f1_base is not None else (token_f1 or 0)
         if f1 >= NEAR_COPY_F1:
             return "near_copy"
         if f1 >= paraphrase_f1:
@@ -231,6 +235,7 @@ def _iter_scored(run_dir: Path):
             normalized=metrics.get("normalized"),
             contains_reference=metrics.get("contains_reference"),
             n_candidates=metrics.get("n_candidates"),
+            token_f1_base=metrics.get("token_f1_base"),
         )
         yield score["task"], outcome, kind, source
 
@@ -400,6 +405,7 @@ def report_run(run_dir: Path) -> dict:
             normalized=metrics.get("normalized"),
             contains_reference=metrics.get("contains_reference"),
             n_candidates=metrics.get("n_candidates"),
+            token_f1_base=metrics.get("token_f1_base"),
         )
         key = _text_key(source)
         bucket = by_text.setdefault(key, Counter())

@@ -7,9 +7,9 @@ This folder is the test set for the six traditions. The population sample is 30 
 | Christianity | Yes | Yes | Yes | Yes | Nothing on the main 30. Supplemental, not in the run: English only, 15 Book of Mormon verses and 15 papal encyclical paragraphs |
 | Judaism | Yes | Yes | Yes | Yes | — |
 | Islam | Yes | Yes | Yes | No | English text |
-| Sikhism | Yes | Yes | Yes | No | English text. Not collected: scoring still drops Gurmukhi vowel signs |
-| Hinduism | Yes | Yes | Yes | Yes | Sanskrit not collected: scoring still drops Devanagari vowel signs |
-| Buddhism | Yes | Yes | Yes | No | English text. Pali not collected: scoring still drops romanized vowel signs |
+| Sikhism | Yes | Yes | Yes | No | English text |
+| Hinduism | Yes | Yes | Yes | Yes | — |
+| Buddhism | Yes | Yes | Yes | No | English text |
 
 `*/familiarity/` is the pre-registered list and is not in the run (Christianity 4, Judaism 1, Islam 7, Sikhism 3; Hinduism and Buddhism have none). `cost.py` writes `COST.md`. `models/openrouter.yaml` is the 16-model run and `models/openrouter-subset.yaml` is 7 of those models. `review/` is check pages only.
 
@@ -19,14 +19,13 @@ No pull request is open. These issues are still open and the work is not already
 
 | Issue | Still to do | Blocks |
 |---|---|---|
-| #50, scoring half | `normalize()` still drops Gurmukhi, Devanagari, and romanized Pali vowel signs. The Guru Granth Sahib text itself landed in #51 | Sikhism, the Sanskrit Gita, the Pali Dhammapada |
 | #60 | Arabic fold still skips hamza-alef `ءَا` ↔ alef-madda `آ`, and `ىٰ` ↔ maqsura. #52 did not cover these | Nothing. Islam can run; a few answers stay under-credited |
 | #37 | Septuagint is not in the repo. The test set has a Masoretic excerpt and Scrivener 1894, not a full Tanakh and not Nestle-Aland | The catalogue copies of those witnesses. The excerpt already in this folder can run |
 | #43 | Qur'an, Latter-day Saint, and NRSV license terms | Releasing questions, not collecting them |
 
-Already done, so not on that list: #63 (Dhammapada, closed), #64 (Gita text landed in #66; the issue is still open and should be closed), #52 (main Arabic fold, closed). #54's harness merged in #59; the live search run has not been done, and it is a separate experiment.
+Already done, so not on that list: #50's scoring half (`normalize()` keeps Gurmukhi, Devanagari, and Pali vowel signs; the Guru Granth Sahib text landed in #51), #63 (Dhammapada, closed), #64 (Gita text landed in #66; the issue is still open and should be closed), #52 (main Arabic fold, closed). #54's harness merged in #59; the live search run has not been done, and it is a separate experiment.
 
-Safe to collect now: Christianity (NRSV, Masoretic, Greek), Judaism (Aramaic and English), Islam, and the English Gita. The Christian supplemental set waits until after the main 30.
+Safe to collect now: Christianity (NRSV, Masoretic, Greek), Judaism (Aramaic and English), Islam, Sikhism, the Sanskrit and English Gita, and the Pali Dhammapada. The Christian supplemental set waits until after the main 30.
 
 ## Passage files
 
@@ -56,7 +55,7 @@ A native edition is the same passages asked twice: `prompt-english/` and `prompt
 | Christianity (NRSV, then original language) | 120 + 240 | 30 | 4, not in the run | `christianity/english/population/`, `native/masoretic/`, `native/greek/` |
 | Judaism (Aramaic, two prompts, then English) | 120 + 120 + 120 | 30 | 1, not in the run | `judaism/native/population/prompt-english/`, `prompt-native/`, `judaism/english/population/` |
 | Islam (Arabic, two prompts) | 120 + 120 | 30 | 7, not in the run | `islam/native/population/prompt-english/`, `prompt-native/` |
-| Sikhism (Gurmukhi, two prompts) | 240, not collected | 30 | 3, not in the run | `sikhism/native/population/prompt-english/`, `prompt-native/` |
+| Sikhism (Gurmukhi, two prompts) | 240 | 30 | 3, not in the run | `sikhism/native/population/prompt-english/`, `prompt-native/` |
 | Hinduism (Sanskrit, two prompts, then English) | 120 + 120 + 120 | 30 | none listed | `hinduism/native/population/`, `hinduism/english/population/` |
 | Buddhism (Pali, two prompts) | 120 + 120 | 30 | none listed | `buddhism/native/population/` |
 
@@ -107,7 +106,7 @@ Islam, Sikhism, and Buddhism do not have this third prompt. This corpus has no E
 
 ## Run the panel
 
-The run joins the population question files in `RUNNING.md`. Sikhism stays out because `collect` refuses a Gurmukhi question while scoring still drops Gurmukhi vowel signs. `review/` has check pages and does not keep a second copy of the questions.
+The run joins the population question files in `RUNNING.md`. `review/` has check pages and does not keep a second copy of the questions.
 
 List A is `models/openrouter.yaml` (16 models), and that is the run. List B is `models/openrouter-subset.yaml` (7 models). Both go through OpenRouter with temperature 0. One `OPENROUTER_API_KEY` covers every model. No Anthropic, OpenAI, or Gemini key. The reference file `configs/models.openrouter.yaml` is the old three-model run and is not this panel.
 
@@ -115,7 +114,7 @@ Search is the `search` key at the top of the panel file. It is `false`, which st
 
 OpenRouter has no language field. The prompt already names the edition and the answer language. One collect writes every model in the chosen file into the same answers file; each row is marked with its `model_id`.
 
-`COST.md` prices List A. Christianity, Judaism, and Hinduism are 360 population questions each (native two prompts, plus an English edition). Islam and Buddhism are 240 (native only). Sikhism is 240 and is not collected. Familiarity lists and `christianity/modern/` are not in that total. Refresh with `python items/for-test/cost.py`.
+`COST.md` prices List A. Christianity, Judaism, and Hinduism are 360 population questions each (native two prompts, plus an English edition). Islam, Sikhism, and Buddhism are 240 (native only). Familiarity lists and `christianity/modern/` are not in that total. Refresh with `python items/for-test/cost.py`.
 
 `complete_unit` scores the remaining words of that passage. An answer that then continues into later verses still counts as correct, because the remainder is contained in the answer. A cite task that asks for a passage from the wrong edition is not in this run.
 

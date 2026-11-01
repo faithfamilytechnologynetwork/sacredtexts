@@ -156,13 +156,55 @@ def test_retrieve_quote_scores_equal_regardless_of_vocalisation_direction():
         ("The keeper planted twelve trees.", "the keeper planted twelve trees"),
         ("“Love one’s neighbour!”", "love one s neighbour"),
         ("A  B\n C", "a b c"),
-        # pre-existing behaviour: NFKD splits Latin diacritics at the punctuation pass;
-        # the Arabic/Hebrew change must NOT alter this (strip_script_marks is a no-op here)
-        ("naïve café résumé", "nai ve cafe re sume"),
+        # A diacritic stays on its letter. It is not a word break.
+        ("naïve café résumé", "naïve café résumé"),
+        ("Rabbi Yoḥanan", "rabbi yoḥanan"),
+        ("Ismāʿīl", "ismāʿīl"),
     ],
 )
 def test_latin_output_unchanged(text, expected):
     assert normalize(text) == expected
+
+
+def test_indic_vowel_signs_stay_in_the_word():
+    # Issue #50 part 2: dependent vowel signs are not punctuation, and they
+    # distinguish words. A virama must not split a conjunct into spaces.
+    assert normalize("ਕਰਤਾ") != normalize("ਕਰਤੀ")
+    assert " " not in normalize("ਕਰਤਾ")
+    assert normalize("कर्ता") != normalize("कर्ती")
+    assert " " not in normalize("कर्मण्येवाधिकारस्ते")
+    assert normalize("धर्मक्षेत्रे") == "धर्मक्षेत्रे"
+
+
+def test_pali_diacritics_stay_on_the_letter():
+    assert normalize("dhammā") != normalize("dhamma")
+    assert normalize("manopubbaṅgamā") == "manopubbaṅgamā"
+    assert normalize("ṭhāna") == "ṭhāna"
+    assert " " not in normalize("manopubbaṅgamā")
+
+
+def test_base_f1_keeps_the_words_when_marks_drop():
+    from sacredbench.score import score_answer, token_f1, token_f1_base
+
+    strict = token_f1("dhammā manopubbaṅgamā", "dhamma manopubbangama")
+    base = token_f1_base("dhammā manopubbaṅgamā", "dhamma manopubbangama")
+    assert strict == 0
+    assert base == 1
+    assert token_f1_base("The café opened", "The cafe opened") == 1
+    assert token_f1_base("λόγος τοῦ θεοῦ", "λογος του θεου") == 1
+    # The headline still requires the marks. Right words with the wrong vowel is not correct.
+    scored = score_answer("retrieve_quote", "dhamma", {"text": "dhammā"})
+    assert scored["normalized"] == 0
+    assert scored["correct"] == 0
+    assert scored["token_f1_base"] == 1
+
+
+def test_english_names_stay_whole_beside_arabic():
+    assert normalize("Ismāʿīl عَنْهُ").split()[0] == "ismāʿīl"
+    # A danda is punctuation. A joiner inside a conjunct is not a word break.
+    assert normalize("धर्मः। कुरु") == "धर्मः कुरु"
+    assert normalize("बुद्\u200dध्या") == normalize("बुद्ध्या")
+    assert " " not in normalize("बुद्\u200dध्या")
 
 
 def test_strip_script_marks_is_a_noop_on_latin():

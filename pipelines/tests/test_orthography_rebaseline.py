@@ -39,9 +39,11 @@ from sacredbench.score import _is_arabic_letter, bounded_contains, fold_aware_co
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 SIM_PROJECTION_SHA256 = {
-    "tutorial-2026-10-11/scores.jsonl": "6dbf9a9c157c440f54428b8624f85a88f346f2f6c228a720812dd3d053565467",
-    "original-2026-10-21/scores.jsonl": "581e0030c525b7d92d49bb66417ebd5d63d2154f7b4614310a608fd3c9c7b868",
-    "first-run-2026-10-11/scores.jsonl": "8114b0d4fe14e9bde63e2c1147fc764995a39e4956987403e8aab6bea6bff3e2",
+    # Re-pinned when normalize() stopped splitting Latin diacritics (Yoḥanan, Ismāʿīl,
+    # café). exact and normalized did not move; token_f1 did, on 12 cells.
+    "tutorial-2026-10-11/scores.jsonl": "20c5c0597283cfc1fcde1dd6844b18fdfcf130f9032d4868f7956d129afafa2d",
+    "original-2026-10-21/scores.jsonl": "ba45b9f4ca62fc3b45365f490ac0d26518ac46f4a27a289708c868993812ab81",
+    "first-run-2026-10-11/scores.jsonl": "bf52500cf18c2b630c3c6e9bd01268de6b3f3472d4cd79a61db36e24ce9f0fdc",
     "exp-arabic-prompts-2026-10-29/scores-ar.jsonl": "c369e76ad5d40baf819b523ced13d9fdabedbe5e84d55a8daeaeadf8912ca580",
     "exp-arabic-prompts-2026-10-29/scores-en.jsonl": "83d57ee5f3f14135022ddb51d93f3bd744e4887f80ef6948a5ce14735dab1259",
 }

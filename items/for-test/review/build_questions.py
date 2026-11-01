@@ -499,8 +499,8 @@ def place_questions(rows: list[dict]) -> None:
 def export_questions(built: dict[str, list[dict]]) -> None:
     """Write each tradition under english or native, then population or familiarity.
 
-    There is no second copy under review/. Sikhism is written, and collect still
-    refuses it while scoring drops Gurmukhi vowel signs.
+    There is no second copy under review/. Sikhism is included. Scoring keeps
+    Gurmukhi vowel signs.
     """
     rows = [_collect_row(row) for group in built.values() for row in group]
     place_questions(rows)
