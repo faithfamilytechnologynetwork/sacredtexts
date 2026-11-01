@@ -11,6 +11,7 @@ from sacredbench.convert import (
     convert_bible_flat,
     convert_encyclicals,
     convert_hadith_sunnah,
+    convert_hadith_sunnah_en,
     convert_lds_nested,
     convert_nabre,
     convert_quran_qul,
@@ -316,6 +317,19 @@ def test_convert_hadith_sunnah_real_bukhari():
     parse_document(doc.to_json_dict())
 
 
+def test_convert_hadith_sunnah_en_real_bukhari():
+    t = _real_target("Sunni Islam", work="Sahih al-Bukhari", language="en")
+    [doc] = convert_target(t.payload_paths(RAW), t)
+    assert doc.version == "sunnah.com English"
+    # 7,277 hadiths in the file; exactly one has no English on sunnah.com and is skipped
+    assert len(doc.entries) == 7276
+    e = doc.entries[0]
+    assert e.citation == "Sahih al-Bukhari 1" and e.unit_type == "hadith"  # pairs with the Arabic
+    assert e.text.startswith("Narrated 'Umar bin Al-Khattab: I heard Allah's Messenger")
+    assert "\n" not in e.text  # the export's hard-wrapped lines are collapsed
+    parse_document(doc.to_json_dict())
+
+
 def test_convert_sefaria_talmud_real_en():
     t = _real_target("Judaism", language="en")
     [doc] = convert_target(t.payload_paths(RAW), t)
@@ -419,10 +433,32 @@ def test_hadith_malformed_idinbook_fails(tmp_path):
 
 
 @pytest.mark.parametrize(
+    "english, why",
+    [
+        ("not a dict", "english"),  # english must be an object
+        ({"narrator": None, "text": "x"}, "narrator"),  # null narrator
+        ({"text": "x"}, "narrator"),  # MISSING narrator key raises like null does
+        ({"narrator": "N"}, "text"),  # missing text key
+        ({"narrator": "N", "text": None}, "text"),  # null text
+    ],
+    ids=["english-not-dict", "narrator-null", "narrator-missing", "text-missing", "text-null"],
+)
+def test_hadith_en_malformed_english_fails(tmp_path, english, why):
+    p = tmp_path / "bad.json"
+    p.write_text(json.dumps({"hadiths": [{"idInBook": 1, "english": english}]}))
+    with pytest.raises(ConvertError) as e:
+        convert_hadith_sunnah_en([p], _target(converter="hadith_sunnah_en", work="Sahih al-Bukhari"))
+    msg = str(e.value)
+    assert "bad.json" in msg and (why in msg or "english" in msg)
+
+
+@pytest.mark.parametrize(
     "fn, payload, converter",
     [
         (convert_quran_qul, ["not a dict"], "quran_qul"),
         (convert_hadith_sunnah, {"no": "hadiths list"}, "hadith_sunnah"),
+        (convert_hadith_sunnah_en, {"no": "hadiths list"}, "hadith_sunnah_en"),
+        (convert_hadith_sunnah_en, ["not a dict"], "hadith_sunnah_en"),
         (convert_sefaria_talmud, {"title": "X", "text": "not a list"}, "sefaria_talmud"),
     ],
 )

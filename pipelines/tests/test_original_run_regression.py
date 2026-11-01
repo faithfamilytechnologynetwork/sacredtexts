@@ -46,9 +46,11 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # such an update, re-pin BOTH constants from
 # a fresh `generate` with the run manifest's params and rebuild the committed FAccT card
 # (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves;
-# a text added after the run leaves the card unchanged, Spec 50).
+# a text added after the run leaves the card unchanged, Spec 50). 2026-11-01: sunnah.com English
+# for the six canonical hadith books added, outside the pool (translations) — corpus hash moved,
+# digest unchanged 93b71460742a8ecd.
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "de2c8679cbde3cf5"  # texts/ as of 2026-11-01 (Saheeh International added)
+ANCHOR_CORPUS_HASH = "e588c0892cf922ce"  # texts/ as of 2026-11-01 (sunnah.com English six added)
 ANCHOR_DIGEST = "93b71460742a8ecd"  # generate over that corpus with the run's params
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer

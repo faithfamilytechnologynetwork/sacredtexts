@@ -299,9 +299,9 @@ oracles while waiting; do the atomic commit after ack.
 
 ## URGENT HOLD — competing #57 merged (2026-10-29)
 
-Architect URGENT HOLD mid-Phase-2: a contributor merged PR #57 (the orthography branch,
+Architect URGENT HOLD mid-Phase-2: Jonathan Karr merged PR #57 (karr/issue-52-arabic-orthography,
 154e0ef) directly to main — a COMPETING implementation of #52 — outside review, while I was
-executing the rebaseline. Do NOT commit, do NOT open PR, until the architect reconciles with the maintainer.
+executing the rebaseline. Do NOT commit, do NOT open PR, until the architect reconciles with Waleed.
 
 Stopped cleanly after the md-splice step. WORKTREE STATE at hold:
 - NO commit / push / PR. HEAD = f9561e0 (rebased hold-prep). Branch does NOT contain #57 (I rebased
@@ -322,7 +322,7 @@ diff vs #57, reset to clean, or proceed to commit if the reviewed/witnessed path
 
 ## Reconciliation + Phase 2 COMPLETE (2026-10-29)
 
-the maintainer greenlit reconciliation of the competing #57/#58. Rebased branch+tree onto origin/main
+Waleed greenlit reconciliation of the competing #57/#58. Rebased branch+tree onto origin/main
 (b93e881, post #57/#58/#51/canary) — CLEAN (my Phase-1 commits patch-skipped via #58).
 BIG FINDING: `08f43b8` ("fix double code branch") had ALREADY converged to MY design — frozen
 normalize(), my symmetric fold_arabic_orthography, score_normalize/fold_aware_contains/optional-ā
@@ -481,4 +481,17 @@ Governance/docs refreshed: arch.md § score.py (cite off the fold, whitespace co
 classes), exp + tutorial READMEs, review doc (round-2 dispositions, 56 movers, 2 residual classes),
 PR body. Witness pins the new exp partition + single-flip identity.
 
-Still HOLDING at the pr gate — architect runs `porch approve` after the maintainer's OK; I merge after.
+Still HOLDING at the pr gate — architect runs `porch approve` after Waleed's OK; I merge after.
+
+## Verify phase — PR #62 MERGED (2026-10-30)
+
+Waleed approved; architect ran `porch approve 52 pr`. On merging, PR #62 had gone CONFLICTING
+(main advanced: #59 Spec 54, #61 CI). Merged origin/main into the branch — ONE conflict in
+`arch-critical.md` (Spec 54 and Spec 52 each edited the Scoring/Tool-use bullets; additive +
+non-overlapping, so kept BOTH: my Arabic-fold sentence in Scoring, #54 native-web_search in
+Tool-use). Merge commit c4d23d2. Re-ran full gate over merged tree: 660 pass / 2 skip (up from
+643 — #54 suite now coexists with the scoring change), viewer green. Pushed; CI (#61 workflow)
+ran green on the merge; PR CLEAN/MERGEABLE. Merged via `gh pr merge 62 --merge` (no squash).
+
+**Merge SHA: 0ed8cca** (Merge pull request #62). `porch done 52 --merged 62` recorded it.
+Entering verify → verify-approval gate (architect approves).

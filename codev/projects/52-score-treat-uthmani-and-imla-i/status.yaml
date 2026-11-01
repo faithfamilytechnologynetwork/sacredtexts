@@ -1,7 +1,7 @@
 id: '52'
 title: score-treat-uthmani-and-imla-i
 protocol: aspir
-phase: review
+phase: verified
 plan_phases:
   - id: phase_1
     title: score_normalize fold capability (logic + tests, unwired)
@@ -19,95 +19,14 @@ gates:
     requested_at: '2026-10-30T00:15:26.673Z'
     approved_at: '2026-10-30T02:14:02.818Z'
   verify-approval:
-    status: pending
+    status: approved
+    requested_at: '2026-10-30T02:18:30.604Z'
+    approved_at: '2026-10-30T02:48:34.131Z'
 iteration: 1
 build_complete: true
-history:
-  - iteration: 1
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-plan-iter1-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-plan-iter1-claude.txt
-  - iteration: 1
-    plan_phase: phase_1
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter1-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter1-claude.txt
-  - iteration: 2
-    plan_phase: phase_1
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter2-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter2-claude.txt
-  - iteration: 3
-    plan_phase: phase_1
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter3-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_1-iter3-claude.txt
-  - iteration: 1
-    plan_phase: phase_2
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter1-claude.txt
-  - iteration: 2
-    plan_phase: phase_2
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter2-codex.txt
-      - model: claude
-        verdict: APPROVE
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter2-claude.txt
-  - iteration: 3
-    plan_phase: phase_2
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: APPROVE
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter3-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/aspir-52/codev/projects/52-score-treat-uthmani-and-imla-i/52-phase_2-iter3-claude.txt
+history: []
 started_at: '2026-10-29T16:56:27.589Z'
-updated_at: '2026-10-30T02:14:02.819Z'
+updated_at: '2026-10-30T02:48:36.012Z'
 force_advanced:
   phase: phase_2
   iteration: 3
@@ -129,4 +48,6 @@ pr_history:
     pr_number: 62
     branch: builder/aspir-52
     created_at: '2026-10-30T00:02:19.023Z'
+    merged: true
+    merged_at: '2026-10-30T02:17:47.970Z'
 pr_ready_for_human: false
