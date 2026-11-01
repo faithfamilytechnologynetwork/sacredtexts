@@ -106,9 +106,28 @@ _CELLS = [
 
 
 def _make_run(root: Path, *, model: str = "m1") -> Path:
-    run = root / "runs" / "fixture"
+    manifest = {
+        "question_set_digest": "deadbeef",
+        "corpus_hash": _corpus_hash(root),  # must match build_facct's hash of the fixture raw tree
+        "n_questions": len(_CELLS),
+        "selected_texts": [
+            {"work": "The Bible", "version": "KJV", "language": "en"},
+            {"work": "The Bible", "version": "ASV (1901)", "language": "en"},
+            {"work": "The Bible", "version": "WEB", "language": "en"},
+        ],
+        "excluded_texts": [
+            {"work": "Papal Encyclicals", "version": "Vatican English", "language": "en",
+             "reason": "language 'en' != canonical_language 'la'"},
+        ],
+    }
+    return _write_run(root / "runs" / "fixture", _CELLS, manifest, model=model)
+
+
+def _write_run(run: Path, cells: list[tuple], manifest: dict, *, model: str = "m1") -> Path:
+    """Write answers/scores/summary/manifest for ``cells`` (the ``_CELLS`` tuple shape), with the
+    summary counts derived from the cells so they agree by construction."""
     answers, scores = [], []
-    for i, (task, work, version, language, citation, answer, outcome) in enumerate(_CELLS):
+    for i, (task, work, version, language, citation, answer, outcome) in enumerate(cells):
         qid = f"{task}-{i:04d}"
         answers.append({
             "question_id": qid, "model_id": model, "task": task, "answer": answer,
@@ -124,7 +143,7 @@ def _make_run(root: Path, *, model: str = "m1") -> Path:
 
     # summary.json counts derived from the cells so they agree by construction
     by_task: dict[str, dict] = {}
-    for (task, *_rest), s in zip(_CELLS, scores):
+    for (task, *_rest), s in zip(cells, scores):
         b = by_task.setdefault(task, {"correct": 0, "incorrect": 0, "refused": 0})
         b[s["metrics"]["outcome"]] += 1
     for b in by_task.values():
@@ -144,20 +163,6 @@ def _make_run(root: Path, *, model: str = "m1") -> Path:
         "models": {model: {**by_task, "_overall": tot}},
         "panel": {model: {"provider": "p", "model": "m", "tools": []}},
         "evaluators": ["strict", "containment"],
-    }
-    manifest = {
-        "question_set_digest": "deadbeef",
-        "corpus_hash": _corpus_hash(root),  # must match build_facct's hash of the fixture raw tree
-        "n_questions": len(_CELLS),
-        "selected_texts": [
-            {"work": "The Bible", "version": "KJV", "language": "en"},
-            {"work": "The Bible", "version": "ASV (1901)", "language": "en"},
-            {"work": "The Bible", "version": "WEB", "language": "en"},
-        ],
-        "excluded_texts": [
-            {"work": "Papal Encyclicals", "version": "Vatican English", "language": "en",
-             "reason": "language 'en' != canonical_language 'la'"},
-        ],
     }
     _write(run / "answers.jsonl", "\n".join(json.dumps(r) for r in answers) + "\n")
     _write(run / "scores.jsonl", "\n".join(json.dumps(r) for r in scores) + "\n")
@@ -417,8 +422,8 @@ def test_score_row_missing_task_fails_fast(tmp_path):
 
 def test_selected_corpus_hash_tracks_selected_edition_content(tmp_path):
     # selected_corpus_hash pins the CONTENT of the run's selected editions: editing a selected
-    # edition's wording changes it (so the committed-card regression test fails with a clear diff —
-    # remedy: regenerate), while the card still builds (no fail-fast on a full-corpus mismatch).
+    # edition's wording changes it (so a committed card no longer matches a fresh build — remedy:
+    # regenerate), while the card still builds (no fail-fast on a full-corpus mismatch).
     raw = _raw_tree(tmp_path)
     run = _make_run(tmp_path)
     before = build_facct(run, raw_root=raw)["selected_corpus_hash"]
@@ -486,8 +491,31 @@ def test_unresolved_catalogue_target_fails_fast(tmp_path):
     manifest = json.loads((run / "questions.jsonl.manifest.json").read_text())
     manifest["selected_texts"].append({"work": "Nonexistent", "version": "X", "language": "en"})
     (run / "questions.jsonl.manifest.json").write_text(json.dumps(manifest))
-    with pytest.raises(FacctError, match="no catalogue target"):
+    with pytest.raises(FacctError, match="no catalogue target") as e:
         build_facct(run, raw_root=raw)
+    # the generic missing-target path is not blamed on any one sanctioned removal
+    assert "#74" not in str(e.value) and "Sanctioned removal" not in str(e.value)
+
+
+def test_missing_targets_all_named_and_sanctioned_removal_explained(tmp_path):
+    # every missing selected edition is named (not just the first); only the ones listed in
+    # facct._REMOVED_EDITIONS get the sanctioned-removal note — here #74's dropped hadith books.
+    raw = _raw_tree(tmp_path)
+    run = _make_run(tmp_path)
+    manifest = json.loads((run / "questions.jsonl.manifest.json").read_text())
+    manifest["selected_texts"] += [
+        {"work": "Muwatta Malik", "version": "sunnah.com Arabic", "language": "ar"},
+        {"work": "Nonexistent", "version": "X", "language": "en"},
+        {"work": "Sunan al-Darimi", "version": "sunnah.com Arabic", "language": "ar"},
+    ]
+    (run / "questions.jsonl.manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(FacctError) as e:
+        build_facct(run, raw_root=raw)
+    msg = str(e.value)
+    for name in ("Muwatta Malik (sunnah.com Arabic, ar)", "Nonexistent (X, en)",
+                 "Sunan al-Darimi (sunnah.com Arabic, ar)"):
+        assert name in msg
+    assert msg.count("Sanctioned removal") == 1 and "#74" in msg  # one note, de-duplicated
 
 
 # --- regressions: no fabrication, no private matcher -------------------------
@@ -736,6 +764,70 @@ def test_real_run_frozen_card_fails_loudly_after_hadith_trim():
     assert "#74" in msg
     for work in ("Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi"):
         assert work in msg  # collects every missing edition, not just the first
+
+
+def _four_task_run(root: Path) -> tuple[Path, Path]:
+    """A run asking all four templates of one selected KJV, over a catalogue that also holds an
+    excluded translation whose canonical language (la) no target carries as its ``language`` and a
+    restricted Greek target — the shape behind the census/prose pins the real reference run carried
+    before #74 froze its card."""
+    raw = root / "texts" / "raw"
+    _write(
+        raw / "Protestant Christian" / "source.yaml",
+        PROV + "targets:\n"
+        "  - payload: kjv.json\n    converter: bible_flat\n    work: The Bible\n    version: KJV\n"
+        "    language: en\n    document_type: scripture\n    tradition: [Protestant Christian]\n"
+        "    license: public-domain\n    requested_as: [the Bible]\n    canonical_language: en\n",
+    )
+    _write(raw / "Protestant Christian" / "kjv.json", _bible_payload(_KJV))
+    _write(
+        raw / "Roman Catholic" / "source.yaml",
+        PROV + "targets:\n"
+        "  - payload: enc.json\n    converter: bible_flat\n    work: Papal Encyclicals\n"
+        "    version: Vatican English\n    language: en\n    document_type: encyclical\n"
+        "    tradition: [Roman Catholic]\n    license: open\n    requested_as: [the encyclicals]\n"
+        "    canonical_language: la\n",
+    )
+    _write(raw / "Roman Catholic" / "enc.json", _bible_payload({"Enc 1:1": "an encyclical line"}))
+    _write(
+        raw / "Greek Orthodox" / "source.yaml",
+        PROV + "targets:\n"
+        "  - payload: lxx.json\n    converter: bible_flat\n    work: Septuagint\n    version: TLG\n"
+        "    language: grc\n    document_type: scripture\n    tradition: [Greek Orthodox]\n"
+        "    license: restricted\n    requested_as: [the Septuagint]\n    canonical_language: grc\n",
+    )
+    _write(raw / "Greek Orthodox" / "lxx.json", "{}")  # restricted: never converted
+    cells = [
+        ("retrieve_quote", "The Bible", "KJV", "en", "Test 3:3", "kjv three correct text", "correct"),
+        ("complete_unit", "The Bible", "KJV", "en", "Test 5:5", "an unrelated continuation", "incorrect"),
+        ("cite_passage", "The Bible", "KJV", "en", "Test 1:1", "Test 1:1", "correct"),
+        ("verify_source", "The Bible", "KJV", "en", "Test 6:6", "I cannot say", "refused"),
+    ]
+    manifest = {
+        "question_set_digest": "d", "corpus_hash": _corpus_hash(root), "n_questions": len(cells),
+        "selected_texts": [{"work": "The Bible", "version": "KJV", "language": "en"}],
+        "excluded_texts": [{"work": "Papal Encyclicals", "version": "Vatican English", "language": "en",
+                            "reason": "language 'en' != canonical_language 'la'"}],
+    }
+    return _write_run(root / "runs" / "four", cells, manifest), raw
+
+
+def test_four_task_census_languages_and_correctness_prose(tmp_path):
+    """Re-homes the pins the real reference run carried before #74 froze its card: a zero-question
+    language comes from a CANONICAL language no target carries (la) as well as from a restricted
+    target (grc); and with all four tasks present, the card states each task's own correctness rule
+    and scopes containment to the two text-retrieval tasks (CARD_PROSE is contributor-editable, so a
+    'containment for all four tasks' regression must fail here)."""
+    run, raw = _four_task_run(tmp_path)
+    report = build_facct(run, raw_root=raw)
+    assert report["census"]["zero_question_languages"] == ["grc", "la"]
+    assert [e["work"] for e in report["census"]["excluded_texts"]] == ["Papal Encyclicals"]
+    md = report_markdown(report)
+    for task in ("retrieve_quote", "complete_unit", "cite_passage", "verify_source"):
+        assert f"**{task}**" in md
+    assert "name the one correct citation" in md  # cite_passage
+    assert "leading Yes / No" in md  # verify_source
+    assert "For the two text-retrieval tasks" in md  # containment scoped, not claimed for all four
 
 
 def test_post_run_filter_drops_targets_added_after_the_run():

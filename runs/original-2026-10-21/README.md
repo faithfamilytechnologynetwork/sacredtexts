@@ -7,7 +7,7 @@ open corpora only). See `summary.md` for the full accuracy/coverage tables (per 
 × tradition, and the per-text breakdown), the panel composition, and token totals.
 
 > **Note (2026-11-01, issue #74) — the FAccT card for this run is frozen.** This run selected
-> all nine of *al-kutub al-tis'a* (the Qur'an plus nine Arabic hadith collections). Issue #74
+> all nine of *al-kutub al-tis'a* (the nine Arabic hadith collections), plus the Qur'an. Issue #74
 > trimmed the catalogue's Arabic hadith pool to the six canonical books (the Kutub al-Sittah);
 > **Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the catalogue.** Because this run
 > selected editions that no longer exist in the catalogue, its FAccT card (`facct.json` /
@@ -155,8 +155,9 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
   `retrieve_quote` edition counterfactual (how many Bible retrieve_quote misses actually quoted a
   different edition of the same verse — see `facct.md` for the per-model counts). It never re-scores
   and never calls a model;
-  every number is derived from `scores.jsonl` / `summary.json`, pinned by
-  `test_original_run_regression.py::test_committed_facct_card_matches_the_run`. The card wording is
+  every number is derived from `scores.jsonl` / `summary.json`. Since issue #74 the card is frozen
+  (see the note at the top): `test_original_run_regression.py::test_committed_facct_card_is_frozen_and_rebuild_fails_loudly`
+  checks its outcomes against `scores.jsonl` and byte-pins it. The card wording is
   provisional pending a contributor's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).
 
 ## Reproducing / re-scoring

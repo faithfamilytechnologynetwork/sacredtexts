@@ -44,6 +44,27 @@ Sunan al-Darimi leave the catalogue (7th–9th of al-kutub al-tis'a).
   anchor history; ANCHOR_DIGEST stays 48ee2ca017a57afc, ANCHOR_CORPUS_HASH re-pinned from a fresh
   convert + generate over the merged corpus).
 
+## PR #81 round 1 (architect, REQUEST_CHANGES — trim + anchors verified correct)
+1. Retracted "rebuild the card" remedy lingered: fixed the live assert message, arch.md (now
+   documents the removal-freezes-a-card case and names the new test), run README:159, plus two
+   comments the review didn't list (facct.py selected_corpus_hash note, test_facct.py:421).
+2. Freeze test now re-derives outcomes from committed scores.jsonl (`_outcome_counts`/`_outcomes`,
+   after `_verify_against_summary`) and asserts == frozen facct.json["outcomes"]. Ordered BEFORE the
+   loud-failure check so a scores/summary mismatch raises its own "disagree" error instead of a
+   wrong-message "#74" failure (review asked for a note about that; reordering removes the trap).
+3. Re-homed the deleted real-run pins (zero_question_languages ["grc","la"], the three CARD_PROSE
+   correctness strings) on a synthetic four-task fixture; `_make_run`'s writer factored to `_write_run`.
+4. `_census` message is generic; #74's note comes from `facct._REMOVED_EDITIONS` (keyed by text key).
+   New test: a mixed missing set names all editions, adds the #74 note once; "Nonexistent" alone has no #74.
+5. README line 10: "all nine of al-kutub al-tis'a (the nine Arabic hadith collections), plus the Qur'an".
+Mutation-checked: a "containment for all four tasks" CARD_PROSE edit and a tampered frozen outcome
+both fail the new tests.
+
+## porch tests-check timeout
+`porch done 74` → tests check TIMED OUT at 300s (default; no `timeout_ms` in .codev/config.json). The
+pipelines suite now takes ~8–8.5 min, so this will hit every pipelines builder. Not a test failure.
+Raised with the architect rather than changing shared config inside #74.
+
 ## Notes
 - Trimmed current corpus = 17 texts (Qur'an + 6 hadith + Talmud-Aramaic + 3 LDS + 3 Bible +
   SGGS + Dhammapada + Gita). This is a DIFFERENT 17 than the run's own 17 (run had 9 hadith, no

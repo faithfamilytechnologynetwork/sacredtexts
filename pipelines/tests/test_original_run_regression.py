@@ -84,9 +84,11 @@ def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
 # Musnad Ahmad / Sunan al-Darimi) left the catalogue — but original-2026-10-21 SELECTED all nine,
 # so its card can no longer be rebuilt (selected_corpus_hash cannot be computed for an edition
 # whose raw content is gone, and we never fabricate one). Decision (#74): FAIL LOUDLY + FREEZE.
-# This test now asserts (a) build_facct fails loudly, naming #74 and every missing edition, and
-# (b) the committed card is byte-frozen. If those editions ever return and the card becomes
-# rebuildable again, restore the rebuild-equality assertion in the same commit.
+# This test now asserts (a) the frozen card's outcomes still equal those re-derived from the
+# committed scores.jsonl (the card <-> evidence guard the rebuild used to provide), (b) build_facct
+# fails loudly, naming #74 and every missing edition, and (c) the committed card is byte-frozen.
+# If those editions ever return and the card becomes rebuildable again, restore the
+# rebuild-equality assertion in the same commit.
 FROZEN_FACCT_JSON_SHA256 = "1ad8ffc1a42bcb87fc912d3660399a0827986e4facf9f4b306794ae5b4168b11"
 FROZEN_FACCT_MD_SHA256 = "a42eac832cb5048f2177a9f149a5a06e1dbc6d270bda4a5247995c4040a9d307"
 
@@ -96,9 +98,33 @@ def test_committed_facct_card_is_frozen_and_rebuild_fails_loudly():
     facct_md = RUN / "facct.md"
     if not facct_json.exists() or not (REPO_ROOT / "texts" / "raw").exists():
         pytest.skip("committed facct card or raw tree not present")
-    from sacredbench.facct import FacctError, build_facct
+    from sacredbench.facct import (
+        FacctError,
+        _load_json,
+        _load_jsonl,
+        _outcome_counts,
+        _outcomes,
+        _verify_against_summary,
+        build_facct,
+    )
 
-    # (a) the card can no longer be rebuilt — build_facct fails loudly, naming #74 and EVERY
+    # (a) card <-> evidence: the card cannot be rebuilt, so a sanctioned rebaseline of scores.jsonl /
+    #     summary.json would otherwise leave its outcome numbers stale with no detection. Re-derive
+    #     the outcomes block from the committed evidence (catalogue-independent) and compare. This
+    #     runs BEFORE (b) on purpose: build_facct checks scores/summary (_verify_against_summary)
+    #     before _census, so if it ran first a scores/summary mismatch would surface only as a
+    #     wrong-message failure of the "#74" assert; here it raises its own "... disagree ..." error.
+    #     If (a) fails after a rebaseline: stop — the frozen card cannot be regenerated; raise it.
+    counts = _outcome_counts(_load_jsonl(RUN / "scores.jsonl"))
+    summary = _load_json(RUN / "summary.json")
+    _verify_against_summary(counts, summary)
+    frozen = json.loads(facct_json.read_text(encoding="utf-8"))
+    assert _outcomes(counts, summary) == frozen["outcomes"], (
+        "the committed scores.jsonl / summary.json no longer match the frozen FAccT card's outcomes "
+        "— the card cannot be rebuilt (#74); do not hand-edit facct.json, raise it with the architect"
+    )
+
+    # (b) the card can no longer be rebuilt — build_facct fails loudly, naming #74 and EVERY
     #     dropped edition (collecting all missing, not just the first).
     with pytest.raises(FacctError) as e:
         build_facct(RUN)
@@ -107,7 +133,7 @@ def test_committed_facct_card_is_frozen_and_rebuild_fails_loudly():
     for work in ("Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi"):
         assert work in msg
 
-    # (b) the committed card stays frozen byte-for-byte (it cannot be regenerated, so pin it).
+    # (c) the committed card stays frozen byte-for-byte (it cannot be regenerated, so pin it).
     assert hashlib.sha256(facct_json.read_bytes()).hexdigest() == FROZEN_FACCT_JSON_SHA256
     assert hashlib.sha256(facct_md.read_bytes()).hexdigest() == FROZEN_FACCT_MD_SHA256
 
@@ -164,8 +190,9 @@ def test_regenerating_original_run_reproduces_digest(tmp_path, monkeypatch):
     )
     assert regenerated["corpus_hash"] == ANCHOR_CORPUS_HASH, (
         "the corpus moved — if this was a sanctioned texts/ update, re-pin "
-        "ANCHOR_CORPUS_HASH and ANCHOR_DIGEST (see the comment at the anchors) "
-        "and rebuild the committed FAccT card; otherwise find what changed texts/"
+        "ANCHOR_CORPUS_HASH and ANCHOR_DIGEST (see the comment at the anchors); the "
+        "committed FAccT card is frozen (#74) and is NOT rebuilt; otherwise find what "
+        "changed texts/"
     )
     assert regenerated["question_set_digest"] == ANCHOR_DIGEST, (
         "generate produced a different question set for a fixed corpus + params — "
