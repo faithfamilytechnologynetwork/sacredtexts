@@ -2,7 +2,7 @@
 
 The real ``texts/raw`` tree is grouped **one directory per tradition**, each
 holding many works, versions, and source shapes (Protestant = KJV/ASV/WEB; Sunni
-= Quran + nine hadith collections; LDS = five works; Talmud = dozens of tractate
+= Quran + six hadith collections; LDS = five works; Talmud = dozens of tractate
 shards; Roman Catholic = encyclicals + the restricted NABRE). A single flat
 record cannot describe that, so each tradition directory carries one committed
 ``source.yaml`` with a ``targets:`` list; every target is one

@@ -42,14 +42,18 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # Tamid added, one-line Berakhot-en correction; Spec 50: Sri Guru Granth Sahib added, 18 texts,
 # 504 questions; Spec 63: the Dhammapada added, 19 texts, 532 questions; Spec 64: Bhagavad Gita
 # added, 20 texts, 560 questions, Besant's English outside the pool; 2026-11-01: Saheeh
-# International English Qur'an added, outside the pool — corpus hash moved, digest did not). On
-# such an update, re-pin BOTH constants from
-# a fresh `generate` with the run manifest's params and rebuild the committed FAccT card
-# (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves;
-# a text added after the run leaves the card unchanged, Spec 50).
+# International English Qur'an added, outside the pool — corpus hash moved, digest did not;
+# 2026-11-01 issue #74: the Arabic hadith pool trimmed to the six canonical books — Muwatta Malik,
+# Musnad Ahmad and Sunan al-Darimi left the catalogue, 20 -> 17 texts, 560 -> 476 questions — BOTH
+# values moved). On such an update, re-pin BOTH constants from a fresh `generate` with the run
+# manifest's params. NOTE: you can no longer "rebuild the committed FAccT card" as the earlier
+# remedy said — #74 removed editions this run SELECTED, so `sacredbench facct` on it now fails
+# loudly and the committed card is FROZEN (see test_committed_facct_card_is_frozen_and_rebuild_
+# fails_loudly below). A corpus update that only ADDS a text the run never selected still leaves
+# that historic card buildable and byte-identical (Spec 50).
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "de2c8679cbde3cf5"  # texts/ as of 2026-11-01 (Saheeh International added)
-ANCHOR_DIGEST = "93b71460742a8ecd"  # generate over that corpus with the run's params
+ANCHOR_CORPUS_HASH = "8f3749167e1bc48e"  # texts/ as of 2026-11-01 (issue #74 hadith trim, 17 texts)
+ANCHOR_DIGEST = "48ee2ca017a57afc"  # generate over that corpus with the run's params (476 questions)
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer
 # that yields ZERO citation candidates was hand-surveyed: a first-person inability to cite
@@ -72,20 +76,38 @@ def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
     assert out.read_text(encoding="utf-8") == committed.read_text(encoding="utf-8")
 
 
-def test_committed_facct_card_matches_the_run():
-    # the committed FAccT card (Spec 32) must equal a fresh build from the committed evidence, so a
-    # sanctioned rebaseline that moved scores.jsonl / summary.json — or a CARD_PROSE edit — without
-    # regenerating the card is caught here rather than shipping a card that contradicts its own run.
-    # REMEDY when this fails: regenerate the card
-    #   (`python -m sacredbench facct runs/original-2026-10-21`), do NOT loosen the assertion.
+# The committed FAccT card is FROZEN as of issue #74. Until #74 this test rebuilt the card and
+# asserted it matched the committed facct.json / facct.md byte-for-byte. #74 trimmed the Arabic
+# hadith pool to the six canonical books, so the three non-canonical collections (Muwatta Malik /
+# Musnad Ahmad / Sunan al-Darimi) left the catalogue — but original-2026-10-21 SELECTED all nine,
+# so its card can no longer be rebuilt (selected_corpus_hash cannot be computed for an edition
+# whose raw content is gone, and we never fabricate one). Decision (#74): FAIL LOUDLY + FREEZE.
+# This test now asserts (a) build_facct fails loudly, naming #74 and every missing edition, and
+# (b) the committed card is byte-frozen. If those editions ever return and the card becomes
+# rebuildable again, restore the rebuild-equality assertion in the same commit.
+FROZEN_FACCT_JSON_SHA256 = "1ad8ffc1a42bcb87fc912d3660399a0827986e4facf9f4b306794ae5b4168b11"
+FROZEN_FACCT_MD_SHA256 = "a42eac832cb5048f2177a9f149a5a06e1dbc6d270bda4a5247995c4040a9d307"
+
+
+def test_committed_facct_card_is_frozen_and_rebuild_fails_loudly():
     facct_json = RUN / "facct.json"
+    facct_md = RUN / "facct.md"
     if not facct_json.exists() or not (REPO_ROOT / "texts" / "raw").exists():
         pytest.skip("committed facct card or raw tree not present")
-    from sacredbench.facct import build_facct, report_markdown
+    from sacredbench.facct import FacctError, build_facct
 
-    rebuilt = build_facct(RUN)
-    assert json.loads(facct_json.read_text(encoding="utf-8")) == rebuilt  # facct.json
-    assert (RUN / "facct.md").read_text(encoding="utf-8") == report_markdown(rebuilt)  # facct.md
+    # (a) the card can no longer be rebuilt — build_facct fails loudly, naming #74 and EVERY
+    #     dropped edition (collecting all missing, not just the first).
+    with pytest.raises(FacctError) as e:
+        build_facct(RUN)
+    msg = str(e.value)
+    assert "#74" in msg
+    for work in ("Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi"):
+        assert work in msg
+
+    # (b) the committed card stays frozen byte-for-byte (it cannot be regenerated, so pin it).
+    assert hashlib.sha256(facct_json.read_bytes()).hexdigest() == FROZEN_FACCT_JSON_SHA256
+    assert hashlib.sha256(facct_md.read_bytes()).hexdigest() == FROZEN_FACCT_MD_SHA256
 
 
 def test_cite_passage_decline_survey_is_pinned():

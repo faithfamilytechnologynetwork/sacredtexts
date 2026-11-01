@@ -6,6 +6,19 @@ commands in the repo-root `TUTORIAL.md`; copyright-audited **origin-clean** (pub
 open corpora only). See `summary.md` for the full accuracy/coverage tables (per model × task,
 × tradition, and the per-text breakdown), the panel composition, and token totals.
 
+> **Note (2026-11-01, issue #74) — the FAccT card for this run is frozen.** This run selected
+> all nine of *al-kutub al-tis'a* (the Qur'an plus nine Arabic hadith collections). Issue #74
+> trimmed the catalogue's Arabic hadith pool to the six canonical books (the Kutub al-Sittah);
+> **Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the catalogue.** Because this run
+> selected editions that no longer exist in the catalogue, its FAccT card (`facct.json` /
+> `facct.md`) can no longer be rebuilt — `selected_corpus_hash` cannot be computed for a
+> since-removed edition, and the pipeline never fabricates one. `sacredbench facct` on this run
+> now **fails loudly** (naming #74 and the three dropped collections) and the committed card is
+> **frozen** exactly as it was when the run was scored (byte-pinned in
+> `pipelines/tests/test_original_run_regression.py`). The run evidence itself — `questions.jsonl`,
+> `answers.jsonl`, `scores.jsonl`, `summary.json`, `facct.*` — is unchanged; only this note was
+> added. The nine-collection description below is the historical record of what this run asked.
+
 ## Task / scope
 
 - **476 questions**, four templates evenly split (`retrieve_quote` / `complete_unit` /

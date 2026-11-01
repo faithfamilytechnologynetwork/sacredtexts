@@ -83,6 +83,28 @@ def _census(manifest: dict, raw_root: Path) -> dict:
     excluded = manifest.get("excluded_texts") or []
     targets_by_key = {t.text_key: t for t in cat.all_targets(cat.discover_catalogue(raw_root))}
 
+    # A finished run is frozen evidence: if a text it SELECTED has since left the catalogue
+    # (a sanctioned corpus trim — issue #74 dropped Muwatta Malik, Musnad Ahmad and Sunan
+    # al-Darimi from the Sunni Islam catalogue), the card can no longer be honestly rebuilt —
+    # selected_corpus_hash cannot be computed for an edition whose raw content is gone, and we
+    # never fabricate one. Fail loudly, collecting EVERY missing edition (not just the first), so
+    # the committed facct.json / facct.md stay frozen exactly as they were when the run was scored.
+    missing = [
+        (st.get("work"), st.get("version"), st.get("language"))
+        for st in selected
+        if (st.get("work"), st.get("version"), st.get("language")) not in targets_by_key
+    ]
+    if missing:
+        names = "; ".join(f"{w} ({v}, {lang})" for w, v, lang in missing)
+        raise FacctError(
+            "FROZEN CARD: this run selected text(s) no longer in the catalogue, so its FAccT "
+            f"card can no longer be rebuilt — selected editions with no catalogue target: {names}. "
+            "A sanctioned corpus trim removed them (issue #74 dropped Muwatta Malik, Musnad Ahmad "
+            "and Sunan al-Darimi from the Sunni Islam catalogue). Never fabricate a "
+            "selected_corpus_hash for a since-removed edition: leave the committed facct.json / "
+            "facct.md frozen as they were when the run was scored."
+        )
+
     texts: list[dict] = []
     by_tradition: Counter = Counter()
     by_language: Counter = Counter()
@@ -90,9 +112,7 @@ def _census(manifest: dict, raw_root: Path) -> dict:
     by_license: Counter = Counter()
     for st in selected:
         key = (st.get("work"), st.get("version"), st.get("language"))
-        target = targets_by_key.get(key)
-        if target is None:
-            raise FacctError(f"selected text {key} has no catalogue target")
+        target = targets_by_key[key]
         tradition = list(target.tradition)
         texts.append(
             {

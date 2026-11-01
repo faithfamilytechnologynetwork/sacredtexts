@@ -720,26 +720,22 @@ def test_cli_creates_missing_subdirectory(tmp_path):
 # --- real committed run ------------------------------------------------------
 
 
-def test_real_run_census_and_counterfactual():
+def test_real_run_frozen_card_fails_loudly_after_hadith_trim():
+    """Issue #74 trimmed the Arabic hadith pool to the six canonical books, so Muwatta Malik,
+    Musnad Ahmad and Sunan al-Darimi left the catalogue. The committed run original-2026-10-21
+    SELECTED all nine hadith, so its FAccT card can no longer be rebuilt — build_facct must fail
+    loudly, naming issue #74 and EVERY missing edition (not just the first), rather than fabricate
+    a selected_corpus_hash. The committed facct.json / facct.md are frozen (pinned byte-for-byte
+    by test_original_run_regression.test_committed_facct_card_is_frozen_and_rebuild_fails_loudly)."""
     run = REPO_ROOT / "runs" / "original-2026-10-21"
     if not run.exists() or not (REPO_ROOT / "texts" / "raw").exists():
         pytest.skip("no committed run / raw tree")
-    report = build_facct(run)
-    assert report["census"]["n_texts"] == 17
-    # zero-question languages are the union of target languages and canonical languages minus the
-    # pool: grc (restricted TLG) AND la (encyclicals' canonical language, carried by no target's language)
-    assert report["census"]["zero_question_languages"] == ["grc", "la"]
-    assert {e["work"] for e in report["census"]["excluded_texts"]} == {"Papal Encyclicals", "Talmud Bavli"}
-    # 32 incorrect Bible retrieve_quote cells across the panel (verified count)
-    cf = report["edition_counterfactual"]["by_model"]
-    assert sum(b["denominator"] for b in cf.values()) == 32
-    # the real run has all four tasks; the correctness note must describe each task's own rule,
-    # not claim containment across the whole table (cite_passage / verify_source score differently)
-    md = report_markdown(report)
-    assert "name the one correct citation" in md  # cite_passage
-    assert "leading Yes / No" in md  # verify_source
-    # containment is explicitly scoped to the two text-retrieval tasks, not asserted for all four
-    assert "For the two text-retrieval tasks" in md
+    with pytest.raises(FacctError) as e:
+        build_facct(run)
+    msg = str(e.value)
+    assert "#74" in msg
+    for work in ("Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi"):
+        assert work in msg  # collects every missing edition, not just the first
 
 
 def test_post_run_filter_drops_targets_added_after_the_run():
