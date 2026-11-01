@@ -35,6 +35,15 @@ Sunan al-Darimi leave the catalogue (7th–9th of al-kutub al-tis'a).
 - Re-pinned anchors in test_original_run_regression.py: ANCHOR_CORPUS_HASH / ANCHOR_DIGEST
   (see below once generate completes).
 
+## Sequencing log (2026-11-01)
+- 16:25 architect: "don't wait for #79" → merged abdedee (process artifacts only), pushed. 16:26
+  order REVERTED: wait for #79. PR not opened in between (caught before `gh pr create`).
+- 16:36 #79 merged (main c5c201f, 33 targets, corpus hash e588c0892cf922ce). Merged main:
+  conflicts in source.yaml (kept my 3 removals + their 6 English targets; combined headers),
+  test_catalogue.py (33 → 30 targets, pool stays 17), test_original_run_regression.py (combined
+  anchor history; ANCHOR_DIGEST stays 48ee2ca017a57afc, ANCHOR_CORPUS_HASH re-pinned from a fresh
+  convert + generate over the merged corpus).
+
 ## Notes
 - Trimmed current corpus = 17 texts (Qur'an + 6 hadith + Talmud-Aramaic + 3 LDS + 3 Bible +
   SGGS + Dhammapada + Gita). This is a DIFFERENT 17 than the run's own 17 (run had 9 hadith, no

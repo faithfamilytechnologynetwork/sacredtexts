@@ -513,15 +513,16 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
 
 
 def test_real_catalogue_default_pool_is_seventeen():
-    """The committed corpus: 24 targets, default pool (language == canonical_language,
-    non-restricted) is exactly these 17 texts (Spec 50 added Sri Guru Granth Sahib; Spec 63 the Dhammapada; Spec 64 the Bhagavad Gita; 2026-11-01 the Saheeh International English Qur'an,
-    outside the pool; issue #74 trimmed the Arabic hadith pool to the six canonical books —
-    Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the catalogue); every target carries
-    both new fields; the two LDS KJV targets are gone (issue #27 Q3). Pins membership, not just
-    the count, so a canonical_language typo that silently drops/adds a text fails loudly."""
+    """The committed corpus: 30 targets, default pool (language == canonical_language,
+    non-restricted) is exactly these 17 texts (Spec 50 added Sri Guru Granth Sahib; Spec 63 the Dhammapada; Spec 64 the Bhagavad Gita; 2026-11-01 the Saheeh International English Qur'an
+    and the sunnah.com English of the six canonical hadith books, all outside the pool; issue #74
+    trimmed the Arabic hadith pool to the six canonical books — Muwatta Malik, Musnad Ahmad and
+    Sunan al-Darimi left the catalogue); every target carries both new fields; the two LDS KJV
+    targets are gone (issue #27 Q3). Pins membership, not just the count, so a canonical_language
+    typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 24
+    assert len(targets) == 30
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language
