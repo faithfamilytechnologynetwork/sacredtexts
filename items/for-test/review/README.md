@@ -11,7 +11,7 @@ and a native-language prompt. Judaism is the same 30 in Aramaic (both prompts)
 and in English. Islam and Sikhism on disk are the native edition, both prompts.
 A finished non-Christian tradition adds an English edition. Each tradition is
 then 360 population questions. Christianity is already 360.
-The familiarity panels are different lengths on purpose (Islam 7, Christianity 4,
+The familiarity panels are different lengths on purpose (Islam 8, Christianity 4,
 Sikhism 3, Judaism 1). Compare traditions on the population sample of 30.
 Do not pad or cut the familiar lists to make those counts match.
 The English edition can differ from the native edition.
@@ -34,7 +34,7 @@ before they are used as the scored prompt.
 |---|---|---|---|
 | `01-christianity` | questions in `christianity/english/`; full `nrsv.json` is gitignored | NRSV | same |
 | `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |
-| `03-islam` | yes | Qur'an, Uthmani (QUL) | no English Qur'an in this corpus |
+| `03-islam` | yes | the Uthmani Qur'an (catalogue version `Uthmani (QUL)`) | no English Qur'an in this corpus |
 | `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |
 | `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |
 | `06-buddhism` | yes | Dhammapada, Chaṭṭha Saṅgāyana (VRI) | no English Dhammapada in this corpus |

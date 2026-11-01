@@ -604,6 +604,66 @@ _LEADING_MARKUP = re.compile(r"^[\s>*_~`\"'“”‘’•·\-–—]+")
 # fixed label form, so "Based on my search, yes" and "There is no way to verify this" stay un-stripped.
 _LABEL_PREFIX = re.compile(r"^(?:answer|verdict|response)\s*[:\-–]\s*", re.IGNORECASE)
 
+_NON_WORD_LEAD = re.compile(r"[^\w]*")
+
+# Per-language native yes/no words (issue #76), keyed by the question's ``source.language``. English
+# (``_YES_NO_LEADING``) stays eligible on every cell, unchanged, because a model may answer in English
+# whatever the prompt language. A native word is only read on its own language's cell, so the Latin
+# Pali "na" can never flip an English answer.
+_YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    "ar": (("نعم",), ("لا",)),                    # Arabic
+    "he": (("כן",), ("לא",)),                    # Hebrew
+    "arc": (("כן",), ("לא",)),                   # Aramaic (Hebrew script; לא = no in both)
+    "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι")),  # Greek, as the Greek prompt asks (ναι ή όχι)
+    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),                 # Gurmukhi / Punjabi
+    "sa": (("हाँ", "हां"), ("नहीं", "नही")),          # Devanagari / Sanskrit
+    "pi": (("āma",), ("na",)),                   # Pali (Latin script)
+}
+
+
+def _stands_alone(rest: str) -> bool:
+    """Whether a native yes/no word is a verdict: after it (and any marks on its last letter) comes
+    only whitespace and then punctuation or a symbol, or the end of the window. A following word means
+    the token is the sentence-negation particle (لا أستطيع, לא ניתן, na jānāmi), not a verdict. Read
+    by Unicode category, so a token ending in a nasal or vowel mark (ਹਾਂ, हाँ, नहीं) still terminates
+    at a danda (।)."""
+    i = 0
+    while i < len(rest) and unicodedata.category(rest[i]).startswith("M"):
+        i += 1
+    rest = rest[i:].lstrip()
+    return not rest or unicodedata.category(rest[0])[0] in "PS"
+
+
+# Arabic vowel marks and Qur'anic annotation signs: an answer may vowel its verdict (نَعَمْ, لَا).
+# Dropped before the native match; they occur only in Arabic text, and the tokens carry none.
+_ARABIC_MARKS = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭ]")
+# The native counterpart of ``_LABEL_PREFIX`` ("الجواب: لا"), stripped the same way, on its cell only.
+_NATIVE_LABEL_PREFIX = {
+    "ar": re.compile(r"^(?:الجواب|الإجابة|الاجابة|الرد)\s*[:\-–]\s*"),
+}
+
+
+def _native_verdict(window: str, language: "str | None") -> str | None:
+    """The leading native yes/no word of the window, when it stands alone; else ``None``.
+
+    Arabic vowel marks are dropped first, and a bare native label ("الجواب:") is stripped like the
+    English "Answer:", so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
+    """
+    yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    s = _ARABIC_MARKS.sub("", unicodedata.normalize("NFC", window))
+    s = s[_NON_WORD_LEAD.match(s).end():]
+    label = _NATIVE_LABEL_PREFIX.get(language or "")
+    if label is not None:
+        s = label.sub("", s)
+        s = s[_NON_WORD_LEAD.match(s).end():]
+    s = s.casefold()
+    for verdict, tokens in (("yes", yes), ("no", no)):
+        for token in tokens:
+            t = unicodedata.normalize("NFC", token).casefold()
+            if s.startswith(t) and _stands_alone(s[len(t):]):
+                return verdict
+    return None
+
 
 def _leading_window(answer: str) -> str:
     """The leading segment of the RAW answer a stance may occupy: strip leading markdown/quotes/
@@ -617,24 +677,36 @@ def _leading_window(answer: str) -> str:
     return s[:cut]
 
 
-def parse_yes_no(answer: str) -> str | None:
+def parse_yes_no(answer: str, language: "str | None" = None) -> str | None:
     """The **leading-stance** Yes/No verdict, or ``None`` (Spec 26, closes the #23 PAPER GATE).
 
-    A verdict counts only when Yes/No is the **leading token of the leading window**
+    A verdict counts only when a Yes/No token is the **leading token of the leading window**
     (``_leading_window`` — first sentence / first 60 chars of the raw answer), not merely the first
     Yes/No found *anywhere*. Requiring the leading token — rather than searching the window — is what
     resists the negation-evasion #23 is about: a window *search* would still match the incidental
     ``no`` inside ``"There is no way to verify this"`` and score a false-premise ``no``-correct.
 
+    ``language`` is the question's ``source.language`` (issue #76). English is read first, exactly as
+    before, on every cell. Then that language's native yes/no word is read, under one extra rule: it
+    must stand alone, followed only by punctuation or the end of the window. Native "no" words are also
+    the sentence-negation particle, so ``"لا أستطيع التحقق"`` ("I cannot verify"), ``"לא ניתן לאמת"`` and
+    Pali ``"na jānāmi"`` lead with that word but are refusals, not verdicts, and stay ``None``.
+
     - ``"No, that is from Sahih Muslim"`` → ``no``   (leading ``No``)
+    - ``"لا، بل هو من صحيح مسلم"`` → ``no`` on an ``ar`` cell (``لا`` then a comma)
+    - ``"لا سبيل إلى التحقق من ذلك"`` → ``None`` on an ``ar`` cell (``لا`` negates the next word)
+    - ``"ਹਾਂ।"`` → ``yes`` on a ``pa`` cell (a danda after the nasal mark ends the word)
     - ``"Yes."`` → ``yes``
     - ``"There is no way to verify this... Yes"`` → ``None`` (window leads with "There"; the "no" is
       in "no way", the trailing "Yes" is outside the first sentence) — not gamed into a correct "no"
     - a non-committal / declined answer with no leading verdict → ``None`` (``score._with_outcome``
       classifies a ``None``-parse verify_source cell as ``refused``)
     """
-    m = _YES_NO_LEADING.match(_leading_window(answer))
-    return m.group(1).lower() if m else None
+    window = _leading_window(answer)
+    m = _YES_NO_LEADING.match(window)
+    if m:
+        return m.group(1).lower()
+    return _native_verdict(window, language)
 
 
 def _contains(answer: str, needle: str) -> bool:
@@ -739,7 +811,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     return int(bounded_contains(answer, expected_citation)), n
 
 
-def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None) -> dict:
+def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None) -> dict:
     """Score one model answer. Returns the metrics dict described in the module docstring.
 
     For the text-retrieval tasks the reported submetric fields and the headline are determined by
@@ -773,7 +845,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
         return _with_outcome(metrics, task, answer, expected)
     if task == "verify_source":
-        parsed = parse_yes_no(answer)
+        parsed = parse_yes_no(answer, language)
         correct = int(parsed == expected["answer"])
         return _with_outcome(
             {"parsed": parsed, "expected": expected["answer"], "correct": correct},
@@ -943,7 +1015,10 @@ def score_file(
     usage: dict[str, dict] = {}  # model_id -> {calls, in, out, model, served_by{host:count}}
     with open(scores_path, "w", encoding="utf-8") as out:
         for d in rows:
-            metrics = score_answer(d["task"], d["answer"], d["question"]["expected"], graders)
+            metrics = score_answer(
+                d["task"], d["answer"], d["question"]["expected"], graders,
+                language=d["question"].get("source", {}).get("language"),
+            )
             out.write(
                 json.dumps(
                     {
