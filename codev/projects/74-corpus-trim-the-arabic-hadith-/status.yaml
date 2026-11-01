@@ -1,0 +1,14 @@
+id: '74'
+title: corpus-trim-the-arabic-hadith-
+protocol: air
+phase: implement
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-01T15:30:11.737Z'
+updated_at: '2026-11-01T15:30:11.738Z'
