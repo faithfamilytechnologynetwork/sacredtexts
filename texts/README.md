@@ -50,6 +50,17 @@ database (the Sri Guru Granth Sahib's lines only — the full database is 603 MB
 TOML). `raw/Sikhism/build_extract.py` rebuilds it byte for byte from a checkout of
 `shabados/shabados` at the commit recorded in the file's `upstream` header.
 
+`raw/Buddhism/s0502m.mul.xml` is the Vipassana Research Institute's romanized Dhammapada,
+committed exactly as published (UTF-16 TEI). `raw/Buddhism/source.yaml` records its commit and
+SHA-256, and VRI's non-commercial terms.
+
+`raw/Hinduism/gita_stotrasamhita.json` is a verbatim, verses-only extract of `gita.tex` from
+`stotrasamhita/gita`. `raw/Hinduism/build_extract.py` rebuilds it byte for byte from that file at
+the commit recorded in the `upstream` header. The source has no licence file: see
+`raw/Hinduism/source.yaml` and the spec. `raw/Hinduism/gita_besant.json` is Annie Besant's 1922
+English, and `raw/Hinduism/build_besant.py` rebuilds it from the Wikisource page revisions recorded
+in its header.
+
 Per-source provenance metadata lives in each `texts/raw/<tradition>/source.yaml`
 (a targets manifest — provenance, converter, and a `license` field per target;
 see `pipelines/sacredbench/catalogue.py`).

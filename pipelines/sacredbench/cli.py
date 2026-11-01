@@ -341,17 +341,19 @@ def collect(
         qs = [q for q in qs if _has_tradition(q)]
         if not qs:
             raise typer.BadParameter(f"no questions for tradition {tradition!r} in {questions}")
-    # Spec 50 part-1 canary gate (PR #51 review): collecting Gurmukhi questions while
-    # normalize() is Gurmukhi-unaware spends money on answers that cannot be scored.
+    # Spec 50 part-1 canary gate (PR #51 review): collecting questions in a gated language
+    # while normalize() is unaware of it spends money on answers that cannot be scored.
     # Generation stays open (questions are verbatim text); the PAID step is gated.
-    from .score import gurmukhi_scoring_unaware
+    from .score import gated_languages
 
-    if any(q.source.get("language") == "pa" for q in qs) and gurmukhi_scoring_unaware():
+    gated = gated_languages()
+    for lang in sorted({q.source.get("language") for q in qs} & gated.keys()):
+        name, source = gated[lang]
         raise typer.BadParameter(
-            "questions include a Gurmukhi (pa) text but normalize() is not Gurmukhi-aware "
+            f"questions include a {name} ({lang}) text but normalize() is not {name}-aware "
             "(issue #50 part 2 has not landed): answers could not be scored honestly. "
             "Wait for part 2, or regenerate questions from inputs excluding "
-            "texts/standardized/Sikhism."
+            f"texts/standardized/{source}."
         )
     cfg = load_config(config)
     if model is not None:
@@ -411,18 +413,21 @@ def score(
 ) -> None:
     """Score all answers and write the per-model summary. Graders are selectable via --evaluator."""
     from .graders import GraderError, resolve_evaluators
-    from .score import gurmukhi_scoring_unaware
+    from .score import gated_languages
 
-    # Spec 50 part-1 canary gate (PR #51 review): scoring a Gurmukhi answer while
-    # normalize() is Gurmukhi-unaware writes silently corrupt metrics (vowel signs
-    # become word splits). Opens by itself when issue #50 part 2 lands.
-    if gurmukhi_scoring_unaware():
+    # Spec 50 part-1 canary gate (PR #51 review): scoring an answer in a gated language while
+    # normalize() is unaware of it writes silently corrupt metrics (vowel signs and
+    # diacritics become word splits). Opens by itself when issue #50 part 2 lands.
+    gated = gated_languages()
+    if gated:
         with open(answers, encoding="utf-8") as f:
             for line in f:
-                if line.strip() and json.loads(line).get("question", {}).get("source", {}).get("language") == "pa":
+                lang = json.loads(line).get("question", {}).get("source", {}).get("language") if line.strip() else None
+                if lang in gated:
+                    name = gated[lang][0]
                     raise typer.BadParameter(
-                        f"{answers}: contains a Gurmukhi (pa) answer row but normalize() is not "
-                        "Gurmukhi-aware (issue #50 part 2 has not landed) — the metrics would be "
+                        f"{answers}: contains a {name} ({lang}) answer row but normalize() is not "
+                        f"{name}-aware (issue #50 part 2 has not landed) — the metrics would be "
                         "silently wrong. Wait for part 2 before scoring this run."
                     )
 

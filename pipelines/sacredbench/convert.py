@@ -25,6 +25,12 @@ Phase 3):
   one scripture document.
 - ``shabados_sggs`` (Spec 50): the Sri Guru Granth Sahib extract from Shabad OS →
   one document of panktis cited ``Ang N:k``, Shabad OS apparatus removed.
+- ``vri_dhammapada``: VRI's romanized Dhammapada (TEI) → one document of verses cited
+  ``Dhammapada N``, VRI's notes, page markers and closing matter removed.
+- ``stotrasamhita_gita`` (Spec 64): the Bhagavad Gita extract from Stotra Samhita →
+  one document of verses cited ``C:V`` in Gita Press numbering.
+- ``besant_gita`` (Spec 64): Annie Besant's 1922 English of the Bhagavad Gita → one document
+  of verses with the same citations as the Sanskrit.
 
 Converters are fail-fast: an unexpected shape raises ``ConvertError`` naming the
 file. Adding a source format = one function + one ``CONVERTERS`` registry line.
@@ -35,6 +41,7 @@ from __future__ import annotations
 import html as _html
 import json
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -482,6 +489,156 @@ def convert_shabados_sggs(paths: list[Path], target: "Target") -> list[Document]
     return [_doc(target, entries)]
 
 
+# --- Dhammapada (vri_dhammapada) ------------------------------------------------
+
+_VRI_GATHA_RENDS = ("gatha1", "gatha2", "gatha3", "gathalast")
+
+
+def clean_vri_gatha(p: ET.Element) -> str:
+    """One VRI verse line -> its words: ``<note>`` (variant readings) and ``<pb>`` (page
+    markers of other editions) removed, and VRI's parentheses dropped while the words inside
+    them stay (Dhp 160, Dhp 359). Any other child element is unknown markup and fails."""
+    parts = [p.text or ""]
+    for child in p:
+        if child.tag not in ("note", "pb"):
+            raise ConvertError(f"unexpected <{child.tag}> in a verse line")
+        parts.append(child.tail or "")
+    return " ".join("".join(parts).replace("(", "").replace(")", "").split())
+
+
+def convert_vri_dhammapada(paths: list[Path], target: "Target") -> list[Document]:
+    """VRI ``s0502m.mul.xml`` (TEI, UTF-16) → one document of verses cited ``Dhammapada N``.
+
+    A ``hangnum`` paragraph opens verse N and the gatha lines after it are that verse. A
+    chapter's ``<trailer>`` closes the open verse, so the closing summaries after verse 423
+    belong to no verse. Fail-fast: numbering that is not 1, 2, 3 ..., a verse with no lines, a
+    prose paragraph inside a verse, or unknown markup in a verse line."""
+    if len(paths) != 1:
+        raise ConvertError(f"vri_dhammapada expects one payload file, got {len(paths)}")
+    path = paths[0]
+    try:
+        root = ET.fromstring(path.read_bytes())
+    except ET.ParseError as e:
+        raise ConvertError(f"{path}: not valid XML ({e})") from e
+    verses: list[list[str]] = []
+    is_open = False
+    for el in root.iter():
+        rend = el.get("rend")
+        if el.tag == "trailer":
+            is_open = False
+        elif el.tag != "p":
+            continue
+        elif rend == "hangnum":
+            if el.get("n") != str(len(verses) + 1):
+                raise ConvertError(f"{path}: verse n={el.get('n')!r} after verse {len(verses)}")
+            verses.append([])
+            is_open = True
+        elif rend in _VRI_GATHA_RENDS and is_open:
+            try:
+                verses[-1].append(clean_vri_gatha(el))
+            except ConvertError as e:
+                raise ConvertError(f"{path}: verse {len(verses)}: {e}") from e
+        elif is_open and rend not in _VRI_GATHA_RENDS:
+            raise ConvertError(f"{path}: verse {len(verses)}: unexpected {rend!r} paragraph")
+    entries: list[Entry] = []
+    for n, lines in enumerate(verses, 1):
+        if not lines:
+            raise ConvertError(f"{path}: verse {n} has no lines")
+        entries.append(Entry(unit_type="verse", citation=f"Dhammapada {n}", text=" ".join(lines)))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    return [_doc(target, entries)]
+
+
+# --- Bhagavad Gita (stotrasamhita_gita) ----------------------------------------
+
+_GITA_MBOX_RE = re.compile(r"\{\\mbox\{\}([^{}]*)\}")  # a LaTeX line-break guard around a conjunct
+_GITA_JOINERS_RE = re.compile("[\u200c\u200d]")  # ZWNJ/ZWJ steer how a conjunct is drawn; not letters
+_GITA_NOT_TEXT_RE = re.compile(r"[^\u0900-\u097f ]")
+_GITA_CHAPTER_13_OFFSET = 1  # upstream numbers 13-2..13-35; Gita Press numbers 13.1..13.34
+
+
+def clean_gita_line(line: str) -> str:
+    """One half-verse as stored -> its letters: the LaTeX guard and the joiners removed."""
+    return _GITA_JOINERS_RE.sub("", _GITA_MBOX_RE.sub(r"\1", line))
+
+
+def convert_stotrasamhita_gita(paths: list[Path], target: "Target") -> list[Document]:
+    """``gita_stotrasamhita.json`` (``{upstream, verses[{chapter, number, lines}]}``, verses in
+    order — see ``texts/raw/Hinduism/build_extract.py``) → one document.
+
+    The unit is the verse; its citation is ``C:V`` in Gita Press numbering, so upstream's
+    chapter 13 moves down one. Half-verses join with a space. Fail-fast: a malformed record, or
+    anything but Devanagari left after cleaning."""
+    if len(paths) != 1:
+        raise ConvertError(f"stotrasamhita_gita expects one payload file, got {len(paths)}")
+    path = paths[0]
+    data = _load_json(path)
+    verses = data.get("verses") if isinstance(data, dict) else None
+    if not isinstance(verses, list):
+        raise ConvertError(f"{path}: expected an object with a 'verses' list (stotrasamhita_gita)")
+    entries: list[Entry] = []
+    for i, rec in enumerate(verses):
+        if (
+            not isinstance(rec, dict)
+            or not isinstance(rec.get("chapter"), int)
+            or not isinstance(rec.get("number"), int)
+            or not isinstance(rec.get("lines"), list)
+            or not rec["lines"]
+        ):
+            raise ConvertError(f"{path}: verses[{i}] missing or malformed 'chapter'/'number'/'lines'")
+        chapter = rec["chapter"]
+        number = rec["number"] - (_GITA_CHAPTER_13_OFFSET if chapter == 13 else 0)
+        text = " ".join(clean_gita_line(line) for line in rec["lines"])
+        if _GITA_NOT_TEXT_RE.search(text):
+            raise ConvertError(f"{path}: verses[{i}] ({chapter}:{number}) keeps non-Devanagari apparatus")
+        entries.append(Entry(unit_type="verse", citation=f"{chapter}:{number}", text=text))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    _require_unique_citations(entries, str(path))
+    return [_doc(target, entries)]
+
+
+_BESANT_EXTRA_VERSE_OPENS = "Matter and Spirit"  # Besant's 13.1: not in the Gita Press count
+
+
+def convert_besant_gita(paths: list[Path], target: "Target") -> list[Document]:
+    """``gita_besant.json`` (``{upstream, verses[{chapter, number, text}]}``, see
+    ``texts/raw/Hinduism/build_besant.py``) → one document, citing ``C:V`` as the Sanskrit does.
+
+    Besant numbers the extra verse "prakriti purusha" as 13.1, so her 13.k+1 is Gita Press 13.k.
+    That verse is set aside and the rest of chapter 13 moves down one. Fail-fast: a malformed
+    record, or a 13.1 that is no longer the extra verse."""
+    if len(paths) != 1:
+        raise ConvertError(f"besant_gita expects one payload file, got {len(paths)}")
+    path = paths[0]
+    data = _load_json(path)
+    verses = data.get("verses") if isinstance(data, dict) else None
+    if not isinstance(verses, list):
+        raise ConvertError(f"{path}: expected an object with a 'verses' list (besant_gita)")
+    entries: list[Entry] = []
+    for i, rec in enumerate(verses):
+        if (
+            not isinstance(rec, dict)
+            or not isinstance(rec.get("chapter"), int)
+            or not isinstance(rec.get("number"), int)
+            or not isinstance(rec.get("text"), str)
+        ):
+            raise ConvertError(f"{path}: verses[{i}] missing or malformed 'chapter'/'number'/'text'")
+        chapter, number = rec["chapter"], rec["number"]
+        if chapter == 13 and number == 1:
+            if not rec["text"].startswith(_BESANT_EXTRA_VERSE_OPENS):
+                raise ConvertError(f"{path}: 13.1 is not the extra verse: {rec['text'][:40]!r}")
+            continue
+        if chapter == 13:
+            number -= _GITA_CHAPTER_13_OFFSET
+        entries.append(Entry(unit_type="verse", citation=f"{chapter}:{number}", text=rec["text"].strip()))
+    if not entries:
+        raise ConvertError(f"{path}: produced no verses")
+    _require_unique_citations(entries, str(path))
+    return [_doc(target, entries)]
+
+
 CONVERTERS = {
     "bible_flat": convert_bible_flat,
     "lds_nested": convert_lds_nested,
@@ -491,6 +648,9 @@ CONVERTERS = {
     "hadith_sunnah": convert_hadith_sunnah,
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,
+    "vri_dhammapada": convert_vri_dhammapada,
+    "stotrasamhita_gita": convert_stotrasamhita_gita,
+    "besant_gita": convert_besant_gita,
 }
 
 

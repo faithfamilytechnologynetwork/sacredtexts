@@ -1,4 +1,6 @@
+import collections
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -14,7 +16,10 @@ from sacredbench.convert import (
     convert_quran_qul,
     convert_sefaria_talmud,
     convert_shabados_sggs,
+    convert_besant_gita,
+    convert_stotrasamhita_gita,
     convert_target,
+    convert_vri_dhammapada,
 )
 from sacredbench.schema import SchemaError, load_document, parse_document, write_document
 from tests.conftest import ENCYCLICAL_SHAPE, NABRE_SHAPE, make_doc
@@ -495,3 +500,186 @@ def test_real_sggs_converts_every_line_and_removes_only_apparatus():
         words = [w for w in fixed.split() if _gurmukhi_letters(w)]
         assert len(words) == len([w for w in e.text.split() if _gurmukhi_letters(w)]), r["id"]
         assert not re.search(r"[;.,॥।₀-₉‍︀]", e.text), r["id"]
+
+
+# --- Dhammapada (vri_dhammapada) ------------------------------------------------
+
+
+def _vri_payload(tmp_path: Path, body: str) -> Path:
+    p = tmp_path / "dhp.xml"
+    p.write_text(f'<?xml version="1.0" encoding="UTF-16"?><TEI.2><text><body>{body}</body></text></TEI.2>',
+                 encoding="utf-16")
+    return p
+
+
+def _vri_verse(n: int, *lines: str) -> str:
+    return (f'<p rend="hangnum" n="{n}"><hi rend="paranum">{n}</hi><hi rend="dot">.</hi></p>'
+            + "".join(f'<p rend="gatha1">{line}</p>' for line in lines))
+
+
+def test_vri_dhammapada_joins_lines_and_removes_apparatus_only(tmp_path):
+    p = _vri_payload(tmp_path, '<head rend="chapter">1. Yamakavaggo</head>' + _vri_verse(
+        1, ' Mano <pb ed="M" n="0.0013" /><pb ed="P" n="0.0001" /> dhammā, seṭṭhā;',
+        "Tato naṃ<note>nā (ka.)</note> padaṃ.",
+    ) + _vri_verse(2, " Attā nātho, (ko hi nātho siyā);", "Attanā.") + '<trailer rend="centre">Vaggo.</trailer>'
+        + '<p rend="gatha2">Uddāna gāthā.</p>')
+    [doc] = convert_vri_dhammapada([p], _target(converter="vri_dhammapada", language="pi"))
+    assert [(e.unit_type, e.citation, e.text) for e in doc.entries] == [
+        ("verse", "Dhammapada 1", "Mano dhammā, seṭṭhā; Tato naṃ padaṃ."),
+        ("verse", "Dhammapada 2", "Attā nātho, ko hi nātho siyā; Attanā."),
+    ]
+
+
+@pytest.mark.parametrize("body,match", [
+    (_vri_verse(1, "Mano.") + _vri_verse(3, "Tato."), "verse n='3' after verse 1"),
+    ('<p rend="hangnum" n="1">1</p>', "verse 1 has no lines"),
+    (_vri_verse(1, "Mano <b>x</b>."), "unexpected <b>"),
+    (_vri_verse(1, "Mano.") + '<p rend="bodytext">Prose.</p>', "unexpected 'bodytext'"),
+    ("", "produced no verses"),
+])
+def test_vri_dhammapada_fails_loudly(tmp_path, body, match):
+    with pytest.raises(ConvertError, match=match):
+        convert_vri_dhammapada([_vri_payload(tmp_path, body)], _target(converter="vri_dhammapada"))
+
+
+def test_real_dhammapada_converts_every_verse_and_removes_only_apparatus():
+    """All 423 verses. Independently of the converter, for EVERY verse the letters of the raw
+    gatha lines, read with notes and page markers cut out by regex, equal the entry's letters
+    -- no word added, deleted or altered -- and the closing summaries reach no verse."""
+    import re
+
+    t = _real_target("Buddhism")
+    [doc] = convert_target(t.payload_paths(RAW), t)
+    assert [e.citation for e in doc.entries] == [f"Dhammapada {n}" for n in range(1, 424)]
+    raw = t.payload_paths(RAW)[0].read_bytes().decode("utf-16")
+    raw = raw[: raw.index("</trailer>", raw.index('n="423"'))]
+    letters = lambda s: re.sub(r"[^\w]|\d|_", "", s)
+    chunks = re.split(r'<p rend="hangnum" n="\d+">', raw)[1:]
+    assert len(chunks) == len(doc.entries)
+    for chunk, e in zip(chunks, doc.entries):
+        lines = re.findall(r'<p rend="gatha\w+">(.*?)</p>', chunk, re.S)
+        kept = re.sub(r"<note>.*?</note>|<[^>]+>", "", "".join(lines), flags=re.S)
+        assert letters(kept) == letters(e.text), e.citation
+        assert not re.search(r"[()\d<>]", e.text), e.citation
+    by_citation = {e.citation: e.text for e in doc.entries}
+    assert by_citation["Dhammapada 1"].startswith("Manopubbaṅgamā dhammā, manoseṭṭhā manomayā;")
+    assert by_citation["Dhammapada 359"].count("Tiṇadosāni") == 2  # both stanzas VRI prints
+    assert by_citation["Dhammapada 423"].endswith("tamahaṃ brūmi brāhmaṇaṃ.")
+
+
+# --- Bhagavad Gita (stotrasamhita_gita, Spec 64) -------------------------------
+
+
+def _gita_payload(tmp_path: Path, verses: list[dict]) -> Path:
+    p = tmp_path / "gita.json"
+    p.write_text(json.dumps({"upstream": {}, "verses": verses}, ensure_ascii=False), encoding="utf-8")
+    return p
+
+
+def _gita_convert(p: Path):
+    return convert_stotrasamhita_gita([p], _target(converter="stotrasamhita_gita", language="sa"))
+
+
+def test_stotrasamhita_gita_joins_half_verses_and_cites_chapter_verse(tmp_path):
+    p = _gita_payload(tmp_path, [
+        {"chapter": 1, "number": 1, "lines": ["धर्मक्षेत्रे कुरुक्षेत्रे", "मामकाः पाण्डवाश्चैव"]},
+    ])
+    [doc] = _gita_convert(p)
+    assert [(e.unit_type, e.citation, e.text) for e in doc.entries] == [
+        ("verse", "1:1", "धर्मक्षेत्रे कुरुक्षेत्रे मामकाः पाण्डवाश्चैव"),
+    ]
+
+
+def test_stotrasamhita_gita_moves_chapter_13_to_gita_press_numbering(tmp_path):
+    p = _gita_payload(tmp_path, [
+        {"chapter": 12, "number": 20, "lines": ["ये तु"]},
+        {"chapter": 13, "number": 2, "lines": ["इदं शरीरं"]},
+        {"chapter": 14, "number": 1, "lines": ["परं भूयः"]},
+    ])
+    [doc] = _gita_convert(p)
+    assert [e.citation for e in doc.entries] == ["12:20", "13:1", "14:1"]
+
+
+@pytest.mark.parametrize("raw,clean", [
+    ("स्पृशञ्जिघ्र{\\mbox{}न्न}श्नन्", "स्पृशञ्जिघ्रन्नश्नन्"),
+    ("बुद\u200cध्वा", "बुदध्वा"),
+    ("क\u200dख", "कख"),
+    ("ॐ इति", "ॐ इति"),
+    ("परयाऽऽविष्टो", "परयाऽऽविष्टो"),
+])
+def test_stotrasamhita_gita_removes_apparatus_only(tmp_path, raw, clean):
+    [doc] = _gita_convert(_gita_payload(tmp_path, [{"chapter": 1, "number": 1, "lines": [raw]}]))
+    assert doc.entries[0].text == clean
+
+
+@pytest.mark.parametrize("line", ["\\twolineshloka", "धर्म}", "धर्म abc", "धर्म 1"])
+def test_stotrasamhita_gita_fails_on_leftover_apparatus(tmp_path, line):
+    with pytest.raises(ConvertError, match="non-Devanagari"):
+        _gita_convert(_gita_payload(tmp_path, [{"chapter": 1, "number": 1, "lines": [line]}]))
+
+
+def test_stotrasamhita_gita_fails_on_duplicate_citation(tmp_path):
+    with pytest.raises(ConvertError):
+        _gita_convert(_gita_payload(tmp_path, [
+            {"chapter": 1, "number": 1, "lines": ["क"]}, {"chapter": 1, "number": 1, "lines": ["ख"]},
+        ]))
+
+
+def test_real_gita_removes_only_declared_apparatus():
+    """Over all 700 verses: put the declared apparatus aside on both sides and the entry equals
+    the raw half-verses, so no letter was lost; the Gita Press chapter counts hold."""
+    root = Path(__file__).resolve().parents[2] / "texts" / "raw" / "Hinduism"
+    payload = root / "gita_stotrasamhita.json"
+    verses = json.loads(payload.read_text(encoding="utf-8"))["verses"]
+    [doc] = _gita_convert(payload)
+    assert len(doc.entries) == len(verses) == 700
+
+    def letters(s: str) -> str:
+        return s.replace("{\\mbox{}", "").replace("}", "").replace("\u200c", "").replace("\u200d", "")
+
+    for rec, entry in zip(verses, doc.entries, strict=True):
+        assert entry.text == " ".join(letters(line) for line in rec["lines"])
+    counts = collections.Counter(int(e.citation.split(":")[0]) for e in doc.entries)
+    assert [counts[c] for c in range(1, 19)] == [
+        47, 72, 43, 42, 29, 47, 30, 28, 34, 42, 55, 20, 34, 27, 20, 24, 28, 78,
+    ]
+    assert {e.citation for e in doc.entries} >= {"2:47", "13:1", "13:34", "18:78"}
+    assert "13:35" not in {e.citation for e in doc.entries}
+
+
+def _besant_convert(tmp_path: Path, verses: list[dict]):
+    p = tmp_path / "besant.json"
+    p.write_text(json.dumps({"upstream": {}, "verses": verses}, ensure_ascii=False), encoding="utf-8")
+    return convert_besant_gita([p], _target(converter="besant_gita"))
+
+
+def test_besant_gita_sets_aside_the_extra_verse_and_moves_chapter_13_down(tmp_path):
+    [doc] = _besant_convert(tmp_path, [
+        {"chapter": 12, "number": 20, "text": "They verily who"},
+        {"chapter": 13, "number": 1, "text": "Matter and Spirit, even the Field"},
+        {"chapter": 13, "number": 2, "text": "This body, son of Kuntî"},
+        {"chapter": 14, "number": 1, "text": "I will again proclaim"},
+    ])
+    assert [(e.citation, e.text) for e in doc.entries] == [
+        ("12:20", "They verily who"), ("13:1", "This body, son of Kuntî"), ("14:1", "I will again proclaim"),
+    ]
+
+
+def test_besant_gita_fails_when_13_1_is_not_the_extra_verse(tmp_path):
+    with pytest.raises(ConvertError, match="not the extra verse"):
+        _besant_convert(tmp_path, [{"chapter": 13, "number": 1, "text": "This body, son of Kuntî"}])
+
+
+def test_real_besant_shares_every_citation_with_the_sanskrit():
+    """The translation lines up with the Sanskrit verse for verse, and carries no leftovers."""
+    root = Path(__file__).resolve().parents[2] / "texts" / "raw" / "Hinduism"
+    [sanskrit] = _gita_convert(root / "gita_stotrasamhita.json")
+    [english] = convert_besant_gita([root / "gita_besant.json"], _target(converter="besant_gita"))
+    assert [e.citation for e in english.entries] == [e.citation for e in sanskrit.entries]
+    by_citation = {e.citation: e.text for e in english.entries}
+    assert by_citation["2:47"].startswith("Thy business is with the action only")
+    assert by_citation["13:1"].startswith("This body, son of Kuntî")
+    assert by_citation["16:1"].startswith("Fearlessness, cleanness of life")
+    assert by_citation["18:78"].startswith("Wherever is Krishna")
+    for e in english.entries:
+        assert not re.search(r"[ऀ-ॿ{}|<>=]|DISCOURSE| said:$", e.text), e.citation
