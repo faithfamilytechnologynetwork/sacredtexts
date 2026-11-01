@@ -75,6 +75,60 @@ def test_verify_source_committed_verdict_with_trailing_decline_is_graded():
     assert score_answer("verify_source", "I cannot determine that.", {"answer": "no"})["outcome"] == "refused"
 
 
+# --- issue #76: per-script leading-stance yes/no --------------------------------------------------
+
+@pytest.mark.parametrize("ans,lang,expected", [
+    # bare native verdicts parse on their own script
+    ("نعم", "ar", "yes"), ("لا", "ar", "no"),
+    ("كن", "he", None),                                   # not a Hebrew verdict word
+    ("כן", "he", "yes"), ("לא", "he", "no"),
+    ("ਹਾਂ", "pa", "yes"), ("ਨਹੀਂ", "pa", "no"),
+    ("हाँ", "sa", "yes"), ("हां", "sa", "yes"), ("नहीं", "sa", "no"),
+    ("āma", "pi", "yes"), ("na", "pi", "no"),
+    # leading native verdict wins even with a trailing clause (same as the English leading-stance)
+    ("لا، بل هو من صحيح مسلم", "ar", "no"),
+    ("כן, זה מספר תהילים", "he", "yes"),
+    # English is ALWAYS eligible, whatever the cell language (a model may answer in English)
+    ("No", "ar", "no"), ("Yes.", "pi", "yes"),
+])
+def test_parse_yes_no_native_scripts(ans, lang, expected):
+    assert parse_yes_no(ans, lang) == expected
+
+
+@pytest.mark.parametrize("ans,lang", [
+    # #23 hardening per script: the verdict token is NOT leading (a non-verdict word leads, the
+    # verdict is buried) -> None (refused), never gamed into a false-premise correct.
+    ("أعتقد أنه لا يمكن التحقق من ذلك، لكن نعم", "ar"),     # leads "أعتقد" (I think)
+    ("אני חושב שאי אפשר לאמת זאת, אבל כן", "he"),           # leads "אני" (I)
+    ("ਮੈਨੂੰ ਲੱਗਦਾ ਹੈ ਕਿ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋ ਸਕਦੀ, ਪਰ ਹਾਂ", "pa"),
+    ("मुझे लगता है कि इसे सत्यापित नहीं किया जा सकता, लेकिन हाँ", "sa"),
+    ("ahaṃ na jānāmi, āma", "pi"),                          # leads "ahaṃ" (I), buried "na"/"āma"
+])
+def test_parse_yes_no_native_negation_evasion_is_none(ans, lang):
+    assert parse_yes_no(ans, lang) is None
+
+
+def test_native_tokens_only_eligible_for_their_language():
+    # A native token is NOT read when the cell language does not select it. This is what keeps every
+    # committed (English-answer) verify cell byte-stable: adding native tables cannot flip a cell whose
+    # language does not carry those tokens. The Latin Pali "na" is the sharp case.
+    assert parse_yes_no("لا", None) is None            # Arabic "no" with no language -> not read
+    assert parse_yes_no("لا", "he") is None            # wrong script's table -> not read
+    assert parse_yes_no("na", None) is None            # Pali "no" is never read as English
+    assert parse_yes_no("na", "ar") is None            # ... nor on a non-Pali cell
+    assert parse_yes_no("na", "pi") == "no"            # only on a Pali cell
+    # English behaviour is unchanged whether or not a language is passed
+    assert parse_yes_no("Yes.") == parse_yes_no("Yes.", "ar") == "yes"
+
+
+def test_score_answer_plumbs_language_for_native_verdict():
+    # score_answer forwards the question language so a native verdict is graded, not refused.
+    graded = score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"}, language="ar")
+    assert graded["parsed"] == "no" and graded["correct"] == 1 and graded["outcome"] == "correct"
+    # without the language the same answer has no readable leading verdict -> refused (old behaviour)
+    assert score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"})["outcome"] == "refused"
+
+
 def test_retrieve_quote_tiers():
     exp = {"text": "The keeper planted twelve trees."}
     exact = score_answer("retrieve_quote", "The keeper planted twelve trees.", exp)

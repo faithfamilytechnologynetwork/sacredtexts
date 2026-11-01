@@ -24,32 +24,36 @@ items:
     weight: 2
   - work: The Qur'an
     version: Uthmani (QUL)
-    citation: "1:1"
-    weight: 4
-  - work: The Qur'an
-    version: Uthmani (QUL)
     citation: "2:255"
     weight: 5
   - work: The Qur'an
     version: Uthmani (QUL)
-    citation: "112:1"
-    weight: 3
-  - work: The Qur'an
-    version: Uthmani (QUL)
     citation: "2:286"
-    weight: 3
+    weight: 5
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "24:35"
-    weight: 3
+    weight: 5
   - work: The Qur'an
     version: Uthmani (QUL)
-    citation: "1:2"
-    weight: 2
+    citation: "59:22"
+    weight: 4
   - work: The Qur'an
     version: Uthmani (QUL)
-    citation: "67:1"
-    weight: 2
+    citation: "59:23"
+    weight: 4
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "59:24"
+    weight: 4
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "18:109"
+    weight: 4
+  - work: The Qur'an
+    version: Uthmani (QUL)
+    citation: "39:53"
+    weight: 4
   - work: Talmud Bavli
     version: William Davidson Edition - Aramaic
     citation: Berakhot 2a:1

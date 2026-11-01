@@ -93,7 +93,7 @@ def write_index(religions: list[tuple[str, str]]) -> None:
         "and in English. Islam and Sikhism on disk are the native edition, both prompts.",
         "A finished non-Christian tradition adds an English edition. Each tradition is",
         "then 360 population questions. Christianity is already 360.",
-        "The familiarity panels are different lengths on purpose (Islam 7, Christianity 4,",
+        "The familiarity panels are different lengths on purpose (Islam 8, Christianity 4,",
         "Sikhism 3, Judaism 1). Compare traditions on the population sample of 30.",
         "Do not pad or cut the familiar lists to make those counts match.",
         "The English edition can differ from the native edition.",

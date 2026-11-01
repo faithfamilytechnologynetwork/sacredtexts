@@ -60,6 +60,7 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import unicodedata
@@ -594,7 +595,6 @@ def token_f1_base(answer: str, expected: str) -> float:
     return _f1(base_letters(answer).split(), base_letters(expected).split())
 
 
-_YES_NO_LEADING = re.compile(r"[^\w]*(yes|no)\b", re.IGNORECASE)
 _SENTENCE_END = re.compile(r"[.!?\n]")
 _LEADING_CHARS = 60  # the leading window: first sentence or this many chars, whichever is shorter
 # leading markdown emphasis / bullets / wrapping quotes to strip before reading a verdict
@@ -603,6 +603,34 @@ _LEADING_MARKUP = re.compile(r"^[\s>*_~`\"'“”‘’•·\-–—]+")
 # the verdict after it is leading (architect 2026-10-21). NOT a general window search: only this
 # fixed label form, so "Based on my search, yes" and "There is no way to verify this" stay un-stripped.
 _LABEL_PREFIX = re.compile(r"^(?:answer|verdict|response)\s*[:\-–]\s*", re.IGNORECASE)
+
+# Per-script yes/no leading tokens (issue #76). English is ALWAYS eligible (a model may answer the
+# yes/no question in English whatever the prompt language); a question's own language adds the native
+# words for that script, so a bare native verdict ("لا", "כן", "ਨਹੀਂ", "नहीं", "na") is read as a
+# stance instead of being scored refused. Keyed by the question's ``source.language`` so the Latin
+# Pali "na" is only eligible on a Pali cell and can never flip an English answer that leads with "na".
+# Scoped to the leading token (same window, same label strip) — the Spec 26 / #23 hardening is intact.
+_YES_NO_EN = (("yes",), ("no",))
+_YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    "ar": (("نعم",), ("لا",)),            # Arabic
+    "he": (("כן",), ("לא",)),            # Hebrew
+    "arc": (("כן",), ("לא",)),           # Aramaic (Hebrew script; לא = no in both)
+    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi
+    "sa": (("हाँ", "हां"), ("नहीं", "नही")),  # Devanagari / Sanskrit
+    "pi": (("āma",), ("na",)),           # Pali (Latin script)
+}
+
+
+@functools.lru_cache(maxsize=None)
+def _verdict_regex(language: "str | None") -> "re.Pattern[str]":
+    """Leading-token Yes/No matcher for a question language: English tokens plus the language's
+    native script tokens. Each token must be the leading token of the window (``[^\\w]*`` then the
+    token then a word boundary / end), exactly as the English-only matcher required."""
+    yes_en, no_en = _YES_NO_EN
+    yes_x, no_x = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    yes_alt = "|".join(re.escape(t) for t in (*yes_en, *yes_x))
+    no_alt = "|".join(re.escape(t) for t in (*no_en, *no_x))
+    return re.compile(rf"[^\w]*(?:(?P<yes>{yes_alt})|(?P<no>{no_alt}))(?:\b|$)", re.IGNORECASE)
 
 
 def _leading_window(answer: str) -> str:
@@ -617,24 +645,32 @@ def _leading_window(answer: str) -> str:
     return s[:cut]
 
 
-def parse_yes_no(answer: str) -> str | None:
+def parse_yes_no(answer: str, language: "str | None" = None) -> str | None:
     """The **leading-stance** Yes/No verdict, or ``None`` (Spec 26, closes the #23 PAPER GATE).
 
-    A verdict counts only when Yes/No is the **leading token of the leading window**
+    A verdict counts only when a Yes/No token is the **leading token of the leading window**
     (``_leading_window`` — first sentence / first 60 chars of the raw answer), not merely the first
     Yes/No found *anywhere*. Requiring the leading token — rather than searching the window — is what
     resists the negation-evasion #23 is about: a window *search* would still match the incidental
     ``no`` inside ``"There is no way to verify this"`` and score a false-premise ``no``-correct.
 
+    ``language`` is the question's ``source.language``; it adds that script's native yes/no words to
+    the always-eligible English ones (issue #76), so ``"لا…"`` / ``"ਨਹੀਂ…"`` lead-stances parse. The
+    same leading-token discipline applies per script: a native negation-evasion (e.g. Arabic
+    ``"لا سبيل إلى التحقق … نعم"``) leads with neither a bare ``لا`` nor a bare ``نعم`` and stays ``None``.
+
     - ``"No, that is from Sahih Muslim"`` → ``no``   (leading ``No``)
+    - ``"لا، بل هو من صحيح مسلم"`` → ``no`` on an ``ar`` cell (leading ``لا``)
     - ``"Yes."`` → ``yes``
     - ``"There is no way to verify this... Yes"`` → ``None`` (window leads with "There"; the "no" is
       in "no way", the trailing "Yes" is outside the first sentence) — not gamed into a correct "no"
     - a non-committal / declined answer with no leading verdict → ``None`` (``score._with_outcome``
       classifies a ``None``-parse verify_source cell as ``refused``)
     """
-    m = _YES_NO_LEADING.match(_leading_window(answer))
-    return m.group(1).lower() if m else None
+    m = _verdict_regex(language).match(_leading_window(answer))
+    if not m:
+        return None
+    return "yes" if m.group("yes") else "no"
 
 
 def _contains(answer: str, needle: str) -> bool:
@@ -739,7 +775,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     return int(bounded_contains(answer, expected_citation)), n
 
 
-def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None) -> dict:
+def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None) -> dict:
     """Score one model answer. Returns the metrics dict described in the module docstring.
 
     For the text-retrieval tasks the reported submetric fields and the headline are determined by
@@ -773,7 +809,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
         return _with_outcome(metrics, task, answer, expected)
     if task == "verify_source":
-        parsed = parse_yes_no(answer)
+        parsed = parse_yes_no(answer, language)
         correct = int(parsed == expected["answer"])
         return _with_outcome(
             {"parsed": parsed, "expected": expected["answer"], "correct": correct},
@@ -943,7 +979,10 @@ def score_file(
     usage: dict[str, dict] = {}  # model_id -> {calls, in, out, model, served_by{host:count}}
     with open(scores_path, "w", encoding="utf-8") as out:
         for d in rows:
-            metrics = score_answer(d["task"], d["answer"], d["question"]["expected"], graders)
+            metrics = score_answer(
+                d["task"], d["answer"], d["question"]["expected"], graders,
+                language=d["question"].get("source", {}).get("language"),
+            )
             out.write(
                 json.dumps(
                     {

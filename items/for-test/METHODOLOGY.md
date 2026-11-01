@@ -25,13 +25,16 @@ citations, in `christianity/english/population/questions.jsonl`.
 ## Familiarity panel
 
 The panel is the whole list in `well_known.yaml` for that edition. It is not a
-quarter of the draw, and it is not cut or padded so the traditions match.
+quarter of the draw, and it is not cut or padded so the traditions match. The
+population draw is conditional on this pre-registered list: the familiar citations
+are removed from the pool before the seeded draw, so changing the list re-draws the
+population sample (seed fixed at 20261030).
 
 | Tradition | Familiar passages |
 |---|---|
 | Christianity | 4 |
 | Judaism | 1 |
-| Islam | 7 |
+| Islam | 8 |
 | Sikhism | 3 |
 
 Compare traditions on the population sample of 30. Report the familiarity
@@ -60,6 +63,19 @@ The prompt names the edition. A native edition is not asked in both languages
 inside one prompt. The native-language lines are drafts for a native speaker.
 The model call has no language field. OpenRouter does not add one.
 
+The Qur'an's English prompts name the edition "the Uthmani Qur'an" and the Arabic
+prompts "القرآن الكريم بالرسم العثماني" (no "QUL"); the catalogue `version`
+("Uthmani (QUL)") is unchanged in each question's source metadata. The Arabic
+wording was signed off by the Islam representative, a native speaker: "رسم" is
+orthography, "طبعة" a print run, so "طبعة عثماني" was wrong; "النص" rather than
+"الاقتباس" for revelation; "رقم السورة والآية" rather than "الاستشهاد" (which means
+martyrdom / evidentiary citation); and a closing "فقط" because Arabic-prompted
+models tend to open with a preamble (بسم الله…, قال تعالى:) or a clause before the
+verdict, which the leading-stance parser scores as refused — a deliberate, small
+asymmetry versus the English "Answer Yes or No". The verify `no` donors are hadith
+(content negatives), so naming the orthography does not turn verify into a spelling
+test.
+
 `complete_unit` expects the remaining words of the passage. Continuing into
 later verses is still correct: the headline treats the answer as correct when
 those remaining words are contained in it. A `cite_passage` item that should
@@ -77,7 +93,8 @@ familiarity list of one passage stays `yes`, because half of one rounds to zero.
 | English Talmud | NRSV, Hebrew Bible verses only | The English Tanakh this corpus holds. New Testament verses are not the donor. No English Midrash is in the corpus |
 | NRSV | Book of Mormon, 2013 edition | Another English scripture |
 | Masoretic text | Aramaic Talmud | The other Hebrew-Aramaic work |
-| Greek New Testament, Qur'an, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada | A passage from another tradition | No second work in that language. The script differs, so these `no` items are easier |
+| Qur'an | A hadith from the six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | Same script and same tradition as the Qur'an, a different work. The question is a real "Qur'an or hadith?" judgement, not an alphabet test (issue #75) |
+| Greek New Testament, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada | A passage from another tradition | No second work in that language. The script differs, so these `no` items are easier |
 
 The English Gita already uses other English works. The modern supplemental
 pair swaps the Book of Mormon and the encyclicals.

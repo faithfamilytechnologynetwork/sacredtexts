@@ -27,6 +27,19 @@ TAG = re.compile(r"<[^>]+>")
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
 MIN_WORDS = 16
 
+# The six canonical hadith collections (Kutub al-Sittah), Arabic from sunnah.com.
+# These are the Qur'an's same-script "no" donors (issue #75). (file, work) mirrors
+# texts/raw/Sunni Islam/source.yaml; #74 trims Malik/Ahmad/Darimi from the catalogue.
+HADITH_COLLECTIONS = (
+    ("bukhari.json", "Sahih al-Bukhari"),
+    ("muslim.json", "Sahih Muslim"),
+    ("abudawud.json", "Sunan Abi Dawud"),
+    ("tirmidhi.json", "Jami` at-Tirmidhi"),
+    ("nasai.json", "Sunan an-Nasa'i"),
+    ("ibnmajah.json", "Sunan Ibn Majah"),
+)
+HADITH_VERSION = "sunnah.com Arabic"
+
 EN = {
     "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
     "complete_unit": 'Complete this quotation from {version}: "{head}" Reply with only the remaining words.',
@@ -35,7 +48,16 @@ EN = {
 }
 
 
+# English display names the model sees in a prompt, overriding the default
+# "the {version} edition". The catalogue `version` string is unchanged in each
+# question's source metadata; only the prompt wording changes. The Qur'an is named
+# "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
+_EDITION_DISPLAY = {"Uthmani (QUL)": "the Uthmani Qur'an"}
+
+
 def edition_name(name: str) -> str:
+    if name in _EDITION_DISPLAY:
+        return _EDITION_DISPLAY[name]
     if "edition" in name.lower():
         return name
     return f"the {name} edition"
@@ -157,11 +179,15 @@ def islam() -> list[dict]:
         raise SystemExit(f"Qur'an famous citations missing from QUL: {sorted(missing)}")
     drawn = population_draw([p for p, _ in ordinary], famous_rows, seed=20261030)
     text = {p.citation: t for p, t in ordinary + famous}
+    # Owner-signed Arabic templates (Waleed, native Arabic speaker, 2026-11-01). "رسم" is
+    # orthography not a print run ("طبعة"), "النص" for revelation, "رقم السورة والآية" for the
+    # reference, and a closing "فقط" because Arabic-prompted models tend to open with a preamble
+    # before the verdict (see METHODOLOGY.md).
     ar = {
-        "retrieve_quote": "ما نص {citation} من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.",
-        "complete_unit": 'أكمل هذا الاقتباس من القرآن، طبعة عثماني (QUL): "{head}" أجب بالكلمات المتبقية فقط.',
-        "cite_passage": 'أين أجد هذا النص في القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بالاستشهاد فقط، على شكل: {example}.',
-        "verify_source": 'هل النص التالي من القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بنعم أو لا.',
+        "retrieve_quote": "ما نص الموضع {citation} في القرآن الكريم بالرسم العثماني؟ أجب بالنص المطابق لهذه النسخة فقط، دون أي زيادة.",
+        "complete_unit": 'أكمل هذا النص من القرآن الكريم بالرسم العثماني: "{head}" أجب بالكلمات المتبقية فقط.',
+        "cite_passage": 'أين ورد هذا النص في القرآن الكريم بالرسم العثماني؟ "{text}" أجب برقم السورة والآية فقط، بالصيغة نفسها: {example}.',
+        "verify_source": 'هل النص التالي من القرآن الكريم بالرسم العثماني؟ "{text}" أجب بـ«نعم» أو «لا» فقط.',
     }
     items = [(p, "population", text[p.citation], None) for p in drawn]
     items += [(famous_cit[c], "familiarity", text[c], None) for c in famous_cit]
@@ -383,12 +409,42 @@ def _donor_rank(row: dict, donor: dict) -> int:
     return 1
 
 
+def _hadith_donors() -> list[dict]:
+    """Every >=16-word hadith in the six canonical collections, as donor rows.
+
+    Shaped like a ``retrieve_quote`` donor (``tradition``/``version``/``citation``
+    + ``expected.text``) so ``add_verify_negatives`` can use them directly. Citation
+    and version mirror ``convert_hadith_sunnah`` so a "no" item records the same
+    ``true_version``/``true_citation`` the standardized corpus would.
+    """
+    donors: list[dict] = []
+    for filename, work in HADITH_COLLECTIONS:
+        data = json.loads((RAW / "Sunni Islam" / "hadith_from_sunnah.com_arabic_only" / filename).read_text())
+        for h in data["hadiths"]:
+            text = (h.get("arabic") or "").strip()
+            if len(text.split()) < MIN_WORDS:
+                continue
+            donors.append({
+                "tradition": "Islam",
+                "work": work,
+                "version": HADITH_VERSION,
+                "citation": f"{work} {h['idInBook']}",
+                "expected": {"text": text},
+            })
+    if not donors:
+        raise SystemExit("no hadith donors found for the Qur'an verify_source 'no' items")
+    return donors
+
+
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     """Half of each condition's verify_source rows quote a different work.
 
     The donor is the same script as the passage being checked, and a nearer
     work when this corpus has one. A different tradition in another script is
-    the fallback for a language that has only one work.
+    the fallback for a language that has only one work. For the Qur'an, whose
+    only same-script neighbours are the hadith collections, the donor is a
+    hadith matn (same script, same tradition, different work) so the item is a
+    real "Qur'an or hadith?" judgement rather than an alphabet test (issue #75).
     """
     donors = []
     for rows in by_name.values():
@@ -396,6 +452,11 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
             if row["task"] == "retrieve_quote" and row["condition"] in {"ask_english", "ask_native", "en_ask_en_answer"}:
                 donors.append(row)
     rng = random.Random(20261030)
+    # Islam draws from its own pool with an independent RNG, so Islam can be rebuilt
+    # in isolation and the shared `rng` stream stays byte-stable for traditions built
+    # after Islam (e.g. Sikhism).
+    hadith_donors = _hadith_donors()
+    hadith_rng = random.Random(20261030)
     for rows in by_name.values():
         groups: dict[tuple[str, str], list[dict]] = {}
         for row in rows:
@@ -408,7 +469,11 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
                 ranked = [d for d in donors if d["tradition"] != row["tradition"]]
                 best = min((_donor_rank(row, d) for d in ranked), default=2)
                 pool = [d for d in ranked if _donor_rank(row, d) == best] or ranked
-                donor = rng.choice(pool)
+                # The cross-tradition draw advances the shared RNG even for Islam (whose
+                # result is replaced below), keeping later traditions' draws unchanged.
+                donor = rng.choice(pool) if pool else None
+                if row["tradition"] == "Islam":
+                    donor = hadith_rng.choice(hadith_donors)
                 text = donor["expected"]["text"]
                 row["expected"] = {
                     "answer": "no",
