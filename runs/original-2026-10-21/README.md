@@ -6,6 +6,19 @@ commands in the repo-root `TUTORIAL.md`; copyright-audited **origin-clean** (pub
 open corpora only). See `summary.md` for the full accuracy/coverage tables (per model × task,
 × tradition, and the per-text breakdown), the panel composition, and token totals.
 
+> **Note (2026-11-01, issue #74) — the FAccT card for this run is frozen.** This run selected
+> all nine of *al-kutub al-tis'a* (the nine Arabic hadith collections), plus the Qur'an. Issue #74
+> trimmed the catalogue's Arabic hadith pool to the six canonical books (the Kutub al-Sittah);
+> **Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the catalogue.** Because this run
+> selected editions that no longer exist in the catalogue, its FAccT card (`facct.json` /
+> `facct.md`) can no longer be rebuilt — `selected_corpus_hash` cannot be computed for a
+> since-removed edition, and the pipeline never fabricates one. `sacredbench facct` on this run
+> now **fails loudly** (naming #74 and the three dropped collections) and the committed card is
+> **frozen** exactly as it was when the run was scored (byte-pinned in
+> `pipelines/tests/test_original_run_regression.py`). The run evidence itself — `questions.jsonl`,
+> `answers.jsonl`, `scores.jsonl`, `summary.json`, `facct.*` — is unchanged; only this note was
+> added. The nine-collection description below is the historical record of what this run asked.
+
 ## Task / scope
 
 - **476 questions**, four templates evenly split (`retrieve_quote` / `complete_unit` /
@@ -142,8 +155,9 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
   `retrieve_quote` edition counterfactual (how many Bible retrieve_quote misses actually quoted a
   different edition of the same verse — see `facct.md` for the per-model counts). It never re-scores
   and never calls a model;
-  every number is derived from `scores.jsonl` / `summary.json`, pinned by
-  `test_original_run_regression.py::test_committed_facct_card_matches_the_run`. The card wording is
+  every number is derived from `scores.jsonl` / `summary.json`. Since issue #74 the card is frozen
+  (see the note at the top): `test_original_run_regression.py::test_committed_facct_card_is_frozen_and_rebuild_fails_loudly`
+  checks its outcomes against `scores.jsonl` and byte-pins it. The card wording is
   provisional pending a contributor's FAccT paper and lives in one editable block (`facct.CARD_PROSE`).
 
 ## Reproducing / re-scoring

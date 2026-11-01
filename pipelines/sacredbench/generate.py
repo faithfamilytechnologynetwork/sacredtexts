@@ -38,7 +38,7 @@ Contract details that keep the benchmark honest:
   from a *different in-pool text*, attributed to the asked edition
   (``expected.answer == "no"``; ``expected.true_work``/``true_version``/
   ``true_language``/``true_citation`` name the passage's real source). Negatives are
-  drawn from a **different family** — the nine hadith collections are one family
+  drawn from a **different family** — the six hadith collections are one family
   (``document_type == hadith_collection``), otherwise a text's family is its
   ``work`` (so the KJV/ASV/WEB Bible editions never serve as each other's negatives,
   but a different work such as Book of Mormon may). Candidates exclude any passage
@@ -163,7 +163,7 @@ def _choose_name(meta: TextMeta, rng: random.Random) -> str:
 
 
 def _family(doc: Document) -> str:
-    """Negative-sampling family: the nine hadith collections are ONE family (so a hadith is
+    """Negative-sampling family: the six hadith collections are ONE family (so a hadith is
     never a false negative for another, given their shared variant-wording narrations);
     every other text's family is its ``work`` (so the KJV/ASV/WEB Bible editions never serve
     as each other's negatives, but a different work — Book of Mormon — may)."""
@@ -397,7 +397,7 @@ def _append_verify_source(
     """Build this text's verify_source questions: ``n_neg = int(quota * share)``
     cross-family negatives, the rest positives. The question is always about the
     ``asked`` edition; a negative presents a passage from a **different-family** text
-    (families: the nine hadith collections are one; otherwise a text's ``work``), not
+    (families: the six hadith collections are one; otherwise a text's ``work``), not
     not already contained in the asked edition (its normalized text is a substring of a single
     asked-edition entry). Negatives prefer
     a **same-language** partner; a text with no same-language different-family partner falls

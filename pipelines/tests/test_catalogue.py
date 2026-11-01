@@ -512,20 +512,24 @@ def test_slug_agreement_covers_canonical_language(tmp_path):
     assert "disagree on canonical_language" in str(e.value)
 
 
-def test_real_catalogue_default_pool_is_twenty():
-    """The committed corpus: 33 targets, default pool (language == canonical_language,
-    non-restricted) is exactly these 20 texts (Spec 50 added Sri Guru Granth Sahib; Spec 63 the Dhammapada; Spec 64 the Bhagavad Gita; 2026-11-01 the Saheeh International English Qur'an
-    and the sunnah.com English of the six canonical hadith books, all outside the pool); every target carries both new fields; the two
-    LDS KJV targets are gone (issue #27 Q3). Pins membership, not just the count, so a
-    canonical_language typo that silently drops/adds a text fails loudly."""
+def test_real_catalogue_default_pool_is_seventeen():
+    """The committed corpus: 30 targets, default pool (language == canonical_language,
+    non-restricted) is exactly these 17 texts (Spec 50 added Sri Guru Granth Sahib; Spec 63 the Dhammapada; Spec 64 the Bhagavad Gita; 2026-11-01 the Saheeh International English Qur'an
+    and the sunnah.com English of the six canonical hadith books, all outside the pool; issue #74
+    trimmed the Arabic hadith pool to the six canonical books — Muwatta Malik, Musnad Ahmad and
+    Sunan al-Darimi left the catalogue); every target carries both new fields; the two LDS KJV
+    targets are gone (issue #27 Q3). Pins membership, not just the count, so a canonical_language
+    typo that silently drops/adds a text fails loudly."""
     sources = cat.discover_catalogue(REPO_ROOT / "texts" / "raw")
     targets = cat.all_targets(sources)
-    assert len(targets) == 33
+    assert len(targets) == 30
     for t in targets:
         assert t.requested_as and all(isinstance(n, str) and n for n in t.requested_as)
         assert isinstance(t.canonical_language, str) and t.canonical_language
     # no LDS KJV targets remain
     assert not [t for t in targets if t.version == "KJV (LDS 2013 edition)"]
+    # the three non-canonical hadith collections left the catalogue (issue #74)
+    assert not [t for t in targets if t.work in {"Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi"}]
     # cross-source conflict guard is live on the real catalogue
     cat.text_metadata(sources)
     pool = {t.text_key for t in targets if t.language == t.canonical_language and t.license != "restricted"}
@@ -537,9 +541,6 @@ def test_real_catalogue_default_pool_is_twenty():
         ("Jami` at-Tirmidhi", "sunnah.com Arabic", "ar"),
         ("Sunan an-Nasa'i", "sunnah.com Arabic", "ar"),
         ("Sunan Ibn Majah", "sunnah.com Arabic", "ar"),
-        ("Muwatta Malik", "sunnah.com Arabic", "ar"),
-        ("Musnad Ahmad", "sunnah.com Arabic", "ar"),
-        ("Sunan al-Darimi", "sunnah.com Arabic", "ar"),
         ("Talmud Bavli", "William Davidson Edition - Aramaic", "he"),
         ("Book of Mormon", "2013 edition", "en"),
         ("Doctrine and Covenants", "2013 edition", "en"),

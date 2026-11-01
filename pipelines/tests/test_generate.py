@@ -344,7 +344,7 @@ def test_verify_source_positive_and_negative_identity():
 
 
 def test_verify_source_negatives_are_cross_family_only():
-    # the nine hadith collections are ONE family: Bukhari's negatives must come from the
+    # the six hadith collections are ONE family: Bukhari's negatives must come from the
     # scripture, never another hadith collection (shared-narration risk).
     a = _doc("Bukhari", language="ar", document_type="hadith_collection")
     b = _doc("Muslim", language="ar", document_type="hadith_collection")

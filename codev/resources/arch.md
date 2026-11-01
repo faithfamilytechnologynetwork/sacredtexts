@@ -181,13 +181,20 @@ Bible-`retrieve_quote` edition counterfactual (reusing `score.fold_aware_contain
 considers only editions in the run manifest's `selected_texts`, scoped to the question's language, so
 a Bible edition added to the catalogue later cannot change a historic run's card. The card records a
 `selected_corpus_hash` (generate's hash over only the run's selected editions) beside the run's
-`corpus_hash`: it changes iff a *selected* edition's wording changes (the committed-card regression
-test then fails — remedy: regenerate) and is unaffected by unrelated catalogue additions, so adding a
-drop-in tradition leaves a historic card buildable and byte-identical. It is recorded, not enforced. It never re-scores
+`corpus_hash`: it changes iff a *selected* edition's wording changes (a committed card then no longer
+matches a fresh build — remedy: regenerate) and is unaffected by unrelated catalogue additions, so adding a
+drop-in tradition leaves a historic card buildable and byte-identical. It is recorded, not enforced.
+**Removal freezes a card (#74):** if an edition a run *selected* later leaves the catalogue, `_census`
+refuses to build (naming every missing edition, plus the reason from `facct._REMOVED_EDITIONS`) rather
+than fabricate a `selected_corpus_hash`; that run's committed card is frozen, never regenerated. It never re-scores
 or calls a model, fails fast with no partial write, and writes both files atomically (the shared
 `edition_index.atomic_write_texts`). All card prose is in one editable block `facct.CARD_PROSE`
-(a contributor owns the wording for the FAccT paper); every number is interpolated from the run,
-pinned by `test_original_run_regression.py::test_committed_facct_card_matches_the_run`.
+(a contributor owns the wording for the FAccT paper); every number is interpolated from the run.
+The committed `original-2026-10-21` card is frozen (it selected the three hadith collections #74
+removed): `test_original_run_regression.py::test_committed_facct_card_is_frozen_and_rebuild_fails_loudly`
+re-derives its outcomes from the committed `scores.jsonl`, asserts the loud refusal, and byte-pins
+`facct.json` / `facct.md`; the per-task correctness prose is pinned on a synthetic four-task fixture
+in `test_facct.py`.
 
 ## Test gate
 

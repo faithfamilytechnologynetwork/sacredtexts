@@ -38,6 +38,17 @@ from sacredbench.edition_index import (
 _BIBLE = "The Bible"
 _OUTCOMES = ("correct", "incorrect", "refused")
 
+# Sanctioned catalogue removals, keyed by the removed edition's (work, version, language). A run
+# that selected one of these can no longer have its card rebuilt; _census appends the note so the
+# failure says why the edition is gone. Any other missing edition gets the generic message only.
+_REMOVED_EDITIONS = {
+    (work, "sunnah.com Arabic", "ar"): (
+        "issue #74 trimmed the Arabic hadith pool to the six canonical books (Kutub al-Sittah) — "
+        "Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the catalogue"
+    )
+    for work in ("Muwatta Malik", "Musnad Ahmad", "Sunan al-Darimi")
+}
+
 
 class FacctError(Exception):
     pass
@@ -83,6 +94,27 @@ def _census(manifest: dict, raw_root: Path) -> dict:
     excluded = manifest.get("excluded_texts") or []
     targets_by_key = {t.text_key: t for t in cat.all_targets(cat.discover_catalogue(raw_root))}
 
+    # If a text the run SELECTED is not in the catalogue, the card cannot be honestly rebuilt:
+    # selected_corpus_hash cannot be computed for an edition whose raw content is gone, and we never
+    # fabricate one. Fail loudly, naming EVERY missing edition (not just the first); a sanctioned
+    # removal (_REMOVED_EDITIONS) adds its reason, and a committed card for such a run stays frozen.
+    missing = [
+        (st.get("work"), st.get("version"), st.get("language"))
+        for st in selected
+        if (st.get("work"), st.get("version"), st.get("language")) not in targets_by_key
+    ]
+    if missing:
+        names = "; ".join(f"{w} ({v}, {lang})" for w, v, lang in missing)
+        message = (
+            f"selected text(s) with no catalogue target: {names}. This run's FAccT card cannot be "
+            "rebuilt — selected_corpus_hash cannot be computed for an edition whose raw content is "
+            "gone, and none is fabricated; leave any committed facct.json / facct.md as they are."
+        )
+        notes = sorted({_REMOVED_EDITIONS[k] for k in missing if k in _REMOVED_EDITIONS})
+        if notes:
+            message += " Sanctioned removal: " + "; ".join(notes) + "."
+        raise FacctError(message)
+
     texts: list[dict] = []
     by_tradition: Counter = Counter()
     by_language: Counter = Counter()
@@ -90,9 +122,7 @@ def _census(manifest: dict, raw_root: Path) -> dict:
     by_license: Counter = Counter()
     for st in selected:
         key = (st.get("work"), st.get("version"), st.get("language"))
-        target = targets_by_key.get(key)
-        if target is None:
-            raise FacctError(f"selected text {key} has no catalogue target")
+        target = targets_by_key[key]
         tradition = list(target.tradition)
         texts.append(
             {
@@ -356,9 +386,10 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
     }
     indexed_docs, all_nonrestricted, _excluded = load_edition_documents(raw_root)
     # `selected_corpus_hash` pins the counterfactual's raw-edition CONTENT to only the editions this
-    # run selected: it changes iff a selected edition's wording changes (the committed-card regression
-    # test then fails with a clear diff — remedy: regenerate the card), and is unaffected by unrelated
-    # catalogue additions (a new drop-in tradition leaves a historic card buildable and byte-identical).
+    # run selected: it changes iff a selected edition's wording changes (a committed card then no longer
+    # matches a fresh build — remedy: regenerate it, unless a selected edition left the catalogue, in
+    # which case _census refuses and the card stays frozen), and is unaffected by unrelated catalogue
+    # additions (a new drop-in tradition leaves a historic card buildable and byte-identical).
     # It is recorded, not enforced; the run's own `corpus_hash` stays a copy of the manifest value.
     selected_docs = [d for d in all_nonrestricted if (d.work, d.version, d.language) in selected_keys]
     selected_corpus_hash = gen.corpus_hash(selected_docs)
