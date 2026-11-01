@@ -6,7 +6,10 @@ collections, the Talmud and the SGGS are committed public-domain/open raw data.
 
 What is pinned:
 - the donor set is the six canonical collections, read from ``texts/raw/Sunni Islam/source.yaml``;
-- a donor is the matn after the last salawat (owner-approved), never the isnad;
+- a donor is a saying: the one quoted span that opens right after a salawat (owner-approved
+  matn-only, quote-bounded) — never the isnad, never a narrator's remark or chain after it;
+- round-3 guards: a donor never opens with a chain or reported clause (حَدَّثَنَا … عَنْ, وَعَنْ, أَنَّ),
+  is never itself a bare verdict, never carries God's speech (hadith qudsi) or a salawat;
 - no donor shares Qur'an wording (owner-raised) — checked over every committed Islam "no" row;
 - the gate is the quoted passage's script, not the tradition, and each Arabic row's donor is seeded
   by that row alone, so no other tradition can move it;
@@ -25,6 +28,8 @@ from pathlib import Path
 
 import pytest
 
+from sacredbench.score import parse_yes_no
+
 _REPO = Path(__file__).resolve().parents[2]
 _REVIEW = _REPO / "items" / "for-test" / "review"
 _ISLAM = _REPO / "items" / "for-test" / "islam"
@@ -39,12 +44,18 @@ def _nfd(text: str) -> str:
     return unicodedata.normalize("NFD", text)
 
 
-# narrator-chain openers, vowelled and bare
-_ISNAD = tuple(_nfd(w) for w in ("حَدَّثَنَا", "أَخْبَرَنَا", "حَدَّثَنِي", "أَخْبَرَنِي", "حدثنا", "أخبرنا"))
+# narrator-chain / reported-clause openers (architect, round 3: عَنْ, وَعَنْ, أَنَّ too), by letters with
+# hamza kept, so أَنَّ ("that …") is caught and إِنَّ ("indeed") is not
+_ISNAD = frozenset({"حدثنا", "حدثني", "أخبرنا", "أخبرني", "اخبرنا", "اخبرني", "أنبأنا", "عن", "وعن", "أن"})
+
+
+def _first_word_letters(text: str) -> str:
+    word = unicodedata.normalize("NFC", text.split()[0])
+    return "".join(c for c in word if unicodedata.category(c).startswith("L"))
 
 
 def _opens_with_isnad(text: str) -> bool:
-    return _nfd(text).startswith(_ISNAD)
+    return _first_word_letters(text) in _ISNAD
 
 
 def _load(name: str):
@@ -98,29 +109,60 @@ def test_hadith_collections_are_the_six_arabic_targets_in_source_yaml(bq):
         assert (bq.RAW / "Sunni Islam" / t.payload).is_file()
 
 
-# --- matn-only (owner-approved) -------------------------------------------------------------------
+# --- sayings only: the quoted span after a salawat (owner, round 2) -------------------------------
 
 _MATN = " ".join(["كلمة"] * 20)
+_SAL = "صلى الله عليه وسلم"
+_Q = '\u200f"\u200f'  # sunnah.com's quotation mark, wrapped in right-to-left marks
 
 
 @pytest.mark.parametrize("text,expected", [
-    # isnad, salawat, قَالَ, then the matn in sunnah.com's speech marks
-    (f'حَدَّثَنَا فُلَانٌ عَنْ فُلَانٍ قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏"‏ {_MATN} ‏"‏', _MATN),
-    # أَنَّهُ قَالَ is the other approved intro
-    (f"أَخْبَرَنَا فُلَانٌ عَنِ النَّبِيِّ صلى الله عليه وسلم أَنَّهُ قَالَ: {_MATN}", _MATN),
-    # the LAST salawat wins, so a second chain inside the hadith is cut too
-    (f"حَدَّثَنَا فُلَانٌ عَنِ النَّبِيِّ صلى الله عليه وسلم وَحَدَّثَنِي فُلَانٌ عَنِ النَّبِيِّ صلى الله عليه وسلم قَالَ {_MATN}", _MATN),
-    # vowelled and line-broken salawat are still the salawat
-    (f"حَدَّثَنَا فُلَانٌ قَالَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ {_MATN}", _MATN),
-    (f"حَدَّثَنَا فُلَانٌ قَالَ رَسُولُ اللَّهِ صلى\n الله عليه وسلم {_MATN}", _MATN),
-    # no salawat: no matn to find
-    (f"حَدَّثَنَا فُلَانٌ قَالَ {_MATN}", None),
-    # fewer than MIN_WORDS words after the salawat
-    ("حَدَّثَنَا فُلَانٌ عَنِ النَّبِيِّ صلى الله عليه وسلم قَالَ كَلِمَةٌ قَصِيرَةٌ", None),
-    # what follows the salawat is another chain: not a matn
-    (f"عَنِ النَّبِيِّ صلى الله عليه وسلم حَدَّثَنَا {_MATN}", None),
+    # the quoted span after a salawat and a speech verb
+    (f"حَدَّثَنَا فُلَانٌ عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} {_Q}", _MATN),
+    (f"أَخْبَرَنَا فُلَانٌ عَنِ النَّبِيِّ {_SAL} أَنَّهُ قَالَ: {_Q} {_MATN} {_Q}", _MATN),
+    (f"سَمِعْتُ رَسُولَ اللَّهِ {_SAL}، يَقُولُ : {_Q}\n{_MATN} {_Q}", _MATN),
+    (f"أَتَيْتُ النَّبِيَّ {_SAL} فَقَالَ {_Q} {_MATN} {_Q}", _MATN),
+    # ... or with no verb between: قَالَ رَسُولُ اللَّهِ ﷺ "…"
+    (f"قَالَ رَسُولُ اللَّهِ {_SAL} {_Q} {_MATN} {_Q}", _MATN),
+    # vowelled, line-broken and ligature (ﷺ) salawat are all the salawat
+    (f"عَنْ فُلَانٍ أَنَّ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ قَالَ {_Q} {_MATN} {_Q}", _MATN),
+    (f"عَنْ فُلَانٍ أَنَّ رَسُولَ اللَّهِ صلى\n الله عليه وسلم قَالَ {_Q} {_MATN} {_Q}", _MATN),
+    (f"عَنِ النَّبِيِّ \ufdfa قَالَ {_Q} {_MATN} {_Q}", _MATN),
+    # the span ends at its closing mark: commentary, a remark or a second chain after it is not quoted
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} {_Q}\u200f.\u200f قَالَ أَبُو عِيسَى هَذَا حَدِيثٌ حَسَنٌ", _MATN),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} {_Q} وَحَدَّثَنَا فُلَانٌ عَنْ فُلَانٍ بِمِثْلِهِ", _MATN),
+    # the FIRST salawat that opens a quotation: a salawat inside the chain is skipped
+    (f"حَدَّثَنَا فُلَانٌ عَنِ النَّبِيِّ {_SAL} وَحَدَّثَنِي فُلَانٌ عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} {_Q}", _MATN),
+    # no quotation right after a salawat: an unquoted saying, narration, her words, no salawat at all
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_MATN}", None),
+    (f"كَانَ النَّبِيُّ {_SAL} إِذَا {_MATN}", None),
+    (f"دَخَلَ عَلَيَّ النَّبِيُّ {_SAL} قَالَتْ {_Q} {_MATN} {_Q}", None),
+    (f"حَدَّثَنَا فُلَانٌ قَالَ {_Q} {_MATN} {_Q}", None),
+    # an unclosed quotation, a span under MIN_WORDS words, or a chain inside the quotation
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} كَلِمَةٌ قَصِيرَةٌ {_Q} {_MATN}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} حَدَّثَنَا {_MATN} {_Q}", None),
+    # round 3 guards — a reported clause opens the span: عَنْ / وَعَنْ / أَنَّ (إِنَّ is a normal opening)
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} عَنْ {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} وَعَنْ {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} أَنَّ {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} إِنَّ {_MATN} {_Q}", f"إِنَّ {_MATN}"),
+    # ... the span is itself a bare verdict ("لاَ، …"); a negation (لاَ تَبِيعُوا) is a normal opening
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} لاَ، {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} نَعَمْ . {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} لاَ تَبِيعُوا {_MATN} {_Q}", f"لاَ تَبِيعُوا {_MATN}"),
+    # ... God's speech (hadith qudsi, or an ayah framed as قَالَ اللَّهُ); "اللَّهُمَّ" is a prayer, not that
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} قَالَ اللَّهُ تَعَالَى {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} يَقُولُ اللَّهُ عَزَّ وَجَلَّ {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} إِنَّ اللَّهَ عَزَّ وَجَلَّ يَقُولُ {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} إِنَّ اللَّهَ قَالَ {_MATN} {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} قَالَ رَبُّكُمْ {_Q}", None),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} قُولُوا اللَّهُمَّ {_MATN} {_Q}", f"قُولُوا اللَّهُمَّ {_MATN}"),
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} إِنَّ اللَّهَ يُحِبُّ {_MATN} {_Q}", f"إِنَّ اللَّهَ يُحِبُّ {_MATN}"),
+    # ... a salawat inside the span: the Qur'an never has one
+    (f"عَنِ النَّبِيِّ {_SAL} قَالَ {_Q} {_MATN} لاَ يَحِلُّ لآلِ مُحَمَّدٍ {_SAL} {_Q}", None),
 ])
-def test_hadith_matn_is_the_text_after_the_last_salawat(bq, text, expected):
+def test_hadith_matn_is_the_quoted_saying_after_a_salawat(bq, text, expected):
     assert bq.hadith_matn(text) == expected
 
 
@@ -131,7 +173,13 @@ def test_real_hadith_matn_bukhari_1(bq):
     matn = bq.hadith_matn(first)
     assert _opens_with_isnad(first)                              # the hadith opens with its isnad ...
     assert _nfd("إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ") in _nfd(matn)          # ... the matn is the saying
-    assert _nfd("حَدَّثَنَا") not in _nfd(matn) and not bq._SALAWAT.search(matn)
+    assert _nfd("حَدَّثَنَا") not in _nfd(matn) and not _nfd(matn).startswith(_nfd("يَقُولُ"))
+
+
+def _assert_round3_guards(bq, text: str) -> None:
+    assert parse_yes_no(text, "ar") is None                      # not a bare verdict itself
+    assert not bq._DIVINE_SPEECH.search(text)                    # no God's speech (hadith qudsi out)
+    assert not bq._SALAWAT.search(text)                          # no salawat: the Qur'an never has one
 
 
 def test_hadith_pool_is_matn_only(bq):
@@ -142,9 +190,8 @@ def test_hadith_pool_is_matn_only(bq):
         assert d["tradition"] == "Islam" and d["version"] == "sunnah.com Arabic"
         assert bq._script(text) == "ar" and len(text.split()) >= bq.MIN_WORDS
         assert not _opens_with_isnad(text)
-        assert bq._bare(text.split()[0]) not in bq._ISNAD_OPENERS
-        assert '"' not in text and "‎" not in text and "‏" not in text and "\n" not in text
-        assert not bq._SALAWAT.search(text)
+        assert '"' not in text and "\u200e" not in text and "\u200f" not in text and "\n" not in text
+        _assert_round3_guards(bq, text)
 
 
 # --- no Qur'an wording in a donor (owner-raised) ---------------------------------------------------
@@ -184,7 +231,34 @@ def test_committed_islam_no_rows_quote_a_clean_hadith_matn(bq):
         assert quoted == bq.hadith_matn(raw[work][int(number)])   # the matn of the cited hadith
         assert bq._script(quoted) == "ar"                            # same script as the Qur'an
         assert not _opens_with_isnad(quoted)
+        _assert_round3_guards(bq, quoted)
         assert bq.quran_overlap(quoted) is None, exp["true_citation"]
+
+
+def _raw_quoted_spans(raw: str) -> list[str]:
+    """Every span sunnah.com puts between a pair of quotation marks, read independently of the
+    generator: split at the marks, keep the inside of each pair, drop the right-to-left marks and the
+    separators just inside the opening mark, collapse whitespace."""
+    inside = raw.replace("\u200e", "").replace("\u200f", "").split('"')[1::2]
+    return [" ".join(re.sub(r"^[\s:،,.\-–—ـ؛]+", "", span).split()) for span in inside]
+
+
+def test_committed_no_donors_are_exactly_one_quoted_span(bq):
+    # architect, round 3: every committed "no" donor is exactly one quoted span of its hadith — no
+    # quotation mark inside it, nothing (a narrator's remark, a second chain) after its closing mark
+    raw = {
+        t.work: {h["idInBook"]: h.get("arabic") or "" for h in
+                 json.loads((bq.RAW / "Sunni Islam" / t.payload).read_text(encoding="utf-8"))["hadiths"]}
+        for t in bq.hadith_collections()
+    }
+    no_rows = _no_rows(_committed_islam_rows())
+    assert len(no_rows) == 38
+    for r in no_rows:
+        quoted = bq._quoted_passage(r["prompt"])
+        work, number = r["expected"]["true_citation"].rsplit(" ", 1)
+        assert '"' not in quoted and "\u200f" not in quoted and "\u200e" not in quoted
+        assert r["prompt"].count('"') == 2                          # the prompt quotes exactly one span
+        assert quoted in _raw_quoted_spans(raw[work][int(number)]), r["expected"]["true_citation"]
 
 
 # --- the gate is the script; the donor is per row --------------------------------------------------

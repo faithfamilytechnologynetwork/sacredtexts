@@ -88,3 +88,42 @@ from another tradition in another script.
 - Regenerated Islam only: 38 verify-"no" rows changed vs round 1, nothing else. Full offline build:
   Islam SAME; Christianity/Judaism/Sikhism still don't reproduce (pre-existing, separate issue);
   no non-Islam question file differs from origin/main.
+
+## Round 2b (architect hands-on findings, 2026-11-01) — prepared locally, NOT pushed (owner's word on A pending)
+- **B (parser, commit 9a8de61)**: Arabic vowel marks dropped before the native match; bare
+  الجواب/الإجابة/الرد label stripped like "Answer:" on Arabic cells. 0/441 committed cells move.
+- **A (sayings only, as specified)**: first speech verb (قال/يقول/فقال/أنه قال) directly after a
+  salawat (ﷺ too — never occurs in this corpus), commentary markers cut. Surprise: the whole-word
+  check must skip marks — `(?![letter])` let قال match inside قَالَتْ (fatha isn't a letter); 360+117
+  bogus "ت"/"وا" starts until fixed. Pool 5,068. Overlap filter now changes 9/38 draws.
+- **C (by eye, rule A)**: 11/38 still fragments — mid-clause/narrator starts (Muslim 3631, Bukhari
+  1961/476/5121, Nasa'i 2326, Abu Dawud 2264/734) and trailing chains/remarks (Muslim 4980,
+  Bukhari 10/5788, Ibn Majah 134). Root cause: the verb's subject is often not the Prophet, and the
+  saying's end is unbounded.
+- **Alternative Q (scratch only)**: the sunnah.com `‏"‏…‏"‏` span that opens right after a salawat
+  (optional speech verb between). Pool 4,463; by eye 37/38 whole sayings, 1 reply-fragment
+  (Bukhari 6784, a genuine opening quote — parity guard doesn't help). Recommended to architect.
+
+## Round 3 decision (architect, 2026-11-01): quote-bounded sayings
+- Architect chose the quote-bounded rule over A ("owner approved matn-only; this is the better
+  mechanism"). A was never pushed; its commit was replaced in place (amended) before the push, so the
+  PR shows B (9a8de61) then this rule.
+- Donor = the first sunnah.com `‏"‏…‏"‏` span that opens right after a salawat (optional speech verb
+  between), up to its closing mark; ≥16 words; no isnad opener; Qur'an-overlap screen; per-row seed.
+  Pool 4,463 (all six books). The commentary-marker regex is gone: the closing mark bounds the saying.
+- Overlap screen changes 4/38 draws: 75:40, 34:23, 21:104 (real quotations) and 2:1 (أَلَمْ → الٓمٓ,
+  conservative over-rejection).
+- New test: every committed "no" donor is exactly one quoted span of its hadith (split at the marks
+  independently of the generator). Both earlier rules' donors fail it 38/38, so it discriminates.
+- **Round-3 guards (architect, after external reviews)**: span must not open with a chain/reported
+  clause (حدثنا…, عن, وعن, أن — letters with hamza kept, so إنّ survives: 447 sayings open with it),
+  must not itself parse as a verdict (scorer's parse_yes_no; caught Bukhari 228 "لاَ، إِنَّمَا…"),
+  must not carry God's speech (قال الله / يقول الله / قال ربكم / إن الله … قال — 156 spans, incl.
+  ayahs framed "قال الله تعالى {…}"). My addition, same principle as the isnad rule: no salawat
+  inside the span (the Qur'an never has one) — Nasa'i 2454 ended "لآل محمد ﷺ منها شيء". Pool 4,204.
+- Any pool change re-draws all 38 (per-row randrange over the pool), so the final draw is the third
+  set of Islam "no" donors (round 1 → round 2 → round 3); the unpushed intermediate draws were
+  folded into the round-3 commit. Overlap screen now changes 1/38 (Nasa'i 3573, عبد الرحمن ⊃ 55:1).
+- By eye 36/38 clean. Flagged for the owner, not acted on: Bukhari 6784 (reply fragment, and 5
+  words shared with 9:102 — under the 6-word threshold) and Bukhari 7122 (God's words "إن رحمتي
+  تغلب غضبي" without a قال الله frame — a regex can't see it).

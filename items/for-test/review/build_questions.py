@@ -27,7 +27,7 @@ from sacredbench.catalogue import load_source
 from sacredbench.convert import _SGGS_ANG_ERRATA, clean_sggs_line
 from sacredbench.generate import split_quote
 from sacredbench.item_sample import Passage, draw_passages, load_well_known
-from sacredbench.score import fold_aware_contains
+from sacredbench.score import fold_aware_contains, parse_yes_no
 
 REVIEW = Path(__file__).resolve().parent
 RAW = Path(__file__).resolve().parents[3] / "texts" / "raw"
@@ -430,46 +430,80 @@ def hadith_collections() -> list:
     return [by_work[work][0] for work in KUTUB_AL_SITTAH]
 
 
-# The matn follows the LAST salawat; the narrator chain (isnad) comes before it (owner-approved, #75).
-# sunnah.com writes the salawat bare, vowelled (in either mark order), and broken across lines, so it
-# is matched letter by letter with any vowel marks, dagger alif or tatweel after each letter.
-_SALAWAT_MARKS = "[ً-ٰٟـ]*"
-_SALAWAT = re.compile(r"\s+".join(
-    "".join(c + _SALAWAT_MARKS for c in word) for word in ("صلى", "الله", "عليه", "وسلم")
-))
-# sunnah.com speech marks, sentence marks and separators that sit between the salawat and the matn
-_MATN_LEAD = re.compile(r'^[\s‎‏"«»ـ.:،,؛\-–—]+')
-_SPEECH_INTROS = (("قال",), ("انه", "قال"))  # قَالَ / أَنَّهُ قَالَ, compared without vowel marks
-_ISNAD_OPENERS = frozenset({"حدثنا", "حدثني", "اخبرنا", "اخبرني", "انبانا"})
+# A donor is a SAYING of the Prophet (owner, #75 round 2): the span sunnah.com puts in quotation marks
+# right after a salawat (… صلى الله عليه وسلم ‏"‏ …), optionally with a speech verb between
+# (قَالَ / يَقُولُ / فَقَالَ / أَنَّهُ قَالَ), up to its closing mark. Neither the narrator chain (isnad)
+# nor anything after the closing mark (a narrator's remark, a second chain, the compiler's commentary)
+# is quoted. sunnah.com writes these words bare, vowelled (in either mark order) and broken across
+# lines, so each is matched letter by letter with any vowel marks, dagger alif or tatweel after a
+# letter, and any alef (with or without hamza) for an alef.
+_AR_MARKS = "[\u064b-\u065f\u0670\u0640]*"
+_AR_LETTER = "\u0621-\u064a"
 
 
-def _bare(word: str) -> str:
-    """A word's letters only, without vowel or hamza marks or punctuation (أَنَّهُ → انه)."""
-    return "".join(c for c in unicodedata.normalize("NFD", word) if unicodedata.category(c).startswith("L"))
+def _arabic_phrase(*words: str) -> str:
+    """A regex for these Arabic words however sunnah.com vowels them or breaks the line."""
+    def letter(c: str) -> str:
+        return ("[\u0627\u0623\u0625\u0622\u0671]" if c in "\u0627\u0623" else re.escape(c)) + _AR_MARKS
+    return r"\s+".join("".join(letter(c) for c in word) for word in words)
+
+
+_SALAWAT = re.compile("(?:" + _arabic_phrase("صلى", "الله", "عليه", "وسلم") + "|\ufdfa)")
+# whole words, so قَالَتْ ("she said") and يَقُولُوا are not speech verbs here
+_SPEECH_VERB = "(?:" + "|".join(
+    _arabic_phrase(*verb) for verb in (("أنه", "قال"), ("فقال",), ("قال",), ("يقول",))
+) + f")(?!{_AR_MARKS}[{_AR_LETTER}])"
+_GAP = "[\\s\u200e\u200f:\u060c,.\\-\u2013\u2014\u0640]*"  # spaces, LRM/RLM, colon, comma, dash, tatweel
+_SAYING_OPEN = re.compile(_SALAWAT.pattern + _GAP + f"(?:{_SPEECH_VERB}{_GAP})?" + '"')
+# separators sunnah.com puts just inside the opening mark
+_MATN_LEAD = re.compile("^[\\s\u200e\u200f\u0640.:\u060c,\u061b\\-\u2013\u2014]+")
+# A span that opens a narrator chain or a reported clause (حَدَّثَنَا, عَنْ, أَنَّ …) announces "hadith"
+# from its first word. Compared by letters only, hamza kept, so أَنَّ is caught and إِنَّ ("indeed") is not.
+_CHAIN_OPENERS = frozenset({
+    "حدثنا", "حدثني", "أخبرنا", "أخبرني", "اخبرنا", "اخبرني", "أنبأنا", "انبانا", "عن", "وعن", "أن",
+})
+_DIVINE_EPITHET = r"(?:\s+(?:" + "|".join(
+    _arabic_phrase(*e) for e in (("تعالى",), ("عز", "وجل"), ("تبارك", "وتعالى"), ("سبحانه",))
+) + "))?"
+_SAYS = "(?:" + _arabic_phrase("قال") + "|" + _arabic_phrase("يقول") + ")"
+_WORD_END = f"(?!{_AR_MARKS}[{_AR_LETTER}])"
+# God's speech inside the saying (hadith qudsi, or a Qur'an citation framed as قَالَ اللَّهُ): not the
+# Prophet's own words, so not a donor — قَالَ اللَّهُ / يَقُولُ اللَّهُ / قَالَ رَبُّكُمْ / إِنَّ اللَّهَ … قَالَ
+_DIVINE_SPEECH = re.compile("(?:" + "|".join((
+    _SAYS + r"\s+(?:" + "|".join(_arabic_phrase(w) for w in ("الله", "ربكم", "ربك", "ربي")) + ")" + _WORD_END,
+    _arabic_phrase("إن", "الله") + _DIVINE_EPITHET + r"\s+" + _SAYS + _WORD_END,
+)) + ")")
+
+
+def _letters(word: str) -> str:
+    """A word's letters only, hamza kept: no vowel marks or punctuation (أَنَّ → أن, إِنَّ → إن)."""
+    return "".join(c for c in unicodedata.normalize("NFC", word) if unicodedata.category(c).startswith("L"))
 
 
 def hadith_matn(text: str) -> str | None:
-    """The quotable matn of a sunnah.com hadith, or None when it has none.
+    """The quotable saying of a sunnah.com hadith, or None when it has none.
 
-    The matn is the text after the last salawat, past an optional قَالَ / أَنَّهُ قَالَ, with
-    sunnah.com's speech marks (``"`` and the right-to-left marks around them) removed. None when the
-    hadith has no salawat, when fewer than MIN_WORDS words remain, or when what remains opens with a
-    narrator chain (حَدَّثَنَا, أَخْبَرَنَا, …): the isnad would announce "hadith" from its first word.
+    The saying is the first quoted span that opens right after a salawat (with an optional speech verb
+    between), up to its closing quotation mark, without the right-to-left marks sunnah.com puts around
+    its quotation marks. None when there is no such span, or when the span
+    - has fewer than MIN_WORDS words;
+    - opens with a narrator chain or reported clause (حَدَّثَنَا, أَخْبَرَنَا, عَنْ, وَعَنْ, أَنَّ, …);
+    - reads as a bare verdict itself ("لاَ، …", "نَعَمْ.") by the scorer's own ``parse_yes_no``;
+    - carries God's speech (قَالَ اللَّهُ, يَقُولُ اللَّهُ, إِنَّ اللَّهَ … قَالَ): hadith qudsi are out;
+    - carries a salawat (صلى الله عليه وسلم): the Qur'an never does, so it would announce "hadith".
     """
-    last = None
-    for last in _SALAWAT.finditer(text):
-        pass
-    if last is None:
+    opening = _SAYING_OPEN.search(text)
+    if opening is None:
         return None
-    words = _MATN_LEAD.sub("", text[last.end():]).split()
-    for intro in _SPEECH_INTROS:
-        if tuple(_bare(w) for w in words[: len(intro)]) == intro:
-            words = words[len(intro):]
-            break
-    rest = _MATN_LEAD.sub("", " ".join(words))
-    matn = " ".join(rest.replace('"', "").replace("‎", "").replace("‏", "").split())
+    closing = text.find('"', opening.end())
+    if closing == -1:
+        return None
+    span = _MATN_LEAD.sub("", text[opening.end():closing])
+    matn = " ".join(span.replace("‎", "").replace("‏", "").split())
     words = matn.split()
-    if len(words) < MIN_WORDS or _bare(words[0]) in _ISNAD_OPENERS:
+    if len(words) < MIN_WORDS or _letters(words[0]) in _CHAIN_OPENERS:
+        return None
+    if parse_yes_no(matn, "ar") is not None or _DIVINE_SPEECH.search(matn) or _SALAWAT.search(matn):
         return None
     return matn
 
