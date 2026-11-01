@@ -23,4 +23,10 @@ Do NOT touch runs/.
 - VERIFIED independently: `generate texts/standardized --per-text 28 --seed 20261010
   --negatives-share 0.5` → corpus_hash=e588c0892cf922ce (matches new anchor),
   question_set_digest=93b71460742a8ecd (unchanged, 10 translations excluded from pool).
-- Running full test gate (.codev/checks/test.sh = pipelines pytest + viewer vitest).
+- Test gate: pipelines pytest **719 passed** (8m13s, incl. copyright audit). Viewer vitest
+  first FAILED only because this worktree had no apps/viewer/node_modules (`vitest: command not
+  found`) — ran `pnpm -C apps/viewer install`, then vitest **190 passed** (19 files). GOTCHA for
+  future builders touching texts/ or runs/ here: the dispatcher routes to the viewer lane too,
+  so the worktree needs `pnpm -C apps/viewer install` before the gate is green.
+- Committed anchor re-pin (f82425f) on top of architect's WIP commit (14d6fc4). Pushed.
+- Opened **PR #79** → main. NOT merged (architect's call). Reported to architect.
