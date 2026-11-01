@@ -30,7 +30,7 @@ layout matches the committed tree:
   `texts/raw/Protestant Christian/nrsv.json`, in the same `{book, chapter, verse, text}`
   shape as `kjv.json`. The National Council of Churches holds the copyright;
   this repo does not redistribute the text.
-The Christian test set does not use those TLG files. Its original-language verses are a Masoretic excerpt (Westminster Leningrad Codex) and a Greek New Testament excerpt (Scrivener 1894), stored with the questions under `items/for-test/christianity/`.
+The Christian test set does not use those TLG files. Its original-language verses are a Masoretic excerpt (Westminster Leningrad Codex) and a Greek New Testament excerpt (Scrivener 1894), stored under `items/for-test/christianity/native/`.
 
 - **Greek Orthodox (TLG)** → download the whole `Greek Orthodox/` folder from
   Box and save it as `texts/raw/Greek Orthodox/`. These files are extracts of

@@ -44,7 +44,7 @@
 - `Matthew 6:9` (familiarity)
 - `Psalms 23:1` (familiarity)
 
-The verse inventory for the draw is the Protestant list in `kjv.json`. The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`. The same 30 citations are in `christianity/masoretic/` when the verse is from the Hebrew Bible (Westminster Leningrad Codex; Daniel 2 is Aramaic) and in `christianity/greek/` when it is from the New Testament (Scrivener 1894). That is one set, split by original language, and each of those files has an English prompt and a native-language prompt. The licensed Greek Orthodox TLG files are not in the repo, so these verses are not the Septuagint.
+The verse inventory for the draw is the Protestant list in `kjv.json`. The wording in `christianity/english/` is NRSV. Do not check these against `kjv.json`. The same 30 citations are in `christianity/native/masoretic/` when the verse is from the Hebrew Bible (Westminster Leningrad Codex; Daniel 2 is Aramaic) and in `christianity/native/greek/` when it is from the New Testament (Scrivener 1894). That is one set, split by original language, and each of those files has an English prompt and a native-language prompt. The licensed Greek Orthodox TLG files are not in the repo, so these verses are not the Septuagint.
 
 These citations are the question file. Population and familiarity are separate samples.
 

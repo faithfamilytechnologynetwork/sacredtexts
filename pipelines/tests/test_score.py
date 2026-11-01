@@ -125,7 +125,7 @@ def test_greek_accents_are_not_word_breaks():
     assert normalize("λόγος") == normalize("λογος")
     assert " " not in normalize("λόγος")
     assert normalize("café") == "cafe"
-    path = Path(__file__).resolve().parents[2] / "items/for-test/christianity/greek/population/prompt-native/questions.jsonl"
+    path = Path(__file__).resolve().parents[2] / "items/for-test/christianity/native/greek/population/prompt-native/questions.jsonl"
     row = next(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if json.loads(line)["task"] == "complete_unit")
     text = row["expected"]["text"]
     assert score_answer("complete_unit", text, row["expected"])["correct"] == 1
