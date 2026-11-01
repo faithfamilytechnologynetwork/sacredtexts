@@ -87,6 +87,29 @@ pair swaps the Book of Mormon and the encyclicals.
 Report population accuracy on its own. Report familiarity accuracy on its own,
 with the number of passages. Do not pool the two.
 
+On `retrieve_quote` and `complete_unit`, read the two overlap scores together.
+Neither one is the headline. `correct` still requires the passage, marks
+included.
+
+`token_f1` is the strict overlap. A vowel sign or a Latin accent is part of
+the word, so `dhammā` is not `dhamma` and `café` is not `cafe`. Dropping a
+Gurmukhi or Devanagari vowel sign, or a Pali length mark, misses that word.
+Greek accents already fold, and Arabic and Hebrew vowel marks already fold,
+so those pairs match on this score too.
+
+`token_f1_base` is the same overlap after those Latin accents and Indic and
+Pali vowel signs are removed. It answers a different question: did the words
+change, or only the marks?
+
+| Strict | Base | Reading |
+|---|---|---|
+| High | High | The same words, marks included |
+| Low | High | The right words, with vowel signs or accents dropped |
+| Low | Low | Different words. Treat this as a different passage |
+
+A low strict score and a high base score is a spelling miss, not a theological
+miss. A low score on both is a change of words.
+
 Hinduism is the same 30 citations in both editions. The 16-word floor is
 applied to Annie Besant's English, because only 16 Sanskrit verses reach 16
 words. Buddhism is 30 Pali verses of at least 16 words. This corpus has no

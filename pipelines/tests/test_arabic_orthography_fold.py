@@ -37,6 +37,23 @@ def test_bare_maqsura_folds_to_ya():
     assert score_normalize("هدى") == score_normalize("هدي")
 
 
+def test_hamza_alef_matches_alef_madda():
+    # issue #60: the containment pattern makes the hamza in ءَا optional, so Imla'i آ matches.
+    # The answer fold does NOT drop that hamza: ءَالَافٍ (thousands) must not equal أَلْف.
+    assert fold_aware_contains("آمَنَ", "ءَامَنَ")
+    assert fold_aware_contains("ءَامَنَ", "آمَنَ")
+    assert fold_aware_contains("آللَّهُ", "ءَآللَّهُ")
+    assert fold_aware_contains("ءَآللَّهُ", "آللَّهُ")
+    assert not fold_aware_contains("ااالله", "ءَآللَّهُ")
+    assert fold_aware_contains("وَآتَاكُم", "وَءَاتَىٰكُم")
+    assert not fold_aware_contains("أَلْف", "ءَالَافٍ")
+    assert not fold_aware_contains("ءَالَافٍ", "أَلْف")
+    assert not fold_aware_contains("أَثَر", "ءَاثَارِ")
+    assert not fold_aware_contains("ءَاثَارِ", "أَثَر")
+    assert fold_aware_contains("…عليم۝١٧٦", "عليم")
+    assert fold_aware_contains("عليم۝١٧٦ ثم قال", "عليم")
+
+
 def test_standalone_hamza_folds_to_alef():
     # أَرَءَيْتُمْ (standalone ء) ↔ أَرَأَيْتُمْ (seated hamza); "drop" would be asymmetric
     assert score_normalize("أَرَءَيْتُمْ") == score_normalize("أَرَأَيْتُمْ")

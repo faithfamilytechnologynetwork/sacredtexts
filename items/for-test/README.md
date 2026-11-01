@@ -19,11 +19,10 @@ No pull request is open. These issues are still open and the work is not already
 
 | Issue | Still to do | Blocks |
 |---|---|---|
-| #60 | Arabic fold still skips hamza-alef `ءَا` ↔ alef-madda `آ`, and `ىٰ` ↔ maqsura. #52 did not cover these | Nothing. Islam can run; a few answers stay under-credited |
 | #37 | Septuagint is not in the repo. The test set has a Masoretic excerpt and Scrivener 1894, not a full Tanakh and not Nestle-Aland | The catalogue copies of those witnesses. The excerpt already in this folder can run |
 | #43 | Qur'an, Latter-day Saint, and NRSV license terms | Releasing questions, not collecting them |
 
-Already done, so not on that list: #50's scoring half (`normalize()` keeps Gurmukhi, Devanagari, and Pali vowel signs; the Guru Granth Sahib text landed in #51), #63 (Dhammapada, closed), #64 (Gita text landed in #66; the issue is still open and should be closed), #52 (main Arabic fold, closed). #54's harness merged in #59; the live search run has not been done, and it is a separate experiment.
+Already done, so not on that list: #60 (hamza-alef `ءَا` ↔ alef-madda `آ` is credited, and a verse number glued to the last word is stripped; `ىٰ` stays the optional long ā, because folding it to ya merges different words), #50's scoring half (`normalize()` keeps Gurmukhi, Devanagari, and Pali vowel signs; the Guru Granth Sahib text landed in #51), #63 (Dhammapada, closed), #64 (Gita text landed in #66; the issue is still open and should be closed), #52 (main Arabic fold, closed). #54's harness merged in #59; the live search run has not been done, and it is a separate experiment.
 
 Safe to collect now: Christianity (NRSV, Masoretic, Greek), Judaism (Aramaic and English), Islam, Sikhism, the Sanskrit and English Gita, and the Pali Dhammapada. The Christian supplemental set waits until after the main 30.
 

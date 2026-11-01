@@ -276,6 +276,10 @@ _YA = "ي"            # ARABIC LETTER YEH
 _ALEF = "ا"          # ARABIC LETTER ALEF
 _HAMZA = "ء"         # ARABIC LETTER HAMZA (standalone)
 _WASL = "ٱ"          # ARABIC LETTER ALEF WASLA
+# End-of-āyah sign glued to a word, plus the verse digits that follow it.
+# Anywhere in the answer: a citation after the sign must not keep the last word stuck to it.
+_AYAH_NUMBER = re.compile(r"\u06DD\s*[0-9\u0660-\u0669\u06F0-\u06F9]*")
+_MADDAH = "\u0653"  # ARABIC MADDAH ABOVE, the mark NFKD splits off alef-madda آ
 
 
 def _dagger_after_maqsura(text: str, i: int) -> int | None:
@@ -315,12 +319,33 @@ def _materialise_long_alif(text: str) -> str:
     return "".join(out)
 
 
+def _hamza_before_alef(text: str, i: int) -> int | None:
+    """Index of the alef that follows a hamza at ``text[i]``, or ``None``.
+
+    Harakat and tatweel between them still count, so ``ءَا`` and ``ءَآ`` (NFKD: hamza,
+    fatha, alef, maddah) are the same letter as alef-madda ``آ`` and a single alef.
+    A hamza that is not sitting on an alef stays a letter of its own (issue #60)."""
+    if i >= len(text) or text[i] != _HAMZA:
+        return None
+    j = i + 1
+    while j < len(text) and (text[j] == "ـ" or unicodedata.combining(text[j])):
+        j += 1
+    if j < len(text) and text[j] == _ALEF:
+        return j
+    return None
+
+
 def fold_arabic_orthography(text: str) -> str:
     """The SYMMETRIC Arabic letter folds (Spec 52), applied to both answer and expected: standalone
     hamza ء → alef ا, and a BARE alef-maqsura ى → dotted ya ي. A ى that carries a dagger (the ``ىٰ``
     long-ā digraph, even with a vowel mark or tatweel between them) is left alone — folding it to ya
     would collide the long-ā form with a genuine ``…ay…`` word (ءَاتَىٰنَا "He gave us" vs ءَاتَيْنَا
     "we gave"); the digraph's long ā is instead handled, optionally, in ``fold_aware_contains``.
+    The ``ىٰ`` digraph is not folded to a bare maqsura or ya: that collision is lexical, and no
+    committed cell is waiting on it (issue #60, evaluated and left as the optional long ā).
+    Hamza-before-alef (``ءَا`` ↔ ``آ``) is also NOT collapsed here: dropping the hamza on the
+    answer merges distinct words (``ءَالَافٍ`` "thousands" with ``أَلْف`` "a thousand"). That
+    equivalence is an optional alef in the containment pattern only.
     Expects NFKD-normalised input, runs BEFORE the Mn-mark deletion (which removes the dagger as
     before). Arabic-only — Latin byte-for-byte unchanged.
 
@@ -381,6 +406,23 @@ def _fold_containment_pattern(expected: str) -> str:
             atoms.append("AA"); i = end + 1; continue     # ىٰ digraph → optional long ā
         if ch == _DAGGER_ALEF:
             atoms.append("AA"); i += 1; continue           # lone dagger → optional long ā
+        if ch == _HAMZA and (alef_at := _hamza_before_alef(s, i)) is not None:
+            # ءَا / ءَآ: one optional alef, then the written alef. ``ا?ا`` matches
+            # Imla'i ``آ`` (one) and Uthmani ``ءَا`` (two). When the alef is itself a
+            # madda (``ءَآ``), skip that maddah here. Leaving it for the madda branch
+            # would add a second optional alef and also match a third, unrelated alef.
+            atoms.append("AH")
+            if alef_at + 1 < n and s[alef_at + 1] == _MADDAH:
+                atoms.append(_ALEF)
+                i = alef_at + 2
+            else:
+                i += 1
+            continue
+        if ch == _ALEF and i + 1 < n and s[i + 1] == _MADDAH:
+            # The reverse spelling: an Imla'i reference ``آ`` must also match an answer
+            # that wrote ``ءَا``. The madda contributes the optional alef; a plain alef
+            # (أَلْف) does not, so it still does not contain ``ءَالَافٍ``.
+            atoms.append("AH"); atoms.append(_ALEF); i += 2; continue
         if ch in (_HAMZA, _WASL):
             atoms.append(_ALEF); i += 1; continue           # symmetric → alef
         if ch == _ALEF_MAQSURA:
@@ -395,7 +437,7 @@ def _fold_containment_pattern(expected: str) -> str:
     # collapse space runs; drop spaces flanked by Arabic letters / the AA marker (the compound
     # boundary); strip ends.
     def is_letterish(a: str) -> bool:
-        return a == "AA" or (len(a) == 1 and _is_arabic_letter(a))
+        return a in ("AA", "AH") or (len(a) == 1 and _is_arabic_letter(a))
     collapsed: list[str] = []
     for a in atoms:
         if a == " " and collapsed and collapsed[-1] == " ":
@@ -424,7 +466,14 @@ def _fold_containment_pattern(expected: str) -> str:
     ]
     parts: list[str] = []
     for j, a in enumerate(kept):
-        parts.append(re.escape(_ALEF) + "?" if a == "AA" else (r"\s+" if a == " " else re.escape(a)))
+        if a == "AA":
+            parts.append(re.escape(_ALEF) + "?")
+        elif a == "AH":
+            parts.append(re.escape(_ALEF) + "?")
+        elif a == " ":
+            parts.append(r"\s+")
+        else:
+            parts.append(re.escape(a))
         if (j + 1 < len(kept) and is_letterish(a) and is_letterish(kept[j + 1])
                 and (a == "AA" or kept[j + 1] == "AA")):
             parts.append(r"\s*")           # optional space ONLY at a long-ā join boundary
@@ -461,6 +510,9 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     strict. Empty reference never matches."""
     if not normalize(expected):
         return False
+    # An end-of-āyah sign glued to a word (…عليم۝١٧٦) is not part of the quotation.
+    # Leaving it on breaks the word boundary (issue #60).
+    answer = _AYAH_NUMBER.sub(" ", answer)
     if bounded_contains(answer, expected):          # today's contract — superset floor
         return True
     if not any(_is_arabic_letter(c) for c in expected):

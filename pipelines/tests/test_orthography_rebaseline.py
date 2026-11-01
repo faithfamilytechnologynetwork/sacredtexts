@@ -61,7 +61,10 @@ ORTHO_MOVERS = {
         ("haiku", "retrieve_quote-66d7a26e7e93"), ("haiku", "retrieve_quote-91c4ddd54da1"),
         ("haiku", "retrieve_quote-b70583402f8f"), ("haiku", "retrieve_quote-c211a13b8670"),
         ("haiku", "retrieve_quote-f4e378e5065d"), ("haiku", "retrieve_quote-fb0ce4da6218"),
-        ("haiku", "retrieve_quote-fd566a54bc82"), ("haiku-search", "retrieve_quote-528c5b83569e"),
+        ("haiku", "retrieve_quote-fd566a54bc82"),
+        ("haiku", "retrieve_quote-1d74fc87541b"), ("haiku", "retrieve_quote-a8df3e43d35d"),
+        ("haiku", "retrieve_quote-e2d74279aaf0"),
+        ("haiku-search", "retrieve_quote-528c5b83569e"),
         ("haiku-search", "retrieve_quote-60993d0becf0"), ("haiku-search", "retrieve_quote-66d7a26e7e93"),
         ("haiku-search", "retrieve_quote-b70583402f8f"), ("haiku-search", "retrieve_quote-e2d74279aaf0"),
         ("haiku-search", "retrieve_quote-ed21c10a072e"), ("haiku-search", "retrieve_quote-f4e378e5065d"),
@@ -71,7 +74,9 @@ ORTHO_MOVERS = {
         ("haiku", "complete_unit-b730bac6761f"), ("haiku", "complete_unit-e75db63cb3f6"),
         ("haiku", "retrieve_quote-2fd43836a10b"), ("haiku", "retrieve_quote-5d482247f058"),
         ("haiku", "retrieve_quote-ab683e42cd74"), ("haiku", "retrieve_quote-d0747fb44a9a"),
-        ("haiku", "retrieve_quote-d15c8a86c98f"), ("opus", "complete_unit-21f35e0211cd"),
+        ("haiku", "retrieve_quote-d15c8a86c98f"), ("haiku", "retrieve_quote-8c4ce779621f"),
+        ("opus", "retrieve_quote-8c4ce779621f"),
+        ("opus", "complete_unit-21f35e0211cd"),
         ("opus", "complete_unit-a722a33ea0c4"), ("opus", "complete_unit-e8bf210912d8"),
         ("opus", "complete_unit-f1ba80f1a064"), ("opus", "retrieve_quote-5d482247f058"),
         ("opus", "retrieve_quote-ab683e42cd74"), ("opus", "retrieve_quote-d0747fb44a9a"),
@@ -87,6 +92,8 @@ ORTHO_MOVERS = {
         ("sonnet", "retrieve_quote-2fd43836a10b"),
         ("sonnet", "retrieve_quote-5d482247f058"), ("sonnet", "retrieve_quote-ab683e42cd74"),
         ("sonnet", "retrieve_quote-d0747fb44a9a"), ("sonnet", "retrieve_quote-d15c8a86c98f"),
+        ("sonnet", "retrieve_quote-317f7f727f3c"), ("sol", "retrieve_quote-317f7f727f3c"),
+        ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
     }),
     "exp-en": ("exp-arabic-prompts-2026-10-29/scores-en.jsonl",
                "exp-arabic-prompts-2026-10-29/answers-en.jsonl", {
@@ -95,6 +102,7 @@ ORTHO_MOVERS = {
         ("sonnet", "retrieve_quote-2fd43836a10b"), ("sonnet", "retrieve_quote-5d482247f058"),
         ("sonnet", "retrieve_quote-ab683e42cd74"), ("sonnet", "retrieve_quote-d0747fb44a9a"),
         ("sonnet", "retrieve_quote-d15c8a86c98f"),
+        ("sonnet", "retrieve_quote-8c4ce779621f"), ("sol", "retrieve_quote-8c4ce779621f"),
     }),
 }
 
@@ -286,9 +294,8 @@ def test_hamza_alef_residual_is_pre_registered_and_uncredited(path):
     by_key = {(r["model_id"], r["question_id"]): r["metrics"] for r in _rows(path)}
     for key in HAMZA_ALEF_RESIDUAL[path]:
         assert key in by_key, f"{path}: residual cell {key} absent"
-        assert by_key[key].get("contains_reference") == 0, (
-            f"{path}: residual cell {key} is now credited — if the hamza-alef fold extension landed, "
-            "move it out of HAMZA_ALEF_RESIDUAL and into the credited sets"
+        assert by_key[key].get("contains_reference") == 1 and by_key[key].get("correct") == 1, (
+            f"{path}: hamza-alef cell {key} must be credited (issue #60)"
         )
 
 
@@ -304,9 +311,8 @@ def test_verse_number_residual_is_pre_registered_and_uncredited(path):
     ans = _answers(path.replace("scores.jsonl", "answers.jsonl"))
     for key in VERSE_NUMBER_RESIDUAL[path]:
         assert key in by_key, f"{path}: residual cell {key} absent"
-        assert by_key[key].get("contains_reference") == 0, (
-            f"{path}: verse-number residual {key} is now credited — if #60's digit-strip landed, "
-            "move it out of VERSE_NUMBER_RESIDUAL"
+        assert by_key[key].get("contains_reference") == 1 and by_key[key].get("correct") == 1, (
+            f"{path}: verse-number cell {key} must be credited (issue #60)"
         )
         answer, expected = ans[key]
         stripped = _re.sub(r"[۝٠-٩۰-۹\d]+\s*$", "", answer.strip())
@@ -332,14 +338,7 @@ def test_exp_arabic_prompt_artifact_is_resolved():
         en_correct[mid] += int(r["metrics"]["outcome"] == "correct")
     for (mid, _q), r in ar.items():
         ar_correct[mid] += int(r["metrics"]["outcome"] == "correct")
-    assert set(en_correct.values()) == {27}, f"EN expected 27 correct/model, got {en_correct}"
-    assert set(ar_correct.values()) == {26}, f"AR expected 26 correct/model, got {ar_correct}"
-    # exactly one question flips en→ar, for both models, and it is the pre-registered #60 residual
+    assert set(en_correct.values()) == {28}, f"EN expected 28 correct/model, got {en_correct}"
+    assert set(ar_correct.values()) == {28}, f"AR expected 28 correct/model, got {ar_correct}"
     flips = {k for k in en if en[k]["metrics"]["outcome"] != ar[k]["metrics"]["outcome"]}
-    assert flips == {("sonnet", "retrieve_quote-317f7f727f3c"), ("sol", "retrieve_quote-317f7f727f3c")}, (
-        f"unexpected en↔ar flip set: {flips}"
-    )
-    for k in flips:
-        assert en[k]["metrics"]["outcome"] == "correct" and ar[k]["metrics"]["outcome"] == "incorrect"
-        assert ("sonnet" if k[0] == "sonnet" else "sol", k[1]) in HAMZA_ALEF_RESIDUAL[
-            "exp-arabic-prompts-2026-10-29/scores-ar.jsonl"]
+    assert flips == set(), f"unexpected en↔ar flip set: {flips}"
