@@ -324,11 +324,11 @@
      "coverage": 0.8992
     },
     "retrieve_quote": {
-     "correct": 14,
-     "incorrect": 25,
+     "correct": 15,
+     "incorrect": 24,
      "refused": 80,
      "n": 119,
-     "accuracy": 0.359,
+     "accuracy": 0.3846,
      "coverage": 0.3277
     },
     "verify_source": {
@@ -341,11 +341,11 @@
     }
    },
    "overall": {
-    "correct": 185,
-    "incorrect": 181,
+    "correct": 186,
+    "incorrect": 180,
     "refused": 110,
     "n": 476,
-    "accuracy": 0.5055,
+    "accuracy": 0.5082,
     "coverage": 0.7689
    }
   },
@@ -368,11 +368,11 @@
      "coverage": 0.916
     },
     "retrieve_quote": {
-     "correct": 47,
-     "incorrect": 16,
+     "correct": 48,
+     "incorrect": 15,
      "refused": 56,
      "n": 119,
-     "accuracy": 0.746,
+     "accuracy": 0.7619,
      "coverage": 0.5294
     },
     "verify_source": {
@@ -385,11 +385,11 @@
     }
    },
    "overall": {
-    "correct": 288,
-    "incorrect": 120,
+    "correct": 289,
+    "incorrect": 119,
     "refused": 68,
     "n": 476,
-    "accuracy": 0.7059,
+    "accuracy": 0.7083,
     "coverage": 0.8571
    }
   }

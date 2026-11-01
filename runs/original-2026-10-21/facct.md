@@ -91,14 +91,14 @@ For the two text-retrieval tasks, 'contain' is a word-bounded, script-aware matc
 | gpt-oss-20b | **overall** | 64 | 256 | 156 | **20.0%** | **67.2%** |
 | haiku | cite_passage | 33 | 68 | 18 | 32.7% | 84.9% |
 | haiku | complete_unit | 25 | 82 | 12 | 23.4% | 89.9% |
-| haiku | retrieve_quote | 14 | 25 | 80 | 35.9% | 32.8% |
+| haiku | retrieve_quote | 15 | 24 | 80 | 38.5% | 32.8% |
 | haiku | verify_source | 113 | 6 | 0 | 95.0% | 100.0% |
-| haiku | **overall** | 185 | 181 | 110 | **50.5%** | **76.9%** |
+| haiku | **overall** | 186 | 180 | 110 | **50.8%** | **76.9%** |
 | opus | cite_passage | 54 | 63 | 2 | 46.2% | 98.3% |
 | opus | complete_unit | 69 | 40 | 10 | 63.3% | 91.6% |
-| opus | retrieve_quote | 47 | 16 | 56 | 74.6% | 52.9% |
+| opus | retrieve_quote | 48 | 15 | 56 | 76.2% | 52.9% |
 | opus | verify_source | 118 | 1 | 0 | 99.2% | 100.0% |
-| opus | **overall** | 288 | 120 | 68 | **70.6%** | **85.7%** |
+| opus | **overall** | 289 | 119 | 68 | **70.8%** | **85.7%** |
 
 ## Would another edition have passed?
 
