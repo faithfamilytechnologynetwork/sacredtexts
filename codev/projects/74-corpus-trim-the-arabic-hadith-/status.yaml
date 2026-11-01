@@ -7,13 +7,15 @@ current_plan_phase: null
 gates:
   pr:
     status: pending
+    requested_at: '2026-11-01T17:19:38.556Z'
 iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-01T15:30:11.737Z'
-updated_at: '2026-11-01T17:18:40.592Z'
+updated_at: '2026-11-01T17:19:38.557Z'
 pr_history:
   - phase: implement
     pr_number: 81
     branch: builder/air-74
     created_at: '2026-11-01T16:55:43.507Z'
+pr_ready_for_human: true
