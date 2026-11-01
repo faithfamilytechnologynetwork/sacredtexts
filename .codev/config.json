@@ -8,7 +8,11 @@
     "//": "Ported from multibench. Implement-phase checks: build has no analog; tests run via a per-builder DISPATCHER (.codev/checks/test.sh) that tests only the app/pipeline each builder touched (registry: pipelines -> uv pytest, apps/viewer -> pnpm vitest; +1 line/app). Consultation drops Gemini for impl/review phases (its sandbox can't see the worktree -> no verdict blocks unanimity); full 3-way only where the diff is fed inline.",
     "checks": {
       "build": { "skip": true },
-      "tests": { "command": "bash .codev/checks/test.sh" }
+      "tests": {
+        "//": "timeout_ms: the full dispatcher gate (pipelines pytest ~8.5 min incl. the original-run regeneration, plus viewer vitest) overran porch's 300 s default (issue #74 / PR #81).",
+        "command": "bash .codev/checks/test.sh",
+        "timeout_ms": 900000
+      }
     },
     "consultation": {
       "models": ["codex", "claude"]
