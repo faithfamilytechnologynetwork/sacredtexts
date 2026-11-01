@@ -140,16 +140,17 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(tasks).toEqual(["retrieve_quote"]);
     // Four rows, ranked by overall accuracy desc with model_id as the tiebreak. Under the Spec 15
     // phase-3 refused outcome, accuracy = correct/(correct+incorrect) (refusals excluded), so the
-    // order is: opus 100% (cov 66%), opus-search 93% (cov 80%), haiku-search 92% (cov 66%),
-    // haiku 88% (cov 66%) — the Spec-52 orthography fold lifted the two haiku arms (haiku-search
-    // 79%→92%, haiku 71%→88%, crediting Imla'i-spelled Qur'an answers) but did NOT change the
-    // ranking (opus-search 93% still edges haiku-search 92%). opus never answers wrong — it
-    // answers or declines — so it tops accuracy while covering least; coverage tells that story.
-    expect(rows.map((r) => r.modelId)).toEqual(["opus", "opus-search", "haiku-search", "haiku"]);
+    // order is: opus 100% (cov 66%), opus-search 93% (cov 80%), then haiku and haiku-search
+    // tied at 92% (cov 66%). Issue #60 credited haiku's three remaining Qur'an misses (hamza-alef
+    // and a glued verse number), so the old 88% vs 92% gap is gone and the model-id tiebreak
+    // puts haiku ahead of haiku-search. opus never answers wrong — it answers or declines — so
+    // it tops accuracy while covering least; coverage tells that story.
+    expect(rows.map((r) => r.modelId)).toEqual(["opus", "opus-search", "haiku", "haiku-search"]);
     const acc = rows.map((r) => r.overall?.accuracy ?? -1);
     expect(acc).toEqual([...acc].sort((a, b) => b - a)); // non-increasing
     expect(rows[0]!.overall?.accuracy).toBeCloseTo(1.0, 5);
-    expect(rows[3]!.overall?.accuracy).toBeCloseTo(0.8788, 4);
+    expect(rows[2]!.overall?.accuracy).toBeCloseTo(0.9242, 4);
+    expect(rows[3]!.overall?.accuracy).toBeCloseTo(0.9242, 4);
     // Each row carries its per-model token totals (the leaderboard's token column).
     expect(rows.every((r) => r.tokens && r.tokens.calls === 100)).toBe(true);
 
@@ -203,13 +204,9 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
     expect(pairs.map((p) => p.base)).toEqual(["claude-haiku-5-5", "claude-opus-5-5"]);
     const haiku = pairs.find((p) => p.base === "claude-haiku-5-5")!;
     expect([haiku.off.modelId, haiku.on.modelId]).toEqual(["haiku", "haiku-search"]);
-    // haiku's measured accuracy is higher with search on (88% → 92%), and this asserts only that the
-    // paired contrast SURFACES that ordering — NOT that search caused a retrieval gain. On the Qur'an
-    // cut the entire 88%→92% gap is a scorer artifact, not retrieval: haiku-off's three Qur'an misses
-    // are all verbatim-correct āyāt uncredited by residuals (two hamza-alef «ءَا↔آ», one verse-number
-    // glue), pre-registered in test_orthography_rebaseline.py and tracked for #60. See that run's
-    // README; do not read this assertion as evidence that web search improves Qur'an retrieval.
-    expect(haiku.on.overall!.accuracy!).toBeGreaterThan(haiku.off.overall!.accuracy!);
+    // Issue #60 credited haiku-off's three Qur'an misses, so the arms now tie at 92%. The old
+    // 88%→92% gap was those scorer residuals, not a retrieval gain from search.
+    expect(haiku.on.overall!.accuracy!).toBe(haiku.off.overall!.accuracy!);
     // opus: search trades a little accuracy (100% → 93%) for more coverage (66% → 80%) — exactly the
     // story coverage exists to tell, now visible from the paired rows without a README.
     const opus = pairs.find((p) => p.base === "claude-opus-5-5")!;
