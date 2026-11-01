@@ -58,6 +58,9 @@ FLIP_SET = {
         ("haiku", "retrieve_quote-f4e378e5065d"),
         ("haiku", "retrieve_quote-fb0ce4da6218"),
         ("haiku", "retrieve_quote-fd566a54bc82"),
+        ("haiku", "retrieve_quote-1d74fc87541b"),  # #60 hamza-alef
+        ("haiku", "retrieve_quote-a8df3e43d35d"),  # #60 hamza-alef
+        ("haiku", "retrieve_quote-e2d74279aaf0"),  # #60 glued verse number
         ("haiku-search", "retrieve_quote-07ca676a80ab"),
         ("haiku-search", "retrieve_quote-1d74fc87541b"),
         ("haiku-search", "retrieve_quote-25ae2e85e747"),
@@ -100,7 +103,7 @@ EXPECTED_ACCURACY = {
         # with coverage UNCHANGED (incorrect->correct, no refusal moved). opus/opus-search carry
         # no orthographic movers. (Prior Spec-48 values were haiku-search 0.7879, haiku 0.7121.)
         ("haiku-search", "retrieve_quote"): 0.9242,  # was 0.7879 (Spec 52: +9 Imla'i cells)
-        ("haiku", "retrieve_quote"): 0.8788,         # was 0.7121 (Spec 52: +11 Imla'i cells)
+        ("haiku", "retrieve_quote"): 0.9242,         # issue #60: +3 cells (hamza-alef and the glued verse number)
         ("opus-search", "retrieve_quote"): 0.9250,   # unchanged (no orthographic movers)
         ("opus", "retrieve_quote"): 1.0,             # unchanged — perfect WHEN it answers (cov 0.66)
     },
