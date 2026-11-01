@@ -1,0 +1,16 @@
+id: '74'
+title: corpus-trim-the-arabic-hadith-
+protocol: aspir
+phase: specify
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+  verify-approval:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-01T15:19:47.353Z'
+updated_at: '2026-11-01T15:19:47.354Z'
