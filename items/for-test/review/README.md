@@ -34,7 +34,7 @@ before they are used as the scored prompt.
 |---|---|---|---|
 | `01-christianity` | questions in `christianity/english/`; full `nrsv.json` is gitignored | NRSV | same |
 | `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |
-| `03-islam` | yes | Qur'an, Uthmani (QUL) | no English Qur'an in this corpus |
+| `03-islam` | yes | the Uthmani Qur'an (catalogue version `Uthmani (QUL)`) | no English Qur'an in this corpus |
 | `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |
 | `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |
 | `06-buddhism` | yes | Dhammapada, Chaṭṭha Saṅgāyana (VRI) | no English Dhammapada in this corpus |

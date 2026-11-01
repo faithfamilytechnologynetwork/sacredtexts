@@ -108,6 +108,46 @@ def test_parse_yes_no_native_negation_evasion_is_none(ans, lang):
     assert parse_yes_no(ans, lang) is None
 
 
+@pytest.mark.parametrize("ans,lang", [
+    # PR #78 review: a native "no" word is ALSO the sentence-negation particle. A refusal that opens
+    # with it ("I cannot verify", "I don't know") must stay refused, never be scored a verdict.
+    ("لا أستطيع التحقق من ذلك", "ar"),                      # "I cannot verify that"
+    ("لا أعرف", "ar"),                                     # "I don't know"
+    ("لا سبيل إلى التحقق من ذلك، لكن نعم", "ar"),           # the parse_yes_no docstring example
+    ("لاَ أعرف", "ar"),                                     # a diacritic on the particle changes nothing
+    ("לא ניתן לאמת זאת", "he"),                             # "this cannot be verified"
+    ("לא יודע", "he"),                                     # "don't know"
+    ("na jānāmi", "pi"),                                   # "I do not know"
+    ("ਨਹੀਂ ਪਤਾ", "pa"),                                     # "don't know"
+    ("नहीं पता", "sa"),                                     # "don't know"
+    ("Όχι μόνο αυτό", "grc"),                              # "not only this"
+    # a word that merely BEGINS with the native token is not the token
+    ("لاحظت أن هذا النص", "ar"), ("natthi", "pi"), ("Ναιάδα", "grc"), ("לאחר עיון, כן", "he"),
+    # symmetric rule: a native YES word followed by another word is not read either, so the stand-alone
+    # rule cannot bias the parser towards one verdict
+    ("نعم هذا من القرآن", "ar"),
+])
+def test_parse_yes_no_native_negation_particle_is_not_a_verdict(ans, lang):
+    assert parse_yes_no(ans, lang) is None
+
+
+@pytest.mark.parametrize("ans,lang,expected", [
+    # PR #78 review: the terminator is read by Unicode category, so a word ending in a nasal/vowel mark
+    # (ਹਾਂ, हाँ, नहीं) still ends at a danda (।, U+0964) — `\b` alone misses it
+    ("ਹਾਂ।", "pa", "yes"), ("ਨਹੀਂ।", "pa", "no"), ("ਹਾਂ ।", "pa", "yes"),
+    ("हाँ।", "sa", "yes"), ("नहीं।", "sa", "no"), ("हां॥", "sa", "yes"),
+    # Greek, as the Greek prompt asks (ναι ή όχι) — added in PR #78 round 2
+    ("Ναι", "grc", "yes"), ("ναι.", "grc", "yes"), ("Ναί, είναι από το Ευαγγέλιο", "grc", "yes"),
+    ("Όχι", "grc", "no"), ("όχι.", "grc", "no"), ("ὄχι, ...", "grc", "no"),
+    # a native verdict followed by punctuation or wrapped in quotes still parses
+    ("«لا»", "ar", "no"), ("لا،", "ar", "no"), ("لا.", "ar", "no"), ("نعم، هذا من القرآن", "ar", "yes"),
+    ("לא.", "he", "no"), ("**כן**", "he", "yes"),
+    ("na.", "pi", "no"), ("āma, ...", "pi", "yes"),
+])
+def test_parse_yes_no_native_verdict_then_punctuation(ans, lang, expected):
+    assert parse_yes_no(ans, lang) == expected
+
+
 def test_native_tokens_only_eligible_for_their_language():
     # A native token is NOT read when the cell language does not select it. This is what keeps every
     # committed (English-answer) verify cell byte-stable: adding native tables cannot flip a cell whose

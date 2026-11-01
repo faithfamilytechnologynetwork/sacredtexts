@@ -1,13 +1,19 @@
 """Write the six review pages from the question files.
 
 The pages list the citations actually drawn. They do not keep a second,
-hand-picked list.
+hand-picked list. The Islam page prints the prompt templates build_questions.py
+uses, so the page cannot drift from the questions (PR #78).
+
+Run with the pipelines environment from the repo root:
+``uv --project pipelines run python items/for-test/review/build_review.py``.
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+
+from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, edition_name
 
 OUT = Path(__file__).resolve().parent
 
@@ -116,7 +122,7 @@ def write_index(religions: list[tuple[str, str]]) -> None:
         "|---|---|---|---|",
         "| `01-christianity` | questions in `christianity/english/`; full `nrsv.json` is gitignored | NRSV | same |",
         "| `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |",
-        "| `03-islam` | yes | Qur'an, Uthmani (QUL) | no English Qur'an in this corpus |",
+        "| `03-islam` | yes | the Uthmani Qur'an (catalogue version `Uthmani (QUL)`) | no English Qur'an in this corpus |",
         "| `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |",
         "| `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |",
         "| `06-buddhism` | yes | Dhammapada, Chaṭṭha Saṅgāyana (VRI) | no English Dhammapada in this corpus |",
@@ -209,21 +215,19 @@ def christianity() -> tuple[str, str]:
 
 def islam() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("islam", "native"))
-    native = {
-        "retrieve_quote": "ما نص {citation} من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.",
-        "complete_unit": "أكمل هذا الاقتباس من القرآن، طبعة عثماني (QUL): \"{head}\" أجب بالكلمات المتبقية فقط.",
-        "cite_passage": "أين أجد هذا النص في القرآن، طبعة عثماني (QUL)؟ \"{text}\" أجب بالاستشهاد فقط.",
-        "verify_source": "هل النص التالي من القرآن، طبعة عثماني (QUL)؟ \"{text}\" أجب بنعم أو لا.",
-    }
+    name = edition_name(QURAN_VERSION)
     return "03-islam", page(
         title="Islam",
-        version="The Qur'an, Uthmani (QUL)",
+        version=name,
         english_version="none in this corpus; do not name an English translation we do not hold",
         language="Arabic",
-        native_prompts=native,
+        native_prompts=QURAN_AR,
         rows=rows,
-        source="texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json",
+        source=QURAN_FILE.relative_to(RAW.parent.parent).as_posix(),
         size=size,
+        english_prompts=EN,
+        english_suffix=f"Answer in the language of {name}.",
+        native_note="Signed off by a native Arabic speaker (the owner), 2026-11-01. See METHODOLOGY.md.",
     )
 
 
@@ -284,8 +288,14 @@ def missing(folder: str, title: str, work: str) -> tuple[str, str]:
     return folder, body
 
 
-def page(*, title, version, english_version, language, native_prompts, rows, source, size) -> str:
-    english = {
+def page(
+    *, title, version, english_version, language, native_prompts, rows, source, size,
+    english_prompts=None, english_suffix=None, native_note=None,
+) -> str:
+    """One review page. ``english_prompts`` / ``english_suffix`` are the live build_questions
+    templates and the second line of each English prompt; a page that does not pass them keeps the
+    older wording below. ``native_note`` replaces the "draft" label once a speaker has signed off."""
+    english = english_prompts or {
         "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
         "complete_unit": "Please complete this quote from {version}: \"{head}\" Reply with only the remaining words.",
         "cite_passage": "Where in {version} can I find this quote? \"{text}\" Answer with the citation only, in the same form as: {example}.",
@@ -315,12 +325,14 @@ def page(*, title, version, english_version, language, native_prompts, rows, sou
             f"- `{task}`: "
             + tmpl.format(citation="{citation}", version=version, head="{head}", text="{text}", example="{example}")
         )
+    if english_suffix:
+        out.extend(["", f"Each English prompt has a second line: `{english_suffix}`"])
     out.append("")
     if native_prompts is None:
         out.append("This edition is English, so there is one answer language.")
     else:
-        out.extend(["## Prompts in the text's language (draft)", ""])
-        out.append("A native speaker should correct these before a run.")
+        out.extend(["## Prompts in the text's language" + ("" if native_note else " (draft)"), ""])
+        out.append(native_note or "A native speaker should correct these before a run.")
         out.append("")
         for task, tmpl in native_prompts.items():
             out.append(f"- `{task}`: {tmpl}")

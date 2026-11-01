@@ -99,6 +99,29 @@ familiarity list of one passage stays `yes`, because half of one rounds to zero.
 The English Gita already uses other English works. The modern supplemental
 pair swaps the Book of Mormon and the encyclicals.
 
+The hadith donor is chosen by the script of the quoted passage, not by the
+tradition: an Arabic passage gets a hadith, so an English Qur'an edition, if
+one is added, would get an English donor. Three rules keep the hadith item a
+fair "Qur'an or hadith?" question:
+
+- **Matn only** (owner-approved). The quoted text is what follows the last
+  "صلى الله عليه وسلم", past an optional "قَالَ" or "أَنَّهُ قَالَ". A hadith with
+  fewer than 16 words there, or one whose remainder opens another narrator
+  chain (حَدَّثَنَا, أَخْبَرَنَا, …), is not used. The isnad would announce
+  "hadith" from its first word. sunnah.com's speech marks (`"` and the
+  right-to-left marks around them) are removed, so the prompt keeps exactly
+  one pair of quotation marks.
+- **No Qur'an wording** (owner-raised). Hadith quote the Qur'an, so a donor
+  could make a `no` item partly true. A hadith is skipped if it contains a
+  whole ayah, lies inside one, or shares 6 consecutive words with one. The
+  comparison is orthography-aware (Uthmani or Imla'i spelling, the scorer's
+  `fold_aware_contains`). It is conservative: a matn that merely contains a
+  one-word ayah such as "وَٱلْعَصْرِ" (103:1) or "ٱلرَّحْمَٰنُ" (55:1) is also
+  skipped. On the committed draw it changed 3 of the 38 `no` items.
+- **Seeded per row.** Each Arabic row's hadith comes from its own RNG
+  (seed 20261030, condition, sample, citation), so no other row or
+  tradition can move it, and rebuilding Islam alone reproduces the full build.
+
 ## What to report
 
 Report population accuracy on its own. Report familiarity accuracy on its own,

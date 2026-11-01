@@ -63,3 +63,28 @@ from another tradition in another script.
 - `pipelines/tests/test_score.py` (#76): per-script leading verdicts; per-script negation-evasion
   → None; native tokens only eligible for their language (Pali "na" never flips English);
   score_answer language plumbing. Full pipelines suite: 744 passed, 2 skipped.
+
+## Round 2 (PR #78 review = REQUEST_CHANGES, 2026-11-01)
+- **Parser**: native yes/no words must stand alone (then punctuation/symbol or end of window, read
+  by Unicode category) — لا/לא/na are also the negation particle, so "لا أستطيع التحقق", "לא ניתן
+  לאמת", "na jānāmi" stay refused. Symmetric for yes words. Danda after a nasal mark now ends the
+  word (ਹਾਂ।, हाँ।). Greek ναι/όχι added. English matcher byte-identical to main. Re-scored all
+  committed verify cells in memory (6 answer files, 441 cells: ar 294 / en 126 / he 21) → 0 move;
+  the 14 Arabic-prompt cells (bare نعم/لا) parse exactly as the experiment's hand-mapping did.
+- **Donors**: gate on the quoted passage's script (not tradition); per-row RNG
+  (`HADITH_SEED|condition|sample|citation`); fail-fast restored on an empty non-Arabic pool;
+  collections read from source.yaml (canonical six, Arabic), hadith JSON lazy-loaded.
+- **Matn only** (owner-approved): after the LAST salawat. Surprise: sunnah.com spells the salawat
+  vowelled (two mark orders) and line-broken — a plain substring missed 258 hadith and could cut at
+  an earlier salawat. Now a letters-with-optional-marks regex. Pool 16,217 matns.
+  Observation for owner (not acted on): 866 matns open with يَقُولُ (outside the approved
+  قَالَ / أَنَّهُ قَالَ list).
+- **No Qur'an wording** (owner-raised): skeleton 6-gram index + `fold_aware_contains` both
+  directions. Load-bearing: with the filter off, 3/38 committed draws would carry Qur'an wording.
+  Conservative: a matn containing a one-word ayah (55:1, 103:1) is skipped too.
+- **Review page**: build_review renders Islam from build_questions' live EN/QURAN_AR/edition_name
+  (other pages unchanged; non-Islam churn restored again). Drift test matches every committed
+  Islam prompt against the page templates and asserts the committed page == current build.
+- Regenerated Islam only: 38 verify-"no" rows changed vs round 1, nothing else. Full offline build:
+  Islam SAME; Christianity/Judaism/Sikhism still don't reproduce (pre-existing, separate issue);
+  no non-Islam question file differs from origin/main.

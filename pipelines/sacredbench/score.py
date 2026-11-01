@@ -60,7 +60,6 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
 
 from __future__ import annotations
 
-import functools
 import json
 import re
 import unicodedata
@@ -595,6 +594,7 @@ def token_f1_base(answer: str, expected: str) -> float:
     return _f1(base_letters(answer).split(), base_letters(expected).split())
 
 
+_YES_NO_LEADING = re.compile(r"[^\w]*(yes|no)\b", re.IGNORECASE)
 _SENTENCE_END = re.compile(r"[.!?\n]")
 _LEADING_CHARS = 60  # the leading window: first sentence or this many chars, whichever is shorter
 # leading markdown emphasis / bullets / wrapping quotes to strip before reading a verdict
@@ -604,33 +604,47 @@ _LEADING_MARKUP = re.compile(r"^[\s>*_~`\"'“”‘’•·\-–—]+")
 # fixed label form, so "Based on my search, yes" and "There is no way to verify this" stay un-stripped.
 _LABEL_PREFIX = re.compile(r"^(?:answer|verdict|response)\s*[:\-–]\s*", re.IGNORECASE)
 
-# Per-script yes/no leading tokens (issue #76). English is ALWAYS eligible (a model may answer the
-# yes/no question in English whatever the prompt language); a question's own language adds the native
-# words for that script, so a bare native verdict ("لا", "כן", "ਨਹੀਂ", "नहीं", "na") is read as a
-# stance instead of being scored refused. Keyed by the question's ``source.language`` so the Latin
-# Pali "na" is only eligible on a Pali cell and can never flip an English answer that leads with "na".
-# Scoped to the leading token (same window, same label strip) — the Spec 26 / #23 hardening is intact.
-_YES_NO_EN = (("yes",), ("no",))
+_NON_WORD_LEAD = re.compile(r"[^\w]*")
+
+# Per-language native yes/no words (issue #76), keyed by the question's ``source.language``. English
+# (``_YES_NO_LEADING``) stays eligible on every cell, unchanged, because a model may answer in English
+# whatever the prompt language. A native word is only read on its own language's cell, so the Latin
+# Pali "na" can never flip an English answer.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
-    "ar": (("نعم",), ("لا",)),            # Arabic
-    "he": (("כן",), ("לא",)),            # Hebrew
-    "arc": (("כן",), ("לא",)),           # Aramaic (Hebrew script; לא = no in both)
-    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi
-    "sa": (("हाँ", "हां"), ("नहीं", "नही")),  # Devanagari / Sanskrit
-    "pi": (("āma",), ("na",)),           # Pali (Latin script)
+    "ar": (("نعم",), ("لا",)),                    # Arabic
+    "he": (("כן",), ("לא",)),                    # Hebrew
+    "arc": (("כן",), ("לא",)),                   # Aramaic (Hebrew script; לא = no in both)
+    "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι")),  # Greek, as the Greek prompt asks (ναι ή όχι)
+    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),                 # Gurmukhi / Punjabi
+    "sa": (("हाँ", "हां"), ("नहीं", "नही")),          # Devanagari / Sanskrit
+    "pi": (("āma",), ("na",)),                   # Pali (Latin script)
 }
 
 
-@functools.lru_cache(maxsize=None)
-def _verdict_regex(language: "str | None") -> "re.Pattern[str]":
-    """Leading-token Yes/No matcher for a question language: English tokens plus the language's
-    native script tokens. Each token must be the leading token of the window (``[^\\w]*`` then the
-    token then a word boundary / end), exactly as the English-only matcher required."""
-    yes_en, no_en = _YES_NO_EN
-    yes_x, no_x = _YES_NO_BY_LANG.get(language or "", ((), ()))
-    yes_alt = "|".join(re.escape(t) for t in (*yes_en, *yes_x))
-    no_alt = "|".join(re.escape(t) for t in (*no_en, *no_x))
-    return re.compile(rf"[^\w]*(?:(?P<yes>{yes_alt})|(?P<no>{no_alt}))(?:\b|$)", re.IGNORECASE)
+def _stands_alone(rest: str) -> bool:
+    """Whether a native yes/no word is a verdict: after it (and any marks on its last letter) comes
+    only whitespace and then punctuation or a symbol, or the end of the window. A following word means
+    the token is the sentence-negation particle (لا أستطيع, לא ניתן, na jānāmi), not a verdict. Read
+    by Unicode category, so a token ending in a nasal or vowel mark (ਹਾਂ, हाँ, नहीं) still terminates
+    at a danda (।)."""
+    i = 0
+    while i < len(rest) and unicodedata.category(rest[i]).startswith("M"):
+        i += 1
+    rest = rest[i:].lstrip()
+    return not rest or unicodedata.category(rest[0])[0] in "PS"
+
+
+def _native_verdict(window: str, language: "str | None") -> str | None:
+    """The leading native yes/no word of the window, when it stands alone; else ``None``."""
+    yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    s = unicodedata.normalize("NFC", window)
+    s = s[_NON_WORD_LEAD.match(s).end():].casefold()
+    for verdict, tokens in (("yes", yes), ("no", no)):
+        for token in tokens:
+            t = unicodedata.normalize("NFC", token).casefold()
+            if s.startswith(t) and _stands_alone(s[len(t):]):
+                return verdict
+    return None
 
 
 def _leading_window(answer: str) -> str:
@@ -654,23 +668,27 @@ def parse_yes_no(answer: str, language: "str | None" = None) -> str | None:
     resists the negation-evasion #23 is about: a window *search* would still match the incidental
     ``no`` inside ``"There is no way to verify this"`` and score a false-premise ``no``-correct.
 
-    ``language`` is the question's ``source.language``; it adds that script's native yes/no words to
-    the always-eligible English ones (issue #76), so ``"لا…"`` / ``"ਨਹੀਂ…"`` lead-stances parse. The
-    same leading-token discipline applies per script: a native negation-evasion (e.g. Arabic
-    ``"لا سبيل إلى التحقق … نعم"``) leads with neither a bare ``لا`` nor a bare ``نعم`` and stays ``None``.
+    ``language`` is the question's ``source.language`` (issue #76). English is read first, exactly as
+    before, on every cell. Then that language's native yes/no word is read, under one extra rule: it
+    must stand alone, followed only by punctuation or the end of the window. Native "no" words are also
+    the sentence-negation particle, so ``"لا أستطيع التحقق"`` ("I cannot verify"), ``"לא ניתן לאמת"`` and
+    Pali ``"na jānāmi"`` lead with that word but are refusals, not verdicts, and stay ``None``.
 
     - ``"No, that is from Sahih Muslim"`` → ``no``   (leading ``No``)
-    - ``"لا، بل هو من صحيح مسلم"`` → ``no`` on an ``ar`` cell (leading ``لا``)
+    - ``"لا، بل هو من صحيح مسلم"`` → ``no`` on an ``ar`` cell (``لا`` then a comma)
+    - ``"لا سبيل إلى التحقق من ذلك"`` → ``None`` on an ``ar`` cell (``لا`` negates the next word)
+    - ``"ਹਾਂ।"`` → ``yes`` on a ``pa`` cell (a danda after the nasal mark ends the word)
     - ``"Yes."`` → ``yes``
     - ``"There is no way to verify this... Yes"`` → ``None`` (window leads with "There"; the "no" is
       in "no way", the trailing "Yes" is outside the first sentence) — not gamed into a correct "no"
     - a non-committal / declined answer with no leading verdict → ``None`` (``score._with_outcome``
       classifies a ``None``-parse verify_source cell as ``refused``)
     """
-    m = _verdict_regex(language).match(_leading_window(answer))
-    if not m:
-        return None
-    return "yes" if m.group("yes") else "no"
+    window = _leading_window(answer)
+    m = _YES_NO_LEADING.match(window)
+    if m:
+        return m.group(1).lower()
+    return _native_verdict(window, language)
 
 
 def _contains(answer: str, needle: str) -> bool:

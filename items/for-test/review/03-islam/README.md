@@ -1,6 +1,6 @@
 # Islam
 
-- Canonical edition named in the question: **The Qur'an, Uthmani (QUL)**
+- Canonical edition named in the question: **the Uthmani Qur'an**
 - English edition: **none in this corpus; do not name an English translation we do not hold**
 - Language: Arabic
 - Raw file: `texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json`
@@ -52,16 +52,18 @@ These citations are the question file. Population and familiarity are separate s
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in The Qur'an, Uthmani (QUL)? Reply with the exact text of that edition and nothing else.
-- `complete_unit`: Please complete this quote from The Qur'an, Uthmani (QUL): "{head}" Reply with only the remaining words.
-- `cite_passage`: Where in The Qur'an, Uthmani (QUL) can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
-- `verify_source`: Is the following text from The Qur'an, Uthmani (QUL)? "{text}" Answer Yes or No.
+- `retrieve_quote`: What is the text of {citation} in the Uthmani Qur'an? Reply with the exact text of that edition and nothing else.
+- `complete_unit`: Complete this quotation from the Uthmani Qur'an: "{head}" Reply with only the remaining words.
+- `cite_passage`: Where in the Uthmani Qur'an can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
+- `verify_source`: Is the following text from the Uthmani Qur'an? "{text}" Answer Yes or No.
 
-## Prompts in the text's language (draft)
+Each English prompt has a second line: `Answer in the language of the Uthmani Qur'an.`
 
-A native speaker should correct these before a run.
+## Prompts in the text's language
 
-- `retrieve_quote`: ما نص {citation} من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.
-- `complete_unit`: أكمل هذا الاقتباس من القرآن، طبعة عثماني (QUL): "{head}" أجب بالكلمات المتبقية فقط.
-- `cite_passage`: أين أجد هذا النص في القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بالاستشهاد فقط.
-- `verify_source`: هل النص التالي من القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بنعم أو لا.
+Signed off by a native Arabic speaker (the owner), 2026-11-01. See METHODOLOGY.md.
+
+- `retrieve_quote`: ما نص الموضع {citation} في القرآن الكريم بالرسم العثماني؟ أجب بالنص المطابق لهذه النسخة فقط، دون أي زيادة.
+- `complete_unit`: أكمل هذا النص من القرآن الكريم بالرسم العثماني: "{head}" أجب بالكلمات المتبقية فقط.
+- `cite_passage`: أين ورد هذا النص في القرآن الكريم بالرسم العثماني؟ "{text}" أجب برقم السورة والآية فقط، بالصيغة نفسها: {example}.
+- `verify_source`: هل النص التالي من القرآن الكريم بالرسم العثماني؟ "{text}" أجب بـ«نعم» أو «لا» فقط.
