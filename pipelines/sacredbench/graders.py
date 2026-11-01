@@ -45,11 +45,14 @@ class Grader:
 
 # The always-on diagnostic for text-retrieval — reported regardless of grader selection, owned by
 # no grader (never a headline). Kept in canonical position between strict's and containment's fields.
-ALWAYS_ON: tuple[str, ...] = ("token_f1",)
+ALWAYS_ON: tuple[str, ...] = ("token_f1", "token_f1_base")
 
 # Canonical metric-field order for text-retrieval, so the emitted metrics dict is order-stable
 # (byte-identical `scores.jsonl` for a given selection). token_f1 sits where phase 1 put it.
-_CANONICAL_ORDER: tuple[str, ...] = ("exact", "normalized", "token_f1", "contains_reference")
+# token_f1_base is the same overlap with vowel signs and Latin accents removed.
+_CANONICAL_ORDER: tuple[str, ...] = (
+    "exact", "normalized", "token_f1", "token_f1_base", "contains_reference",
+)
 
 GRADERS: dict[str, Grader] = {
     "strict": Grader("strict", ("exact", "normalized"), lambda m: m["normalized"] == 1),

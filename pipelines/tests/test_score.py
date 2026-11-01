@@ -79,7 +79,7 @@ def test_retrieve_quote_tiers():
     exp = {"text": "The keeper planted twelve trees."}
     exact = score_answer("retrieve_quote", "The keeper planted twelve trees.", exp)
     assert exact == {
-        "exact": 1, "normalized": 1, "token_f1": 1.0, "contains_reference": 1,
+        "exact": 1, "normalized": 1, "token_f1": 1.0, "token_f1_base": 1.0, "contains_reference": 1,
         "correct": 1, "outcome": "correct",
     }
     punct = score_answer("retrieve_quote", "the keeper planted twelve trees", exp)
@@ -100,7 +100,7 @@ def test_default_graders_dict_shape_and_noop():
     default_explicit = score_answer("retrieve_quote", ans, exp, resolve_evaluators(None))
     assert json.dumps(default_implicit) == json.dumps(default_explicit)
     assert list(default_implicit) == [
-        "exact", "normalized", "token_f1", "contains_reference", "correct", "outcome",
+        "exact", "normalized", "token_f1", "token_f1_base", "contains_reference", "correct", "outcome",
     ]
 
 
@@ -124,7 +124,9 @@ def test_greek_accents_are_not_word_breaks():
     """A Greek accent must not split the word. An unaccented answer still matches."""
     assert normalize("λόγος") == normalize("λογος")
     assert " " not in normalize("λόγος")
-    assert normalize("café") == "cafe"
+    # A Latin accent stays on the letter. It is not stripped, and it is not a break.
+    assert normalize("café") == "café"
+    assert " " not in normalize("café")
     path = Path(__file__).resolve().parents[2] / "items/for-test/christianity/native/greek/population/prompt-native/questions.jsonl"
     row = next(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if json.loads(line)["task"] == "complete_unit")
     text = row["expected"]["text"]

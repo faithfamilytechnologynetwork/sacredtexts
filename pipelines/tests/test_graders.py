@@ -40,9 +40,11 @@ def test_unknown_and_empty_fail_fast():
 
 def test_submetrics_are_canonical_and_selection_scoped():
     both = resolve_evaluators(["strict", "containment"])
-    assert submetrics_for(both) == ("exact", "normalized", "token_f1", "contains_reference")
-    assert submetrics_for(resolve_evaluators(["strict"])) == ("exact", "normalized", "token_f1")
-    assert submetrics_for(resolve_evaluators(["containment"])) == ("token_f1", "contains_reference")
+    assert submetrics_for(both) == ("exact", "normalized", "token_f1", "token_f1_base", "contains_reference")
+    assert submetrics_for(resolve_evaluators(["strict"])) == ("exact", "normalized", "token_f1", "token_f1_base")
+    assert submetrics_for(resolve_evaluators(["containment"])) == (
+        "token_f1", "token_f1_base", "contains_reference",
+    )
 
 
 def test_headline_is_or_over_selected_verdicts():
@@ -53,10 +55,12 @@ def test_headline_is_or_over_selected_verdicts():
     # strict only: normalized==0 ⇒ incorrect, and NO contains_reference key emitted
     strict = score_answer("retrieve_quote", wrapped, exp, resolve_evaluators(["strict"]))
     assert strict["correct"] == 0 and "contains_reference" not in strict
-    assert set(strict) == {"exact", "normalized", "token_f1", "correct", "outcome"}
+    assert set(strict) == {"exact", "normalized", "token_f1", "token_f1_base", "correct", "outcome"}
     # containment only: correct via containment, no exact/normalized
     cont = score_answer("retrieve_quote", wrapped, exp, resolve_evaluators(["containment"]))
-    assert cont["correct"] == 1 and set(cont) == {"token_f1", "contains_reference", "correct", "outcome"}
+    assert cont["correct"] == 1 and set(cont) == {
+        "token_f1", "token_f1_base", "contains_reference", "correct", "outcome",
+    }
 
 
 def test_strict_only_emits_no_spurious_contains_reference_in_summary(tmp_path):

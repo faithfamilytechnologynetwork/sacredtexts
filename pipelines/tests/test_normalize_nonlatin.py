@@ -183,6 +183,22 @@ def test_pali_diacritics_stay_on_the_letter():
     assert " " not in normalize("manopubbaṅgamā")
 
 
+def test_base_f1_keeps_the_words_when_marks_drop():
+    from sacredbench.score import score_answer, token_f1, token_f1_base
+
+    strict = token_f1("dhammā manopubbaṅgamā", "dhamma manopubbangama")
+    base = token_f1_base("dhammā manopubbaṅgamā", "dhamma manopubbangama")
+    assert strict == 0
+    assert base == 1
+    assert token_f1_base("The café opened", "The cafe opened") == 1
+    assert token_f1_base("λόγος τοῦ θεοῦ", "λογος του θεου") == 1
+    # The headline still requires the marks. Right words with the wrong vowel is not correct.
+    scored = score_answer("retrieve_quote", "dhamma", {"text": "dhammā"})
+    assert scored["normalized"] == 0
+    assert scored["correct"] == 0
+    assert scored["token_f1_base"] == 1
+
+
 def test_english_names_stay_whole_beside_arabic():
     assert normalize("Ismāʿīl عَنْهُ").split()[0] == "ismāʿīl"
     # A danda is punctuation. A joiner inside a conjunct is not a word break.

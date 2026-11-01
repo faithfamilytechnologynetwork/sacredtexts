@@ -12,8 +12,11 @@ Metrics emitted per answer:
                   NOT folded here (Spec 52); it is credited only by
                   ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
-                  (0..1) — the v1 "semantic similarity" stand-in; embedding- or
-                  judge-based semantic scoring is a later, pluggable metric
+                  (0..1). A vowel sign or Latin accent is part of the word, so
+                  dropping it misses that word. This does not decide ``correct``.
+- ``token_f1_base`` the same F1 after vowel signs and Latin accents are removed.
+                  High here and low on ``token_f1`` means the words are right and
+                  the marks are not. Also not the headline.
 - ``contains_reference``  (retrieve_quote / complete_unit ONLY) the normalised reference
                   appears word-bounded inside the normalised answer (0/1) — catches a
                   correct-but-wrapped retrieval (bracketed quote + a citation/caveat) that
@@ -507,8 +510,7 @@ def gated_languages() -> dict[str, tuple[str, str]]:
     return {lang: (name, source) for lang, (name, source, unaware) in SCORING_GATES.items() if unaware()}
 
 
-def token_f1(answer: str, expected: str) -> float:
-    a, e = normalize(answer).split(), normalize(expected).split()
+def _f1(a: list[str], e: list[str]) -> float:
     if not a or not e:
         return 0.0
     overlap = sum((Counter(a) & Counter(e)).values())
@@ -516,6 +518,28 @@ def token_f1(answer: str, expected: str) -> float:
         return 0.0
     precision, recall = overlap / len(a), overlap / len(e)
     return 2 * precision * recall / (precision + recall)
+
+
+def token_f1(answer: str, expected: str) -> float:
+    return _f1(normalize(answer).split(), normalize(expected).split())
+
+
+def base_letters(text: str) -> str:
+    """``normalize()`` with vowel signs and Latin accents removed.
+
+    Greek accents and Arabic/Hebrew vowel marks are already gone. What this
+    drops is the marks that distinguish a word: Pali length, Indic vowel signs,
+    and English diacritics (``ḥ``, ``é``). Used only by ``token_f1_base``."""
+    out: list[str] = []
+    for ch in unicodedata.normalize("NFKD", normalize(text)):
+        if _is_latin_mark(ch) or _is_indic_mark(ch):
+            continue
+        out.append(ch)
+    return _WS_RE.sub(" ", "".join(out)).strip()
+
+
+def token_f1_base(answer: str, expected: str) -> float:
+    return _f1(base_letters(answer).split(), base_letters(expected).split())
 
 
 _YES_NO_LEADING = re.compile(r"[^\w]*(yes|no)\b", re.IGNORECASE)
@@ -690,6 +714,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             "exact": int(answer.strip() == target.strip()),
             "normalized": int(normalize(answer) == normalize(target)),
             "token_f1": round(token_f1(answer, target), 4),
+            "token_f1_base": round(token_f1_base(answer, target), 4),
             "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
