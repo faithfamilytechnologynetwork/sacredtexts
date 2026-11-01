@@ -1,0 +1,14 @@
+id: '75'
+title: items-for-test-qur-an-verify-s
+protocol: air
+phase: implement
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-01T15:29:55.350Z'
+updated_at: '2026-11-01T15:29:55.351Z'
