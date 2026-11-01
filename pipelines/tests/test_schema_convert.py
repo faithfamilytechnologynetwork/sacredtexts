@@ -316,6 +316,19 @@ def test_convert_hadith_sunnah_real_bukhari():
     parse_document(doc.to_json_dict())
 
 
+def test_convert_hadith_sunnah_en_real_bukhari():
+    t = _real_target("Sunni Islam", work="Sahih al-Bukhari", language="en")
+    [doc] = convert_target(t.payload_paths(RAW), t)
+    assert doc.version == "sunnah.com English"
+    # 7,277 hadiths in the file; exactly one has no English on sunnah.com and is skipped
+    assert len(doc.entries) == 7276
+    e = doc.entries[0]
+    assert e.citation == "Sahih al-Bukhari 1" and e.unit_type == "hadith"  # pairs with the Arabic
+    assert e.text.startswith("Narrated 'Umar bin Al-Khattab: I heard Allah's Messenger")
+    assert "\n" not in e.text  # the export's hard-wrapped lines are collapsed
+    parse_document(doc.to_json_dict())
+
+
 def test_convert_sefaria_talmud_real_en():
     t = _real_target("Judaism", language="en")
     [doc] = convert_target(t.payload_paths(RAW), t)

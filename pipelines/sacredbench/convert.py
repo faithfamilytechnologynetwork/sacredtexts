@@ -383,6 +383,43 @@ def convert_hadith_sunnah(paths: list[Path], target: "Target") -> list[Document]
     return docs
 
 
+def convert_hadith_sunnah_en(paths: list[Path], target: "Target") -> list[Document]:
+    """sunnah.com ``{metadata, chapters[], hadiths[{idInBook, english: {narrator, text}}]}`` → one document.
+
+    Same files as :func:`convert_hadith_sunnah` with the ``english`` field kept instead of
+    ``arabic``. The stored text is the narrator line followed by the matn, as sunnah.com prints a
+    hadith in English; the export's hard-wrapped line breaks are collapsed to single spaces.
+    Citations are identical to the Arabic edition's (``<work> <idInBook>``) so the two pair.
+    """
+    docs: list[Document] = []
+    for path in paths:
+        data = _load_json(path)
+        if not isinstance(data, dict):
+            raise ConvertError(f"{path}: top level must be an object (hadith_sunnah_en)")
+        hadiths = data.get("hadiths")
+        if not isinstance(hadiths, list):
+            raise ConvertError(f"{path}: expected a 'hadiths' list (hadith_sunnah_en)")
+        entries: list[Entry] = []
+        for i, h in enumerate(hadiths):
+            if not isinstance(h, dict):
+                raise ConvertError(f"{path}: hadiths[{i}] is not an object")
+            number, english = h.get("idInBook"), h.get("english")
+            if not isinstance(number, (str, int)) or not str(number).strip() or not isinstance(english, dict):
+                raise ConvertError(f"{path}: hadiths[{i}] missing or malformed 'idInBook'/'english'")
+            narrator, text = english.get("narrator", ""), english.get("text")
+            if not isinstance(narrator, str) or not isinstance(text, str):
+                raise ConvertError(f"{path}: hadiths[{i}] 'english' needs string 'narrator'/'text'")
+            if not text.strip():
+                continue  # sunnah.com has no English for this hadith (a handful per collection)
+            joined = re.sub(r"\s+", " ", f"{narrator} {text}").strip()
+            entries.append(Entry(unit_type="hadith", citation=f"{target.work} {number}", text=joined))
+        if not entries:
+            raise ConvertError(f"{path}: produced no hadiths")
+        _require_unique_citations(entries, str(path))
+        docs.append(_doc(target, entries))
+    return docs
+
+
 # --- Babylonian Talmud (sefaria_talmud) --------------------------------------
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -678,6 +715,7 @@ CONVERTERS = {
     "quran_qul": convert_quran_qul,
     "quran_qul_simple": convert_quran_qul_simple,
     "hadith_sunnah": convert_hadith_sunnah,
+    "hadith_sunnah_en": convert_hadith_sunnah_en,
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,
     "vri_dhammapada": convert_vri_dhammapada,
