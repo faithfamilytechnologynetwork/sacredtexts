@@ -1,7 +1,9 @@
 # Source catalogue for the Sunni Islam corpus.
 # The Qur'an (Uthmani script, dict keyed "surah:ayah") plus nine classical hadith
 # collections (Arabic only, from sunnah.com). Converters: quran_qul, hadith_sunnah
-# (Phase 3). All Arabic.
+# (Phase 3). The Saheeh International English translation (QUL "simple" export,
+# converter quran_qul_simple) rides alongside; as a translation it stays out of
+# the original-language question pool.
 provenance:
   retrieved_from: Quranic Universal Library (qul.tarteel.ai); sunnah.com (hadith, Arabic)
   fetch_method: working-group Box drop ("Phase I / raw JSON")
@@ -19,6 +21,27 @@ targets:
     tradition: [Sunni Islam]
     license: public-domain
     license_detail: KFGQPC Uthmani script via the Quranic Universal Library (QUL)
+    requested_as: ["the Qur'an", "the Quran", "the Koran", "the Holy Qur'an"]
+    canonical_language: ar
+  - payload: quran_saheeh_international_from_qul.json
+    converter: quran_qul_simple
+    work: The Qur'an
+    version: Saheeh International (QUL)
+    language: en
+    document_type: scripture
+    tradition: [Sunni Islam]
+    license: open
+    provenance:
+      retrieved_from: qul.tarteel.ai/resources/translation/193 ("simple.json" export)
+      fetch_method: signed-in download by the maintainer (QUL gates file downloads behind a free account)
+      fetch_date: "2026-11-01"
+    license_detail: >-
+      Saheeh International English translation (© Saheeh International / Dar Abul-Qasim, Jeddah).
+      Distributed free of charge online and mirrored widely (QUL, quran.com, tanzil.net); QUL
+      maintains this copy with ongoing corrections. Included for academic benchmark research under
+      the project's fair-use decision (issue #4); chosen by the maintainer (the working group's
+      Islam representative) as the single representative English translation (issue #43 tracks
+      pre-release licence clearance).
     requested_as: ["the Qur'an", "the Quran", "the Koran", "the Holy Qur'an"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_arabic_only/bukhari.json

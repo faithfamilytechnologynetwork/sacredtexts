@@ -41,13 +41,14 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # corpus update legitimately moves both values (2026-10-28: Talmud WD refresh — Meilah/Niddah/
 # Tamid added, one-line Berakhot-en correction; Spec 50: Sri Guru Granth Sahib added, 18 texts,
 # 504 questions; Spec 63: the Dhammapada added, 19 texts, 532 questions; Spec 64: Bhagavad Gita
-# added, 20 texts, 560 questions, Besant's English outside the pool). On such an update, re-pin
-# BOTH constants from
+# added, 20 texts, 560 questions, Besant's English outside the pool; 2026-11-01: Saheeh
+# International English Qur'an added, outside the pool — corpus hash moved, digest did not). On
+# such an update, re-pin BOTH constants from
 # a fresh `generate` with the run manifest's params and rebuild the committed FAccT card
 # (`python -m sacredbench facct runs/original-2026-10-21` — only selected_corpus_hash moves;
 # a text added after the run leaves the card unchanged, Spec 50).
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "65bb68f118d63112"  # texts/ as of Spec 64 (Bhagavad Gita added)
+ANCHOR_CORPUS_HASH = "de2c8679cbde3cf5"  # texts/ as of 2026-11-01 (Saheeh International added)
 ANCHOR_DIGEST = "93b71460742a8ecd"  # generate over that corpus with the run's params
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer

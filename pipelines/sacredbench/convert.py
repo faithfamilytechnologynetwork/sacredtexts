@@ -322,6 +322,37 @@ def convert_quran_qul(paths: list[Path], target: "Target") -> list[Document]:
     return docs
 
 
+def convert_quran_qul_simple(paths: list[Path], target: "Target") -> list[Document]:
+    """QUL "simple" export, dict keyed ``"surah:ayah"`` -> ``{"t": text}`` → one document.
+
+    Same source family as :func:`convert_quran_qul` (QUL translation downloads use this leaner
+    shape). The file is keyed lexicographically ("1:1" … "99:8"), so entries are re-ordered
+    canonically by (surah, ayah).
+    """
+    docs: list[Document] = []
+    for path in paths:
+        data = _load_json(path)
+        if not isinstance(data, dict):
+            raise ConvertError(f"{path}: expected an object keyed by 'surah:ayah' (quran_qul_simple)")
+        entries: list[Entry] = []
+        for key, rec in data.items():
+            if not isinstance(rec, dict):
+                raise ConvertError(f"{path}: entry {key!r} is not an object")
+            surah, sep, ayah = key.partition(":")
+            if not (sep and surah.isdigit() and ayah.isdigit()):
+                raise ConvertError(f"{path}: key {key!r} is not a 'surah:ayah' citation")
+            text = rec.get("t")
+            if not isinstance(text, str) or not text.strip():
+                raise ConvertError(f"{path}: entry {key!r} missing text under 't'")
+            entries.append(Entry(unit_type="ayah", citation=key, text=text.strip()))
+        if not entries:
+            raise ConvertError(f"{path}: produced no ayat")
+        entries.sort(key=lambda e: tuple(int(p) for p in e.citation.split(":")))
+        _require_unique_citations(entries, str(path))
+        docs.append(_doc(target, entries))
+    return docs
+
+
 # --- Hadith collections (hadith_sunnah) --------------------------------------
 
 
@@ -645,6 +676,7 @@ CONVERTERS = {
     "encyclicals": convert_encyclicals,
     "nabre": convert_nabre,
     "quran_qul": convert_quran_qul,
+    "quran_qul_simple": convert_quran_qul_simple,
     "hadith_sunnah": convert_hadith_sunnah,
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,

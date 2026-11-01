@@ -296,6 +296,18 @@ def test_convert_quran_qul_real():
     parse_document(doc.to_json_dict())
 
 
+def test_convert_quran_qul_simple_real():
+    t = _real_target("Sunni Islam", converter="quran_qul_simple")
+    [doc] = convert_target(t.payload_paths(RAW), t)
+    assert len(doc.entries) == 6236
+    assert doc.language == "en" and doc.version == "Saheeh International (QUL)"
+    # the QUL simple export is keyed lexicographically; the converter re-orders canonically
+    assert doc.entries[0].citation == "1:1" and doc.entries[0].unit_type == "ayah"
+    assert doc.entries[-1].citation == "114:6"
+    assert "praise" in doc.entries[1].text  # 1:2
+    parse_document(doc.to_json_dict())
+
+
 def test_convert_hadith_sunnah_real_bukhari():
     t = _real_target("Sunni Islam", work="Sahih al-Bukhari")
     [doc] = convert_target(t.payload_paths(RAW), t)
