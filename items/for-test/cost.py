@@ -35,6 +35,8 @@ RUNNABLE = (
     ROOT / "judaism" / "english" / "population" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
+    ROOT / "sikhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "hinduism" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "hinduism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "hinduism" / "english" / "population" / "questions.jsonl",
@@ -44,7 +46,7 @@ RUNNABLE = (
 PANEL = ROOT / "models" / "openrouter.yaml"
 SUBSET = ROOT / "models" / "openrouter-subset.yaml"
 OUT = ROOT / "COST.md"
-# Population files on disk. Sikhism is written and is not in the collect join.
+# Population files on disk. Familiarity and the Christian supplemental set are not here.
 WRITTEN = (
     ("Christianity", [
         ROOT / "christianity" / "english" / "population" / "questions.jsonl",

@@ -31,8 +31,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Frozen oracles + flip sets, captured from the PRE-change committed scores.jsonl (Spec 15).
 PRECHANGE_PROJECTION_SHA256 = {
-    "first-run-2026-10-11": "0229fa150d20155b9621be6197eeaa59c9277861605853375aa67d91bed8a470",
-    "tutorial-2026-10-11": "64e5b6602e8d032e08fac71e36deda43b72b6ee424a02865b4a4d6bc34dd80f3",
+    # token_f1 re-pinned when Latin diacritics stopped splitting. exact and normalized
+    # are the same values as before.
+    "first-run-2026-10-11": "6961d173aaa984409cc24658ce338bfdade2f7b6b1d5cbed02529d7fe23602a4",
+    "tutorial-2026-10-11": "5a53ae0e20e238684a5dd37976a0d051d353f3454b313eb33ae1e0bff48a773c",
 }
 FLIP_SET = {
     "first-run-2026-10-11": {

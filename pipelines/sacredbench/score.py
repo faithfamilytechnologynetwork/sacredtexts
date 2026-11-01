@@ -145,7 +145,10 @@ def normalize(text: str) -> str:
 
 def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
     """Shared normalisation pipeline — ONE implementation so the entry points cannot drift (iter-2/3).
-    ``fold=False`` is the historical ``normalize()`` behaviour, byte-for-byte. ``fold=True`` adds the
+    ``fold=False`` keeps the historical Arabic and Hebrew behaviour. Latin diacritics
+    stay on the letter (café, Yoḥanan). Gurmukhi, Devanagari, and romanized Pali keep
+    their vowel signs (issue #50).
+    ``fold=True`` adds the
     symmetric Arabic folds (ء→ا, bare ى→ي) after NFKD + quote/dash and BEFORE the Mn-mark deletion.
     ``plene=True`` (only with ``fold``) additionally MATERIALISES every long ā — the ``ىٰ`` digraph and
     the lone dagger-alif → full alef — instead of letting the mark pass delete the dagger; used for
@@ -160,8 +163,76 @@ def _normalize(text: str, *, fold: bool, plene: bool = False) -> str:
         text = fold_arabic_orthography(text)
     text = strip_script_marks(text)  # Arabic/Hebrew marks BEFORE the punctuation pass,
     #                                  so they are removed, not turned into word splits
-    text = _PUNCT_RE.sub(" ", text.casefold())
+    # NFKD splits café, Yoḥanan, Ismāʿīl, and dhammā into a letter plus a mark.
+    # Glue every Latin letter back to the marks that follow it, then the
+    # punctuation pass cannot turn the accent into a word break. Arabic and
+    # Hebrew marks are already gone, so this does not reassemble those.
+    text = _recompose_latin_marks(text.casefold())
+    text = _fold_punct(text)
     return _WS_RE.sub(" ", text).strip()
+
+
+def _is_latin_base(ch: str) -> bool:
+    o = ord(ch)
+    return unicodedata.category(ch).startswith("L") and (
+        0x0041 <= o <= 0x024F or 0x1E00 <= o <= 0x1EFF
+    )
+
+
+def _is_latin_mark(ch: str) -> bool:
+    """A combining mark NFKD splits off a Latin letter (macron, dot below, acute)."""
+    o = ord(ch)
+    return unicodedata.category(ch) == "Mn" and (
+        0x0300 <= o <= 0x036F or 0x1AB0 <= o <= 0x1AFF or 0x1DC0 <= o <= 0x1DFF
+    )
+
+
+def _recompose_latin_marks(text: str) -> str:
+    """Put a diacritic back on its Latin letter so the word stays one word."""
+    out: list[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        j = i + 1
+        if _is_latin_base(text[i]):
+            while j < n and _is_latin_mark(text[j]):
+                j += 1
+        if j > i + 1:
+            out.append(unicodedata.normalize("NFC", text[i:j]))
+            i = j
+        else:
+            out.append(text[i])
+            i += 1
+    return "".join(out)
+
+
+def _is_indic_mark(ch: str) -> bool:
+    """A Gurmukhi or Devanagari vowel sign, virama, or nasal mark. These are
+    category M, so ``\\w`` does not count them, and the punctuation pass would
+    otherwise split the word. Danda (category P) stays punctuation."""
+    o = ord(ch)
+    if not (0x0900 <= o <= 0x097F or 0x0A00 <= o <= 0x0A7F):
+        return False
+    return unicodedata.category(ch).startswith("M")
+
+
+# Zero-width joiner and non-joiner sit inside a conjunct (बुद्‍ध्या) and are not
+# letters. Turning them into a space splits the word. The committed runs contain
+# neither, so deleting them does not move a stored score. Soft hyphen stays a space.
+_INDIC_JOINERS = frozenset("\u200c\u200d")
+
+
+def _fold_punct(text: str) -> str:
+    out: list[str] = []
+    for ch in text:
+        if ch in _INDIC_JOINERS:
+            continue
+        if _is_indic_mark(ch):
+            out.append(ch)
+        elif _PUNCT_RE.match(ch):
+            out.append(" ")
+        else:
+            out.append(ch)
+    return "".join(out)
 
 
 # --- Arabic orthography fold (Spec 52) ---------------------------------------------------------
