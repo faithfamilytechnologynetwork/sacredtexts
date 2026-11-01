@@ -1,16 +1,20 @@
 # Source catalogue for the Sunni Islam corpus.
-# The Qur'an (Uthmani script, dict keyed "surah:ayah") plus nine classical hadith
-# collections (Arabic only, from sunnah.com). Converters: quran_qul, hadith_sunnah
-# (Phase 3). The Saheeh International English translation (QUL "simple" export,
-# converter quran_qul_simple) rides alongside; as a translation it stays out of
-# the original-language question pool.
+# The Qur'an (Uthmani script, dict keyed "surah:ayah") plus nine classical hadith collections
+# in Arabic (from sunnah.com). The six canonical books (Kutub al-Sittah: Bukhari, Muslim, Abu
+# Dawud, Tirmidhi, Nasa'i, Ibn Majah) are ALSO present in English — the same sunnah.com scrape
+# with the `english` field kept instead of `arabic`. Converters: quran_qul (Qur'an Uthmani),
+# quran_qul_simple (Saheeh International English), hadith_sunnah (Arabic hadith),
+# hadith_sunnah_en (English of the six canonical books). Both English editions (Saheeh
+# International; the six English hadith books) are translations, so they stay OUT of the
+# original-language question pool.
 provenance:
-  retrieved_from: Quranic Universal Library (qul.tarteel.ai); sunnah.com (hadith, Arabic)
-  fetch_method: working-group Box drop ("Phase I / raw JSON")
+  retrieved_from: Quranic Universal Library (qul.tarteel.ai); sunnah.com (hadith, Arabic and English, via AhmedBaset/hadith-json)
+  fetch_method: working-group Box drop ("Phase I / raw JSON"); English hadith raw download (see per-target provenance)
   fetch_date: "2026-10-10"
 notes: >-
-  Qur'an: KFGQPC Uthmani script via the Quranic Universal Library (QUL).
-  Hadith: classical Arabic text mirrored from sunnah.com (Arabic only).
+  Qur'an: KFGQPC Uthmani script via the Quranic Universal Library (QUL); Saheeh International
+  English translation via QUL (outside the pool). Hadith: classical Arabic text mirrored from
+  sunnah.com; the six canonical books also in English (sunnah.com translation, outside the pool).
 targets:
   - payload: quran_uthmani_from_qul.json.json
     converter: quran_qul
@@ -113,9 +117,18 @@ targets:
   # --- English of the six canonical books (Kutub al-Sittah). Same hadith-json files as the
   # Arabic (AhmedBaset/hadith-json@70b83d6, a sunnah.com scrape), with the `english` field kept
   # and `arabic` dropped (it is committed beside, under _arabic_only). Converter hadith_sunnah_en;
-  # citations pair 1:1 with the Arabic edition. Translations, so outside the question pool.
-  # Owner decision 2026-11-01 (Waleed): the English is widely used and freely available online;
-  # included for academic benchmark research under the project's fair-use decision (issue #4).
+  # the English citations are a strict subset of the Arabic edition's (three hadith have no
+  # English — one each in Bukhari, Muslim, Tirmidhi). Translations, so outside the question pool.
+  #
+  # Translator attribution: sunnah.com itself publishes NO per-collection translator/publisher
+  # credits — its stated policy is "for the English we use various translators" — and the scraped
+  # metadata carries only the classical compiler, not the translator. The per-book translator
+  # recorded below is therefore the identified published edition sunnah.com's English matches (the
+  # Darussalam English hadith series, as documented by community research), NOT a credit sunnah.com
+  # asserts; Muslim and Abu Dawud are left unattributed because no single edition is confidently
+  # identified. "Freely available online" describes AVAILABILITY, not a copyright licence.
+  # Owner decision 2026-11-01 (Waleed): included for academic benchmark research under the
+  # project's fair-use decision (issue #4); issue #43 tracks pre-release licence clearance.
   - payload: hadith_from_sunnah.com_english_only/bukhari.json
     converter: hadith_sunnah_en
     work: Sahih al-Bukhari
@@ -128,7 +141,10 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/bukhari.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation (Muhsin Khan). Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no per-collection translator; text matches the Darussalam edition
+      (tr. Dr. Muhammad Muhsin Khan). "Freely available online" is availability, not a licence —
+      see the block comment above.
     requested_as: ["Sahih al-Bukhari", "Sahih Bukhari", "Bukhari"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_english_only/muslim.json
@@ -143,7 +159,9 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/muslim.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation. Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no translator; text not matched to a single published edition.
+      "Freely available online" is availability, not a licence — see the block comment above.
     requested_as: ["Sahih Muslim"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_english_only/abudawud.json
@@ -158,7 +176,9 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/abudawud.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation. Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no translator; text not matched to a single published edition.
+      "Freely available online" is availability, not a licence — see the block comment above.
     requested_as: ["Sunan Abi Dawud", "Abu Dawud"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_english_only/tirmidhi.json
@@ -173,7 +193,10 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/tirmidhi.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation. Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no per-collection translator; text matches the Darussalam edition
+      (tr. Abu Khaliyl). "Freely available online" is availability, not a licence — see the
+      block comment above.
     requested_as: ["Jami' at-Tirmidhi", "Tirmidhi"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_english_only/nasai.json
@@ -188,7 +211,10 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/nasai.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation. Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no per-collection translator; text matches the Darussalam edition
+      (tr. Nasiruddin al-Khattab). "Freely available online" is availability, not a licence —
+      see the block comment above.
     requested_as: ["Sunan an-Nasa'i", "Nasa'i"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_english_only/ibnmajah.json
@@ -203,7 +229,10 @@ targets:
       retrieved_from: github.com/AhmedBaset/hadith-json@70b83d6d21995bb32f8d7271cd75501be5a922a7 (db/by_book/the_9_books/ibnmajah.json, english field)
       fetch_method: raw download; arabic field dropped (committed beside)
       fetch_date: "2026-11-01"
-    license_detail: sunnah.com English translation. Freely available online; see the block comment above.
+    license_detail: >-
+      sunnah.com credits no per-collection translator; text matches the Darussalam edition
+      (tr. Nasiruddin al-Khattab). "Freely available online" is availability, not a licence —
+      see the block comment above.
     requested_as: ["Sunan Ibn Majah", "Ibn Majah"]
     canonical_language: ar
   - payload: hadith_from_sunnah.com_arabic_only/malik.json

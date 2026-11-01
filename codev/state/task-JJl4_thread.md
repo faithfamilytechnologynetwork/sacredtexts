@@ -30,3 +30,30 @@ Do NOT touch runs/.
   so the worktree needs `pnpm -C apps/viewer install` before the gate is green.
 - Committed anchor re-pin (f82425f) on top of architect's WIP commit (14d6fc4). Pushed.
 - Opened **PR #79** → main. NOT merged (architect's call). Reported to architect.
+
+## Review iteration 1 (architect approve-after-nits, 2026-11-01)
+Four fixes:
+1. convert.py: made a MISSING `narrator` key raise like null does (`.get("narrator")`, no
+   default). Added `convert_hadith_sunnah_en` to test_schema_convert imports + the fail-fast
+   parametrize (both top-level shapes), and a new parametrized test
+   `test_hadith_en_malformed_english_fails` (english-not-dict / narrator-null / narrator-missing
+   / text-missing / text-null). Real data audit: narrator is always a non-null str in all six
+   books, so the stricter get is safe.
+2. source.yaml header (lines 1-13) rewritten: nine Arabic hadith collections, the six canonical
+   (Kutub al-Sittah) ALSO in English; converter list incl. hadith_sunnah_en; English provenance.
+3. Per-book English `license_detail` reworked + "freely available online" reframed as
+   AVAILABILITY not a licence. **PREMISE CORRECTION**: sunnah.com does NOT publish per-collection
+   translator credits (stated policy: "various translators"); scraped metadata carries only the
+   classical compiler. So translators are recorded as the *matched Dar-us-Salam edition*
+   (Bukhari=Muhsin Khan, Tirmidhi=Abu Khaliyl, Nasa'i & Ibn Majah=Nasiruddin al-Khattab),
+   Muslim & Abu Dawud left unattributed — NOT as sunnah.com-stated. Flagged to architect.
+4. Converter docstring: English citations are a STRICT SUBSET of the Arabic (3 missing — one each
+   in Bukhari/Muslim/Tirmidhi; verified by comparing converted citation sets), skips at most one
+   per book. No English-only hadith.
+- Architect follow-up on #3: keep matched names, record the basis. Final phrasing per book:
+  "sunnah.com credits no per-collection translator; text matches the Darussalam edition (tr. X)";
+  Muslim/Abu Dawud: "sunnah.com credits no translator". Each notes "freely available online" is
+  availability, not a licence.
+- Local: convert OK (230 docs / 30 targets); pipelines pytest **726 passed** (+7 new tests).
+- MERGE ORDER: architect first said #74 before #79, then superseded — owner's merge word GIVEN,
+  **#79 merges FIRST**, builder merges it on green CI; #74 (air-74) re-pins after (33→30 etc.).

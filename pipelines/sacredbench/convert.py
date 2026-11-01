@@ -388,8 +388,12 @@ def convert_hadith_sunnah_en(paths: list[Path], target: "Target") -> list[Docume
 
     Same files as :func:`convert_hadith_sunnah` with the ``english`` field kept instead of
     ``arabic``. The stored text is the narrator line followed by the matn, as sunnah.com prints a
-    hadith in English; the export's hard-wrapped line breaks are collapsed to single spaces.
-    Citations are identical to the Arabic edition's (``<work> <idInBook>``) so the two pair.
+    hadith in English; the export's hard-wrapped line breaks are collapsed to single spaces. A
+    missing/null/non-string ``narrator`` or ``text`` is refused; a hadith sunnah.com has no English
+    for (empty ``text``) is skipped — at most one per book (Bukhari, Muslim, Tirmidhi: one each).
+    Citations reuse the Arabic edition's (``<work> <idInBook>``), so the English citations are a
+    STRICT SUBSET of the Arabic edition's: three hadith across the six books have no English (the
+    three skipped above), none is English-only, so the two editions still pair 1:1 where both exist.
     """
     docs: list[Document] = []
     for path in paths:
@@ -406,7 +410,7 @@ def convert_hadith_sunnah_en(paths: list[Path], target: "Target") -> list[Docume
             number, english = h.get("idInBook"), h.get("english")
             if not isinstance(number, (str, int)) or not str(number).strip() or not isinstance(english, dict):
                 raise ConvertError(f"{path}: hadiths[{i}] missing or malformed 'idInBook'/'english'")
-            narrator, text = english.get("narrator", ""), english.get("text")
+            narrator, text = english.get("narrator"), english.get("text")
             if not isinstance(narrator, str) or not isinstance(text, str):
                 raise ConvertError(f"{path}: hadiths[{i}] 'english' needs string 'narrator'/'text'")
             if not text.strip():
