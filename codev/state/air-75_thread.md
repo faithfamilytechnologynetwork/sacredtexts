@@ -127,3 +127,9 @@ from another tradition in another script.
 - By eye 36/38 clean. Flagged for the owner, not acted on: Bukhari 6784 (reply fragment, and 5
   words shared with 9:102 — under the 6-word threshold) and Bukhari 7122 (God's words "إن رحمتي
   تغلب غضبي" without a قال الله frame — a regex can't see it).
+- **Skip list (architect, after the owner listing)**: `DONOR_SKIP` keyed "{work} {number}" with a
+  reason each — Bukhari 6784 (reply fragment, 5 words with 9:102) and Bukhari 7122 (God's words
+  without a قال الله frame). Applied at draw time like the overlap screen; an unknown key fails
+  fast. Exactly 2 rows re-drew: → Abu Dawud 2709 (whole saying; 4 words with 65:2, the stock
+  opening "من كان يؤمن بالله") and Ibn Majah 3948 (whole saying, no Qur'an run ≥3). 6-word threshold
+  kept; overlap screen still changes 1/38 (Nasa'i 3573).

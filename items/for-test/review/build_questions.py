@@ -597,17 +597,28 @@ def quran_overlap(text: str) -> str | None:
     return None
 
 
+# Curated after reading every drawn donor (owner check, PR #78 round 3), keyed by "{work} {number}".
+# Applied at draw time, like the Qur'an-overlap screen, so only the rows that drew one of these re-draw.
+DONOR_SKIP = {
+    "Sahih al-Bukhari 6784": "reply fragment from a longer hadith; shares 5 words with 9:102",
+    "Sahih al-Bukhari 7122": "God's words (إِنَّ رَحْمَتِي تَغْلِبُ غَضَبِي) without a قَالَ اللَّهُ frame",
+}
+
+
 def _hadith_donor(row: dict) -> dict:
     """This row's hadith donor, from an RNG seeded by the row alone (condition, sample, citation).
 
-    No other row, edition or tradition can move it. A candidate that shares Qur'an wording is
-    skipped for the row's next draw.
+    No other row, edition or tradition can move it. A candidate on DONOR_SKIP, or one that shares
+    Qur'an wording, is skipped for the row's next draw.
     """
     pool = _hadith_pool()
+    unknown = set(DONOR_SKIP) - {d["citation"] for d in pool}
+    if unknown:
+        raise SystemExit(f"DONOR_SKIP names hadith that are not in the donor pool: {sorted(unknown)}")
     rng = random.Random(f"{HADITH_SEED}|{row['condition']}|{row['sample']}|{row['citation']}")
     for _ in range(1000):
         donor = pool[rng.randrange(len(pool))]
-        if quran_overlap(donor["expected"]["text"]) is None:
+        if donor["citation"] not in DONOR_SKIP and quran_overlap(donor["expected"]["text"]) is None:
             return donor
     raise SystemExit(f"no hadith donor free of Qur'an wording for {row['citation']}")
 

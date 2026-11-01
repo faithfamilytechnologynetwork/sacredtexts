@@ -101,7 +101,7 @@ pair swaps the Book of Mormon and the encyclicals.
 
 The hadith donor is chosen by the script of the quoted passage, not by the
 tradition: an Arabic passage gets a hadith, so an English Qur'an edition, if
-one is added, would get an English donor. Three rules keep the hadith item a
+one is added, would get an English donor. Four rules keep the hadith item a
 fair "Qur'an or hadith?" question:
 
 - **Sayings only** (owner-approved matn-only, quote-bounded). The quoted text
@@ -137,12 +137,20 @@ fair "Qur'an or hadith?" question:
   On the committed draw it changed 1 of the 38 `no` items: Nasa'i 3573, whose
   "عَبْدُ الرَّحْمَنِ" contains the one-word ayah 55:1. The God's-speech rule above
   already removes most hadith that quote an ayah.
+- **Curated skip list** (owner check). After reading every drawn donor, two
+  hadith are skipped at draw time: Sahih al-Bukhari 6784, a reply cut from a
+  longer hadith that also shares 5 words with 9:102 (one under the threshold),
+  and Sahih al-Bukhari 7122, God's words ("إِنَّ رَحْمَتِي تَغْلِبُ غَضَبِي")
+  without a "قَالَ اللَّهُ" frame. The list is `DONOR_SKIP` in
+  `build_questions.py`, with a reason for each entry. Like the Qur'an-wording
+  screen, it re-draws only the rows that drew a listed hadith.
 - **Seeded per row.** Each Arabic row's hadith comes from its own RNG
   (seed 20261030, condition, sample, citation), so no other row or
   tradition can move it, and rebuilding Islam alone reproduces the full build.
 
 The Qur'an `no` donors were re-drawn twice while these rules were settled
-(PR #78 rounds 2 and 3). Nothing had been collected from either earlier draw.
+(PR #78 rounds 2 and 3). The skip list then re-drew two rows. Nothing had been
+collected from any earlier draw.
 
 ## What to report
 

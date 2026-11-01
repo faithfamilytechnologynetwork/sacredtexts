@@ -10,6 +10,7 @@ What is pinned:
   matn-only, quote-bounded) — never the isnad, never a narrator's remark or chain after it;
 - round-3 guards: a donor never opens with a chain or reported clause (حَدَّثَنَا … عَنْ, وَعَنْ, أَنَّ),
   is never itself a bare verdict, never carries God's speech (hadith qudsi) or a salawat;
+- the curated skip list (owner check) is valid, fails fast on an unknown entry, and re-draws only its rows;
 - no donor shares Qur'an wording (owner-raised) — checked over every committed Islam "no" row;
 - the gate is the quoted passage's script, not the tradition, and each Arabic row's donor is seeded
   by that row alone, so no other tradition can move it;
@@ -232,6 +233,7 @@ def test_committed_islam_no_rows_quote_a_clean_hadith_matn(bq):
         assert bq._script(quoted) == "ar"                            # same script as the Qur'an
         assert not _opens_with_isnad(quoted)
         _assert_round3_guards(bq, quoted)
+        assert exp["true_citation"] not in bq.DONOR_SKIP              # the curated skip list holds
         assert bq.quran_overlap(quoted) is None, exp["true_citation"]
 
 
@@ -299,6 +301,37 @@ def test_hadith_donor_depends_only_on_the_row(bq):
     row = _no_rows(_islam_built(bq))[0]
     same = dict(row, prompt="anything else", expected={"answer": "yes"})
     assert bq._hadith_donor(same)["citation"] == row["expected"]["true_citation"]
+
+
+def test_donor_skip_list_is_curated_and_valid(bq):
+    # owner check, round 3: each entry is a real hadith in the pool, keyed "{work} {number}", with a reason
+    assert bq.DONOR_SKIP == {
+        "Sahih al-Bukhari 6784": bq.DONOR_SKIP["Sahih al-Bukhari 6784"],
+        "Sahih al-Bukhari 7122": bq.DONOR_SKIP["Sahih al-Bukhari 7122"],
+    }
+    citations = {d["citation"] for d in bq._hadith_pool()}
+    for citation, reason in bq.DONOR_SKIP.items():
+        assert citation in citations and reason.strip()
+
+
+def test_donor_skip_list_with_an_unknown_hadith_fails_fast(bq, monkeypatch):
+    monkeypatch.setattr(bq, "DONOR_SKIP", {**bq.DONOR_SKIP, "Sahih al-Bukhari 999999": "typo"})
+    row = _no_rows(_committed_islam_rows())[0]
+    with pytest.raises(SystemExit, match="not in the donor pool"):
+        bq._hadith_donor({"condition": row["source"]["condition"], "sample": row["source"]["sample"], "citation": "1:1"})
+
+
+def test_donor_skip_list_redraws_only_its_own_rows(bq, monkeypatch):
+    # applied at draw time, so dropping it moves exactly the rows that drew a skip-listed hadith
+    def draws():
+        return [(r["condition"], r["sample"], r["citation"], r["expected"]["true_citation"])
+                for r in _no_rows(_islam_built(bq))]
+    skipped = sorted(bq.DONOR_SKIP)
+    with_skip = draws()
+    monkeypatch.setattr(bq, "DONOR_SKIP", {})
+    without_skip = draws()
+    moved = [(a, b) for a, b in zip(with_skip, without_skip) if a != b]
+    assert sorted(b[3] for _, b in moved) == skipped     # only the two rows that drew a flagged hadith
 
 
 def test_other_traditions_cannot_move_islam_donors(bq):
