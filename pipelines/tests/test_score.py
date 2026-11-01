@@ -148,6 +148,28 @@ def test_parse_yes_no_native_verdict_then_punctuation(ans, lang, expected):
     assert parse_yes_no(ans, lang) == expected
 
 
+@pytest.mark.parametrize("ans,expected", [
+    # PR #78 round 2: a vowelled verdict is the same word
+    ("نَعَمْ.", "yes"), ("نَعَمْ", "yes"), ("لَا،", "no"), ("لَا", "no"), ("«لَا»", "no"),
+    # ... and the native "Answer:" label is stripped like the English one
+    ("الجواب: لا", "no"), ("الجواب: نعم.", "yes"), ("الإجابة: نعم", "yes"), ("الاجابة - لا", "no"),
+    ("الرد: لا", "no"), ("الجَوَابُ: نَعَمْ", "yes"), ("**الجواب:** لا", "no"), ("Answer: لا", "no"),
+    # the stand-alone rule still applies after a vowelled particle or a label
+    ("لَا أَعْرِفُ", None), ("الجواب: لا أستطيع التحقق", None), ("الجواب: لا يمكن الجزم", None),
+    # a label is only a label with its colon/dash; a buried verdict is not leading
+    ("الجواب لا", None), ("الجواب هو: نعم", None),
+])
+def test_parse_yes_no_arabic_vowels_and_label(ans, expected):
+    assert parse_yes_no(ans, "ar") == expected
+
+
+def test_native_label_and_marks_do_not_touch_other_cells():
+    # the Arabic label is read only on an Arabic cell; English parsing is byte-identical
+    assert parse_yes_no("الجواب: لا", "he") is None
+    assert parse_yes_no("الجواب: لا", None) is None
+    assert parse_yes_no("Answer: no") == parse_yes_no("Answer: no", "ar") == "no"
+
+
 def test_native_tokens_only_eligible_for_their_language():
     # A native token is NOT read when the cell language does not select it. This is what keeps every
     # committed (English-answer) verify cell byte-stable: adding native tables cannot flip a cell whose

@@ -634,11 +634,29 @@ def _stands_alone(rest: str) -> bool:
     return not rest or unicodedata.category(rest[0])[0] in "PS"
 
 
+# Arabic vowel marks and Qur'anic annotation signs: an answer may vowel its verdict (نَعَمْ, لَا).
+# Dropped before the native match; they occur only in Arabic text, and the tokens carry none.
+_ARABIC_MARKS = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭ]")
+# The native counterpart of ``_LABEL_PREFIX`` ("الجواب: لا"), stripped the same way, on its cell only.
+_NATIVE_LABEL_PREFIX = {
+    "ar": re.compile(r"^(?:الجواب|الإجابة|الاجابة|الرد)\s*[:\-–]\s*"),
+}
+
+
 def _native_verdict(window: str, language: "str | None") -> str | None:
-    """The leading native yes/no word of the window, when it stands alone; else ``None``."""
+    """The leading native yes/no word of the window, when it stands alone; else ``None``.
+
+    Arabic vowel marks are dropped first, and a bare native label ("الجواب:") is stripped like the
+    English "Answer:", so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
+    """
     yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
-    s = unicodedata.normalize("NFC", window)
-    s = s[_NON_WORD_LEAD.match(s).end():].casefold()
+    s = _ARABIC_MARKS.sub("", unicodedata.normalize("NFC", window))
+    s = s[_NON_WORD_LEAD.match(s).end():]
+    label = _NATIVE_LABEL_PREFIX.get(language or "")
+    if label is not None:
+        s = label.sub("", s)
+        s = s[_NON_WORD_LEAD.match(s).end():]
+    s = s.casefold()
     for verdict, tokens in (("yes", yes), ("no", no)):
         for token in tokens:
             t = unicodedata.normalize("NFC", token).casefold()
