@@ -13,7 +13,7 @@ locus errors fall), H3 (edition/orthography mismatches rise).
 
 ## How it actually ran (and what changed from the spec)
 
-- **Transport pivoted to OpenRouter** on the existing key (architect call; Waleed asked "can't
+- **Transport pivoted to OpenRouter** on the existing key (architect call; the maintainer asked "can't
   we still use OpenRouter"). Legitimate only because each arm was **verified** per-run to
   forward to the provider's own native search — not OpenRouter's `:online`/Exa layer. The
   decisive proof: the two arms carry **structurally different** citation annotations (Anthropic

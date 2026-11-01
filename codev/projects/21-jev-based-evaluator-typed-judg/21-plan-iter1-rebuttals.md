@@ -59,12 +59,12 @@ in a new sibling key; no `cost` field (`test_tutorial_run.py:66` guards it).
 to locate it — no co-location guessing.
 
 **I5 — No step to retrieve PR #30's code.** Accepted. Phase 1 now names the retrieval path
-(`gh pr diff 30` / `gh api …/contents/…?ref=faact_mprovements_karr`) and the `--author` mechanics,
+(`gh pr diff 30` / `gh api …/contents/…?ref=the fork branch`) and the `--author` mechanics,
 and records that only `cross_translation` (`EditionIndex`, `cite_key`) and `score.normalize` are
 imported — so **`cite_key` is re-implemented locally** since the `cross_translation` import is dropped,
 and nothing from PR #30's `providers.py`/`config.py`/`collect.py` is carried.
 
-**I6 — `summarize()` unplanned.** Accepted. Phase 1 keeps Karr's `summarize(path)`, exposes it as a
+**I6 — `summarize()` unplanned.** Accepted. Phase 1 keeps the contributor's `summarize(path)`, exposes it as a
 `judge-summary` surface, and tests the spec's "no-op on a fully-judged file" scenario.
 
 **I7 — Missing test items.** Accepted — credential fail-fast (also X7) and an explicit negative that

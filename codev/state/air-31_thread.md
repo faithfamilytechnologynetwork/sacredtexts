@@ -1,7 +1,7 @@
 # air-31 — Panel temperature (PR #30 carve-out 1 of 3)
 
 ## Task
-Cherry-pick the **temperature** slice of Jonathan Karr's PR #30 (commit `ea08f17`) onto
+Cherry-pick the **temperature** slice of a contributor's PR #30 (commit `ea08f17`) onto
 current main, preserving his authorship. PR #30 is huge (7991 insertions: jev, facct,
 cross_translation, viewer); carve-outs 2 & 3 (Jev → #21, FAccT card → separate issue) are
 explicitly out of scope.
@@ -9,7 +9,7 @@ explicitly out of scope.
 ## What I did
 A literal `git cherry-pick` won't work — I'm taking only the temperature subset of a
 36-file commit, and current main has diverged (Spec 8 tools, Spec 26 verify_source). So I
-hand-applied the temperature-only changes and set `--author` to Jonathan Karr.
+hand-applied the temperature-only changes and set `--author` to a contributor.
 
 In scope, applied:
 - `config.py`: `ModelSpec.temperature: float | None`, validated (numeric, bool rejected,
@@ -37,7 +37,7 @@ In scope, applied:
   intentionally widens the panel shape).
 
 ## Status
-PR #33 opened (commit 189c9e2, Jonathan Karr's authorship). Reached pr gate. 384 tests pass.
+PR #33 opened (commit 189c9e2, a contributor's authorship). Reached pr gate. 384 tests pass.
 Per global CLAUDE.md: no Co-Authored-By / "Generated with" trailers.
 
 ## PR #33 review — architect blocker (2026-10-23)

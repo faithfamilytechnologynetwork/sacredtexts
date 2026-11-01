@@ -94,6 +94,67 @@ def test_unknown_tool_rejected(tmp_path):
         load_config(cfg)
 
 
+def test_items_for_test_panel_is_search_off():
+    cfg = load_config(REPO_ROOT / "items" / "for-test" / "models" / "openrouter.yaml")
+    assert len(cfg.models) == 16
+    assert all(m.tools == () for m in cfg.models)
+    assert all(m.temperature == 0 for m in cfg.models)
+    assert {m.base_url for m in cfg.models} == {"https://openrouter.ai/api/v1"}
+
+
+def test_panel_search_false_strips_tools(tmp_path):
+    import yaml
+    p = tmp_path / "cfg.yaml"
+    p.write_text(yaml.safe_dump({
+        "search": False,
+        "models": [{"id": "a", "provider": "anthropic", "model": "m", "tools": ["web_search"]}],
+    }))
+    assert load_config(p).models[0].tools == ()
+
+
+def test_panel_search_true_sets_tools(tmp_path):
+    import yaml
+    p = tmp_path / "cfg.yaml"
+    p.write_text(yaml.safe_dump({
+        "search": True,
+        "models": [{"id": "a", "provider": "openai", "model": "openai/gpt-6.1-sol",
+                    "base_url": "https://openrouter.ai/api/v1", "api_key_env": "OPENROUTER_API_KEY"}],
+    }))
+    assert load_config(p).models[0].tools == ("web_search",)
+
+
+def test_panel_search_true_rejects_unforwarded_family(tmp_path):
+    import yaml
+    p = tmp_path / "cfg.yaml"
+    p.write_text(yaml.safe_dump({
+        "search": True,
+        "models": [{"id": "g", "provider": "openai", "model": "google/gemini-4-argon",
+                    "base_url": "https://openrouter.ai/api/v1", "api_key_env": "OPENROUTER_API_KEY"}],
+    }))
+    with pytest.raises(ConfigError, match="cannot take native web_search"):
+        load_config(p)
+
+
+def test_panel_search_both_splits_supported_models(tmp_path):
+    import yaml
+    p = tmp_path / "cfg.yaml"
+    p.write_text(yaml.safe_dump({
+        "search": "both",
+        "models": [
+            {"id": "sol", "provider": "openai", "model": "openai/gpt-6.1-sol",
+             "base_url": "https://openrouter.ai/api/v1", "api_key_env": "OPENROUTER_API_KEY"},
+            {"id": "argon", "provider": "openai", "model": "google/gemini-4-argon",
+             "base_url": "https://openrouter.ai/api/v1", "api_key_env": "OPENROUTER_API_KEY"},
+        ],
+    }))
+    loaded = load_config(p)
+    assert [(m.id, m.tools) for m in loaded.models] == [
+        ("sol", ()),
+        ("sol-search", ("web_search",)),
+        ("argon", ()),
+    ]
+
+
 def test_non_list_tools_rejected(tmp_path):
     cfg = _write(tmp_path, [{"id": "a", "provider": "anthropic", "model": "m", "tools": "web_search"}])
     with pytest.raises(ConfigError, match="'tools' must be a list"):

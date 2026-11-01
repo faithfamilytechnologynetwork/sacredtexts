@@ -17,7 +17,7 @@ I'll read the implementation files to review phase 3.## Review — Spec 32, Phas
 
 The rendered card reads cleanly against the docs bar: one linear track, no asides, a non-engineer can follow it. The counterfactual denominators sum to 32, matching the spec's expected figure, and `opus` honestly shows `0 / 0`.
 
-### Substantive suggestions (not spec criteria — your call / Jonathan's)
+### Substantive suggestions (not spec criteria — your call / the contributor's)
 
 1. **The card says "For this panel" but never shows the panel.** The outcomes table identifies models as `gpt-oss-20b`, `haiku`, `opus`. `summary.json`/`facct.json` carry the real identity — `anthropic/claude-haiku-5-5`, `anthropic/claude-opus-5-5`, `openai/gpt-oss-20b`, all via `openrouter.ai`, `tools: []`. A FAccT reviewer reading `facct.md` standalone cannot tell *which* Haiku or whether search was on — and tool-use is part of panel identity in this project by design, so two runs of the same model with search on/off render identical cards. `report["panel"]` is already in hand; a 4-row provider/model/tools/endpoint table would close it.
 2. **The correctness rule is never stated.** The card explains refusals and coverage carefully, but not what makes an answer `correct` — containment of the reference wording (`evaluators: ["strict","containment"]`, which `facct.json` carries and the markdown drops). A reader will assume exact match, and the counterfactual section leans on containment without naming it.

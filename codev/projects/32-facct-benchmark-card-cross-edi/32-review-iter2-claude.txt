@@ -15,7 +15,7 @@ I recomputed the card's headline figures directly from the raw run evidence rath
 | `zero_question_languages` | — | `['grc','la']` ✓ (item 9) |
 | `corpus_hash` | — | `5ae493e7e249575c` ✓ |
 
-Suite: **442 passed, 1 skipped** — exactly as claimed. Audit clean. Branch is up to date (`origin/main` is an ancestor, 0 behind / 52 ahead). Commit format correct; AC14 verified — three carry-over commits authored `Jonathan Karr <jka83321@gmail.com>`.
+Suite: **442 passed, 1 skipped** — exactly as claimed. Audit clean. Branch is up to date (`origin/main` is an ancestor, 0 behind / 52 ahead). Commit format correct; AC14 verified — three carry-over commits authored `a contributor`.
 
 ### Prior blocking items — all genuinely fixed
 
@@ -48,7 +48,7 @@ KEY_ISSUES:
 
 PR_SUMMARY: |
   ## Summary
-  Part 3 of 3 of #30 (Jonathan Karr's PR): a shared cross-edition index and a FAccT benchmark card, reworked against the scoring contract now on `main`. Outcomes (correct / incorrect / refused) come verbatim from `scores.jsonl` / `outcomes.py` — no second refusal rule, no `fabrication` label — and the pool is the 17-text original-language Spec-26 set. The card reads `runs/original-2026-10-21` as-is: it never re-scores and never calls a model.
+  Part 3 of 3 of #30 (a contributor's PR): a shared cross-edition index and a FAccT benchmark card, reworked against the scoring contract now on `main`. Outcomes (correct / incorrect / refused) come verbatim from `scores.jsonl` / `outcomes.py` — no second refusal rule, no `fabrication` label — and the pool is the 17-text original-language Spec-26 set. The card reads `runs/original-2026-10-21` as-is: it never re-scores and never calls a model.
 
   ## Key Changes
   - **Shared `edition_index` module + `edition-index` CLI** — indexes same-canonical-language, non-restricted editions sharing a citation; exports JSONL + manifest on a frozen schema for issue #21. NABRE/TLG (restricted) are never indexed, even with payloads present locally. The in-process index and the exported rows group on the *same* key `(work, language, raw citation)`, so #21 and the card can never see different sibling sets.

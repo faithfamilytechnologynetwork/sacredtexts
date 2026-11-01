@@ -60,7 +60,7 @@ full alef. That un-credits the defective-spelling class — its own test asserte
 would score the defective class *wrong* — and it moves the `normalized` tier, the generation ANCHOR
 digest, and the audit path. This PR converges on the reviewed **containment-only** design (the
 long-ā alef is OPTIONAL, `normalize()` frozen) as the single source of truth, and **keeps Jonathan
-Karr's unrelated `outcomes.py` `_INTRODUCER` regex-escape fix**. One tutorial cell
+the contributor's unrelated `outcomes.py` `_INTRODUCER` regex-escape fix**. One tutorial cell
 (`e2d74279aaf0`) composes cleanly across both rebaselines: `refused` (pre-#48) → `incorrect` (#48)
 → `correct` (#52, a verbatim-Imla'i delivery).
 

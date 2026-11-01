@@ -106,6 +106,38 @@ def test_legacy_answers_without_digest_refused(tmp_path, monkeypatch):
         collect([_q("retrieve_quote-aaaaaa")], _config("good"), answers)
 
 
+def test_quota_stops_calls_that_have_not_started(tmp_path, monkeypatch):
+    calls = []
+
+    def fake(model, prompt, retries=2):
+        calls.append(prompt)
+        if len(calls) >= 2:
+            raise ProviderError("402 Payment Required: insufficient credits")
+        return (f"ans:{prompt}", {"in": 1, "out": 1}, 1)
+
+    monkeypatch.setattr(collect_mod, "complete", fake)
+    done, failed, messages = collect(
+        [_q("a"), _q("b"), _q("c")], _config("m"), tmp_path / "answers.jsonl",
+    )
+    assert done == 1
+    assert failed == 1
+    assert len(calls) == 2
+    assert not (tmp_path / "errors.jsonl").exists()
+    assert "insufficient credits" in messages[0]
+
+
+def test_pilot_then_rest_resumes_the_same_file(tmp_path, monkeypatch):
+    """A one-question pilot stamps the whole file's digest, so the rest can append."""
+    from sacredbench.generate import question_set_digest
+    answers = tmp_path / "answers.jsonl"
+    monkeypatch.setattr(collect_mod, "complete", _fake(set()))
+    whole = [_q("a"), _q("b"), _q("c")]
+    collect([whole[0]], _config("m"), answers, digest_from=whole)
+    collect(whole, _config("m"), answers, digest_from=whole)
+    assert {row["question_id"] for row in _rows(answers)} == {"a", "b", "c"}
+    assert {row["question_set_digest"] for row in _rows(answers)} == {question_set_digest(whole)}
+
+
 def test_digest_stamped_into_rows(tmp_path, monkeypatch):
     from sacredbench.generate import question_set_digest
     answers = tmp_path / "answers.jsonl"

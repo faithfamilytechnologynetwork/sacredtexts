@@ -23,9 +23,10 @@ loading is fail-fast.
 - **`license`** is a three-value gate: `public-domain` / `open` / `restricted`
   (the real upstream string, e.g. the Talmud's `CC-BY-NC`, is kept verbatim in
   `license_detail`). `restricted` targets are copyrighted texts whose
-  **payloads are git-ignored and local-only** — NABRE (an English translation) and the
-  Greek Orthodox TLG extracts (an original-language Greek edition); their `source.yaml` is
-  still committed so the catalogue stays complete and auditable.
+  **payloads are git-ignored and local-only** — NABRE, the NRSV, and the
+  Greek Orthodox TLG extracts. Their `source.yaml` is still committed so the
+  catalogue stays complete and auditable. The prepared test set's Christian
+  original-language verses are not those TLG files. See `items/for-test/`.
 - **`requested_as`** is the non-empty list of names a person actually uses for this edition
   (e.g. `["King James Version", "KJV", "KJV Bible"]`); `generate` renders `<edition>` in the
   prompt as a seeded choice from it, never the raw `version`. **`canonical_language`** is the
@@ -154,6 +155,16 @@ uv --project pipelines run python -m sacredbench facct runs/<id>
 
 Tests: `uv --project pipelines run pytest pipelines` (fixtures are real-SHAPE but
 synthetic TEXT — no copyrighted translation is committed).
+
+## Prepared test set
+
+`items/for-test/` is the run described in `RUNNING.md` at the repo root. It is
+not produced by `generate`. Collect accepts `--model` and `--tradition`, stamps
+the time of each call, stops on an OpenRouter quota error without an error
+file, and resumes finished cells. `search: false` on the panel file strips
+`web_search`. `analyze` writes `analysis.md`. A `complete_unit` answer that
+continues into later verses stays correct when the scored remainder is contained
+in the answer.
 
 Module map: `catalogue.py` `source.yaml` targets manifest + discovery + license
 gating · `schema.py` standard format + validation · `convert.py` source-format

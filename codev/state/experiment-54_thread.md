@@ -11,7 +11,7 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
 ## Key facts learned on orientation (2026-10-29)
 - `.env` (symlink → sacredtexts/.env) has ONLY `OPENROUTER_API_KEY`. The native keys
   (ANTHROPIC/OPENAI/GEMINI) are NOT provisioned. Live run (336 cells) is BLOCKED on keys;
-  all code/harness/dry-run work is keyless and can proceed. Keys are Waleed's to provision.
+  all code/harness/dry-run work is keyless and can proceed. Keys are the maintainer's to provision.
 - Anthropic `web_search` path already works end-to-end (`providers._anthropic`,
   `WEB_SEARCH_TOOL`, incomplete-turn fail-loud, usage `web_search_requests`). Spec 8 built it.
 - Implementation gaps (issue §"Implementation gaps", in scope):
@@ -20,7 +20,7 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   3. `config.py`: relax the anthropic-only tool fail-fast (`_ANTHROPIC_ONLY_TOOLS`) to a
      per-provider native-tool map — web_search native on all three, but REJECTED on
      openai when `base_url` is set (that's a third-party layer: OpenRouter `:online`/Exa,
-     which Waleed explicitly rejected as unrepresentative).
+     which the maintainer explicitly rejected as unrepresentative).
 - Panel identity: `tools` is baked into `_panel_fingerprint` (collect.py) and emitted as a
   real `panel.tools` list (cli.py). Endpoint = `urlparse(base_url).netloc` or native default.
   Search-on/off stay distinct standings rows. Don't break this.
@@ -72,7 +72,7 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   with main panel + exp-arabic (sonnet+sol) is the tiebreaker. Recorded in models.yaml.
   (c) HOLD the PR — ship code + live evidence together; if keys haven't landed within ~24h
   (≈2026-10-30 17:30Z) architect will have me open a deferred code+harness PR (Refs #54, live
-  run deferred). (a) keys with Waleed. STILL WAITING on keys; nothing to advance.
+  run deferred). (a) keys with the maintainer. STILL WAITING on keys; nothing to advance.
 - 2026-10-29 (later): architect UNBLOCK — run on the EXISTING OpenRouter key; native search
   *transported* through OpenRouter (NOT the :online/Exa layer). Directed: adapt harness to
   OpenRouter (one provider=openai, base_url=openrouter, per-model tool shape; config map keyed
@@ -124,14 +124,14 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   reaches the experiment-complete GATE (human approval) → notify architect + STOP (do NOT self-
   approve). Gemini remains deferred to a native GEMINI_API_KEY (native grounding path ready).
 - 2026-10-29: reached experiment-complete GATE (WAITING FOR HUMAN APPROVAL). Notified architect.
-  Architect: HOLD at gate (Waleed's call); PROTOCOL CORRECTION — builders NEVER run `porch
-  approve`; the ARCHITECT runs it after Waleed approves. So I will not run porch approve.
+  Architect: HOLD at gate (the maintainer's call); PROTOCOL CORRECTION — builders NEVER run `porch
+  approve`; the ARCHITECT runs it after the maintainer approves. So I will not run porch approve.
 - 2026-10-29: architect: open the PR now. Opened **PR #59** (builder/experiment-54 → main,
   Refs #54, gemini-native deferred, nativeness-verification method credited in the body, no
   attribution lines per CLAUDE.md). Branch already pushed (porch auto-commits reach origin).
   PR goes through the architect's integration review + the normal pr gate. Did NOT run `porch
   done --pr` (parked at the experiment-complete gate; not risking gate-state mutation — architect
-  manages the pr gate). HOLDING: (1) Waleed's experiment-complete approval → architect runs
+  manages the pr gate). HOLDING: (1) the maintainer's experiment-complete approval → architect runs
   porch approve; (2) architect's PR review. Nothing further for me to do until then.
 - 2026-10-29: architect: PR #59 stale vs main (today's merges: #51 SGGS, #55 refusal semantics/
   Spec 48, #57/#58, canary relocation b93e881). Rebased builder/experiment-54 onto origin/main
@@ -159,4 +159,4 @@ hypothesis → design → execute → analyze (gate: experiment-complete).
   via ?run=) +tests. Both lanes green via dispatcher: pipelines 630, viewer 190. Committed run's
   112 search-on rows all pass the new provider check (gate consistent with evidence). Findings
   UNCHANGED (H3 relabel is wording). PR body refreshed. Pushed 993e5f0. Awaiting round-2 review
-  + Waleed's gate.
+  + the maintainer's gate.

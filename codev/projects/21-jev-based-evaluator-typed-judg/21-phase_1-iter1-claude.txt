@@ -2,7 +2,7 @@ I'll start by reading the implementation files.I read the implementation files, 
 
 ## What's solid
 
-- **Karr authorship preserved** on `fe1e929` (`Author: Jonathan Karr <jka83321@gmail.com>`) — verified via `git show`.
+- **the contributor authorship preserved** on `fe1e929` (`Author: a contributor`) — verified via `git show`.
 - **No `cross_translation` import** anywhere in `jev.py`; `_alternates` takes an injected index and is inert in phase 1. Phase-1 acceptance criterion met.
 - **Judge is off the default path**: `from sacredbench import jev` is a function-local import in the `judge`/`judge-summary` commands only; `grep -i jev` over `score.py`/`collect.py` is empty, and `test_jev.py:218` pins that.
 - **Restricted guard is non-vacuous** — I checked both ends: `audit.restricted_keys` returns `(work, version, language)` and `runs/tutorial-2026-10-11/answers.jsonl` rows carry `question.source.language`, so the `_partition` key (jev.py:302) actually matches (e.g. `("The Bible","NABRE","en")`).
@@ -32,7 +32,7 @@ I'll start by reading the implementation files.I read the implementation files, 
 
 ---
 VERDICT: REQUEST_CHANGES
-SUMMARY: Core judge pass, resume/build-identity, restricted guard and Karr authorship are correct, but total spend is never surfaced, a manifest-less sidecar can silently go mixed-build, the row schema deviates from the spec's pinned shape, and the required single-cell live smoke was not run.
+SUMMARY: Core judge pass, resume/build-identity, restricted guard and the contributor authorship are correct, but total spend is never surfaced, a manifest-less sidecar can silently go mixed-build, the row schema deviates from the spec's pinned shape, and the required single-cell live smoke was not run.
 CONFIDENCE: HIGH
 ---
 

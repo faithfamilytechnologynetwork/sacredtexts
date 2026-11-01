@@ -1,4 +1,4 @@
-"""FAccT benchmark-card data (Spec 32). Reworked from PR #30 (Jonathan Karr).
+"""FAccT benchmark-card data (Spec 32). Reworked from PR #30 (a contributor).
 
 Reads a finished run — ``scores.jsonl``, ``summary.json``, ``answers.jsonl`` and the question
 ``manifest`` — plus the catalogue, and assembles the card's machine-readable data:
@@ -383,7 +383,7 @@ def build_facct(run_dir: Path, raw_root: Path = cat.RAW_ROOT) -> dict:
 # ============================================================================================
 # CARD PROSE — the one editable place.
 #
-# Jonathan Karr owns this wording while drafting the FAccT paper. Everything a reader reads as
+# a contributor owns this wording while drafting the FAccT paper. Everything a reader reads as
 # words (not numbers) lives in this block; it is deliberately separated from the counting logic
 # above, which Jonathan does not need to touch. The markdown renderer below interpolates the
 # numbers from the card data — no figure is ever typed into this prose, so the card cannot drift

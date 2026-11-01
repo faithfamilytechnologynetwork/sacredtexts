@@ -4,7 +4,7 @@
 
 ## Executive Summary
 
-The spec's shape is fixed by Waleed's baked decisions; the plan sequences them along the pipeline's
+The spec's shape is fixed by the maintainer's baked decisions; the plan sequences them along the pipeline's
 data flow so each phase is a complete, independently testable unit and each later stage builds on a
 green earlier one. The order follows the JSONL seams (catalogue → generate → score) plus the viewer
 and docs that trail the code, ending with the committed live run that is the real proof the whole

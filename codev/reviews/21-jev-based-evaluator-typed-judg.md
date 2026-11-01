@@ -33,7 +33,7 @@ Validated live on the committed tutorial run (400 cells, $0.011705). Part 2 of 3
 - [x] Validation on the committed tutorial run — live pass + agreement report + manual disagreement
       review; committed `scores.jsonl`/`answers.jsonl`/`summary.json` byte-identical; audit passes (Phase 4)
 - [x] Public repo — no key material; no NABRE/TLG text in any committed artifact (all phases)
-- [x] Carried code preserves Jonathan Karr's authorship on the Phase-1 `jev.py` commit (Phase 1)
+- [x] Carried code preserves a contributor's authorship on the Phase-1 `jev.py` commit (Phase 1)
 
 ## Validation on the committed tutorial run (Phase 4)
 

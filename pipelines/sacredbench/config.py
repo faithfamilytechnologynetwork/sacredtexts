@@ -19,7 +19,7 @@ Fail-fast: unknown providers, duplicate ids, and missing required keys raise
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -123,6 +123,52 @@ def _parse_tools(
     return tuple(sorted(set(tools)))
 
 
+def _search_supported(spec: ModelSpec, path: Path) -> bool:
+    """True when this model can take native web_search under the existing host rules."""
+    try:
+        _parse_tools(["web_search"], spec.provider, spec.base_url, spec.model, 0, path)
+    except ConfigError:
+        return False
+    return True
+
+
+def _apply_search(raw, specs: list[ModelSpec], path: Path) -> list[ModelSpec]:
+    """Panel-level search switch. Absent leaves each model's own ``tools`` list.
+
+    ``false`` forces every model to no tools, so a later ``tools: [web_search]``
+    cannot turn search on by accident. ``true`` adds ``web_search`` to every
+    model and fails if any model cannot take it. ``both`` runs each model once
+    with search off (its own id) and, when the host can forward native search,
+    once more as ``<id>-search``.
+    """
+    if raw is None:
+        return specs
+    if raw is True:
+        mode = "true"
+    elif raw is False:
+        mode = "false"
+    elif isinstance(raw, str) and raw.strip().lower() in {"true", "false", "both"}:
+        mode = raw.strip().lower()
+    else:
+        raise ConfigError(f"{path}: search must be false, true, or both, got {raw!r}")
+    if mode == "false":
+        return [replace(spec, tools=()) for spec in specs]
+    if mode == "true":
+        blocked = [spec.id for spec in specs if not _search_supported(spec, path)]
+        if blocked:
+            raise ConfigError(
+                f"{path}: search is true, but these models cannot take native web_search "
+                f"on this host: {blocked}. Set search to false, or to both."
+            )
+        return [replace(spec, tools=("web_search",)) for spec in specs]
+    expanded: list[ModelSpec] = []
+    for spec in specs:
+        expanded.append(replace(spec, tools=()))
+        if _search_supported(spec, path):
+            expanded.append(replace(spec, id=f"{spec.id}-search", tools=("web_search",)))
+    return expanded
+
+
 def load_config(path: Path) -> RunConfig:
     if not Path(path).exists():
         raise ConfigError(
@@ -176,6 +222,7 @@ def load_config(path: Path) -> RunConfig:
                 tools=tools,
             )
         )
+    specs = _apply_search(data.get("search", None), specs, path)
     ids = [s.id for s in specs]
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{path}: duplicate model ids in config")

@@ -1,0 +1,44 @@
+{
+  "tradition": "Christianity",
+  "sample": "familiarity",
+  "run": false,
+  "passages": [
+    {
+      "tradition": "Christianity",
+      "citation": "John 3:16",
+      "sample": "familiarity",
+      "version": "NRSV",
+      "text": {
+        "english": "For God so loved the world that he gave his only Son, so that everyone who believes in him may not perish but may have eternal life."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Genesis 1:1",
+      "sample": "familiarity",
+      "version": "NRSV",
+      "text": {
+        "english": "In the beginning when God created the heavens and the earth,"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Psalms 23:1",
+      "sample": "familiarity",
+      "version": "NRSV",
+      "text": {
+        "english": "The Lord is my shepherd, I shall not want."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Matthew 6:9",
+      "sample": "familiarity",
+      "version": "NRSV",
+      "text": {
+        "english": "Pray then in this way: Our Father in heaven, hallowed be your name."
+      }
+    }
+  ],
+  "notice": "New Revised Standard Version Bible, copyright © 1989 National Council of the Churches of Christ in the United States of America. Used by permission. All rights reserved worldwide."
+}

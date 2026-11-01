@@ -1,7 +1,7 @@
 # air-36 — Integrate PR #35 (failure kinds + manuscript breakdowns)
 
 ## Goal
-Carry Jonathan Karr's PR #35 (`karr_faact_improvements`, 3 commits from 849fb5c) onto current
+Carry a contributor's PR #35 (`the fork branch`, 3 commits from 849fb5c) onto current
 main and fix the five review items from the PR comment. AIR protocol, strict mode.
 
 ## Architect brief (2026-10-25)
@@ -31,7 +31,7 @@ main and fix the five review items from the PR comment. AIR protocol, strict mod
   `fixtures/failure_kind_cases.json`, read by pytest (`parents[2]`) and vitest (import.meta.url).
 
 ## Progress
-- Cherry-picked all 3 of Jonathan's commits with `-x`, authorship preserved. Only cli.py
+- Cherry-picked all 3 of the contributor's commits with `-x`, authorship preserved. Only cli.py
   conflicted (commit 1): main's `edition-index`/`facct` commands vs his `failures` command share
   an insertion point — kept both. Commits 2 & 3 auto-merged cli.py.
 - Item 3 (reconcile): the rebase surfaced main's `score._bounded_equal`→`bounded_contains` rename

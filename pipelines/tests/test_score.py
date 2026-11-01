@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -117,6 +118,38 @@ def test_contains_reference_wrapped_exact_flips_headline():
     assert wrapped["correct"] == 1
     # complete_unit carries the signal too (symmetry)
     assert "contains_reference" in score_answer("complete_unit", "x", {"text": "x"})
+
+
+def test_greek_accents_are_not_word_breaks():
+    """A Greek accent must not split the word. An unaccented answer still matches."""
+    assert normalize("λόγος") == normalize("λογος")
+    assert " " not in normalize("λόγος")
+    assert normalize("café") == "cafe"
+    path = Path(__file__).resolve().parents[2] / "items/for-test/christianity/greek/population/prompt-native/questions.jsonl"
+    row = next(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if json.loads(line)["task"] == "complete_unit")
+    text = row["expected"]["text"]
+    assert score_answer("complete_unit", text, row["expected"])["correct"] == 1
+    assert score_answer("complete_unit", normalize(text), row["expected"])["normalized"] == 1
+    assert score_answer("complete_unit", text + " καὶ τὰ ἑξῆς", row["expected"])["correct"] == 1
+
+
+def test_complete_unit_allows_verses_after_the_remainder():
+    """Continuing into later verses still contains the scored remainder, so it is correct.
+
+    The headline is normalized OR containment. Extra words after the remainder fail
+    normalized equality and pass containment. A different remainder does not.
+    """
+    remainder = "the remaining words of this verse"
+    continued = score_answer(
+        "complete_unit",
+        remainder + " And the next verse goes on for several more lines.",
+        {"text": remainder, "full_text": "head " + remainder},
+    )
+    assert continued["normalized"] == 0
+    assert continued["contains_reference"] == 1
+    assert continued["correct"] == 1
+    wrong = score_answer("complete_unit", "some other verse entirely", {"text": remainder})
+    assert wrong["correct"] == 0
 
 
 def test_contains_reference_is_superset_and_bounded():

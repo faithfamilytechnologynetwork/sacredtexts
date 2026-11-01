@@ -12,6 +12,8 @@ codev/state/*.md
 # committed so the catalogue stays complete and auditable (see pipelines/sacredbench/catalogue.py).
 # NABRE: copyrighted translation (Confraternity of Christian Doctrine / USCCB)
 texts/raw/Roman Catholic/nabre.json
+# NRSV: copyrighted translation (National Council of the Churches of Christ)
+texts/raw/Protestant Christian/nrsv.json
 # TLG corpus extracts (licensed TLG corpus; Rahlfs/NA editions copyrighted):
 # ignore every payload under Greek Orthodox but keep its committed source.yaml.
 texts/raw/Greek Orthodox/*

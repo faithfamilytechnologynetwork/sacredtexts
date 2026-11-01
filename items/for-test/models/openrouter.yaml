@@ -1,0 +1,33 @@
+# List A, the full panel. One OPENROUTER_API_KEY.
+# search: false | true | both. false strips web_search from every model.
+# true adds it to every model (fails if OpenRouter cannot forward that family).
+# both runs each model twice where native search can be forwarded: the id as
+# written, and <id>-search. This panel is false, so no model here uses search.
+# Temperature is pinned at 0. The seven-model subset is openrouter-subset.yaml.
+search: false
+concurrency: 4
+
+x-openrouter: &openrouter
+  provider: openai
+  base_url: https://openrouter.ai/api/v1
+  api_key_env: OPENROUTER_API_KEY
+  max_tokens: 4096
+  temperature: 0
+
+models:
+  - {id: fable, model: anthropic/claude-fable-5.1, <<: *openrouter}
+  - {id: opus, model: anthropic/claude-opus-5.5, <<: *openrouter}
+  - {id: sonnet, model: anthropic/claude-sonnet-5.5, <<: *openrouter}
+  - {id: haiku, model: anthropic/claude-haiku-5.5, <<: *openrouter}
+  - {id: astra, model: openai/gpt-6-astra, <<: *openrouter}
+  - {id: sol, model: openai/gpt-6.1-sol, <<: *openrouter}
+  - {id: terra, model: openai/gpt-6.1-terra, <<: *openrouter}
+  - {id: luna, model: openai/gpt-6-luna, <<: *openrouter}
+  - {id: argon, model: google/gemini-4-argon, <<: *openrouter}
+  - {id: gemini-flash, model: google/gemini-3.8-flash, <<: *openrouter}
+  - {id: deepseek-v4-pro, model: deepseek/deepseek-v4-pro, <<: *openrouter}
+  - {id: kimi, model: moonshotai/kimi-k3.1-pro, <<: *openrouter}
+  - {id: beam, model: reflection/beam-1.0-501b-a23b, <<: *openrouter}
+  - {id: gemma-31b, model: google/gemma-4-31b-it, <<: *openrouter}
+  - {id: qwen3-32b, model: qwen/qwen3-32b, <<: *openrouter}
+  - {id: gpt-oss-20b, model: openai/gpt-oss-20b, <<: *openrouter}

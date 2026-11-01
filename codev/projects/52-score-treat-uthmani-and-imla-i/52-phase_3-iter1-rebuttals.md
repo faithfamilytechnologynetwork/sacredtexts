@@ -43,7 +43,7 @@ already exist. Switching these two to symbol-only would make them *inconsistent*
 for no guard benefit. The two new pointers are exact today. Keeping the convention.
 
 ## Finding 4 — moved-numbers packet to the architect still pending — **ACKNOWLEDGED (standing order)**
-Correct per the no-self-approval standing order (Waleed scar): the packet goes to the architect at
+Correct per the no-self-approval standing order (the maintainer scar): the packet goes to the architect at
 the **pr gate**, and it will include the 8-cell #60 hamza-alef residual census (the review doc's
 moved-numbers table + residual section are its source). Not an omission — a sequencing requirement.
 

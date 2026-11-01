@@ -4,7 +4,7 @@
 
 ## Executive Summary
 
-The spec's recommended approach (Approach 1) is to carry over Jonathan Karr's PR #30 `facct.py` and
+The spec's recommended approach (Approach 1) is to carry over a contributor's PR #30 `facct.py` and
 `cross_translation.py`, strip the October-11 scoring contract out of them, and re-point the card at
 the contract on `main` (outcomes from `scores.jsonl`, containment headline, 17-text pool). The
 architect fixed three decisions on top of that: the edition index becomes a **shared, standalone
@@ -23,12 +23,12 @@ The work decomposes along those seams, foundation-first:
 4. **Generate & commit the card** for `runs/original-2026-10-21`, gated by `audit.py`.
 
 Phases 1–3 are pure code+tests under `pipelines/`; Phase 4 produces the committed run artifact the
-issue asks for. Phases that carry Jonathan's code over are committed with his authorship
-(`git commit --author="Jonathan Karr <jka83321@gmail.com>"`). No live API calls in any phase.
+issue asks for. Phases that carry the contributor's code over are committed with his authorship
+(`git commit --author="a contributor"`). No live API calls in any phase.
 
 **Scope decision** (spec Nice-to-know): the three-edition agreement table (how often KJV/ASV/WEB
 agree after normalization) is **excluded** from this PR. The counterfactual is the headline; the
-agreement table is supporting colour that would add a second reading track against Waleed's
+agreement table is supporting colour that would add a second reading track against the maintainer's
 one-linear-recipe docs bar. It can be a follow-up if the paper wants it.
 
 ## Phases (Machine Readable)
@@ -52,7 +52,7 @@ one-linear-recipe docs bar. It can be a follow-up if the paper wants it.
 
 #### Objective
 
-Lift Jonathan's citation/edition-index machinery out of `cross_translation.py` into a standalone,
+Lift the contributor's citation/edition-index machinery out of `cross_translation.py` into a standalone,
 reusable module that both the card (in-process) and issue #21 (via a file) consume. Produce the
 frozen JSONL + manifest export and the `license != restricted` guard. This is the foundation every
 later phase builds on.
@@ -197,7 +197,7 @@ At the end of this phase the single command `sacredbench facct <run_dir>` writes
   an override path outside the run dir is rejected.
 - [ ] `facct.md` presents the census, the three outcomes with accuracy beside coverage, and the
   edition counterfactual (numerator + denominator + the Bible-`retrieve_quote`-only scope note),
-  under the four prose sections, following Waleed's docs bar (one linear read, non-engineer readable,
+  under the four prose sections, following the maintainer's docs bar (one linear read, non-engineer readable,
   no asides). It embeds only citations and derived numbers — **no verse/passage bodies**.
 - [ ] All prose lives in one constants block; no analysis/counting logic is interleaved with it.
 - [ ] Every headline number in `facct.md` is interpolated from the `build_facct` data (which is
@@ -290,7 +290,7 @@ Produce the actual deliverable the issue names: run the finished `facct` command
 | Partial card written before an inconsistency is detected | Low | Medium | Validate all evidence before writing; raise `FacctError` with no partial file |
 | The counterfactual uses a second, divergent containment rule (the exact failure the spec forbids for refusals) | Medium | High | Promote `score`'s `contains_reference` predicate to public and reuse it + `score.normalize` verbatim; test the card defines no matcher of its own and agrees with the scorer's boundary/normalization cases |
 | `audit.py` skips `.md`, so the committed `facct.md` is never copyright-scanned | Medium | High | Extend the audit suffix set to `.md`; add a test that injected restricted Markdown fails; keep the card to citations + numbers (no passage bodies) |
-| Carried-over code loses Jonathan's authorship | Medium | Low | Commit Phases 1–3 with `git commit --author="Jonathan Karr <jka83321@gmail.com>"` |
+| Carried-over code loses the contributor's authorship | Medium | Low | Commit Phases 1–3 with `git commit --author="a contributor"` |
 
 ## Documentation Updates
 

@@ -1,0 +1,34 @@
+{
+  "tradition": "Sikhism",
+  "sample": "familiarity",
+  "run": false,
+  "passages": [
+    {
+      "tradition": "Sikhism",
+      "citation": "Ang 1:1",
+      "sample": "familiarity",
+      "version": "Shabad OS (SGPC Shabadaarth)",
+      "text": {
+        "native": "ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ ਨਿਰਭਉ ਨਿਰਵੈਰੁ ਅਕਾਲ ਮੂਰਤਿ ਅਜੂਨੀ ਸੈਭੰ ਗੁਰ ਪ੍ਰਸਾਦਿ"
+      }
+    },
+    {
+      "tradition": "Sikhism",
+      "citation": "Ang 8:33",
+      "sample": "familiarity",
+      "version": "Shabad OS (SGPC Shabadaarth)",
+      "text": {
+        "native": "ਪਵਣੁ ਗੁਰੂ ਪਾਣੀ ਪਿਤਾ ਮਾਤਾ ਧਰਤਿ ਮਹਤੁ"
+      }
+    },
+    {
+      "tradition": "Sikhism",
+      "citation": "Ang 262:31",
+      "sample": "familiarity",
+      "version": "Shabad OS (SGPC Shabadaarth)",
+      "text": {
+        "native": "ਸੁਖਮਨੀ ਸੁਖ ਅੰਮ੍ਰਿਤ ਪ੍ਰਭ ਨਾਮੁ"
+      }
+    }
+  ]
+}

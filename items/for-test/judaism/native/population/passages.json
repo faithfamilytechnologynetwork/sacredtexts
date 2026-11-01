@@ -1,0 +1,278 @@
+{
+  "tradition": "Judaism",
+  "sample": "population",
+  "run": true,
+  "passages": [
+    {
+      "tradition": "Judaism",
+      "citation": "Megillah 23b:3",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "והיכא דלא סליק עניינא לא והאמר רב שמואל בר אבא זמנין סגיאין הוה קאימנא קמיה דרבי יוחנן וכי הוה קרינן עשרה פסוקי אמר לן אפסיקו מקום שיש תורגמן שאני דתני רב תחליפא בר שמואל לא שנו אלא במקום שאין תורגמן אבל מקום שיש תורגמן פוסק:"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Gittin 40a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "יצא לחירות אמר לו רבי יוחנן כל כך יש בידך ואני שונה הכותב שטר אירוסין לשפחתו רבי מאיר אומר מקודשת וחכמים אומרים אינה מקודשת"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Rosh Hashanah 21a:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "לוי אקלע לבבל בחדסר בתשרי אמר בסים תבשילא דבבלאי ביומא רבה דמערבא אמרי ליה אסהיד אמר להו לא שמעתי מפי בית דין מקודש"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Sanhedrin 88b:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "זקן ממרא שרצו בית דינו למחול לו מוחלין לו וכשבאתי אצל חבירי שבדרום על שנים הודו לי על זקן ממרא לא הודו לי כדי שלא ירבו מחלוקת בישראל תיובתא"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Kamma 111b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "מתני׳ הגוזל ומאכיל את בניו והניח לפניהם פטורין מלשלם ואם היה דבר שיש בו אחריות חייבין לשלם"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Eruvin 91a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "קרפיפות רשות לעצמן לדברי חכמים גגין וחצירות רשות אחת קרפיפות רשות אחת הן לדברי רבי שמעון כולן רשות אחת הן"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Sanhedrin 60a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "מכשפה לא תחיה וכתיב כל שכב עם בהמה מות יומת כל שישנו בכלל כל שכב עם בהמה ישנו בכלל מכשפה לא תחיה"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Nedarim 52b:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "לא קשיא מר כי אתריה ומר כי אתריה באתרא דרבנן קרו לחלבא חלבא ולקומא קומא באתריה דרבי יוסי לקומא נמי קרו ליה קומא דחלבא"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Batra 60b:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "למחר אתא לקמיה אמר ליה זיל קוץ אמר ליה הא מר נמי אית ליה אמר ליה זיל חזי אי קוץ דידי קוץ דידך אי לא קוץ דידי לא תקוץ את"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bekhorot 2a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "מתני׳ הלוקח עובר חמורו של נכרי והמוכר לו אף על פי שאינו רשאי המשתתף לו והמקבל הימנו והנותן לו בקבלה פטור מן הבכורה שנאמר בישראל אבל לא באחרים"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Rosh Hashanah 11a:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "רבי יהושע אומר בניסן נברא העולם בניסן נולדו אבות בניסן מתו אבות בפסח נולד יצחק בראש השנה נפקדה שרה רחל וחנה בראש השנה יצא יוסף מבית האסורין בראש השנה בטלה עבודה מאבותינו במצרים בניסן נגאלו בניסן עתידין ליגאל"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Yevamot 67b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "אין חוששין למיעוטא ואיבעית אימא לעולם קסבר חוששין למיעוטא דעבדינן ליה תקנתא כרב נחמן אמר שמואל"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Batra 32a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "ורבן שמעון בן גמליאל סבר ערער תרי והאמר רבי יוחנן דברי הכל אין ערער פחות משנים"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Kamma 78b:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "בעי רבא הרי עלי עולה והפריש שור ובא אחר וגנב מי פטר גנב נפשיה בכבש לרבנן בעולת העוף לרבי אלעזר בן עזריה דתנן הרי עלי עולה יביא כבש רבי אלעזר בן עזריה אומר יביא תור או בן יונה"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Megillah 10b:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "ולא אלו בלבד אלא כל שתעלה לך מסורת בידך מאבותיך שמוקפת חומה מימות יהושע בן נון כל המצות הללו נוהגין בה מפני שקדושה ראשונה קידשה לשעתה וקידשה לעתיד לבא קשיא דרבי ישמעאל אדרבי ישמעאל"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Eruvin 61a:7",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "מאן דתני אנשי לא משתבש דמוקים לה בנותן ומאן דתני אין אנשי לא משתבש דמוקים לה במודד"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Batra 61a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "המוכר את הבית לא מכר יציע ואף על פי שהיא פתוחה לתוכו ולא את החדר שלפנים הימנו ולא את הגג בזמן שיש לו מעקה גבוה עשרה טפחים רבי יהודה אומר אם יש לו צורת פתח אף על פי שאינו גבוה עשרה טפחים אינו מכור:"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Shabbat 96a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "הא ברברבי והא בזוטרי אמר רב אסי שונין כלי חרס שיעורו בכונס משקה ולא אמרו מוציא משקה אלא לענין גיסטרא בלבד מאי טעמא אמר מר זוטרא בריה דרב נחמן לפי שאין אומרים הבא גיסטרא לגיסטרא"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Yoma 78b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "שעם ביום הכפורים עמד רבי יצחק בר נחמני על רגליו ואמר אני ראיתי את רבי יהושע בן לוי שיצא בסנדל של שעם ביום הכפורים ואמינא ליה בתענית צבור מאי אמר ליה לא שנא אמר רבה בר בר חנה אני ראיתי את רבי אלעזר דמן ננוה שיצא בסנדל של שעם בתענית צבור ואמינא ליה ביום הכפורים מאי אמר ליה לא שנא רב יהודה נפיק בדהיטני אביי נפיק בדהוצי רבא נפיק (בדיבלי) רבה בר רב הונא כריך סודרא אכרעיה ונפיק"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Gittin 41a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "ויאמר לו עבדי אתה כופין את רבו שני ועושה אותו בן חורין וכותב עבד שטר על דמיו רבן שמעון בן גמליאל אומר אין העבד כותב אלא משחרר כותב"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Batra 8a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "אלו תלמידי חכמים וריש לקיש סבר לה כדדרש רבא אני חומה זו כנסת ישראל ושדי כמגדלות אלו בתי כנסיות ובתי מדרשות"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Chullin 56a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "להביא עור בית הבושת חוץ למקומו פסול ואין בו כרת חוץ לזמנו פיגול וחייבים עליו כרת"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Sotah 32a:2",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "ותרצה לדרבי נחמיה הכי רבי נחמיה אומר כל מקום שהאמינה תורה עד אחד הלך אחר רוב דיעות ועשו שתי נשים באשה אחת כשני אנשים באיש אחד אבל שתי נשים באיש אחד כי פלגא ופלגא דמי"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bekhorot 4a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "גמ׳ אינהו פטרי אדם אדם פטר בהמה בהמה פטרה דכתיב קח את הלוים תחת בכור בבני ישראל ואת בהמת הלוים תחת בהמתם"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bekhorot 60a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "לא יאמר אברור עשרה ואטול מהן אחד והשאר פטורים אלא כונסן לדיר ומוציא עשרה ונוטל מהן אחד והשאר מצטרפין לגורן אחר"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Batra 64a:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "ואי סלקא דעתך בסתמא קני עומקא ורומא כי גבוה עשרה טפחים מאי הוי כיון דגבוה עשרה טפחים חשיב"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Eruvin 14b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "במים במי מקוה כל בשרו מים שכל גופו עולה בהן וכמה הן אמה על אמה ברום שלש אמות ושיערו חכמים מי מקוה ארבעים סאה"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Berakhot 56b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "שיראי דמלכא כפיתו תרין ארזי בחבלא אסור חד כרעיה לחד ארזא וחד כרעיה לחד ארזא ושרו לחבלא עד דאצטליק רישיה אזל כל חד וחד וקם אדוכתיה ואצטליק ונפל בתרין"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Bava Metzia 89b:1",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "לאכשורי גברא לא קמיבעיא לן כי קמיבעיא לן לאכשורי פירא מאי תא שמע פועלין אוכלין ענבים בראשי אומניות שלהם ובלבד שלא יהבהבו באור"
+      }
+    },
+    {
+      "tradition": "Judaism",
+      "citation": "Pesachim 98a:4",
+      "sample": "population",
+      "version": "William Davidson Edition - Aramaic",
+      "text": {
+        "native": "המפריש פסחו וכו׳: תנו רבנן המפריש את פסחו ומת אם בנו ממונה עמו יביאנו לשום פסח אין בנו ממונה עמו יביאנו לשום שלמים לששה עשר לששה עשר אין לחמשה עשר לא קא סבר נדרים ונדבות אין קריבין ביום טוב"
+      }
+    }
+  ],
+  "notice": "William Davidson Edition on Sefaria, CC-BY-NC."
+}

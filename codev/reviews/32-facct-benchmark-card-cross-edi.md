@@ -2,7 +2,7 @@
 
 ## Summary
 
-Carved out part 3 of 3 of Jonathan Karr's PR #30: a shared cross-edition index and a FAccT
+Carved out part 3 of 3 of a contributor's PR #30: a shared cross-edition index and a FAccT
 benchmark card, reworked against the scoring contract now on `main`. Four implement phases on one
 PR — a shared `edition_index` module + CLI, the card data (`facct.json`), the markdown card
 (`facct.md`), and generating + committing the real card over `runs/original-2026-10-21` — plus the
@@ -24,7 +24,7 @@ re-scores, and derives every number from `scores.jsonl` / `summary.json`.
 - [x] AC11: The card fails fast with no partial write on inconsistent evidence (Phase 2 `FacctError`; Phase 3 atomic both-or-neither writer).
 - [x] AC12: All card prose lives in one editable location (`facct.CARD_PROSE`), separate from counting logic (Phase 3).
 - [x] AC13: The copyright audit passes and now content-scans `.md`; no committed card artifact derives from a restricted source (Phase 4; `audit._AUDITED_SUFFIXES`, markdown-injection + card-census-origin tests).
-- [x] AC14: Jonathan Karr's authorship preserved on the carry-over commits (Phases 1–3 authored `Jonathan Karr <jka83321@gmail.com>`).
+- [x] AC14: a contributor's authorship preserved on the carry-over commits (Phases 1–3 authored `a contributor`).
 - [x] AC15: Tests cover the builder against a fixture run and assert counts match the fixture `scores.jsonl` (Phase 2).
 
 Viewer per-run card view: **out of scope** by architect decision (dropped from the spec). Three-edition agreement table: **excluded** (scope decision in the plan).
@@ -118,4 +118,4 @@ No flaky tests encountered. One pre-existing skip (`test_original_run_regression
 - Issue #21 (Jev passage-equivalence judge) consumes the frozen `edition-index` export.
 - Viewer per-run card view — deferred; its own issue if wanted.
 - Three-edition agreement table — out of scope; a follow-up if the paper wants it.
-- Card wording is provisional pending Jonathan Karr's FAccT paper (one editable block, `facct.CARD_PROSE`); Aramaic-Talmud language label and the OpenRouter `provider` display are his to finalize.
+- Card wording is provisional pending a contributor's FAccT paper (one editable block, `facct.CARD_PROSE`); Aramaic-Talmud language label and the OpenRouter `provider` display are his to finalize.

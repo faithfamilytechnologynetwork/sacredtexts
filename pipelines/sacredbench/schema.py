@@ -18,7 +18,7 @@ One document per (work, version, language):
       ]
     }
 
-``tradition`` is a list (David Smiley / Waleed feedback: traditions share texts —
+``tradition`` is a list (David Smiley / the maintainer feedback: traditions share texts —
 the Bible belongs to many Christian communities). A bare string is accepted on
 load and normalised to a one-element list.
 

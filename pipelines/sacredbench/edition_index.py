@@ -1,7 +1,7 @@
 """Editions that share a citation — the shared cross-edition producer.
 
 The citation/index machinery here is carried over from the cross-edition reading in
-PR #30 (Jonathan Karr). It is a *shared* producer with two consumers:
+PR #30 (a contributor). It is a *shared* producer with two consumers:
 
 - the FAccT card (Spec 32) builds its edition counterfactual from the in-process
   :class:`EditionIndex`;

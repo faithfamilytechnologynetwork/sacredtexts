@@ -71,7 +71,7 @@ supplied**, not "empty until later". Concretely:
   `accuracy`, surfaced as `coverage`/`refused_rate`. There is no cross-check on that classification.
 - There is **no paid, semantic, or judge-based evaluation step** in the pipeline. Every scoring run
   is free, local, and deterministic.
-- Jonathan Karr's PR #30 ("Part 2 of 3": the Jev judge) contains a working `jev.py` — closed-question
+- a contributor's PR #30 ("Part 2 of 3": the Jev judge) contains a working `jev.py` — closed-question
   Jev judgments over an answers file, written to a resumable `judgments.jsonl` sidecar — plus a
   `sacredbench judge` CLI command, prompts (three closed questions: refusal / matches_requested /
   kind), and a test. It was never merged. Its model id (`typesafe/jev-1.13`) is wrong (see Current
@@ -82,7 +82,7 @@ supplied**, not "empty until later". Concretely:
     **`typesafe/jev-1.14-20261014`**. Both `typesafe/jev-1.13` and `typesafe/jev-router` return
     `"Model … does not exist"` from `POST /api/alpha/decisions`. (`typesafe/jev-router` is a catalog
     entry in `v1/models` with an empty `endpoints` list — not servable.)
-  - The real HTTP-200 response shape matches Karr's `interpret()` exactly:
+  - The real HTTP-200 response shape matches the contributor's `interpret()` exactly:
     `{ model, provider, id, answers: { refusal:{type:"noul",noul:p}, matches_requested:{type:"noul",noul:p},
     kind:{type:"choice",choice,probabilities{…},confidence} }, usage:{input_tokens,output_tokens,cost} }`.
   - Cost is tiny: a three-question call cost ≈ $0.000027; total verification spend ≈ $0.00005.
@@ -212,13 +212,13 @@ deterministic headline.
       lesson).
 - [ ] The 'add an evaluator' recipe in `CODE_WALKTHROUGH.md` documents the Jev paid/separate-pass
       evaluator so a future contributor can follow the seam.
-- [ ] Carried-over Jev code from PR #30 preserves **Jonathan Karr's authorship** on the commit(s)
+- [ ] Carried-over Jev code from PR #30 preserves **a contributor's authorship** on the commit(s)
       that carry it.
 
 ## Constraints
 
 - **Baked (architect brief, 2026-10-23) — do not relitigate:**
-  - This is **Part 2 of 3 of PR #30**; reuse Karr's judge code where it still fits and **keep his
+  - This is **Part 2 of 3 of PR #30**; reuse the contributor's judge code where it still fits and **keep that
     authorship** (`git commit --author`) on carried-over commits.
   - Land through the **Spec 15 graders seam** (`graders.py`, `score --evaluator`) as a
     **separate-pass, paid grader that is NEVER the default**.
@@ -277,14 +277,14 @@ deterministic headline.
 
 ### Approach 1: Sidecar judgments file + non-inline grader registration (recommended)
 
-Carry over Karr's `jev.py` (resumable `judgments.jsonl` sidecar beside a run) with the model id
+Carry over the contributor's `jev.py` (resumable `judgments.jsonl` sidecar beside a run) with the model id
 corrected to `jev-latest` and the shape validated against the live API; register the `jev` grader in
 `graders.py` as non-inline/verdict-less/`default=False` so the seam, CLI, and recipe are coherent;
 validate on the tutorial run via an agreement report + manual disagreement review.
 
 - **Pros:** reuses verified code; the sidecar never touches committed `scores.jsonl`, satisfying the
   "byte-identical evidence" and "never re-run score" constraints directly; resumability/spend already
-  implemented; smallest diff; preserves Karr's authorship cleanly.
+  implemented; smallest diff; preserves the contributor's authorship cleanly.
 - **Cons:** judgments live beside `scores.jsonl` rather than *inside* each score row, so viewer/paper
   consumers read a second file. (Viewer integration is a separate part of the #30 split anyway.)
 - **Required edits to the carried-over code** (not just a config change): correct `JEV_MODEL` to
@@ -312,7 +312,7 @@ committed one).
 - **Risk/complexity:** Medium.
 
 **Recommended: Approach 1.** It satisfies every baked constraint with the least code and the least
-risk to committed evidence, and keeps Karr's contribution intact. A documented merge-into-scores path
+risk to committed evidence, and keeps the contributor's contribution intact. A documented merge-into-scores path
 for *new* runs can be noted for a later part without being built here.
 
 ## Open Questions
@@ -333,7 +333,7 @@ for *new* runs can be noted for a later part without being built here.
 - **Important — agreement threshold.** The agreement report needs a rule to turn a probability into
   agree/disagree. *Resolved in this spec:* fixed `p ≥ 0.5` **and** a raw per-outcome-class
   distribution, so the disagreement set is stable and threshold-robust.
-- **Nice-to-know — defaults.** Concurrency and retry defaults for the pass (Karr uses 4 workers,
+- **Nice-to-know — defaults.** Concurrency and retry defaults for the pass (the contributor uses 4 workers,
   2 retries).
 
 ## Test Scenarios
@@ -379,7 +379,7 @@ for *new* runs can be noted for a later part without being built here.
 |------|-------------|--------|------------|
 | Edition index (equivalence) unavailable — producer is in concurrent #32 | Medium | Low | Equivalence OFF by default (records `not_evaluated`); consume #32's schema verbatim; tests use a hand-written fixture; no dependency on #32's branch |
 | Accidentally re-scoring / overwriting committed run evidence | Low | High | Always write to a fresh/sidecar path; add an evidence byte-identity check to the review checklist; audit gate in test.sh |
-| Jev API shape drift vs Karr's code (wrong model id, field changes) | Medium | Medium | Model id and full shape **live-verified** for this spec; fail-fast on any unexpected field; committed redacted live fixture pins the parser; record resolved build per cell |
+| Jev API shape drift vs the contributor's code (wrong model id, field changes) | Medium | Medium | Model id and full shape **live-verified** for this spec; fail-fast on any unexpected field; committed redacted live fixture pins the parser; record resolved build per cell |
 | `jev-latest` build rolls between passes → mixed builds in one file/report | Medium | Medium | Resolved build is grader identity (row + manifest + provenance); build-mismatched resume **fails fast**, no mixed-build files; allow pinning a build |
 | Stale verdict reused after an answer/prompt change | Medium | Medium | Resume key binds `answer_digest` + `rubric_id` + question-set digest; mismatch re-judges or fails loud |
 | Live spend exceeds budget | Low | Medium | Pre-flight estimate + `--limit`; validation is the small tutorial run; per-call cost ≈ $3e-5; hard $8 cap with stop+ping; resumability avoids re-spend |
@@ -391,7 +391,7 @@ for *new* runs can be noted for a later part without being built here.
 
 - Issue #21 — Jev-based evaluator: typed judge verdicts for containment, refusal, and passage
   equivalence.
-- PR #30 (Jonathan Karr) — "Type of Theological Errors, temperature, FaCCT improvements etc"; source
+- PR #30 (a contributor) — "Type of Theological Errors, temperature, FaCCT improvements etc"; source
   of `jev.py`, the `judge` CLI, the closed-question prompts, and `test_jev.py`. This spec is **Part 2
   of 3**.
 - Spec 15 — the evaluator/grader seam and the refusal-as-outcome decision (`graders.py`, `score.py`,

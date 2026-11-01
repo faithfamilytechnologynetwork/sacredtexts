@@ -1,6 +1,6 @@
 I'll start by reading the implementation files to review phase_3.## Review — Spec 32, Phase 3 (`facct.md` markdown card + single prose block)
 
-**How I verified:** read `facct.py`, `cli.py`, `test_facct.py`, `edition_index.py`, the phase-3 commit (`3b0149e`, authored `Jonathan Karr` ✓) and the README line; ran `uv --project pipelines run pytest pipelines` (423 passed, 1 skipped — the skip is the pre-existing `test_original_run_regression` corpus skip, not a facct test); and rendered the real card **in memory to stdout** (`build_facct` + `report_markdown`, no write) so I could read it against the docs bar without touching `runs/original-2026-10-21/`. I made no edits to the tree.
+**How I verified:** read `facct.py`, `cli.py`, `test_facct.py`, `edition_index.py`, the phase-3 commit (`3b0149e`, authored `a contributor` ✓) and the README line; ran `uv --project pipelines run pytest pipelines` (423 passed, 1 skipped — the skip is the pre-existing `test_original_run_regression` corpus skip, not a facct test); and rendered the real card **in memory to stdout** (`build_facct` + `report_markdown`, no write) so I could read it against the docs bar without touching `runs/original-2026-10-21/`. I made no edits to the tree.
 
 ### What's solid
 
