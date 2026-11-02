@@ -140,6 +140,10 @@ def main() -> None:
                 failed.append(model["id"])
         dest = RUNS / model["id"] / "model.json"
         dest.parent.mkdir(parents=True, exist_ok=True)
+        if dest.exists():
+            previous = json.loads(dest.read_text(encoding="utf-8"))
+            if "collected" in previous:
+                card["collected"] = previous["collected"]
         dest.write_text(json.dumps(card, indent=2) + "\n", encoding="utf-8")
         status = "ok" if card["probe"].get("ok") else "FAIL"
         cost = card["probe"].get("cost_usd")

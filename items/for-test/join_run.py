@@ -20,6 +20,7 @@ later adds the remaining passages to the same file.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -38,6 +39,38 @@ from sacredbench.config import load_config  # noqa: E402
 from sacredbench.generate import Question, load_questions  # noqa: E402
 
 PYTHON = REPO / ".venv" / "bin" / "python"
+
+
+def record_usage(model_id: str) -> None:
+    """Add this model's collected answers into runs/<id>/model.json."""
+    card_path = REPO / "runs" / model_id / "model.json"
+    if not card_path.exists():
+        return
+    card = json.loads(card_path.read_text(encoding="utf-8"))
+    prices = (card.get("catalogue") or {}).get("pricing_usd_per_token") or {}
+    prompt_price = float(prices.get("prompt") or 0)
+    completion_price = float(prices.get("completion") or 0)
+    prompt_tokens = completion_tokens = calls = 0
+    base = card_path.parent / "base"
+    if base.is_dir():
+        for path in base.rglob("answers.jsonl"):
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if row.get("model_id") != model_id:
+                    continue
+                usage = row.get("usage") or {}
+                prompt_tokens += int(usage.get("in") or 0)
+                completion_tokens += int(usage.get("out") or 0)
+                calls += 1
+    card["collected"] = {
+        "calls": calls,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cost_usd": round(prompt_tokens * prompt_price + completion_tokens * completion_price, 8),
+    }
+    card_path.write_text(json.dumps(card, indent=2) + "\n", encoding="utf-8")
 TEST_PASSAGES = 3
 
 
@@ -180,8 +213,9 @@ def main() -> None:
         print(f"collect {rel} -> {answers.relative_to(REPO)} ({len(todo)} questions, {pending} to call)")
         bar = tqdm(total=pending, desc=str(rel), unit="call", leave=True, disable=pending == 0)
 
-        def tick(*_a, _bar=bar) -> None:
+        def tick(*_a, _bar=bar, _model=args.model) -> None:
             _bar.update(1)
+            record_usage(_model)
 
         done, failed, messages = collect(
             todo, cfg, answers, on_result=tick, on_failure=tick, digest_from=all_qs,
