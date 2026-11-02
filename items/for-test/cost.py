@@ -3,7 +3,7 @@
 The earlier ~$70 and ~$14 figures were for the committed 476-question run.
 This run has a different number of questions, so those dollar amounts do not
 apply. Token rates are the measured tokens per call from that run
-(runs/original-2026-10-21/summary.md), scaled by this run's question count.
+(runs/archive/original-2026-10-21/summary.md), scaled by this run's question count.
 gpt-oss-20b keeps its own output rate, which was much longer. Every other
 model uses the mean output of haiku and opus on that run. A second total
 prices every model as if it wrote as much as gpt-oss-20b.

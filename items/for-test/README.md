@@ -13,6 +13,8 @@ This folder is the test set for the six traditions. The population sample is 30 
 
 `*/familiarity/` is the pre-registered list and is not in the run (Christianity 4, Judaism 1, Islam 8, Sikhism 3, Hinduism 4, Buddhism 4). `cost.py` writes `COST.md`. `models/openrouter.yaml` is the 16-model run and `models/openrouter-subset.yaml` is 7 of those models. `review/` is check pages only.
 
+`join_run.py --test` collects the first 3 passages of each tradition; the same command without `--test` adds the rest to those answer files. It collects one model at a time. It creates `runs/<model>/base/` plus the same folders as the question file (`christianity/english/population/`, `sikhism/native/population/`, and the rest) only when that file is collected. `base` is temperature 0 and search off. A later English Guru Granth Sahib is a new folder under that model and does not replace the Gurmukhi answers. Finished dated runs are in `runs/archive/`.
+
 ## Before a run
 
 No pull request is open. These issues are still open and the work is not already on `main`.

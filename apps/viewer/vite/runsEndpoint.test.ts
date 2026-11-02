@@ -65,6 +65,21 @@ describe("runsEndpoint listRuns", () => {
     if (symlinked) expect(ids).not.toContain("symsummary"); // summary.json is a symlink
   });
 
+  it("lists a dated run under archive/ and skips an archive child with no summary", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "archive-"));
+    try {
+      fs.mkdirSync(path.join(root, "archive", "original-2026-10-21"), { recursive: true });
+      fs.writeFileSync(path.join(root, "archive", "original-2026-10-21", "summary.json"), "{}");
+      fs.mkdirSync(path.join(root, "archive", "for-test"));
+      const ids = listRuns(root).map((r) => r.id);
+      expect(ids).toContain("archive/original-2026-10-21");
+      expect(ids).not.toContain("archive");
+      expect(ids).not.toContain("archive/for-test");
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("returns [] for a nonexistent root (the empty state, not a throw)", () => {
     expect(listRuns(path.join(tmp, "does-not-exist"))).toEqual([]);
   });

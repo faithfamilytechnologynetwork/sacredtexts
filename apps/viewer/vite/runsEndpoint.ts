@@ -31,6 +31,18 @@ export interface RunIndexEntry {
 
 /** `generated_at` from a run's summary.json if present as a string, else undefined. Never
  * throws: a missing/unreadable/malformed summary yields undefined (recency then falls back). */
+function consider(out: RunIndexEntry[], dir: string, id: string): void {
+  const summary = path.join(dir, "summary.json");
+  try {
+    const ls = fs.lstatSync(summary);
+    if (ls.isSymbolicLink() || !ls.isFile()) return;
+    fs.accessSync(summary, fs.constants.R_OK);
+    out.push({ id, mtimeMs: fs.statSync(dir).mtimeMs, generatedAt: readGeneratedAt(summary) });
+  } catch {
+    /* missing / unreadable summary.json — skip */
+  }
+}
+
 function readGeneratedAt(summaryPath: string): string | undefined {
   try {
     const parsed = JSON.parse(fs.readFileSync(summaryPath, "utf8")) as unknown;
@@ -64,19 +76,22 @@ export function listRuns(runsDir: string): RunIndexEntry[] {
     // traversal, not only escaping ones); a symlinked run dir is intentionally skipped.
     if (e.isSymbolicLink() || !e.isDirectory()) continue;
     const dir = path.join(root, e.name);
-    const summary = path.join(dir, "summary.json");
-    try {
-      // lstat first so a SYMLINKED summary.json is never indexed (statSync/accessSync
-      // would follow it) — consistent with the no-symlink-traversal rule.
-      const ls = fs.lstatSync(summary);
-      if (ls.isSymbolicLink() || !ls.isFile()) continue;
-      fs.accessSync(summary, fs.constants.R_OK); // require it to be readable, not just present
-      // Read generated_at for recency. A missing/malformed summary still lists the run (same
-      // runs as before) — generatedAt just stays undefined, so recency falls back to the id.
-      out.push({ id: e.name, mtimeMs: fs.statSync(dir).mtimeMs, generatedAt: readGeneratedAt(summary) });
-    } catch {
-      /* missing / unreadable summary.json — skip */
+    // Dated evidence lives one level down. A folder named archive with no
+    // summary of its own contributes each child that has one, id archive/<name>.
+    if (e.name === "archive") {
+      let nested: fs.Dirent[];
+      try {
+        nested = fs.readdirSync(dir, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const child of nested) {
+        if (child.isSymbolicLink() || !child.isDirectory()) continue;
+        consider(out, path.join(dir, child.name), `archive/${child.name}`);
+      }
+      continue;
     }
+    consider(out, dir, e.name);
   }
   out.sort(
     (a, b) =>

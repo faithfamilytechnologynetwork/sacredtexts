@@ -6,7 +6,7 @@ sections below) — the committed `scores-{ar,en}.jsonl` now reflect the current
 
 ## Design
 
-The 28 Qur'an questions from the committed `runs/original-2026-10-21` suite (ids preserved),
+The 28 Qur'an questions from the committed `runs/archive/original-2026-10-21` suite (ids preserved),
 in two conditions:
 
 - **en** (`questions-en.jsonl`): the original English prompt scaffolds, verbatim.

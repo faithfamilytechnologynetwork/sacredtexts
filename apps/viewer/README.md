@@ -62,7 +62,7 @@ pnpm -C apps/viewer dev          # then open the printed URL
   page's index fetch returns the SPA shell (HTML) and the app shows the empty state — it
   never crashes.
 
-The committed sample run `runs/first-run-2026-10-11/` renders out of the box when it is
+The committed sample run `runs/archive/first-run-2026-10-11/` renders out of the box when it is
 the only run present; `src/local/realRun.test.ts` pins it through `loadRun`,
 `src/routes/LeaderboardPage.test.tsx` renders it through the leaderboard,
 `src/routes/ExplorerPage.test.tsx` drills into it, and

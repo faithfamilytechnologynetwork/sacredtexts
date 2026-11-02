@@ -5,7 +5,7 @@ search-on arm reports: overall + per-text + per-task accuracy / coverage / outco
 failure-kind mix (via the committed `classify_failure`), and search provenance (cells that
 fired native search, cited URLs). Prints a report; writes analysis.json.
 
-    uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/analyze.py
+    uv --project pipelines run python runs/archive/exp-provider-native-search-2026-10-29/analyze.py
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """Build the Arabic-scaffold condition for the Qur'an prompt-language experiment.
 
-Takes the 28 Qur'an questions from runs/original-2026-10-21/questions.jsonl and writes:
+Takes the 28 Qur'an questions from runs/archive/original-2026-10-21/questions.jsonl and writes:
   - questions-en.jsonl : the rows verbatim (condition A)
   - questions-ar.jsonl : same rows, prompt scaffold translated to Arabic (condition B);
     quoted passages, citations, and ids are byte-identical to condition A.
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 REPO = Path("/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts")
-SRC = REPO / "runs/original-2026-10-21/questions.jsonl"
+SRC = REPO / "runs/archive/original-2026-10-21/questions.jsonl"
 OUT_DIR = Path(sys.argv[1])
 
 NAMES_AR = {

@@ -19,35 +19,29 @@ Familiarity lists are in the sibling `familiarity/` folders and are not
 part of this command. The panel is 16 models, search off.
 
 ```bash
-python items/for-test/join_run.py
-uv --project pipelines run python -m sacredbench collect \
-  runs/for-test/questions.jsonl items/for-test/models/openrouter.yaml \
-  --out runs/for-test/answers.jsonl
-uv --project pipelines run python -m sacredbench score \
-  runs/for-test/answers.jsonl \
-  --scores-out runs/for-test/scores.jsonl \
-  --summary-out runs/for-test/summary.json \
-  --summary-md runs/for-test/summary.md
-uv --project pipelines run python -m sacredbench analyze runs/for-test
-uv --project pipelines run python -m sacredbench facct runs/for-test
+python items/for-test/join_run.py --model haiku --test
+python items/for-test/join_run.py --model haiku
 ```
+
+`--test` calls the first 3 passages of each tradition. The second command, without `--test`, keeps those answers and collects the rest. See `runs/README.md`.
+
+That creates `runs/haiku/base/` and, under it, the same folders as the question
+files (`christianity/english/population/`, `sikhism/native/population/`, and
+the rest). Each folder receives `answers.jsonl`, then `scores.jsonl`,
+`summary.json`, and `summary.md`. Run the same command again to retry cells
+that failed. Add `--only sikhism/native/population` to collect one folder.
 
 A pilot is one tradition and one model. Tradition names are `Christianity`,
 `Judaism`, and `Islam`. Model ids include `haiku`, `opus`, `sol`, and
 `gpt-oss-20b`.
 
 ```bash
-uv --project pipelines run python -m sacredbench collect \
-  items/for-test/christianity/english/population/questions.jsonl \
-  items/for-test/models/openrouter.yaml \
-  --model haiku \
-  --out runs/for-test-christianity/answers.jsonl
+python items/for-test/join_run.py --model haiku --only christianity/english/population
 ```
 
-That answers file is only the Christianity questions. Run the same command
-again without `--model` to add the other models, and the `haiku` rows are
-skipped. The other traditions are separate files. Collect the joined
-`runs/for-test/questions.jsonl` into `runs/for-test/` when you want the full join.
+That answers file is only the Christianity English questions for haiku. Run
+the same command without `--only` to collect the other population files.
+Finished haiku rows in a folder that already has answers are skipped.
 
 Each answer row records the model id, the OpenRouter slug, the provider,
 temperature, max tokens, and the panel fingerprint (provider, model,

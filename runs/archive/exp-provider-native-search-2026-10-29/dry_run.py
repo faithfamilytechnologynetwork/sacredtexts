@@ -4,7 +4,7 @@ Proves the harness is wired correctly WITHOUT any API call or key: the panel loa
 questions load, the search-on/off arms carry distinct panel fingerprints, and the cell plan
 is exactly 56 x 4 = 224 (2 models x search on/off; gemini deferred). Makes no network call.
 
-    uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/dry_run.py
+    uv --project pipelines run python runs/archive/exp-provider-native-search-2026-10-29/dry_run.py
 """
 
 from __future__ import annotations

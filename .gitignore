@@ -32,15 +32,6 @@ texts/edition_index.jsonl.manifest.json
 texts/bible-nabre.json
 texts/encyclicals/
 
-# Run outputs are rebuilt locally — EXCEPT the first committed benchmark run,
-# whose copyright-audited evidence is the loop-closure deliverable (Spec 1 Phase 8).
-runs/*
-!runs/first-run-2026-10-11/
-!runs/tutorial-2026-10-11/
-!runs/original-2026-10-21/
-!runs/exp-arabic-prompts-2026-10-29/
-!runs/exp-provider-native-search-2026-10-29/
-
 # Live model panel (keys come from env, panel is per-user)
 configs/models.yaml
 

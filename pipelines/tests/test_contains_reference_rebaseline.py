@@ -145,7 +145,7 @@ REFUSED_SET_SHA256 = {
 
 
 def _load_scores(run: str):
-    p = REPO_ROOT / "runs" / run / "scores.jsonl"
+    p = REPO_ROOT / "runs" / "archive" / run / "scores.jsonl"
     if not p.exists():
         pytest.skip(f"{run} evidence not present")
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
@@ -200,7 +200,7 @@ def test_contains_reference_invariants(run):
 
 @pytest.mark.parametrize("run", list(EXPECTED_ACCURACY))
 def test_rebaselined_headline_accuracy_and_coverage(run):
-    p = REPO_ROOT / "runs" / run / "summary.json"
+    p = REPO_ROOT / "runs" / "archive" / run / "summary.json"
     if not p.exists():
         pytest.skip(f"{run} evidence not present")
     summary = json.loads(p.read_text(encoding="utf-8"))
@@ -254,7 +254,7 @@ def test_outcome_exclusive_and_refused_keeps_submetrics(run):
 
 
 def test_first_run_overall_and_lds_tradition_pinned():
-    p = REPO_ROOT / "runs" / "first-run-2026-10-11" / "summary.json"
+    p = REPO_ROOT / "runs" / "archive" / "first-run-2026-10-11" / "summary.json"
     if not p.exists():
         pytest.skip("first-run evidence not present")
     summary = json.loads(p.read_text(encoding="utf-8"))

@@ -33,7 +33,7 @@ from sacredbench import cli
 from sacredbench.score import _citation_candidates, score_file
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-RUN = REPO_ROOT / "runs" / "original-2026-10-21"
+RUN = REPO_ROOT / "runs" / "archive" / "original-2026-10-21"
 PINNED_DIGEST = "de65959a99dea9b3"
 
 # Generation-invariance anchor over the CURRENT corpus. The committed run reproduced its own

@@ -755,7 +755,7 @@ def test_real_run_frozen_card_fails_loudly_after_hadith_trim():
     loudly, naming issue #74 and EVERY missing edition (not just the first), rather than fabricate
     a selected_corpus_hash. The committed facct.json / facct.md are frozen (pinned byte-for-byte
     by test_original_run_regression.test_committed_facct_card_is_frozen_and_rebuild_fails_loudly)."""
-    run = REPO_ROOT / "runs" / "original-2026-10-21"
+    run = REPO_ROOT / "runs" / "archive" / "original-2026-10-21"
     if not run.exists() or not (REPO_ROOT / "texts" / "raw").exists():
         pytest.skip("no committed run / raw tree")
     with pytest.raises(FacctError) as e:

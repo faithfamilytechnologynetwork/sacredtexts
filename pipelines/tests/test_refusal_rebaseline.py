@@ -21,7 +21,7 @@ set and grow quadratically with every future rebaseline. So the isolation assert
 
 Their proof is preserved, unchanged, in: **PR #55** (the Spec-48 merge) and its diff; the Spec-48
 **review doc** (``codev/reviews/48-refusal-classifier-false-posit.md``); and the **pre-#52 commit**
-on ``main`` (``b93e881``), whose ``runs/tutorial-2026-10-11/scores.jsonl`` is the post-#48 /
+on ``main`` (``b93e881``), whose ``runs/archive/tutorial-2026-10-11/scores.jsonl`` is the post-#48 /
 pre-#52 state the original SHAs were frozen against.
 
 What THIS file now witnesses (current committed evidence, robust to future stacking):
@@ -59,7 +59,7 @@ PROMOTED_TO_CORRECT = ("haiku-search", "retrieve_quote-e2d74279aaf0")
 
 
 def _load_scores():
-    p = REPO_ROOT / "runs" / RUN / "scores.jsonl"
+    p = REPO_ROOT / "runs" / "archive" / RUN / "scores.jsonl"
     if not p.exists():
         pytest.skip(f"{RUN} evidence not present")
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]

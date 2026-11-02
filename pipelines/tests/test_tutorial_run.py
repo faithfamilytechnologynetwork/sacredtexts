@@ -16,7 +16,7 @@ import pytest
 from sacredbench.score import score_file
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-RUN = REPO_ROOT / "runs" / "tutorial-2026-10-11"
+RUN = REPO_ROOT / "runs" / "archive" / "tutorial-2026-10-11"
 # first-run's bare claude-haiku-5-5 panel entry has no `tools` field, which the viewer keys
 # as [] → an empty trailing tools segment. Under Approach B the tutorial's no-tools haiku
 # entry produces this exact key, so the two dedupe.

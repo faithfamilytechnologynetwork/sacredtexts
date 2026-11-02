@@ -1,5 +1,5 @@
 // Verifies the viewer's own loadRun() renders the COMMITTED first benchmark run
-// (runs/first-run-2026-10-11) end-to-end — the artifacts `score` actually wrote,
+// (runs/archive/first-run-2026-10-11) end-to-end — the artifacts `score` actually wrote,
 // not a fixture. This is the "view the real run" step of TUTORIAL.md, pinned in
 // the gate so the committed evidence can never drift out of the viewer's schema.
 import { describe, it, expect } from "vitest";
@@ -9,7 +9,7 @@ import { dirname, resolve } from "node:path";
 import { loadRun } from "../lib/localResults";
 import { searchContrast } from "../lib/leaderboard";
 
-const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/first-run-2026-10-11");
+const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/archive/first-run-2026-10-11");
 const present = existsSync(resolve(runDir, "summary.json"));
 
 function diskFetcher(base: string): typeof fetch {
@@ -26,7 +26,7 @@ function diskFetcher(base: string): typeof fetch {
 
 describe.skipIf(!present)("committed first run renders through the viewer", () => {
   it("loadRun parses summary + joins all cells with metrics, usage, and panel", async () => {
-    const base = "/runs/first-run-2026-10-11";
+    const base = "/runs/archive/first-run-2026-10-11";
     const run = await loadRun(base, diskFetcher(base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;
@@ -49,7 +49,7 @@ describe.skipIf(!present)("committed first run renders through the viewer", () =
   });
 
   it("carries the refused outcome and has no search on/off contrast (no-pair fallback)", async () => {
-    const base = "/runs/first-run-2026-10-11";
+    const base = "/runs/archive/first-run-2026-10-11";
     const run = await loadRun(base, diskFetcher(base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;

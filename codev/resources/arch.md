@@ -156,7 +156,7 @@ is a static SPA host (`server/index.mjs`, hono + history fallback; no `/api` pro
 `runs/<id>/`: `questions.jsonl` (+ `.manifest.json`), `answers.jsonl`, `scores.jsonl`,
 `summary.json`, `summary.md`, and a `README.md` that makes the evidence self-describing.
 `runs/*` is gitignored with a per-run negation for each committed-evidence dir
-(`!runs/first-run-2026-10-11/`, `!runs/tutorial-2026-10-11/` — the latter the Spec-3
+(`!runs/archive/first-run-2026-10-11/`, `!runs/archive/tutorial-2026-10-11/` — the latter the Spec-3
 KJV/Qur'an(ar)/Talmud(he) 2×2 web-search on/off panel). The per-user
 `configs/models.yaml` is gitignored; keys come from the environment only.
 
