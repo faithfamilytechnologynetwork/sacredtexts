@@ -81,6 +81,7 @@ def collect(
     config: RunConfig,
     answers_path: Path,
     on_result=None,
+    on_failure=None,
     digest_from: list[Question] | None = None,
 ) -> tuple[int, int, list[str]]:
     """Run all pending (question, model) cells. Returns (done, failed, failure_messages).
@@ -177,6 +178,8 @@ def collect(
                 fut.result()
             except Exception as e:  # noqa: BLE001 — record any failure, keep the cell pending
                 failures.append(f"{q.id} x {m.id}: {e}")
+                if on_failure:
+                    on_failure(q, m, e)
                 if is_quota_error(e):
                     stop.set()
                     for pending in futures:

@@ -27,12 +27,13 @@ from dataclasses import replace
 from pathlib import Path
 
 from cost import PANEL, RUNNABLE
+from tqdm import tqdm
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 sys.path.insert(0, str(REPO / "pipelines"))
 
-from sacredbench.collect import collect  # noqa: E402
+from sacredbench.collect import _existing, collect  # noqa: E402
 from sacredbench.config import load_config  # noqa: E402
 from sacredbench.generate import Question, load_questions  # noqa: E402
 
@@ -145,9 +146,19 @@ def main() -> None:
         dest = out_dir(args.model, questions)
         dest.mkdir(parents=True, exist_ok=True)
         answers = dest / "answers.jsonl"
-        label = "test " if args.test else ""
-        print(f"collect {label}{questions.relative_to(ROOT)} -> {answers.relative_to(REPO)} ({len(todo)} questions)")
-        done, failed, messages = collect(todo, cfg, answers, digest_from=all_qs)
+        rel = questions.parent.relative_to(ROOT)
+        saved, *_ = _existing(answers)
+        pending = sum(1 for q in todo if (q.id, args.model) not in saved)
+        print(f"collect {rel} -> {answers.relative_to(REPO)} ({len(todo)} questions, {pending} to call)")
+        bar = tqdm(total=pending, desc=str(rel), unit="call", leave=True, disable=pending == 0)
+
+        def tick(*_a, _bar=bar) -> None:
+            _bar.update(1)
+
+        done, failed, messages = collect(
+            todo, cfg, answers, on_result=tick, on_failure=tick, digest_from=all_qs,
+        )
+        bar.close()
         print(f"  collected {done}, pending {failed}")
         if failed:
             for msg in messages:

@@ -3,3 +3,4 @@
 #   .venv/bin/python -m pytest pipelines
 -e pipelines
 pytest>=8.0
+tqdm>=4.66
