@@ -1,0 +1,26 @@
+{
+  "tradition": "Christianity",
+  "sample": "familiarity",
+  "run": false,
+  "notice": "Familiarity panel, not in the population run. Greek New Testament, Scrivener 1894. John 3:16 and Matthew 6:9 only.",
+  "passages": [
+    {
+      "tradition": "Christianity",
+      "citation": "John 3:16",
+      "sample": "familiarity",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "Οὕτω γὰρ ἠγάπησεν ὁ Θεὸς τὸν κόσμον, ὥστε τὸν υἱὸν αὐτοῦ τὸν μονογενῆ ἔδωκεν, ἵνα πᾶς ὁ πιστεύων εἰς αὐτὸν μὴ ἀπόληται, ἀλλ᾽ ἔχῃ ζωὴν αἰώνιον."
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Matthew 6:9",
+      "sample": "familiarity",
+      "version": "the Greek New Testament (Scrivener 1894)",
+      "text": {
+        "native": "οὕτως οὖν προσεύχεσθε ὑμεῖς· Πάτερ ἡμῶν ὁ ἐν τοῖς οὐρανοῖς, ἁγιασθήτω τὸ ὄνομά σου·"
+      }
+    }
+  ]
+}

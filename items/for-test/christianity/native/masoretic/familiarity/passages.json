@@ -1,0 +1,26 @@
+{
+  "tradition": "Christianity",
+  "sample": "familiarity",
+  "run": false,
+  "notice": "Familiarity panel, not in the population run. Masoretic text from the Westminster Leningrad Codex. Genesis 1:1 and Psalms 23:1 only.",
+  "passages": [
+    {
+      "tradition": "Christianity",
+      "citation": "Genesis 1:1",
+      "sample": "familiarity",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "בְּ/רֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַ/שָּׁמַ֖יִם וְ/אֵ֥ת הָ/אָֽרֶץ׃"
+      }
+    },
+    {
+      "tradition": "Christianity",
+      "citation": "Psalms 23:1",
+      "sample": "familiarity",
+      "version": "the Masoretic Text (Westminster Leningrad Codex)",
+      "text": {
+        "native": "מִזְמ֥וֹר לְ/דָוִ֑ד KJV:Ps.23.1 יְהוָ֥ה רֹ֝עִ֗/י לֹ֣א אֶחְסָֽר׃"
+      }
+    }
+  ]
+}

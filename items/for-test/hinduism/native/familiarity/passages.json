@@ -1,0 +1,44 @@
+{
+  "tradition": "Hinduism",
+  "sample": "familiarity",
+  "run": false,
+  "notice": "Familiarity panel, not in the population run. Sanskrit is the Stotra Samhita extract. English is Annie Besant, 1922.",
+  "passages": [
+    {
+      "tradition": "Hinduism",
+      "citation": "2:47",
+      "sample": "familiarity",
+      "version": "Stotra Samhita (Gita Press text)",
+      "text": {
+        "native": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि"
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "4:7",
+      "sample": "familiarity",
+      "version": "Stotra Samhita (Gita Press text)",
+      "text": {
+        "native": "यदा यदा हि धर्मस्य ग्लानिर्भवति भारत अभ्युत्थानमधर्मस्य तदाऽऽत्मानं सृजाम्यहम्"
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "4:8",
+      "sample": "familiarity",
+      "version": "Stotra Samhita (Gita Press text)",
+      "text": {
+        "native": "परित्राणाय साधूनां विनाशाय च दुष्कृताम् धर्मसंस्थापनार्थाय सम्भवामि युगे युगे"
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "18:66",
+      "sample": "familiarity",
+      "version": "Stotra Samhita (Gita Press text)",
+      "text": {
+        "native": "सर्वधर्मान् परित्यज्य मामेकं शरणं व्रज अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि मा शुचः"
+      }
+    }
+  ]
+}

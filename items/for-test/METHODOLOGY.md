@@ -36,6 +36,8 @@ population sample (seed fixed at 20261030).
 | Judaism | 1 |
 | Islam | 8 |
 | Sikhism | 3 |
+| Hinduism | 4 |
+| Buddhism | 4 |
 
 Compare traditions on the population sample of 30. Report the familiarity
 panel with its own count.
@@ -55,9 +57,10 @@ are still not in the repo.
 
 Judaism's Aramaic edition and its English edition are the same 30 citations.
 The Aramaic edition is two calls: an English prompt and a native-language
-prompt. The English edition is one call. Islam and Sikhism are the native
-edition only, also as two calls. This corpus has no English Qur'an and no
-English Guru Granth Sahib.
+prompt. The English edition is one call. Islam is the same shape: the Uthmani
+text as two calls, and Saheeh International as one English call, on the same
+citations. Sikhism is the native edition only, also as two calls. This corpus
+has no English Guru Granth Sahib.
 
 The prompt names the edition. A native edition is not asked in both languages
 inside one prompt. The native-language lines are drafts for a native speaker.
@@ -183,7 +186,10 @@ miss. A low score on both is a change of words.
 Hinduism is the same 30 citations in both editions. The 16-word floor is
 applied to Annie Besant's English, because only 16 Sanskrit verses reach 16
 words. Buddhism is 30 Pali verses of at least 16 words. This corpus has no
-English Dhammapada. Neither work has a familiarity list in `well_known.yaml`.
+English Dhammapada. Each has a familiarity panel in `well_known.yaml` (Gita
+2:47, 4:7, 4:8, 18:66; Dhammapada 5, 103, 183, 223). Those verses are not in
+the population 30, so the drawn sample was left as it is. Dhammapada 1 is
+already in that draw, so it is not also on the familiarity list.
 
 `christianity/modern/english/` is a separate modern sample: 15 Book of
 Mormon verses (2013 edition) and 15 numbered paragraphs from the Vatican

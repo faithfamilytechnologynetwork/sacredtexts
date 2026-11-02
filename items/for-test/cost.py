@@ -35,6 +35,7 @@ RUNNABLE = (
     ROOT / "judaism" / "english" / "population" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "islam" / "english" / "population" / "questions.jsonl",
     ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "sikhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "hinduism" / "native" / "population" / "prompt-english" / "questions.jsonl",
@@ -63,6 +64,7 @@ WRITTEN = (
     ("Islam", [
         ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
         ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "islam" / "english" / "population" / "questions.jsonl",
     ]),
     ("Sikhism", [
         ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
@@ -110,30 +112,33 @@ def question_count(path: Path) -> int:
 
 
 def six_traditions() -> list[tuple[str, int, str]]:
-    """Finished population counts. Each tradition is 360 questions.
+    """Population counts from the files on disk.
 
-    Christianity is the NRSV plus the same 30 verses in their original language.
-    Judaism is already at 360. A mismatch means the files changed.
+    A tradition with an English edition is 360 questions. Sikhism and Buddhism
+    are 240: this corpus has no English edition of either work. A mismatch
+    means the files changed.
     """
+    how = {
+        "Christianity": "NRSV, plus the same 30 in Masoretic or Greek, both prompts",
+        "Judaism": "Aramaic in both prompt languages, plus the English edition",
+        "Islam": "Uthmani in both prompt languages, plus Saheeh International",
+        "Sikhism": "Gurmukhi, both prompts; no English edition in this corpus",
+        "Hinduism": "Sanskrit in both prompt languages, plus Besant's English",
+        "Buddhism": "Pali, both prompts; no English edition in this corpus",
+    }
+    expected = {
+        "Christianity": FINISHED_OTHER,
+        "Judaism": FINISHED_OTHER,
+        "Islam": FINISHED_OTHER,
+        "Sikhism": 240,
+        "Hinduism": FINISHED_OTHER,
+        "Buddhism": 240,
+    }
     on_disk = {name: sum(question_count(path) for path in paths) for name, paths in WRITTEN}
-    if on_disk["Christianity"] != FINISHED_OTHER:
-        raise SystemExit(f"Christianity population files have {on_disk['Christianity']} questions, expected {FINISHED_OTHER}")
-    if on_disk["Judaism"] != FINISHED_OTHER:
-        raise SystemExit(f"Judaism population files have {on_disk['Judaism']} questions, expected {FINISHED_OTHER}")
-    rows = [
-        ("Christianity", FINISHED_OTHER, "NRSV, plus the same 30 in Masoretic or Greek, both prompts"),
-        ("Judaism", FINISHED_OTHER, "Aramaic in both prompt languages, plus the English edition"),
-    ]
-    for name in ("Islam", "Sikhism"):
-        have = on_disk[name]
-        rows.append((
-            name,
-            FINISHED_OTHER,
-            f"{have} on disk (native, both prompts); 360 once an English edition is added",
-        ))
-    for name in ("Hinduism", "Buddhism"):
-        rows.append((name, FINISHED_OTHER, "estimated: native in both prompt languages, plus an English edition"))
-    return rows
+    for name, count in expected.items():
+        if on_disk[name] != count:
+            raise SystemExit(f"{name} population files have {on_disk[name]} questions, expected {count}")
+    return [(name, expected[name], how[name]) for name, _ in WRITTEN]
 
 
 def live_prices(slugs: list[str]) -> dict[str, dict[str, float]]:
@@ -224,7 +229,7 @@ def main() -> None:
         f"much as gpt-oss-20b did on the committed run. The floor for those same {n_complete}",
         f"questions is **{money(complete_cost)}**.",
         "",
-        f"Questions on disk today are {n} (Christianity, Judaism, Islam). That smaller run is",
+        f"Questions on disk today are {n}. That run is",
         f"**{money(full_cost)}** to **{money(full_verbose)}** on List A.",
         "",
         "`search` in the panel file is `false`. No model is sent `web_search`, so this",
@@ -244,8 +249,8 @@ def main() -> None:
         "the native text asked in English and in its own language (240), plus an",
         "English edition (120). Christianity's native text is the same 30 verses,",
         "Masoretic where the verse is from the Hebrew Bible and Greek where it is",
-        "from the New Testament. Islam and Sikhism have only the native edition",
-        "on disk. Hinduism and Buddhism have no passages yet.",
+        "from the New Testament. Islam adds Saheeh International. Sikhism and",
+        "Buddhism have no English edition, so those two are 240 questions.",
         "",
         "## All six traditions",
         "",

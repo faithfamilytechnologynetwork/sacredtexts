@@ -7,16 +7,17 @@ budget **$648.79**. That is the higher figure: every model writes as
 much as gpt-oss-20b did on the committed run. The floor for those same 2160
 questions is **$211.91**.
 
-Questions on disk today are 960 (Christianity, Judaism, Islam). That smaller run is
-**$94.18** to **$288.35** on List A.
+Questions on disk today are 1920. The dollar tables below were scaled when that
+count was 960 (Christianity, Judaism, and the Arabic Qur'an only), so they read
+**$94.18** to **$288.35** on List A. Re-run `cost.py` before using them for the
+1920-question set.
 
 `search` in the panel file is `false`. No model is sent `web_search`, so this
 estimate has no web-search fee. Set that key to `true` or `both` to change it.
 
 The ~$70 and ~$14 figures were for the committed **476-question** run.
-The population run has **960** questions, so those amounts are the wrong scale.
-The dollars below keep that run's measured tokens per call and multiply by
-960 / 476 (2.017). Input is the mean of the three measured models
+The population files now have **1920** questions. The dollars below were scaled
+to **960** questions (960 / 476 = 2.017) and have not been repriced. Input is the mean of the three measured models
 (206.0 tokens per question). Output for gpt-oss-20b is its own measured
 rate (1672.9 tokens per question). Every other model uses the mean
 of haiku and opus (517.2). The last column prices every model at the
@@ -27,8 +28,9 @@ costs about the same per question. Each finished tradition is 360 questions:
 the native text asked in English and in its own language (240), plus an
 English edition (120). Christianity's native text is the same 30 verses,
 Masoretic where the verse is from the Hebrew Bible and Greek where it is
-from the New Testament. Islam and Sikhism have only the native edition
-on disk. Hinduism and Buddhism have no passages yet.
+from the New Testament. Islam's English edition on disk is Saheeh International.
+Sikhism has only the native edition. Hinduism has Besant's English. Buddhism
+has no English edition.
 
 ## All six traditions
 
@@ -36,14 +38,17 @@ on disk. Hinduism and Buddhism have no passages yet.
 |---|---:|---|
 | Christianity | 360 | NRSV, plus the same 30 in Masoretic or Greek, both prompts |
 | Judaism | 360 | Aramaic in both prompt languages, plus the English edition |
-| Islam | 360 | 240 on disk (native, both prompts); 360 once an English edition is added |
-| Sikhism | 360 | 240 on disk (native, both prompts); 360 once an English edition is added |
-| Hinduism | 360 | estimated: native in both prompt languages, plus an English edition |
-| Buddhism | 360 | estimated: native in both prompt languages, plus an English edition |
-| **All six** | **2160** | |
+| Islam | 360 | Uthmani in both prompt languages, plus Saheeh International |
+| Sikhism | 240 | Gurmukhi, both prompts; no English edition in this corpus |
+| Hinduism | 360 | Sanskrit in both prompt languages, plus Besant's English |
+| Buddhism | 240 | Pali, both prompts; no English edition in this corpus |
+| **All six** | **1920** | |
 
-List A, six traditions: floor **$211.91**, higher budget **$648.79**.
-List B, six traditions: floor **$42.63**, higher budget **$129.26**.
+List A and List B totals below were priced for 2160 questions, which counted an
+English Guru Granth Sahib and an English Dhammapada this corpus does not have.
+The files on disk are 1920. Re-run `cost.py` to reprice. The old 2160 figures
+were floor **$211.91**, higher budget **$648.79** (List A) and floor **$42.63**,
+higher budget **$129.26** (List B).
 That total is the population sample only. Familiarity lists are not in it.
 
 ## List A — 16 models

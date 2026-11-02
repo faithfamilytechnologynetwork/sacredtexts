@@ -26,9 +26,9 @@ OSIS = {
     "Exodus": "Exod", "Ezekiel": "Ezek", "Leviticus": "Lev", "1 Samuel": "1Sam",
     "2 Chronicles": "2Chr", "1 Kings": "1Kgs", "Judges": "Judg", "Daniel": "Dan",
     "2 Samuel": "2Sam", "1 Chronicles": "1Chr", "Isaiah": "Isa", "Jeremiah": "Jer",
-    "Joshua": "Josh", "Nehemiah": "Neh",
+    "Joshua": "Josh", "Nehemiah": "Neh", "Genesis": "Gen", "Psalms": "Ps",
 }
-NT = {"Acts", "John", "Luke", "Galatians", "Revelation", "Mark", "Hebrews", "2 Thessalonians"}
+NT = {"Acts", "John", "Luke", "Galatians", "Revelation", "Mark", "Hebrews", "2 Thessalonians", "Matthew"}
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
 EN = {
     "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
@@ -88,7 +88,7 @@ def donors() -> list[dict]:
     return rows
 
 
-def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str], notice: str) -> None:
+def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str], notice: str, *, sample: str = "population") -> None:
     citations = [row["citation"] for row in rows_src]
     built = []
     for row in rows_src:
@@ -96,6 +96,8 @@ def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str],
         example = next(c for c in citations if c != row["citation"])
         fields = {"citation": row["citation"], "version": row["version"], "head": head, "text": row["text"], "example": example}
         for task in TASKS:
+            if task == "complete_unit" and sample != "population" and not rest.strip():
+                continue
             expected = {
                 "retrieve_quote": {"text": row["text"]},
                 "complete_unit": {"text": rest, "full_text": row["text"]},
@@ -139,7 +141,7 @@ def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str],
     by_prompt: dict[str, list[dict]] = {"ask_english": [], "ask_native": []}
     for row in built:
         blank = row.pop("source_citation_blank", False)
-        ident = "|".join(["Christianity", "population", row["condition"], row["task"], row["citation"], row["prompt"]])
+        ident = "|".join(["Christianity", sample, row["condition"], row["task"], row["citation"], row["prompt"]])
         item = {
             "id": hashlib.sha256(ident.encode()).hexdigest()[:16],
             "task": row["task"],
@@ -153,7 +155,7 @@ def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str],
                 "document_type": "scripture",
                 "citation": "" if blank else row["citation"],
                 "requested_as": row["version"],
-                "sample": "population",
+                "sample": sample,
                 "condition": row["condition"],
             },
         }
@@ -170,14 +172,14 @@ def write_group(folder: Path, rows_src: list[dict], native_tmpl: dict[str, str],
         passages.append({
             "tradition": "Christianity",
             "citation": row["citation"],
-            "sample": "population",
+            "sample": sample,
             "version": row["version"],
             "text": {kind: row["text"]},
         })
     payload = {
         "tradition": "Christianity",
-        "sample": "population",
-        "run": True,
+        "sample": sample,
+        "run": sample == "population",
         "notice": notice,
         "passages": passages,
     }
@@ -222,6 +224,48 @@ def main() -> None:
     write_group(
         ROOT / "christianity" / "native" / "greek" / "population", nt, GR,
         "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text.",
+    )
+
+
+def familiarity() -> None:
+    """The four NRSV familiarity verses, in the same original-language split.
+
+    Genesis 1:1 and Psalms 23:1 are Masoretic. John 3:16 and Matthew 6:9 are
+    Greek. This does not rewrite the population files.
+    """
+    fam = json.loads((ROOT / "christianity/english/familiarity/passages.json").read_text(encoding="utf-8"))
+    citations = [p["citation"] for p in fam["passages"]]
+    hebrew = wlc_books(citations)
+    greek = greek_index()
+    masoretic, nt = [], []
+    for citation in citations:
+        book, chapter, verse = split_cite(citation)
+        if book in NT:
+            text = greek.get((book, chapter, verse))
+            if not text:
+                raise SystemExit(f"missing Greek verse {citation}")
+            nt.append({
+                "citation": citation, "text": text, "language": "grc",
+                "version": "the Greek New Testament (Scrivener 1894)",
+            })
+        else:
+            text = hebrew.get(f"{OSIS[book]}.{chapter}.{verse}")
+            if not text:
+                raise SystemExit(f"missing Masoretic verse {citation}")
+            masoretic.append({
+                "citation": citation, "text": text,
+                "language": "he",
+                "version": "the Masoretic Text (Westminster Leningrad Codex)",
+            })
+    write_group(
+        ROOT / "christianity" / "native" / "masoretic" / "familiarity", masoretic, HE,
+        "Familiarity panel, not in the population run. Masoretic text from the Westminster Leningrad Codex. Genesis 1:1 and Psalms 23:1 only.",
+        sample="familiarity",
+    )
+    write_group(
+        ROOT / "christianity" / "native" / "greek" / "familiarity", nt, GR,
+        "Familiarity panel, not in the population run. Greek New Testament, Scrivener 1894. John 3:16 and Matthew 6:9 only.",
+        sample="familiarity",
     )
 
 

@@ -348,7 +348,7 @@ def test_islam_build_reproduces_committed_question_files(bq):
     by_path: dict[Path, list[dict]] = {}
     for row in (bq._collect_row(r) for r in _islam_built(bq)):
         by_path.setdefault(bq._language_dir(row) / "questions.jsonl", []).append(row)
-    assert len(by_path) == 4
+    assert len(by_path) == 6
     for path, group in by_path.items():
         built = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in group)
         assert path.read_text(encoding="utf-8") == built, path
@@ -362,7 +362,10 @@ def test_yes_rows_stay_quran_and_no_rows_are_half(bq):
     for r in verify:
         if r["expected"]["answer"] == "yes":
             assert r["expected"]["true_tradition"] == "Islam"
-            assert r["expected"]["true_version"] == "Uthmani (QUL)"
+            if r["condition"] == "en_ask_en_answer":
+                assert r["expected"]["true_version"] == bq.QURAN_EN_VERSION
+            else:
+                assert r["expected"]["true_version"] == "Uthmani (QUL)"
 
 
 def test_prompts_drop_qul_but_metadata_keeps_version():

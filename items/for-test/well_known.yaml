@@ -26,34 +26,42 @@ items:
     version: Uthmani (QUL)
     citation: "2:255"
     weight: 5
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "2:286"
     weight: 5
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "24:35"
     weight: 5
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "59:22"
     weight: 4
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "59:23"
     weight: 4
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "59:24"
     weight: 4
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "18:109"
     weight: 4
+    english_version: Saheeh International (QUL)
   - work: The Qur'an
     version: Uthmani (QUL)
     citation: "39:53"
     weight: 4
+    english_version: Saheeh International (QUL)
   - work: Talmud Bavli
     version: William Davidson Edition - Aramaic
     citation: Berakhot 2a:1
@@ -71,3 +79,39 @@ items:
     version: Shabad OS (SGPC Shabadaarth)
     citation: "Ang 262:31"
     weight: 4
+  - work: Bhagavad Gita
+    version: Stotra Samhita (Gita Press text)
+    citation: "2:47"
+    weight: 5
+    english_version: Annie Besant (1922)
+  - work: Bhagavad Gita
+    version: Stotra Samhita (Gita Press text)
+    citation: "4:7"
+    weight: 4
+    english_version: Annie Besant (1922)
+  - work: Bhagavad Gita
+    version: Stotra Samhita (Gita Press text)
+    citation: "4:8"
+    weight: 4
+    english_version: Annie Besant (1922)
+  - work: Bhagavad Gita
+    version: Stotra Samhita (Gita Press text)
+    citation: "18:66"
+    weight: 5
+    english_version: Annie Besant (1922)
+  - work: Dhammapada
+    version: Chaṭṭha Saṅgāyana (VRI)
+    citation: "Dhammapada 5"
+    weight: 4
+  - work: Dhammapada
+    version: Chaṭṭha Saṅgāyana (VRI)
+    citation: "Dhammapada 103"
+    weight: 3
+  - work: Dhammapada
+    version: Chaṭṭha Saṅgāyana (VRI)
+    citation: "Dhammapada 183"
+    weight: 5
+  - work: Dhammapada
+    version: Chaṭṭha Saṅgāyana (VRI)
+    citation: "Dhammapada 223"
+    weight: 3

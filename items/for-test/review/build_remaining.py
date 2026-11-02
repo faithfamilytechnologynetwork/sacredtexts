@@ -7,7 +7,7 @@ Hinduism is one draw of 30. The 16-word floor is Besant's English, because only
 Buddhism is 30 Pali verses of at least 16 words. This corpus has no English
 Dhammapada, so there is no english/ folder.
 
-Neither work is listed in well_known.yaml, so there is no familiarity panel.
+Familiarity is written by write_familiarity() and is not part of the population draw.
 
     python items/for-test/review/build_remaining.py
 """
@@ -29,6 +29,7 @@ from sacredbench import catalogue as cat  # noqa: E402
 from sacredbench.convert import convert_target  # noqa: E402
 from sacredbench.generate import split_quote  # noqa: E402
 from sacredbench.item_sample import Passage, draw_passages  # noqa: E402
+from build_questions import prompt_text  # noqa: E402
 
 MIN_WORDS = 16
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
@@ -73,7 +74,7 @@ def population(pool: list[Passage], *, seed: int) -> list[Passage]:
     return [p for p, _ in draw_passages(pool, [], n=30, famous_share=0, seed=seed)]
 
 
-def question_rows(items, *, tradition, work, language, version, native_tmpl, document_type="scripture"):
+def question_rows(items, *, tradition, work, language, version, native_tmpl, document_type="scripture", sample="population"):
     citations = [passage.citation for passage, _ in items]
     out = []
     for passage, text in items:
@@ -105,7 +106,7 @@ def question_rows(items, *, tradition, work, language, version, native_tmpl, doc
             "language": language,
             "document_type": document_type,
             "citation": passage.citation,
-            "sample": "population",
+            "sample": sample,
             "version": version,
         }
         for task in TASKS:
@@ -128,7 +129,7 @@ def question_rows(items, *, tradition, work, language, version, native_tmpl, doc
     return out
 
 
-def english_rows(items, *, tradition, work, version):
+def english_rows(items, *, tradition, work, version, sample="population"):
     citations = [passage.citation for passage, _ in items]
     out = []
     for passage, text in items:
@@ -137,8 +138,8 @@ def english_rows(items, *, tradition, work, version):
         fields = {
             "citation": passage.citation,
             "version": edition_name(version),
-            "head": head,
-            "text": text,
+            "head": prompt_text(head),
+            "text": prompt_text(text),
             "example": example,
         }
         expected = {
@@ -158,7 +159,7 @@ def english_rows(items, *, tradition, work, version):
             "language": "en",
             "document_type": "scripture",
             "citation": passage.citation,
-            "sample": "population",
+            "sample": sample,
             "version": version,
         }
         for task in TASKS:
@@ -259,7 +260,7 @@ def write_questions(path: Path, rows: list[dict]) -> None:
     print(path.relative_to(ROOT), len(rows))
 
 
-def write_passages(folder: Path, rows: list[dict], *, notice: str) -> None:
+def write_passages(folder: Path, rows: list[dict], *, notice: str, sample: str = "population") -> None:
     passages = []
     for row in rows:
         if row["task"] != "retrieve_quote":
@@ -275,8 +276,8 @@ def write_passages(folder: Path, rows: list[dict], *, notice: str) -> None:
         })
     payload = {
         "tradition": passages[0]["tradition"],
-        "sample": "population",
-        "run": True,
+        "sample": sample,
+        "run": sample == "population",
         "notice": notice,
         "passages": passages,
     }
@@ -285,7 +286,7 @@ def write_passages(folder: Path, rows: list[dict], *, notice: str) -> None:
     print(dest.relative_to(ROOT), len(passages))
 
 
-def place(rows: list[dict], *, notice: str) -> list[str]:
+def place(rows: list[dict], *, notice: str, sample: str = "population") -> list[str]:
     collected = [collect(row) for row in rows]
     by_condition: dict[str, list[dict]] = {}
     for row in collected:
@@ -294,15 +295,15 @@ def place(rows: list[dict], *, notice: str) -> list[str]:
     citations = []
     for condition, group in by_condition.items():
         if condition == "en_ask_en_answer":
-            folder = ROOT / tradition / "english" / "population"
+            folder = ROOT / tradition / "english" / sample
             write_questions(folder / "questions.jsonl", group)
-            write_passages(folder, group, notice=notice)
+            write_passages(folder, group, notice=notice, sample=sample)
         else:
             prompt = {"ask_english": "prompt-english", "ask_native": "prompt-native"}[condition]
-            folder = ROOT / tradition / "native" / "population" / prompt
+            folder = ROOT / tradition / "native" / sample / prompt
             write_questions(folder / "questions.jsonl", group)
             if condition == "ask_native":
-                write_passages(folder.parent, group, notice=notice)
+                write_passages(folder.parent, group, notice=notice, sample=sample)
                 citations = [row["source"]["citation"] for row in group if row["task"] == "retrieve_quote"]
     return citations
 
@@ -316,7 +317,7 @@ def review_page(*, folder, title, version, english_version, language, source, na
         f"- Language: {language}",
         f"- Raw file: `{source}`",
         "- Tasks: retrieve_quote, complete_unit, cite_passage, verify_source",
-        f"- Size: population sample of {len(citations)} passages. No familiarity list in `well_known.yaml`.",
+        f"- Size: population sample of {len(citations)} passages. Familiarity is a separate list in `well_known.yaml`.",
         "",
         "## Passages to check",
         "",
@@ -421,6 +422,49 @@ def main() -> None:
         source="texts/raw/Buddhism/s0502m.mul.xml",
         native=PI,
         citations=buddhist_citations,
+    )
+
+
+def write_familiarity() -> None:
+    """The pre-registered Gita and Dhammapada lines, outside the population 30.
+
+    Those four Gita verses and four Dhammapada verses are not in the drawn 30, so
+    the population files stay as they are. Dhammapada 1 is already in the draw,
+    so it is not on this list.
+    """
+    from sacredbench.item_sample import load_well_known
+
+    known = load_well_known(ROOT / "well_known.yaml")
+    sanskrit = entries("Hinduism", "Stotra Samhita (Gita Press text)")
+    besant = entries("Hinduism", "Annie Besant (1922)")
+    pali = entries("Buddhism", "Chaṭṭha Saṅgāyana (VRI)")
+    gita = [p for p in known if p.work == "Bhagavad Gita"]
+    dhp = [p for p in known if p.work == "Dhammapada"]
+    sa_version = "Stotra Samhita (Gita Press text)"
+    en_version = "Annie Besant (1922)"
+    pi_version = "Chaṭṭha Saṅgāyana (VRI)"
+    hindu_native = question_rows(
+        [(p, sanskrit[p.citation]) for p in gita],
+        tradition="Hinduism", work="Bhagavad Gita", language="sa",
+        version=sa_version, native_tmpl=SA, sample="familiarity",
+    )
+    hindu_english = english_rows(
+        [(p, besant[p.citation]) for p in gita],
+        tradition="Hinduism", work="Bhagavad Gita", version=en_version, sample="familiarity",
+    )
+    buddhist = question_rows(
+        [(p, pali[p.citation]) for p in dhp],
+        tradition="Buddhism", work="Dhammapada", language="pi",
+        version=pi_version, native_tmpl=PI, sample="familiarity",
+    )
+    add_verify_negatives([hindu_native, hindu_english, buddhist], donors())
+    place(
+        hindu_native + hindu_english, sample="familiarity",
+        notice="Familiarity panel, not in the population run. Sanskrit is the Stotra Samhita extract. English is Annie Besant, 1922.",
+    )
+    place(
+        buddhist, sample="familiarity",
+        notice="Familiarity panel, not in the population run. Dhammapada, Chaṭṭha Saṅgāyana edition, Vipassana Research Institute. No English edition of this work is in the corpus.",
     )
 
 
