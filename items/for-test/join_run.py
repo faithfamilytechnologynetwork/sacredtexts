@@ -41,6 +41,22 @@ PYTHON = REPO / ".venv" / "bin" / "python"
 TEST_PASSAGES = 3
 
 
+def load_dotenv() -> None:
+    """Copy .env into the environment. sacredbench does not read that file itself."""
+    path = REPO / ".env"
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        name = name.strip()
+        value = value.strip().strip('"').strip("'")
+        if name and name not in os.environ and value:
+            os.environ[name] = value
+
+
 def out_dir(model: str, questions: Path) -> Path:
     rel = questions.parent.relative_to(ROOT)
     return REPO / "runs" / model / "base" / rel
@@ -122,6 +138,9 @@ def main() -> None:
         files = [p for p in files if any(part in p.as_posix() for part in args.only)]
         if not files:
             raise SystemExit(f"no question file matches {args.only}")
+    load_dotenv()
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        raise SystemExit("OPENROUTER_API_KEY is not set in the environment or .env")
     cfg = load_config(PANEL)
     picked = [m for m in cfg.models if m.id == args.model]
     if not picked:

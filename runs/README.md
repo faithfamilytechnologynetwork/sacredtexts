@@ -8,7 +8,7 @@ runs/haiku/base/sikhism/native/population/scores.jsonl
 runs/archive/original-2026-10-21/
 ```
 
-The command is `items/for-test/join_run.py`. It creates a folder only when that file is collected. `OPENROUTER_API_KEY` must be set. Do not commit the key.
+The command is `items/for-test/join_run.py`. It creates a folder only when that file is collected. It reads `OPENROUTER_API_KEY` from the environment, or from `.env` in the repo root if that variable is not already set. Do not commit the key.
 
 ## Models
 
