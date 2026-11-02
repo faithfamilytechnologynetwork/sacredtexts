@@ -71,3 +71,20 @@ Raised with the architect rather than changing shared config inside #74.
   Sikh/Buddhist/Hindu), so ANCHOR_DIGEST ≠ the run's own digest de65959a99dea9b3.
 - English-hadith PR adds 6 targets with language=en != canonical ar → OUT of pool, so pool stays
   17 and anchors unchanged; only the catalogue target COUNT moves (24→30) at merge time.
+
+## Timeout resolved (option b)
+Architect chose option (b): `porch.checks.tests.timeout_ms = 900000` in `.codev/config.json`, with a
+`//` note (c94c7ed). Porch's own tests check then passed in 423.5s and advanced to `pr`.
+
+## Close-out (2026-11-02)
+- Reached the `pr` gate on dff3358, told the architect, and held (no `porch approve`, no merge).
+- Jonathan Karr (repo collaborator) merged PR #81 himself at 2026-11-02T07:32Z (merge commit
+  cfd0eb8). `Closes #74` auto-closed the issue at 07:32Z. The gate was bypassed from outside, not
+  by this builder.
+- Recorded the merge with `porch done 74 --merged 81` (6678664, pushed to builder/air-74).
+- porch still shows phase `pr`, gate pending. The only way to move it on is
+  `porch approve 74 pr --a-human-explicitly-approved-this`. Builders never run that, so I left it
+  for the human or architect.
+- This entry lands after the merge, so it is on builder/air-74 only, not on main. I did not touch
+  main.
+- Stood down. Worktree cleanup waits for the owner's word.
