@@ -57,10 +57,56 @@ pnpm -C apps/viewer dev          # then open the printed URL
   middleware (`serveRuns` in `vite.config.ts`, logic in `vite/runsEndpoint.ts`), including
   a `/runs/_index` run index. Symlinked run directories are intentionally omitted from the
   index (the endpoint rejects symlink traversal).
-- In production the app is served as a static SPA (`server/index.mjs`, a minimal hono
-  host with history fallback). A production host has no `/runs` endpoint, so the home
-  page's index fetch returns the SPA shell (HTML) and the app shows the empty state — it
-  never crashes.
+- `pnpm build` produces the static SPA with **no run data**. `server/index.mjs` (a minimal hono
+  host with history fallback) serves it. With no `/runs` endpoint, the home page's index
+  fetch gets the SPA shell (HTML) and the app shows the empty state; it never crashes. To ship
+  the runs, use the Cloudflare Pages build below.
+
+## Deploying to Cloudflare Pages
+
+`pnpm build:pages` builds the SPA and then bakes the run data into `dist/runs/`. It runs
+`scripts/bake-runs.ts`, which asks the dev endpoint for every URL the viewer can request and
+writes each answer to disk: the run index, the gap list, every run's four artifacts, and the
+synthetic `panel` run. The baked files are byte-identical to what `pnpm dev` serves
+(`vite/bakeRuns.test.ts` checks every URL against the real `runs/`).
+
+Deploy from the repo root, on `main`, after a one-time `npx wrangler login` by the account
+owner:
+
+```sh
+pnpm -C apps/viewer build:pages && pnpm -C apps/viewer dlx wrangler pages deploy --branch main
+```
+
+`apps/viewer/wrangler.toml` names the project (`sacredtexts-viewer`) and the output dir
+(`dist`). On the first deploy wrangler offers to create the project; choose `main` as its
+production branch.
+
+How the static site works:
+
+- **Deep links** (`/standings`, `/gaps`, `/run/<id>/model/<model>`): Pages serves
+  `index.html` for any path that is not a file, as long as `dist/` has no top-level
+  `404.html`. There is no `_redirects` file because wrangler ignores `/* /index.html 200` as
+  an infinite loop.
+- **Large artifacts**: Pages rejects any file over 25 MiB, and the panel's `answers.jsonl` is
+  about 50 MB. The bake splits any artifact over 20 MiB at line boundaries into
+  `<name>.partNNN` files plus a `<name>.parts.json` manifest. When the whole file is missing,
+  the viewer reads the manifest, joins the parts, and checks the size, sha256 and row count
+  before using them (`src/lib/shards.ts`). `pnpm dev` never shards.
+- **Headers** (`public/_headers`): `/runs/*` is sent as `text/plain` so Cloudflare compresses
+  it, and `/runs/_index` and `/runs/_gaps` are `no-cache`.
+- `build:pages` fails, without deploying anything, if `runs/` is empty, if any file in
+  `dist/` is over 25 MiB, or if a `404.html` would turn off the deep-link fallback.
+
+To check the build locally before deploying, run it on Cloudflare's own runtime (no login
+needed):
+
+```sh
+pnpm -C apps/viewer build:pages && pnpm -C apps/viewer dlx wrangler pages dev
+```
+
+Don't use `npx serve -s dist` for this check. Its SPA rewrite answers extension-less paths
+such as `/runs/_index` with `index.html`, so the viewer shows "no runs". Pages serves the
+real file.
 
 The committed sample run `runs/archive/first-run-2026-10-11/` renders out of the box when it is
 the only run present; `src/local/realRun.test.ts` pins it through `loadRun`,
