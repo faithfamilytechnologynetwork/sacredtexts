@@ -1,10 +1,11 @@
 # Source catalogue for the Sunni Islam corpus.
-# The Qur'an (Uthmani script, dict keyed "surah:ayah") plus nine classical hadith collections
-# in Arabic (from sunnah.com). The six canonical books (Kutub al-Sittah: Bukhari, Muslim, Abu
-# Dawud, Tirmidhi, Nasa'i, Ibn Majah) are ALSO present in English — the same sunnah.com scrape
-# with the `english` field kept instead of `arabic`. Converters: quran_qul (Qur'an Uthmani),
-# quran_qul_simple (Saheeh International English), hadith_sunnah (Arabic hadith),
-# hadith_sunnah_en (English of the six canonical books). Both English editions (Saheeh
+# The Qur'an (Uthmani script, dict keyed "surah:ayah") plus the six canonical hadith
+# collections (the Kutub al-Sittah: Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah)
+# in Arabic (from sunnah.com); owner decision, issue #74 — Muwatta Malik, Musnad Ahmad and
+# Sunan al-Darimi were dropped. The same six books are ALSO present in English — the same
+# sunnah.com scrape with the `english` field kept instead of `arabic`. Converters: quran_qul
+# (Qur'an Uthmani), quran_qul_simple (Saheeh International English), hadith_sunnah (Arabic
+# hadith), hadith_sunnah_en (English of the six canonical books). Both English editions (Saheeh
 # International; the six English hadith books) are translations, so they stay OUT of the
 # original-language question pool.
 provenance:
@@ -234,37 +235,4 @@ targets:
       (tr. Nasiruddin al-Khattab). "Freely available online" is availability, not a licence —
       see the block comment above.
     requested_as: ["Sunan Ibn Majah", "Ibn Majah"]
-    canonical_language: ar
-  - payload: hadith_from_sunnah.com_arabic_only/malik.json
-    converter: hadith_sunnah
-    work: Muwatta Malik
-    version: sunnah.com Arabic
-    language: ar
-    document_type: hadith_collection
-    tradition: [Sunni Islam]
-    license: public-domain
-    license_detail: Classical Arabic text via sunnah.com
-    requested_as: ["Muwatta Malik", "al-Muwatta", "Muwatta Imam Malik"]
-    canonical_language: ar
-  - payload: hadith_from_sunnah.com_arabic_only/ahmed.json
-    converter: hadith_sunnah
-    work: Musnad Ahmad
-    version: sunnah.com Arabic
-    language: ar
-    document_type: hadith_collection
-    tradition: [Sunni Islam]
-    license: public-domain
-    license_detail: Classical Arabic text via sunnah.com
-    requested_as: ["Musnad Ahmad", "Musnad Ahmad ibn Hanbal"]
-    canonical_language: ar
-  - payload: hadith_from_sunnah.com_arabic_only/darimi.json
-    converter: hadith_sunnah
-    work: Sunan al-Darimi
-    version: sunnah.com Arabic
-    language: ar
-    document_type: hadith_collection
-    tradition: [Sunni Islam]
-    license: public-domain
-    license_detail: Classical Arabic text via sunnah.com
-    requested_as: ["Sunan al-Darimi", "Darimi"]
     canonical_language: ar
