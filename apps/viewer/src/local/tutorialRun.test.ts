@@ -1,5 +1,5 @@
 // Verifies the viewer's own loadRun() + aggregate() render the COMMITTED tutorial run
-// (runs/tutorial-2026-10-11) end-to-end — the artifacts `score` actually wrote, not a
+// (runs/archive/tutorial-2026-10-11) end-to-end — the artifacts `score` actually wrote, not a
 // fixture. It pins two things the merged viewer requires under Approach B (Spec 11):
 //   1. the run loads as a 4-entry panel (2 models x web-search on/off) over 400 joined
 //      cells, each entry carrying the RAW `panel.model` (no marker) + a real `panel.tools`
@@ -19,8 +19,8 @@ import { leaderboardRows, traditionRows, hasTraditionData, searchContrast } from
 import { modelQuestions, questionStats, filterQuestions, explorerTraditions } from "../lib/explorer";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-const tutorialDir = resolve(root, "runs/tutorial-2026-10-11");
-const firstRunDir = resolve(root, "runs/first-run-2026-10-11");
+const tutorialDir = resolve(root, "runs/archive/tutorial-2026-10-11");
+const firstRunDir = resolve(root, "runs/archive/first-run-2026-10-11");
 const present =
   existsSync(resolve(tutorialDir, "summary.json")) &&
   existsSync(resolve(firstRunDir, "summary.json"));
@@ -39,7 +39,7 @@ function diskFetcher(runDir: string, base: string): typeof fetch {
 
 describe.skipIf(!present)("committed tutorial run renders through the viewer", () => {
   it("loadRun parses the 4-entry search-on/off panel and joins all 400 cells", async () => {
-    const base = "/runs/tutorial-2026-10-11";
+    const base = "/runs/archive/tutorial-2026-10-11";
     const run = await loadRun(base, diskFetcher(tutorialDir, base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;
@@ -69,8 +69,8 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
   });
 
   it("standings keeps four distinct tool-arm rows and dedupes the no-tools haiku against first-run", async () => {
-    const tBase = "/runs/tutorial-2026-10-11";
-    const fBase = "/runs/first-run-2026-10-11";
+    const tBase = "/runs/archive/tutorial-2026-10-11";
+    const fBase = "/runs/archive/first-run-2026-10-11";
     const tutorial = await loadRun(tBase, diskFetcher(tutorialDir, tBase));
     const firstRun = await loadRun(fBase, diskFetcher(firstRunDir, fBase));
     expect(tutorial.ok && firstRun.ok).toBe(true);
@@ -131,7 +131,7 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
   });
 
   it("the leaderboard ranks the four entries and carries per-tradition + token columns", async () => {
-    const base = "/runs/tutorial-2026-10-11";
+    const base = "/runs/archive/tutorial-2026-10-11";
     const run = await loadRun(base, diskFetcher(tutorialDir, base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;
@@ -167,7 +167,7 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
   });
 
   it("the error explorer drills into a model with the expected pass/fail/missing counts", async () => {
-    const base = "/runs/tutorial-2026-10-11";
+    const base = "/runs/archive/tutorial-2026-10-11";
     const run = await loadRun(base, diskFetcher(tutorialDir, base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;
@@ -195,7 +195,7 @@ describe.skipIf(!present)("committed tutorial run renders through the viewer", (
   });
 
   it("surfaces the search-on/off contrast as paired base models (the tutorial has pairs)", async () => {
-    const base = "/runs/tutorial-2026-10-11";
+    const base = "/runs/archive/tutorial-2026-10-11";
     const run = await loadRun(base, diskFetcher(tutorialDir, base));
     expect(run.ok).toBe(true);
     if (!run.ok) return;

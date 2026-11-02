@@ -14,20 +14,52 @@ Discipline ported from the multibench judging workflow:
 from __future__ import annotations
 
 import json
+import os
+import signal
+import sys
 import threading
 import time
+import weakref
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures.thread import _threads_queues, _worker
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 from sacredbench.config import RunConfig
 from sacredbench.generate import Question, question_set_digest
-from sacredbench.providers import complete, is_quota_error
+from sacredbench.providers import complete, is_fatal_error
 
 
 class CollectError(Exception):
     """Collection cannot proceed (e.g. resuming against a different question set)."""
+
+
+class Stopped(BaseException):
+    """Ctrl+C. Finished answers are already on disk. The caller must os._exit."""
+
+
+class _DaemonPool(ThreadPoolExecutor):
+    """Worker threads are daemons, so Ctrl+C can exit without waiting out the HTTP timeout."""
+
+    def _adjust_thread_count(self):
+        if self._idle_semaphore.acquire(timeout=0):
+            return
+
+        def weakref_cb(_, q=self._work_queue):
+            q.put(None)
+
+        if len(self._threads) < self._max_workers:
+            thread_name = "%s_%d" % (self._thread_name_prefix or self, len(self._threads))
+            worker = threading.Thread(
+                name=thread_name,
+                target=_worker,
+                args=(weakref.ref(self, weakref_cb), self._work_queue, self._initializer, self._initargs),
+            )
+            worker.daemon = True
+            worker.start()
+            self._threads.add(worker)
+            _threads_queues[worker] = self._work_queue
 
 
 def _panel_fingerprint(m) -> str:
@@ -81,6 +113,7 @@ def collect(
     config: RunConfig,
     answers_path: Path,
     on_result=None,
+    on_failure=None,
     digest_from: list[Question] | None = None,
 ) -> tuple[int, int, list[str]]:
     """Run all pending (question, model) cells. Returns (done, failed, failure_messages).
@@ -89,7 +122,9 @@ def collect(
     ``answers.jsonl`` built for a different question set is refused (``CollectError``)
     so a stale or mixed run can never be silently appended to or scored.
 
-    ``questions`` is what this invocation calls. ``digest_from`` is the whole file
+    ``on_result`` is called with the saved answer row. ``on_failure`` is called
+    with the question, model, and exception. ``questions`` is what this invocation
+    calls. ``digest_from`` is the whole file
     when this invocation is a pilot (one tradition, one model). The stamp stays the
     file's digest, so a later full run can resume the same answers file.
     """
@@ -140,7 +175,7 @@ def collect(
         try:
             text, usage, attempts = complete(m, q.prompt)  # raises on failure
         except Exception as e:
-            if is_quota_error(e):
+            if is_fatal_error(e):
                 stop.set()
             raise
         finished = datetime.now(timezone.utc)
@@ -167,9 +202,22 @@ def collect(
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
             done += 1
             if on_result:
-                on_result(q, m, text)
+                on_result(row)
 
-    with ThreadPoolExecutor(max_workers=config.concurrency) as pool:
+    pool = _DaemonPool(max_workers=config.concurrency, thread_name_prefix="sacredbench")
+    interrupts = 0
+    previous_sigint = signal.getsignal(signal.SIGINT)
+
+    def on_sigint(signum, frame):
+        nonlocal interrupts
+        interrupts += 1
+        stop.set()
+        if interrupts >= 2:
+            os._exit(130)
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGINT, on_sigint)
+    try:
         futures = {pool.submit(run_cell, q, m): (q, m) for q, m in cells}
         for fut in as_completed(futures):
             q, m = futures[fut]
@@ -177,10 +225,18 @@ def collect(
                 fut.result()
             except Exception as e:  # noqa: BLE001 — record any failure, keep the cell pending
                 failures.append(f"{q.id} x {m.id}: {e}")
-                if is_quota_error(e):
+                if on_failure:
+                    on_failure(q, m, e)
+                if is_fatal_error(e):
                     stop.set()
                     for pending in futures:
                         pending.cancel()
                     break
+    except KeyboardInterrupt:
+        stop.set()
+        raise Stopped("stopped. Finished answers are saved. Run the same command to continue.")
+    finally:
+        signal.signal(signal.SIGINT, previous_sigint)
+        pool.shutdown(wait=False, cancel_futures=True)
 
     return done, len(failures), failures

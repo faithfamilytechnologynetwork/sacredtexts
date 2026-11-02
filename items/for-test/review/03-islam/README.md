@@ -1,7 +1,7 @@
 # Islam
 
 - Canonical edition named in the question: **the Uthmani Qur'an**
-- English edition: **none in this corpus; do not name an English translation we do not hold**
+- English edition: **Saheeh International, same citations, in islam/english/**
 - Language: Arabic
 - Raw file: `texts/raw/Sunni Islam/quran_uthmani_from_qul.json.json`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source

@@ -148,7 +148,7 @@ HAMZA_ALEF_RESIDUAL = {
 # is DEFERRED to #60, which inherits this cell alongside the hamza-alef set as its before/after oracle.
 # On the tutorial run this is the third of haiku-off's three Qur'an misses — all three scorer
 # residuals, zero genuine — so the apparent haiku→haiku-search Qur'an "search lift" is entirely
-# artifactual (see runs/tutorial-2026-10-11/README.md).
+# artifactual (see runs/archive/tutorial-2026-10-11/README.md).
 VERSE_NUMBER_RESIDUAL = {
     "tutorial-2026-10-11/scores.jsonl": {
         ("haiku", "retrieve_quote-e2d74279aaf0"),   # 4:176, «…عليم۝١٧٦» — verse number glued to عليم
@@ -170,14 +170,14 @@ ARABIC_CELLS = {
 
 
 def _rows(path: str):
-    p = REPO_ROOT / "runs" / path
+    p = REPO_ROOT / "runs" / "archive" / path
     if not p.exists():
         pytest.skip(f"{path} not present")
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
 def _answers(path: str):
-    p = REPO_ROOT / "runs" / path
+    p = REPO_ROOT / "runs" / "archive" / path
     if not p.exists():
         pytest.skip(f"{path} not present")
     return {
@@ -240,7 +240,7 @@ def test_summary_agrees_with_scores(run):
     # Recompute the per-model/per-task headline from scores.jsonl and check it matches the committed
     # summary.json — guards the surgical summary splice (original has no other durable pin).
     scores = _rows(f"{run}/scores.jsonl")
-    sp = REPO_ROOT / "runs" / run / "summary.json"
+    sp = REPO_ROOT / "runs" / "archive" / run / "summary.json"
     if not sp.exists():
         pytest.skip(f"{run} summary absent")
     summary = json.loads(sp.read_text(encoding="utf-8"))

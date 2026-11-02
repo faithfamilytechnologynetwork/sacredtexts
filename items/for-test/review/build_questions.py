@@ -36,7 +36,9 @@ TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
 MIN_WORDS = 16
 
 QURAN_FILE = RAW / "Sunni Islam" / "quran_uthmani_from_qul.json.json"
+QURAN_EN_FILE = RAW / "Sunni Islam" / "quran_saheeh_international_from_qul.json"
 QURAN_VERSION = "Uthmani (QUL)"
+QURAN_EN_VERSION = "Saheeh International (QUL)"
 # Owner-signed Arabic templates (Waleed, native Arabic speaker, 2026-11-01). "رسم" is
 # orthography not a print run ("طبعة"), "النص" for revelation, "رقم السورة والآية" for the
 # reference, and a closing "فقط" because Arabic-prompted models tend to open with a preamble
@@ -70,7 +72,19 @@ EN = {
 # "the {version} edition". The catalogue `version` string is unchanged in each
 # question's source metadata; only the prompt wording changes. The Qur'an is named
 # "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
-_EDITION_DISPLAY = {"Uthmani (QUL)": "the Uthmani Qur'an"}
+_EDITION_DISPLAY = {
+    "Uthmani (QUL)": "the Uthmani Qur'an",
+    "Saheeh International (QUL)": "the Saheeh International translation",
+}
+
+
+def prompt_text(text: str) -> str:
+    """The passage as it appears inside a prompt's quotation marks.
+
+    Saheeh International writes dialogue with straight quotes. Leaving those in
+    the prompt ends the quotation at the first one, so a ``no`` item keeps the
+    real ayah in the question."""
+    return text.replace('"', "'").replace("“", "'").replace("”", "'")
 
 
 def edition_name(name: str) -> str:
@@ -115,7 +129,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         example = next(c for c in citations if c != passage.citation)
         fields = {
             "citation": passage.citation, "version": edition_name(version),
-            "head": head, "text": native, "example": example,
+            "head": prompt_text(head), "text": prompt_text(native), "example": example,
         }
         en_q = {k: EN[k].format(**fields) for k in TASKS}
         nat_q = {k: native_tmpl[k].format(**fields) for k in TASKS}
@@ -155,7 +169,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         head_e, rest_e = split_words(english)
         fields_e = {
             "citation": passage.citation, "version": edition_name(english_version),
-            "head": head_e, "text": english, "example": example,
+            "head": prompt_text(head_e), "text": prompt_text(english), "example": example,
         }
         en_q2 = {k: EN[k].format(**fields_e) for k in TASKS}
         nat_q2 = {k: english_native_tmpl[k].format(**fields_e) for k in TASKS}
@@ -180,8 +194,14 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
     return out
 
 
+def _saheeh() -> dict[str, str]:
+    data = json.loads(QURAN_EN_FILE.read_text(encoding="utf-8"))
+    return {key: row["t"].strip() for key, row in data.items() if isinstance(row, dict) and row.get("t", "").strip()}
+
+
 def islam() -> list[dict]:
     quran = json.loads(QURAN_FILE.read_text())
+    english = _saheeh()
     famous_rows = famous_passages("The Qur'an", QURAN_VERSION)
     famous_cit = {p.citation: p for p in famous_rows}
     ordinary, famous = [], []
@@ -197,9 +217,16 @@ def islam() -> list[dict]:
         raise SystemExit(f"Qur'an famous citations missing from QUL: {sorted(missing)}")
     drawn = population_draw([p for p, _ in ordinary], famous_rows, seed=20261030)
     text = {p.citation: t for p, t in ordinary + famous}
-    items = [(p, "population", text[p.citation], None) for p in drawn]
-    items += [(famous_cit[c], "familiarity", text[c], None) for c in famous_cit]
-    return rows_for(items, tradition="Islam", version=QURAN_VERSION, native_tmpl=QURAN_AR)
+    panel = list(drawn) + [famous_cit[c] for c in famous_cit]
+    absent = [p.citation for p in panel if p.citation not in english]
+    if absent:
+        raise SystemExit(f"Saheeh International is missing Qur'an citations: {absent}")
+    items = [(p, "population", text[p.citation], english[p.citation]) for p in drawn]
+    items += [(famous_cit[c], "familiarity", text[c], english[c]) for c in famous_cit]
+    return rows_for(
+        items, tradition="Islam", version=QURAN_VERSION, native_tmpl=QURAN_AR,
+        english_version=QURAN_EN_VERSION, english_native_tmpl=EN,
+    )
 
 
 def sikhism() -> list[dict]:
@@ -605,6 +632,92 @@ DONOR_SKIP = {
 }
 
 
+def english_hadith_collections() -> list:
+    """The six canonical collections in English, same books and order as the Arabic donors."""
+    source = load_source(RAW / "Sunni Islam" / "source.yaml", raw_root=RAW)
+    by_work: dict[str, list] = {}
+    for target in source.targets:
+        if target.converter == "hadith_sunnah_en" and target.language == "en":
+            by_work.setdefault(target.work, []).append(target)
+    bad = [work for work in KUTUB_AL_SITTAH if len(by_work.get(work, [])) != 1]
+    if bad:
+        raise SystemExit(f"source.yaml needs exactly one English hadith target for each of {bad}")
+    return [by_work[work][0] for work in KUTUB_AL_SITTAH]
+
+
+@functools.lru_cache(maxsize=None)
+def _saheeh_word_runs() -> set[tuple[str, ...]]:
+    """Every run of 6 Saheeh words, so an English hadith that quotes an ayah is skipped."""
+    runs: set[tuple[str, ...]] = set()
+    n = QURAN_SHARED_WORDS
+    for text in _saheeh().values():
+        words = text.casefold().split()
+        for i in range(len(words) - n + 1):
+            runs.add(tuple(words[i:i + n]))
+    return runs
+
+
+def _english_matn(text: str) -> str | None:
+    """The saying itself, without the narrator line or the compiler's note.
+
+    sunnah.com's English ``text`` often wraps the saying in quotes and then adds
+    a remark ("This is the wording of…"). A quote mark left inside the prompt
+    cuts the question off at the first mark, so the span we keep has none.
+    """
+    text = re.sub(r"\s+", " ", text).strip()
+    text = re.split(
+        r" This is the wording of | There is something on this topic | Hadith\. Similar ",
+        text,
+    )[0].strip()
+    spans = re.findall(r'"([^"]+)"', text) + re.findall(r"“([^”]+)”", text)
+    spans = [re.sub(r"\s+", " ", span).strip() for span in spans]
+    long = [span for span in spans if len(span.split()) >= MIN_WORDS and '"' not in span and "“" not in span]
+    if long:
+        return max(long, key=lambda span: len(span.split()))
+    if len(text.split()) >= MIN_WORDS and '"' not in text and "“" not in text and "”" not in text:
+        return text
+    return None
+
+
+def _english_quotes_quran(text: str) -> bool:
+    words = text.casefold().split()
+    n = QURAN_SHARED_WORDS
+    runs = _saheeh_word_runs()
+    return any(tuple(words[i:i + n]) in runs for i in range(len(words) - n + 1))
+
+
+@functools.lru_cache(maxsize=None)
+def _english_hadith_pool() -> tuple[dict, ...]:
+    """English matn of the six books: the translator's text, not the narrator line.
+
+    A saying under 16 words, or one that repeats 6 consecutive Saheeh words, is not a donor.
+    """
+    pool = []
+    for target in english_hadith_collections():
+        path = target.payload_paths(RAW)[0]
+        for hadith in json.loads(path.read_text(encoding="utf-8"))["hadiths"]:
+            english = hadith.get("english") or {}
+            text = _english_matn(english.get("text") or "")
+            if text is None or _english_quotes_quran(text):
+                continue
+            pool.append({
+                "tradition": "Islam",
+                "version": target.version,
+                "citation": f"{target.work} {hadith['idInBook']}",
+                "expected": {"text": text},
+            })
+    if not pool:
+        raise SystemExit("no English hadith matn for the English Qur'an verify_source 'no' items")
+    return tuple(pool)
+
+
+def _english_hadith_donor(row: dict) -> dict:
+    """This English-Qur'an row's donor. Seeded by the row, like the Arabic hadith donor."""
+    pool = _english_hadith_pool()
+    rng = random.Random(f"{HADITH_SEED}|en|{row['condition']}|{row['sample']}|{row['citation']}")
+    return pool[rng.randrange(len(pool))]
+
+
 def _hadith_donor(row: dict) -> dict:
     """This row's hadith donor, from an RNG seeded by the row alone (condition, sample, citation).
 
@@ -649,6 +762,10 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     for rows in by_name.values():
         for row in rows:
             if row["task"] == "retrieve_quote" and row["condition"] in {"ask_english", "ask_native", "en_ask_en_answer"}:
+                # The English Qur'an is a new donor class. Leaving it out of this pool
+                # keeps the already-drawn Christianity and Judaism negatives stable.
+                if row.get("english_version") == QURAN_EN_VERSION:
+                    continue
                 donors.append(row)
     rng = random.Random(20261030)
     for rows in by_name.values():
@@ -662,6 +779,8 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
             for row in flip:
                 if _script(_quoted_passage(row["prompt"])) == "ar":
                     donor = _hadith_donor(row)
+                elif row["tradition"] == "Islam" and row["condition"] == "en_ask_en_answer":
+                    donor = _english_hadith_donor(row)
                 else:
                     ranked = [d for d in donors if d["tradition"] != row["tradition"]]
                     best = min((_donor_rank(row, d) for d in ranked), default=2)

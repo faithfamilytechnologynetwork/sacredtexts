@@ -40,6 +40,11 @@ _MIN_FINGERPRINT = 60  # chars of normalized text — long enough to not false-p
 # applies only to the structured ``.json`` / ``.jsonl`` documents (a ``.md`` has no source dict).
 _AUDITED_SUFFIXES = (".json", ".jsonl", ".md")
 
+# The NRSV permission covers a quotation of up to 500 verses. A file that names the
+# NRSV and cites at most that many distinct verses is the allowed quotation. NABRE
+# and the Greek Orthodox extracts have no such allowance.
+_QUOTATION_VERSES = {("The Bible", "NRSV", "en"): 500}
+
 
 class AuditError(Exception):
     """A committed artifact is derived from a restricted source."""
@@ -154,16 +159,31 @@ def audit_paths(
             if f.suffix not in _AUDITED_SUFFIXES:
                 continue
             flagged = False
+            quoted: dict[tuple, set[str]] = {}
             # ORIGIN layer applies only to structured documents (a source (work, version, language));
             # a .md card has no source dict, so it gets the content layer only.
             if f.suffix in (".json", ".jsonl"):
                 for src in _iter_source_dicts(f):
                     key = (src.get("work"), src.get("version"), src.get("language"))
-                    if key in restricted:
+                    if key not in restricted:
+                        continue
+                    allowance = _QUOTATION_VERSES.get(key)
+                    citation = str(src.get("citation") or "").strip()
+                    if allowance is None:
                         violations.append(f"{f}: derived from restricted source {key}")
                         flagged = True
-                        break  # one origin violation per file is enough
-            if flagged or not fingerprints:
+                        break
+                    if not citation:
+                        continue
+                    quoted.setdefault(key, set()).add(citation)
+                    if len(quoted[key]) > allowance:
+                        violations.append(
+                            f"{f}: {len(quoted[key])} verses from restricted source {key}, "
+                            f"allowance is {allowance}"
+                        )
+                        flagged = True
+                        break
+            if flagged or not fingerprints or quoted:
                 continue
             blob = _norm(f.read_text(encoding="utf-8"))
             for fp in fingerprints:

@@ -1,7 +1,7 @@
 """Build the 56-question subset for the provider-native search experiment (#54).
 
 Takes the 28 Qur'an + 28 Sahih al-Bukhari questions from the committed
-`runs/original-2026-10-21/questions.jsonl` and writes them **verbatim** to
+`runs/archive/original-2026-10-21/questions.jsonl` and writes them **verbatim** to
 `questions.jsonl` in this run dir. The prompts, citations, expected ground truth, ids,
 and source are byte-identical to the committed set — the search arm must ask exactly the
 questions the committed benchmark asks, so the only delta across arms is search on/off.
@@ -12,7 +12,7 @@ fails loud.
 
 Run from the repo root (sacredbench on the path):
 
-    uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/build_questions.py
+    uv --project pipelines run python runs/archive/exp-provider-native-search-2026-10-29/build_questions.py
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ EXPECTED_PER_WORK = 28
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-SRC = REPO / "runs" / "original-2026-10-21" / "questions.jsonl"
+SRC = REPO / "runs" / "archive" / "original-2026-10-21" / "questions.jsonl"
 OUT = HERE / "questions.jsonl"
 
 

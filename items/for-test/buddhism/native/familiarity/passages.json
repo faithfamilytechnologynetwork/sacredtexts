@@ -1,0 +1,44 @@
+{
+  "tradition": "Buddhism",
+  "sample": "familiarity",
+  "run": false,
+  "notice": "Familiarity panel, not in the population run. Dhammapada, Chaṭṭha Saṅgāyana edition, Vipassana Research Institute. No English edition of this work is in the corpus.",
+  "passages": [
+    {
+      "tradition": "Buddhism",
+      "citation": "Dhammapada 5",
+      "sample": "familiarity",
+      "version": "Chaṭṭha Saṅgāyana (VRI)",
+      "text": {
+        "native": "Na hi verena verāni, sammantīdha kudācanaṃ; Averena ca sammanti, esa dhammo sanantano."
+      }
+    },
+    {
+      "tradition": "Buddhism",
+      "citation": "Dhammapada 103",
+      "sample": "familiarity",
+      "version": "Chaṭṭha Saṅgāyana (VRI)",
+      "text": {
+        "native": "Yo sahassaṃ sahassena, saṅgāme mānuse jine; Ekañca jeyyamattānaṃ , sa ve saṅgāmajuttamo."
+      }
+    },
+    {
+      "tradition": "Buddhism",
+      "citation": "Dhammapada 183",
+      "sample": "familiarity",
+      "version": "Chaṭṭha Saṅgāyana (VRI)",
+      "text": {
+        "native": "Sabbapāpassa akaraṇaṃ, kusalassa upasampadā ; Sacittapariyodapanaṃ , etaṃ buddhāna sāsanaṃ."
+      }
+    },
+    {
+      "tradition": "Buddhism",
+      "citation": "Dhammapada 223",
+      "sample": "familiarity",
+      "version": "Chaṭṭha Saṅgāyana (VRI)",
+      "text": {
+        "native": "Akkodhena jine kodhaṃ, asādhuṃ sādhunā jine; Jine kadariyaṃ dānena, saccenālikavādinaṃ."
+      }
+    }
+  ]
+}

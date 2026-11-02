@@ -9,7 +9,7 @@ Analysis (when data lands): `codev/reviews/54-experiment-provider-native-sea.md`
 ## What this is
 
 A paired A/B over 56 committed questions (28 Qur'an + 28 Sahih al-Bukhari from
-`runs/original-2026-10-21`), asking each model **both ways** — search-off and search-on —
+`runs/archive/original-2026-10-21`), asking each model **both ways** — search-off and search-on —
 through **OpenRouter**, which forwards each model's request to that vendor's **own native**
 search stack (verified per arm; see "Nativeness verification"):
 
@@ -94,25 +94,25 @@ harness are complete and tested keyless; the paid collect is architect-authorize
 
 ```bash
 # 0. keyless sanity check (no network)
-uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/dry_run.py
+uv --project pipelines run python runs/archive/exp-provider-native-search-2026-10-29/dry_run.py
 
 # 1. (re)build the questions if needed
-uv --project pipelines run python runs/exp-provider-native-search-2026-10-29/build_questions.py
+uv --project pipelines run python runs/archive/exp-provider-native-search-2026-10-29/build_questions.py
 
 # 2. collect (224 cells) — OPENROUTER_API_KEY must be in the environment.
 #    `questions` and `config` are POSITIONAL args; the answers path is --out.
 uv --project pipelines run python -m sacredbench collect \
-  runs/exp-provider-native-search-2026-10-29/questions.jsonl \
-  runs/exp-provider-native-search-2026-10-29/models.yaml \
-  --out runs/exp-provider-native-search-2026-10-29/answers.jsonl
+  runs/archive/exp-provider-native-search-2026-10-29/questions.jsonl \
+  runs/archive/exp-provider-native-search-2026-10-29/models.yaml \
+  --out runs/archive/exp-provider-native-search-2026-10-29/answers.jsonl
 
 # 3. score with --config (cross-checks panel identity against the collected fingerprints)
 uv --project pipelines run python -m sacredbench score \
-  runs/exp-provider-native-search-2026-10-29/answers.jsonl \
-  --questions    runs/exp-provider-native-search-2026-10-29/questions.jsonl \
-  --config       runs/exp-provider-native-search-2026-10-29/models.yaml \
-  --scores-out   runs/exp-provider-native-search-2026-10-29/scores.jsonl \
-  --summary-out  runs/exp-provider-native-search-2026-10-29/summary.json
+  runs/archive/exp-provider-native-search-2026-10-29/answers.jsonl \
+  --questions    runs/archive/exp-provider-native-search-2026-10-29/questions.jsonl \
+  --config       runs/archive/exp-provider-native-search-2026-10-29/models.yaml \
+  --scores-out   runs/archive/exp-provider-native-search-2026-10-29/scores.jsonl \
+  --summary-out  runs/archive/exp-provider-native-search-2026-10-29/summary.json
 ```
 
 Failed cells stay pending and make `collect` exit non-zero; re-running retries exactly the

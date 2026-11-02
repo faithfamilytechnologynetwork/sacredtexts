@@ -99,11 +99,11 @@ def test_leading_window_boundary():
 
 # ── Spec 48: assertion-based A/B refusal rule (web-search hedges) ─────────────────────────────────
 #
-# Pre-registered against runs/tutorial-2026-10-11/jev_agreement.json (the 11 refusal disagreements)
+# Pre-registered against runs/archive/tutorial-2026-10-11/jev_agreement.json (the 11 refusal disagreements)
 # plus the agreed-refusal anchors 42f510ea6c7d (0.58) / f143cc3f6c63 (0.68). A = delivered-as-answer
 # (flips refused->incorrect); B = declined-with-substitute (stays refused). The architect's call
 # (2026-10-29): B stays refused — the taxonomy asks "did the model purport to answer?".
-TUTORIAL = REPO_ROOT / "runs" / "tutorial-2026-10-11"
+TUTORIAL = REPO_ROOT / "runs" / "archive" / "tutorial-2026-10-11"
 
 A_CELLS = [  # (model_id, question_id) — positive identity assertion; must NOT be refused
     ("haiku-search", "retrieve_quote-e2d74279aaf0"),  # "from memory, the Uthmani text of 4:176 is:"
@@ -236,7 +236,7 @@ def test_spec48_from_memory_in_committed_refusals_is_not_a_delivery():
     # complement is empty (a lower bound would let 144 of 147 over-fire silently).
     candidates, overfired = 0, []
     for run, sfile, afile, qfile in TRIPLES:
-        run_dir = REPO_ROOT / "runs" / run
+        run_dir = REPO_ROOT / "runs" / "archive" / run
         spath = run_dir / sfile
         if not spath.exists():
             continue
@@ -306,7 +306,7 @@ def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfil
     # strong form of the plan's "global refused-delta == flip set" gate, now that the committed
     # scores are post-rebaseline. Covers the Arabic run and complete_unit, which the byte re-score
     # guards do not isolate on the refusal dimension.
-    run_dir = REPO_ROOT / "runs" / run
+    run_dir = REPO_ROOT / "runs" / "archive" / run
     spath = run_dir / sfile
     if not spath.exists():
         pytest.skip(f"{spath} not present")

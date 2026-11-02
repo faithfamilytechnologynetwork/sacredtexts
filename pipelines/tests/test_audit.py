@@ -123,6 +123,31 @@ def test_clean_evidence_passes(tmp_path):
     assert audit_paths([p], sources) == []
 
 
+def test_nrsv_quotation_within_500_verses_passes(tmp_path):
+    sources = cat.discover_catalogue(RAW)
+    p = tmp_path / "answers.jsonl"
+    rows = []
+    for i in range(30):
+        row = _question_row("The Bible", "NRSV")
+        row["source"]["citation"] = f"Exodus 1:{i + 1}"
+        rows.append(json.dumps({"question": row}))
+    p.write_text("\n".join(rows) + "\n")
+    assert audit_paths([p], sources) == []
+
+
+def test_nrsv_quotation_past_500_verses_fails(tmp_path):
+    sources = cat.discover_catalogue(RAW)
+    p = tmp_path / "answers.jsonl"
+    rows = []
+    for i in range(501):
+        row = _question_row("The Bible", "NRSV")
+        row["source"]["citation"] = f"Exodus 1:{i + 1}"
+        rows.append(json.dumps({"question": row}))
+    p.write_text("\n".join(rows) + "\n")
+    violations = audit_paths([p], sources)
+    assert len(violations) == 1 and "501" in violations[0]
+
+
 def test_restricted_origin_fails(tmp_path):
     sources = cat.discover_catalogue(RAW)
     p = tmp_path / "questions.jsonl"

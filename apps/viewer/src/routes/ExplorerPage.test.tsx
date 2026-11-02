@@ -124,8 +124,8 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   });
 });
 
-// The committed-run drill-in gate: claude-haiku over runs/first-run-2026-10-11.
-const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/first-run-2026-10-11");
+// The committed-run drill-in gate: claude-haiku over runs/archive/first-run-2026-10-11.
+const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/archive/first-run-2026-10-11");
 const present = existsSync(resolve(runDir, "summary.json"));
 
 function committedRunFetcher(): typeof fetch {

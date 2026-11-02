@@ -31,8 +31,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # run directory (under runs/) -> the committed panel config that reproduces it.
 COMMITTED_PAIRS = {
-    "runs/tutorial-2026-10-11": "configs/models.example.yaml",
-    "runs/original-2026-10-21": "configs/models.openrouter.yaml",
+    "runs/archive/tutorial-2026-10-11": "configs/models.example.yaml",
+    "runs/archive/original-2026-10-21": "configs/models.openrouter.yaml",
 }
 
 

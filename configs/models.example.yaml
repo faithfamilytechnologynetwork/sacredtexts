@@ -21,7 +21,7 @@ models:
     max_tokens: 4096             # headroom: search + citation blocks share the budget
     # temperature: 0             # optional; pins sampling and joins the panel fingerprint.
     #                              NOT set here: this config reproduces the committed
-    #                              runs/tutorial-2026-10-11 run, whose answers were collected
+    #                              runs/archive/tutorial-2026-10-11 run, whose answers were collected
     #                              with no temperature — setting it would change the fingerprint
     #                              and break `score --config` against that run.
     tools: [web_search]          # tool-assisted retrieval

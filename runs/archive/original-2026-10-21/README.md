@@ -149,7 +149,7 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
 ## FAccT card (`facct.json` / `facct.md`)
 
 - **The benchmark card (Spec 32)** is generated from this run's committed evidence —
-  `uv --project pipelines run python -m sacredbench facct runs/original-2026-10-21` — and committed
+  `uv --project pipelines run python -m sacredbench facct runs/archive/original-2026-10-21` — and committed
   beside it. It carries the run census (who the questions represent, by tradition / language /
   document type / license), the three outcomes taken verbatim from `scores.jsonl`, and the Bible
   `retrieve_quote` edition counterfactual (how many Bible retrieve_quote misses actually quoted a
@@ -207,7 +207,7 @@ question is empirically closed; a Latin/Arabic-Indic digit case is pinned in the
   distributed; the **Talmud Bavli, William Davidson Edition (Aramaic)** is **© Sefaria,
   CC-BY-NC 4.0** — used here for non-commercial academic benchmarking with attribution
   (`texts/raw/Judaism/source.yaml`).
-- **Automated audit scope.** `audit` ran **origin-only** here (`audit runs/original-2026-10-21`
+- **Automated audit scope.** `audit` ran **origin-only** here (`audit runs/archive/original-2026-10-21`
   → `copyright audit OK — 1 path(s), origin only`): the content layer fingerprints restricted
   unit texts only when the held-back restricted payloads are present locally, and this run uses
   **no** restricted source. Origin is the enforceable proxy in a clone / CI, where restricted

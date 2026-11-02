@@ -5,7 +5,7 @@
 - Language: Sanskrit, then English
 - Raw file: `texts/raw/Hinduism/gita_stotrasamhita.json and gita_besant.json`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: population sample of 30 passages. No familiarity list in `well_known.yaml`.
+- Size: population sample of 30 passages. Familiarity is separate: Gita 2:47, 4:7, 4:8, 18:66, in Sanskrit and in Besant's English.
 
 ## Passages to check
 

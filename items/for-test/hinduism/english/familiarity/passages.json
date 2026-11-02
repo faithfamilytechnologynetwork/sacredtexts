@@ -1,0 +1,44 @@
+{
+  "tradition": "Hinduism",
+  "sample": "familiarity",
+  "run": false,
+  "notice": "Familiarity panel, not in the population run. Sanskrit is the Stotra Samhita extract. English is Annie Besant, 1922.",
+  "passages": [
+    {
+      "tradition": "Hinduism",
+      "citation": "2:47",
+      "sample": "familiarity",
+      "version": "Annie Besant (1922)",
+      "text": {
+        "english": "Thy business is with the action only, never with its fruits; so let not the fruit of action be thy motive, nor be thou to inaction attached."
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "4:7",
+      "sample": "familiarity",
+      "version": "Annie Besant (1922)",
+      "text": {
+        "english": "Whenever there is decay of righteousness, O Bhârata, and there is exaltation of unrighteousness, then I Myself come forth;"
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "4:8",
+      "sample": "familiarity",
+      "version": "Annie Besant (1922)",
+      "text": {
+        "english": "For the protection of the good, for the destruction of evil-doers, for the sake of firmly establishing righteousness, I am born from age to age."
+      }
+    },
+    {
+      "tradition": "Hinduism",
+      "citation": "18:66",
+      "sample": "familiarity",
+      "version": "Annie Besant (1922)",
+      "text": {
+        "english": "Abandoning all duties come unto Me alone for shelter; sorrow not, I will liberate thee from all sins."
+      }
+    }
+  ]
+}

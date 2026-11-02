@@ -3,7 +3,7 @@
 The earlier ~$70 and ~$14 figures were for the committed 476-question run.
 This run has a different number of questions, so those dollar amounts do not
 apply. Token rates are the measured tokens per call from that run
-(runs/original-2026-10-21/summary.md), scaled by this run's question count.
+(runs/archive/original-2026-10-21/summary.md), scaled by this run's question count.
 gpt-oss-20b keeps its own output rate, which was much longer. Every other
 model uses the mean output of haiku and opus on that run. A second total
 prices every model as if it wrote as much as gpt-oss-20b.
@@ -19,7 +19,6 @@ Writes COST.md next to this file.
 from __future__ import annotations
 
 import json
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,6 +34,7 @@ RUNNABLE = (
     ROOT / "judaism" / "english" / "population" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "islam" / "english" / "population" / "questions.jsonl",
     ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "sikhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "hinduism" / "native" / "population" / "prompt-english" / "questions.jsonl",
@@ -63,6 +63,7 @@ WRITTEN = (
     ("Islam", [
         ROOT / "islam" / "native" / "population" / "prompt-english" / "questions.jsonl",
         ROOT / "islam" / "native" / "population" / "prompt-native" / "questions.jsonl",
+        ROOT / "islam" / "english" / "population" / "questions.jsonl",
     ]),
     ("Sikhism", [
         ROOT / "sikhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
@@ -84,8 +85,6 @@ WRITTEN = (
 ONE_EDITION = 30 * 4
 NATIVE_BOTH_PROMPTS = ONE_EDITION * 2
 FINISHED_OTHER = NATIVE_BOTH_PROMPTS + ONE_EDITION
-MODELS_URL = "https://openrouter.ai/api/v1/models"
-
 # Measured on the committed 476-question run, 3 models, search off.
 COMMITTED_QUESTIONS = 476
 COMMITTED_IN = {"haiku": 100_164, "opus": 100_164, "gpt-oss-20b": 93_811}
@@ -110,48 +109,52 @@ def question_count(path: Path) -> int:
 
 
 def six_traditions() -> list[tuple[str, int, str]]:
-    """Finished population counts. Each tradition is 360 questions.
+    """Population counts from the files on disk.
 
-    Christianity is the NRSV plus the same 30 verses in their original language.
-    Judaism is already at 360. A mismatch means the files changed.
+    A tradition with an English edition is 360 questions. Sikhism and Buddhism
+    are 240: this corpus has no English edition of either work. A mismatch
+    means the files changed.
     """
+    how = {
+        "Christianity": "NRSV, plus the same 30 in Masoretic or Greek, both prompts",
+        "Judaism": "Aramaic in both prompt languages, plus the English edition",
+        "Islam": "Uthmani in both prompt languages, plus Saheeh International",
+        "Sikhism": "Gurmukhi, both prompts; no English edition in this corpus",
+        "Hinduism": "Sanskrit in both prompt languages, plus Besant's English",
+        "Buddhism": "Pali, both prompts; no English edition in this corpus",
+    }
+    expected = {
+        "Christianity": FINISHED_OTHER,
+        "Judaism": FINISHED_OTHER,
+        "Islam": FINISHED_OTHER,
+        "Sikhism": 240,
+        "Hinduism": FINISHED_OTHER,
+        "Buddhism": 240,
+    }
     on_disk = {name: sum(question_count(path) for path in paths) for name, paths in WRITTEN}
-    if on_disk["Christianity"] != FINISHED_OTHER:
-        raise SystemExit(f"Christianity population files have {on_disk['Christianity']} questions, expected {FINISHED_OTHER}")
-    if on_disk["Judaism"] != FINISHED_OTHER:
-        raise SystemExit(f"Judaism population files have {on_disk['Judaism']} questions, expected {FINISHED_OTHER}")
-    rows = [
-        ("Christianity", FINISHED_OTHER, "NRSV, plus the same 30 in Masoretic or Greek, both prompts"),
-        ("Judaism", FINISHED_OTHER, "Aramaic in both prompt languages, plus the English edition"),
-    ]
-    for name in ("Islam", "Sikhism"):
-        have = on_disk[name]
-        rows.append((
-            name,
-            FINISHED_OTHER,
-            f"{have} on disk (native, both prompts); 360 once an English edition is added",
-        ))
-    for name in ("Hinduism", "Buddhism"):
-        rows.append((name, FINISHED_OTHER, "estimated: native in both prompt languages, plus an English edition"))
-    return rows
+    for name, count in expected.items():
+        if on_disk[name] != count:
+            raise SystemExit(f"{name} population files have {on_disk[name]} questions, expected {count}")
+    return [(name, expected[name], how[name]) for name, _ in WRITTEN]
 
 
-def live_prices(slugs: list[str]) -> dict[str, dict[str, float]]:
-    raw = urllib.request.urlopen(
-        urllib.request.Request(MODELS_URL, headers={"User-Agent": "items-for-test-cost"}),
-        timeout=60,
-    ).read()
-    catalog = {row["id"]: row for row in json.loads(raw)["data"]}
-    missing = [slug for slug in slugs if slug not in catalog]
-    if missing:
-        raise SystemExit(f"OpenRouter has no price for {missing}")
+def live_prices(panel: list[dict]) -> dict[str, dict[str, float]]:
+    """Prices recorded by check_models.py in runs/<id>/model.json."""
+    runs = ROOT.parents[1] / "runs"
     prices = {}
-    for slug in slugs:
-        pricing = catalog[slug]["pricing"]
-        prices[slug] = {
+    missing = []
+    for model in panel:
+        card = runs / model["id"] / "model.json"
+        if not card.exists():
+            missing.append(model["id"])
+            continue
+        pricing = json.loads(card.read_text(encoding="utf-8"))["catalogue"]["pricing_usd_per_token"]
+        prices[model["model"]] = {
             "prompt": float(pricing["prompt"]),
             "completion": float(pricing["completion"]),
         }
+    if missing:
+        raise SystemExit(f"run check_models.py first; no model.json for {missing}")
     return prices
 
 
@@ -199,8 +202,7 @@ def main() -> None:
     n_complete = sum(count for _, count, _ in traditions)
     panel = load_panel(PANEL)
     subset = load_panel(SUBSET)
-    slugs = [model["model"] for model in panel]
-    prices = live_prices(slugs)
+    prices = live_prices(panel)
     fetched = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     full_table, full_cost, full_verbose = price_panel(panel, prices, n)
     sub_table, sub_cost, sub_verbose = price_panel(subset, prices, n)
@@ -217,14 +219,14 @@ def main() -> None:
     lines = [
         "# Estimated OpenRouter cost",
         "",
-        f"Prices fetched {fetched} from {MODELS_URL}.",
+        f"Prices taken {fetched} from `runs/<id>/model.json`, written by `check_models.py` from the OpenRouter catalogue.",
         "",
         "The run is List A, all 16 models, search off. With all six traditions complete,",
         f"budget **{money(complete_verbose)}**. That is the higher figure: every model writes as",
         f"much as gpt-oss-20b did on the committed run. The floor for those same {n_complete}",
         f"questions is **{money(complete_cost)}**.",
         "",
-        f"Questions on disk today are {n} (Christianity, Judaism, Islam). That smaller run is",
+        f"Questions on disk today are {n}. That run is",
         f"**{money(full_cost)}** to **{money(full_verbose)}** on List A.",
         "",
         "`search` in the panel file is `false`. No model is sent `web_search`, so this",
@@ -244,8 +246,8 @@ def main() -> None:
         "the native text asked in English and in its own language (240), plus an",
         "English edition (120). Christianity's native text is the same 30 verses,",
         "Masoretic where the verse is from the Hebrew Bible and Greek where it is",
-        "from the New Testament. Islam and Sikhism have only the native edition",
-        "on disk. Hinduism and Buddhism have no passages yet.",
+        "from the New Testament. Islam adds Saheeh International. Sikhism and",
+        "Buddhism have no English edition, so those two are 240 questions.",
         "",
         "## All six traditions",
         "",

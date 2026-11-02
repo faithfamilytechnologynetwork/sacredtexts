@@ -163,10 +163,10 @@ describe("LeaderboardPage — stale-request guard (rapid run switch)", () => {
   });
 });
 
-// The committed-run gate, reworked onto the leaderboard: rendering runs/first-run-2026-10-11
+// The committed-run gate, reworked onto the leaderboard: rendering runs/archive/first-run-2026-10-11
 // through the `/` page shows the 4 models ranked (claude-haiku first), the retrieve_quote +
 // overall columns, the four traditions, and per-model token totals.
-const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/first-run-2026-10-11");
+const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/archive/first-run-2026-10-11");
 const present = existsSync(resolve(runDir, "summary.json"));
 
 function committedRunFetcher(): typeof fetch {

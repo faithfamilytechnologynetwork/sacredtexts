@@ -1,0 +1,61 @@
+{
+  "panel_id": "qwen3-32b",
+  "openrouter_id": "qwen/qwen3-32b",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "qwen/qwen3-32b",
+    "name": "Qwen: Qwen3 32B",
+    "context_length": 131072,
+    "max_completion_tokens": 16384,
+    "modality": "text->text",
+    "tokenizer": "Qwen3",
+    "pricing_usd_per_token": {
+      "prompt": "0.00000008",
+      "completion": "0.00000028",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.08,
+      "output": 0.28
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logit_bias",
+      "logprobs",
+      "max_tokens",
+      "min_p",
+      "presence_penalty",
+      "reasoning",
+      "repetition_penalty",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_a",
+      "top_k",
+      "top_logprobs",
+      "top_p"
+    ]
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "length",
+    "text": "",
+    "provider": "DeepInfra",
+    "prompt_tokens": 16,
+    "completion_tokens": 16,
+    "total_tokens": 32,
+    "cost_usd": 5.76e-06
+  },
+  "collected": {
+    "calls": 55,
+    "prompt_tokens": 3323,
+    "completion_tokens": 51080,
+    "cost_usd": 0.01456824
+  }
+}

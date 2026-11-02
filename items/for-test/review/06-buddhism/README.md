@@ -5,7 +5,7 @@
 - Language: Pali (romanized)
 - Raw file: `texts/raw/Buddhism/s0502m.mul.xml`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: population sample of 30 passages. No familiarity list in `well_known.yaml`.
+- Size: population sample of 30 passages. Familiarity is separate: Dhammapada 5, 103, 183, 223, in Pali. No English edition is in the corpus.
 
 ## Passages to check
 

@@ -1,0 +1,47 @@
+{
+  "panel_id": "argon",
+  "openrouter_id": "google/gemini-4-argon",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "google/gemini-4-argon",
+    "name": "Google: Gemini 4 Argon",
+    "context_length": 1048576,
+    "max_completion_tokens": 943718,
+    "modality": "text+image+file+audio+video->text",
+    "tokenizer": "Gemini",
+    "pricing_usd_per_token": {
+      "prompt": "0.000002",
+      "completion": "0.00001",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 2.0,
+      "output": 10.0
+    },
+    "supported_parameters": [
+      "include_reasoning",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_p"
+    ]
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "Google",
+    "prompt_tokens": 38,
+    "completion_tokens": 5,
+    "total_tokens": 43,
+    "cost_usd": 0.000126
+  }
+}

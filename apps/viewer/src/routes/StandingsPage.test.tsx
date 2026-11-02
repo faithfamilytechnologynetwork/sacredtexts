@@ -164,7 +164,7 @@ describe("StandingsPage — cross-run rollup", () => {
 // The committed-run gate: standings over the single committed run must equal that run's
 // leaderboard rows — same 4 models, same ranking (claude-haiku first), each keyed on its
 // panel (provider, model) identity and linking back into the run via /?run=<id>.
-const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/first-run-2026-10-11");
+const runDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..", "runs/archive/first-run-2026-10-11");
 const present = existsSync(resolve(runDir, "summary.json"));
 
 function committedStandingsFetcher(): typeof fetch {

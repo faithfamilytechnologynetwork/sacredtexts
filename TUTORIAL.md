@@ -19,7 +19,7 @@ viewer in step 8 will show it to you.
 Two short safety notes you will see repeated below, because they matter:
 
 - **Never re-run steps 6, 7, or 8's scoring on top of the shipped example runs**
-  (`runs/original-2026-10-21/`, `runs/tutorial-2026-10-11/`, and `runs/first-run-2026-10-11/`).
+  (`runs/archive/original-2026-10-21/`, `runs/archive/tutorial-2026-10-11/`, and `runs/archive/first-run-2026-10-11/`).
   Those folders are the finished reference results that come with the project; always send your
   own work to a brand-new folder instead (step 5 sets one up).
 - **Keep your API key in your terminal's environment, never saved in a file** in the
@@ -48,8 +48,8 @@ command always builds the same set.
 
 The run uses **three models** answering every question from memory (no web-search tool), exactly
 the shape of the shipped reference run in
-[`runs/original-2026-10-21/`](runs/original-2026-10-21/) — the full four-template,
-all-17-texts, original-language-only run whose [`README.md`](runs/original-2026-10-21/README.md)
+[`runs/archive/original-2026-10-21/`](runs/archive/original-2026-10-21/) — the full four-template,
+all-17-texts, original-language-only run whose [`README.md`](runs/archive/original-2026-10-21/README.md)
 has the complete results write-up. Your tutorial run is a smaller, three-scripture version of
 it, and step 8 compares the two in the same viewer.
 
@@ -130,7 +130,7 @@ the shipped examples.
 
 > To try the whole loop more cheaply first, use a smaller number like `--per-text 8`. A
 > different `--per-text` or `--seed` produces a different question set. The shipped
-> [`runs/original-2026-10-21/`](runs/original-2026-10-21/) is the full reference run to compare
+> [`runs/archive/original-2026-10-21/`](runs/archive/original-2026-10-21/) is the full reference run to compare
 > your results against in the viewer.
 
 ## 4. Audit — confirm nothing restricted slipped in
@@ -160,7 +160,7 @@ This sends every question to every model over the internet and records their ans
 **This is the step that costs money.** The cost scales with the number of
 question-and-model combinations: the `--per-text 20` command above makes 60 questions ×
 3 models = **180 combinations** — a dollar or two on OpenRouter. For scale, the full
-shipped reference run (`runs/original-2026-10-21`, 1,428 combinations) cost roughly **$13**.
+shipped reference run (`runs/archive/original-2026-10-21`, 1,428 combinations) cost roughly **$13**.
 
 ```bash
 uv --project pipelines run python -m sacredbench collect \
@@ -172,8 +172,8 @@ leaves the rest in place — just run it again and it fills in only the missing 
 will refuse to run against a different question set than the one it started with, so you
 can't accidentally mix things up.
 
-> **Never point this at `runs/original-2026-10-21/`, `runs/tutorial-2026-10-11/`, or
-> `runs/first-run-2026-10-11/`.** Those are the finished example runs; re-running here would
+> **Never point this at `runs/archive/original-2026-10-21/`, `runs/archive/tutorial-2026-10-11/`, or
+> `runs/archive/first-run-2026-10-11/`.** Those are the finished example runs; re-running here would
 > either do nothing or overwrite their results. Always use your own `runs/my-run/` folder.
 
 ## 7. Score — grade the answers
@@ -262,10 +262,10 @@ cat runs/my-run/summary.md
 run instead. Read its summary directly:
 
 ```bash
-cat runs/original-2026-10-21/summary.md
+cat runs/archive/original-2026-10-21/summary.md
 ```
 
-The shipped run's [`README.md`](runs/original-2026-10-21/README.md) explains the headline
+The shipped run's [`README.md`](runs/archive/original-2026-10-21/README.md) explains the headline
 finding. An answer counts as **correct** when it contains the exact passage — a verbatim quote
 wrapped in extra words ("According to Sefaria…", a link) still counts — and a model that **declines**
 ("I can't reliably reproduce that line") is marked **refused** and set aside, not counted wrong. So
