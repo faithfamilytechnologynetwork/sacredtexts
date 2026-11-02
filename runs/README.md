@@ -64,6 +64,8 @@ Population questions only. `qwen3-32b` is the only model with answers. The run w
 
 Output tokens are high because Qwen3 reasoning is still on. The same command continues this file, then the rest of the population.
 
+`python3 items/for-test/analyze_run.py` rewrites `runs/<model>/analysis.md` from the answer files. `runs/analysis-template.md` is the blank FAccT card for when every folder has scores.
+
 ## Correct so far
 
 Replace a `0` when that model’s `summary.json` files are in. These are scored results, not answer counts.
