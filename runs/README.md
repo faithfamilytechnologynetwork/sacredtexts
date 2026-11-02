@@ -49,9 +49,24 @@ runs/<model>/base/
 
 Each of those has `population/` (and `familiarity/`, not in the run). A native edition is `prompt-english/` and `prompt-native/`.
 
+## Collected so far
+
+Population questions only. `qwen3-32b` is the only model with answers. The run was stopped during the first file, so there is no `summary.json` yet and the correctness table below stays at 0.
+
+| | |
+|---|---:|
+| file | `christianity/english/population` |
+| answers | 55 of 120 |
+| other files | 0 |
+| input tokens | 3,323 |
+| output tokens | 51,080 |
+| cost | $0.0146 |
+
+Output tokens are high because Qwen3 reasoning is still on. The same command continues this file, then the rest of the population.
+
 ## Correct so far
 
-Population questions only. Replace a `0` when that model’s `summary.json` files are in. Nothing has been collected for this layout yet.
+Replace a `0` when that model’s `summary.json` files are in. These are scored results, not answer counts.
 
 | model | Chr | Jud | Isl | Sik | Hin | Bud |
 |---|---:|---:|---:|---:|---:|---:|
@@ -76,8 +91,11 @@ Population questions only. Replace a `0` when that model’s `summary.json` file
 
 `--model` is required. It is the id in `items/for-test/models/openrouter.yaml` (`haiku`, `opus`, `sol`, `gpt-oss-20b`, and the rest of that list). Answers go under `runs/<model>/base/`.
 
+Calls run in parallel. The panel file sets `concurrency: 4`, so four questions are in flight at once. Pass `--concurrency 10` to raise that for one run. Ten is a reasonable step for a cheap model. A higher number can trip OpenRouter's rate limit, and those cells stay pending for the next run.
+
 ```bash
 python items/for-test/join_run.py --model haiku
+python items/for-test/join_run.py --model qwen3-32b --concurrency 10
 ```
 
 That walks every population question file (familiarity is not included). Each folder receives `answers.jsonl`, then `scores.jsonl`, `summary.json`, and `summary.md`. Run the same command again to retry cells that failed. Finished question-and-model pairs are not called again.
@@ -104,7 +122,7 @@ python items/for-test/join_run.py --model haiku --tradition islam --test
 python items/for-test/join_run.py --model haiku --test
 ```
 
-`--test` calls the first 3 passages of each tradition, all four tasks for those passages. A file that does not contain those passages (the Greek New Testament file, when the 3 are Hebrew Bible verses) uses its own first 3. The answer file is stamped with the full question file, not with the 3-passage slice. Drop `--test` and run the same model again. The 3 passages stay, and the remaining passages are added to the same `answers.jsonl`. The scores are rewritten from the whole file.
+`--test` calls the first 3 passages of each tradition, all four tasks for those passages. That is 3 passages per tradition, not 3 per file and not 18 passages in one pile. A file that does not contain those 3 is skipped. The Greek New Testament file is skipped when Christianity's 3 are Hebrew Bible verses. The same 3 are still asked in each file that does contain them (English, and both Masoretic prompts). The answer file is stamped with the full question file, not with the 3-passage slice. Drop `--test` and run the same model again. The 3 passages stay, and the remaining passages are added to the same `answers.jsonl`. The scores are rewritten from the whole file.
 
 Sikhism and Buddhism have no English edition, so there is no `sikhism/english/` folder until a translation is in the corpus. Collecting that later is a new folder. It does not replace the Gurmukhi answers.
 
