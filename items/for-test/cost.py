@@ -19,7 +19,6 @@ Writes COST.md next to this file.
 from __future__ import annotations
 
 import json
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -86,8 +85,6 @@ WRITTEN = (
 ONE_EDITION = 30 * 4
 NATIVE_BOTH_PROMPTS = ONE_EDITION * 2
 FINISHED_OTHER = NATIVE_BOTH_PROMPTS + ONE_EDITION
-MODELS_URL = "https://openrouter.ai/api/v1/models"
-
 # Measured on the committed 476-question run, 3 models, search off.
 COMMITTED_QUESTIONS = 476
 COMMITTED_IN = {"haiku": 100_164, "opus": 100_164, "gpt-oss-20b": 93_811}
@@ -141,22 +138,23 @@ def six_traditions() -> list[tuple[str, int, str]]:
     return [(name, expected[name], how[name]) for name, _ in WRITTEN]
 
 
-def live_prices(slugs: list[str]) -> dict[str, dict[str, float]]:
-    raw = urllib.request.urlopen(
-        urllib.request.Request(MODELS_URL, headers={"User-Agent": "items-for-test-cost"}),
-        timeout=60,
-    ).read()
-    catalog = {row["id"]: row for row in json.loads(raw)["data"]}
-    missing = [slug for slug in slugs if slug not in catalog]
-    if missing:
-        raise SystemExit(f"OpenRouter has no price for {missing}")
+def live_prices(panel: list[dict]) -> dict[str, dict[str, float]]:
+    """Prices recorded by check_models.py in runs/<id>/model.json."""
+    runs = ROOT.parents[1] / "runs"
     prices = {}
-    for slug in slugs:
-        pricing = catalog[slug]["pricing"]
-        prices[slug] = {
+    missing = []
+    for model in panel:
+        card = runs / model["id"] / "model.json"
+        if not card.exists():
+            missing.append(model["id"])
+            continue
+        pricing = json.loads(card.read_text(encoding="utf-8"))["catalogue"]["pricing_usd_per_token"]
+        prices[model["model"]] = {
             "prompt": float(pricing["prompt"]),
             "completion": float(pricing["completion"]),
         }
+    if missing:
+        raise SystemExit(f"run check_models.py first; no model.json for {missing}")
     return prices
 
 
@@ -204,8 +202,7 @@ def main() -> None:
     n_complete = sum(count for _, count, _ in traditions)
     panel = load_panel(PANEL)
     subset = load_panel(SUBSET)
-    slugs = [model["model"] for model in panel]
-    prices = live_prices(slugs)
+    prices = live_prices(panel)
     fetched = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     full_table, full_cost, full_verbose = price_panel(panel, prices, n)
     sub_table, sub_cost, sub_verbose = price_panel(subset, prices, n)
@@ -222,7 +219,7 @@ def main() -> None:
     lines = [
         "# Estimated OpenRouter cost",
         "",
-        f"Prices fetched {fetched} from {MODELS_URL}.",
+        f"Prices taken {fetched} from `runs/<id>/model.json`, written by `check_models.py` from the OpenRouter catalogue.",
         "",
         "The run is List A, all 16 models, search off. With all six traditions complete,",
         f"budget **{money(complete_verbose)}**. That is the higher figure: every model writes as",

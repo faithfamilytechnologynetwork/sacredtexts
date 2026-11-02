@@ -1,0 +1,46 @@
+{
+  "panel_id": "luna",
+  "openrouter_id": "openai/gpt-6-luna",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "openai/gpt-6-luna",
+    "name": "OpenAI: GPT-6 Luna",
+    "context_length": 1050000,
+    "max_completion_tokens": 128000,
+    "modality": "text+image+file->text",
+    "tokenizer": "GPT",
+    "pricing_usd_per_token": {
+      "prompt": "0.0000001",
+      "completion": "0.0000005",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.1,
+      "output": 0.5
+    },
+    "supported_parameters": [
+      "include_reasoning",
+      "max_completion_tokens",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "seed",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "verbosity"
+    ]
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "OpenAI",
+    "prompt_tokens": 13,
+    "completion_tokens": 5,
+    "total_tokens": 18,
+    "cost_usd": 3.8e-06
+  }
+}

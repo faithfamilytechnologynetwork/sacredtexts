@@ -1,0 +1,55 @@
+{
+  "panel_id": "gemma-31b",
+  "openrouter_id": "google/gemma-4-31b-it",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "google/gemma-4-31b-it",
+    "name": "Google: Gemma 4 31B",
+    "context_length": 262144,
+    "max_completion_tokens": 16384,
+    "modality": "text+image+video->text",
+    "tokenizer": "Gemma",
+    "pricing_usd_per_token": {
+      "prompt": "0.0000002",
+      "completion": "0.0000004",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.2,
+      "output": 0.4
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logit_bias",
+      "logprobs",
+      "max_completion_tokens",
+      "max_tokens",
+      "min_p",
+      "presence_penalty",
+      "reasoning",
+      "repetition_penalty",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_k",
+      "top_logprobs",
+      "top_p"
+    ]
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "CoreWeave",
+    "prompt_tokens": 20,
+    "completion_tokens": 2,
+    "total_tokens": 22,
+    "cost_usd": 2.68e-06
+  }
+}

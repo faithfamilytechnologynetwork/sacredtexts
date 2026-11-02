@@ -12,7 +12,7 @@ The command is `items/for-test/join_run.py`. It creates a folder only when that 
 
 ## Models
 
-Ids for `--model`, from `items/for-test/models/openrouter.yaml`. Temperature 0, search off.
+Ids for `--model`, from `items/for-test/models/openrouter.yaml`. Temperature 0, search off. `python items/for-test/check_models.py` calls each one with the key in `.env` and writes `runs/<id>/model.json` (input and output price per million tokens, context length, and the probe's token counts and cost).
 
 | id | model |
 |---|---|

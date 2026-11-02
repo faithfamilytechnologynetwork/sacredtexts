@@ -1,0 +1,46 @@
+{
+  "panel_id": "haiku",
+  "openrouter_id": "anthropic/claude-haiku-5.5",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "anthropic/claude-haiku-5.5",
+    "name": "Anthropic: Claude Haiku 5.5",
+    "context_length": 1000000,
+    "max_completion_tokens": 128000,
+    "modality": "text+image+file->text",
+    "tokenizer": "Claude",
+    "pricing_usd_per_token": {
+      "prompt": "0.0000001",
+      "completion": "0.0000005",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.1,
+      "output": 0.5
+    },
+    "supported_parameters": [
+      "include_reasoning",
+      "max_completion_tokens",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "stop",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "verbosity"
+    ]
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "Claude Platform on AWS",
+    "prompt_tokens": 18,
+    "completion_tokens": 4,
+    "total_tokens": 22,
+    "cost_usd": 3.8e-06
+  }
+}
