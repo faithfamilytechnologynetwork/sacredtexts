@@ -47,7 +47,9 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # 2026-11-01 (#79): sunnah.com English for the six canonical hadith books added, outside the pool
 # (translations) — corpus hash moved, digest did not; 2026-11-01 issue #74: the Arabic hadith pool
 # trimmed to the six canonical books — Muwatta Malik, Musnad Ahmad and Sunan al-Darimi left the
-# catalogue, 20 -> 17 texts, 560 -> 476 questions — BOTH values moved). On such an update, re-pin
+# catalogue, 20 -> 17 texts, 560 -> 476 questions — BOTH values moved; 2026-11-02: Sant Singh
+# Khalsa's English of Sri Guru Granth Sahib added, outside the pool — corpus hash moved, digest
+# did not). On such an update, re-pin
 # BOTH constants from a fresh `generate` with the run manifest's params. NOTE: you can no longer
 # "rebuild the committed FAccT card" as the earlier remedy said — #74 removed editions this run
 # SELECTED, so `sacredbench facct` on it now fails loudly and the committed card is FROZEN (see
@@ -55,7 +57,7 @@ PINNED_DIGEST = "de65959a99dea9b3"
 # ADDS a text the run never selected still leaves that historic card buildable and byte-identical
 # (Spec 50).
 # Never loosen these assertions and never touch the committed run evidence itself.
-ANCHOR_CORPUS_HASH = "7def385f25a11395"  # texts/ as of 2026-11-01 (#79 English six + #74 hadith trim)
+ANCHOR_CORPUS_HASH = "88e790797fcf632d"  # texts/ as of 2026-11-02 (Sant Singh Khalsa English added)
 ANCHOR_DIGEST = "48ee2ca017a57afc"  # generate over that corpus with the run's params (476 questions)
 
 # Pre-registered cite_passage decline survey (Spec 26 round-1b, fold B). Every cite_passage answer

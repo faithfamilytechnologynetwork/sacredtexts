@@ -5,10 +5,16 @@ committed payload is a filtered extract: Sri Guru Granth Sahib's lines only, eac
 its upstream text EXACTLY as stored. Nothing is cleaned here; the converter
 (``sacredbench.convert.convert_shabados_sggs``) owns that.
 
+Given a third path it also builds ``sggs_khalsa_english_shabados.json``: Dr Sant Singh
+Khalsa's English (asset ``DSSK``) for those same lines, in the same order and also
+verbatim, so an English line carries the citation of its Gurmukhi line
+(``sacredbench.convert.convert_shabados_sggs_english``).
+
 Usage, from a checkout of github.com/shabados/shabados (a sparse checkout of
 ``database/collections/{lines,line-groups,sections}`` is enough):
 
-    python3 -I texts/raw/Sikhism/build_extract.py <shabados-checkout> texts/raw/Sikhism/sggs_shabados.json
+    python3 -I texts/raw/Sikhism/build_extract.py <shabados-checkout> \
+        texts/raw/Sikhism/sggs_shabados.json [texts/raw/Sikhism/sggs_khalsa_english_shabados.json]
 
 Shape of the real data (derived from it, commit 7e36a29, 2026-10-22):
 
@@ -20,8 +26,12 @@ Shape of the real data (derived from it, commit 7e36a29, 2026-10-22):
   sections themselves, so they are sorted by their first line's ``(page, line)``;
   their Ang ranges do not overlap, which this script asserts.
 
-Fail-fast: a line in no section, a line group in two sections, or overlapping
-section ranges raises.
+- A translation is a ``type = "translation"`` content item of the same line file, with a
+  ``language`` and its own asset. Every Sri Guru Granth Sahib line has exactly one ``DSSK``
+  English item.
+
+Fail-fast: a line in no section, a line group in two sections, overlapping section ranges,
+or a line without exactly one English item raises.
 """
 
 from __future__ import annotations
@@ -33,6 +43,7 @@ import tomllib
 from pathlib import Path
 
 ASSET = "SSA2"
+ENGLISH_ASSET = "DSSK"
 EXPECTED_SECTIONS = 51
 
 
@@ -114,6 +125,30 @@ def build(checkout: Path) -> dict:
     }
 
 
+def build_english(checkout: Path, extract: dict) -> dict:
+    """The English of every line in ``extract``, in its order. ``ang`` comes from the
+    extract, so the converter derives the same citations for both payloads."""
+    paths = {p.stem: p for p in (checkout / "database" / "collections" / "lines").rglob("*.toml")}
+    out_lines = []
+    for rec in extract["lines"]:
+        found = [
+            item["data"] for item in _load(paths[rec["id"]]).get("content", [])
+            if item.get("type") == "translation" and item.get("language") == "en"
+            and ENGLISH_ASSET in item.get("assets", [])
+        ]
+        if len(found) != 1:
+            raise SystemExit(f"line {rec['id']}: {len(found)} {ENGLISH_ASSET} English items, expected 1")
+        out_lines.append({"id": rec["id"], "ang": rec["ang"], "data": found[0]})
+    return {
+        "upstream": {
+            **extract["upstream"],
+            "asset": ENGLISH_ASSET,
+            "note": "verbatim English translation, one per line of sggs_shabados.json, same order",
+        },
+        "lines": out_lines,
+    }
+
+
 def dump(extract: dict) -> str:
     """One line per record, so a diff shows exactly which lines changed."""
     head = {k: v for k, v in extract.items() if k != "lines"}
@@ -123,8 +158,12 @@ def dump(extract: dict) -> str:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         raise SystemExit(__doc__)
     extract = build(Path(sys.argv[1]))
     Path(sys.argv[2]).write_text(dump(extract), encoding="utf-8")
     print(f"{len(extract['lines'])} lines, {len(extract['sections'])} sections, commit {extract['upstream']['commit']}")
+    if len(sys.argv) == 4:
+        english = build_english(Path(sys.argv[1]), extract)
+        Path(sys.argv[3]).write_text(dump(english), encoding="utf-8")
+        print(f"{len(english['lines'])} English lines")

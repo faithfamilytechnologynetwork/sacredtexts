@@ -8,6 +8,7 @@ import pytest
 from sacredbench import catalogue as cat
 from sacredbench.convert import (
     ConvertError,
+    clean_sggs_english_line,
     convert_bible_flat,
     convert_encyclicals,
     convert_hadith_sunnah,
@@ -17,6 +18,7 @@ from sacredbench.convert import (
     convert_quran_qul,
     convert_sefaria_talmud,
     convert_shabados_sggs,
+    convert_shabados_sggs_english,
     convert_besant_gita,
     convert_stotrasamhita_gita,
     convert_target,
@@ -526,6 +528,58 @@ def _gurmukhi_letters(s: str) -> str:
     """Letters and marks only — the words' substance, independent of the converter."""
     import unicodedata
     return "".join(c for c in s if "਀" <= c <= "੿" and unicodedata.category(c)[0] in "LM")
+
+
+@pytest.mark.parametrize("raw,clean", [
+    ("Only one who has faith comes to know such a state of mind. ||14||",
+     "Only one who has faith comes to know such a state of mind."),
+    ("True is His Name. ||1||Pause||", "True is His Name. Pause"),  # Pause is a word, as ਰਹਾਉ is
+    ("O Nanak, be true. ||4||9||60||", "O Nanak, be true."),  # stacked counters leave no digit
+    ("Hear me || and speak | 2|| again", "Hear me and speak again"),  # bare and malformed markers
+    ("So Dar ~ That Door. Raag Aasaa, First Mehl:", "So Dar ~ That Door. Raag Aasaa, First Mehl:"),
+])
+def test_clean_sggs_english_removes_markers_only(raw, clean):
+    assert clean_sggs_english_line(raw) == clean
+
+
+def test_shabados_sggs_english_shares_the_gurmukhi_citations_and_errata(tmp_path):
+    """Same walk as the Gurmukhi: position on the Ang, and the corrected Ang for JJSV."""
+    p = _sggs_payload(tmp_path, [
+        _sggs("A", 1336, 4, "First line. ||1||"),
+        _sggs("JJSV", 1337, 5, "Second line. ||2||"),
+        _sggs("C", 1338, 1, "Third line."),
+    ])
+    [doc] = convert_shabados_sggs_english([p], _target(converter="shabados_sggs_english", language="en"))
+    assert [(e.citation, e.text) for e in doc.entries] == [
+        ("Ang 1336:1", "First line."), ("Ang 1336:2", "Second line."), ("Ang 1338:1", "Third line."),
+    ]
+
+
+@pytest.mark.parametrize("data", ["", "   ", "||1||"])
+def test_shabados_sggs_english_line_without_words_fails(tmp_path, data):
+    """Dropping it silently would hide a gap in the line-for-line match."""
+    p = _sggs_payload(tmp_path, [_sggs("A", 1, 1, data)])
+    with pytest.raises(ConvertError, match="no clean English text"):
+        convert_shabados_sggs_english([p], _target(converter="shabados_sggs_english", language="en"))
+
+
+TRAILING_DIGIT_CITATION = "Ang 986:10"
+
+
+def test_real_sggs_english_matches_the_gurmukhi_line_for_line():
+    gurmukhi = _real_target("Sikhism", converter="shabados_sggs")
+    english = _real_target("Sikhism", converter="shabados_sggs_english")
+    [g] = convert_target(gurmukhi.payload_paths(RAW), gurmukhi)
+    [e] = convert_target(english.payload_paths(RAW), english)
+    assert [x.citation for x in e.entries] == [x.citation for x in g.entries]
+    assert len(e.entries) == 60555
+    assert e.language == "en" and e.version == "Sant Singh Khalsa (Shabad OS)"
+    assert e.entries[0].text.startswith("One Universal Creator God.")
+    assert not any("|" in x.text for x in e.entries)
+    # no counter survives at the end of a line; the one trailing digit is a heading's own word
+    assert [x.citation for x in e.entries if x.text.split()[-1].isdigit()] == [TRAILING_DIGIT_CITATION]
+    assert next(x for x in e.entries if x.citation == TRAILING_DIGIT_CITATION).text.endswith("Set of Six Hymns 1")
+    parse_document(e.to_json_dict())
 
 
 def test_real_sggs_converts_every_line_and_removes_only_apparatus():
