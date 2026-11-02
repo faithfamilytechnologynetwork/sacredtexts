@@ -24,6 +24,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 from dataclasses import replace
 from pathlib import Path
 
@@ -34,44 +35,86 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 sys.path.insert(0, str(REPO / "pipelines"))
 
-from sacredbench.collect import _existing, collect  # noqa: E402
+from sacredbench.collect import Stopped, _existing, collect  # noqa: E402
 from sacredbench.config import load_config  # noqa: E402
 from sacredbench.generate import Question, load_questions  # noqa: E402
 
 PYTHON = REPO / ".venv" / "bin" / "python"
 
 
-def record_usage(model_id: str) -> None:
-    """Add this model's collected answers into runs/<id>/model.json."""
-    card_path = REPO / "runs" / model_id / "model.json"
-    if not card_path.exists():
-        return
-    card = json.loads(card_path.read_text(encoding="utf-8"))
+_USAGE_LOCK = threading.Lock()
+TEST_PASSAGES = 3
+
+
+def _card_path(model_id: str) -> Path:
+    return REPO / "runs" / model_id / "model.json"
+
+
+def _prices(card: dict) -> tuple[float, float]:
     prices = (card.get("catalogue") or {}).get("pricing_usd_per_token") or {}
-    prompt_price = float(prices.get("prompt") or 0)
-    completion_price = float(prices.get("completion") or 0)
-    prompt_tokens = completion_tokens = calls = 0
-    base = card_path.parent / "base"
-    if base.is_dir():
-        for path in base.rglob("answers.jsonl"):
-            for line in path.read_text(encoding="utf-8").splitlines():
-                if not line.strip():
-                    continue
-                row = json.loads(line)
-                if row.get("model_id") != model_id:
-                    continue
-                usage = row.get("usage") or {}
-                prompt_tokens += int(usage.get("in") or 0)
-                completion_tokens += int(usage.get("out") or 0)
-                calls += 1
-    card["collected"] = {
+    return float(prices.get("prompt") or 0), float(prices.get("completion") or 0)
+
+
+def _totals(prompt_tokens: int, completion_tokens: int, calls: int, prices: tuple[float, float]) -> dict:
+    return {
         "calls": calls,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "cost_usd": round(prompt_tokens * prompt_price + completion_tokens * completion_price, 8),
+        "cost_usd": round(prompt_tokens * prices[0] + completion_tokens * prices[1], 8),
     }
-    card_path.write_text(json.dumps(card, indent=2) + "\n", encoding="utf-8")
-TEST_PASSAGES = 3
+
+
+def _write_card(path: Path, card: dict) -> None:
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(card, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def reconcile_usage(model_id: str) -> dict | None:
+    """Rebuild collected totals from the answer files. Safe after a stopped run."""
+    path = _card_path(model_id)
+    if not path.exists():
+        return None
+    with _USAGE_LOCK:
+        card = json.loads(path.read_text(encoding="utf-8"))
+        prices = _prices(card)
+        prompt_tokens = completion_tokens = calls = 0
+        base = path.parent / "base"
+        if base.is_dir():
+            for answers in base.rglob("answers.jsonl"):
+                for line in answers.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    if row.get("model_id") != model_id:
+                        continue
+                    usage = row.get("usage") or {}
+                    prompt_tokens += int(usage.get("in") or 0)
+                    completion_tokens += int(usage.get("out") or 0)
+                    calls += 1
+        card["collected"] = _totals(prompt_tokens, completion_tokens, calls, prices)
+        _write_card(path, card)
+        return card["collected"]
+
+
+def add_usage(model_id: str, row: dict) -> dict | None:
+    """Add one saved answer's tokens to model.json."""
+    path = _card_path(model_id)
+    if not path.exists():
+        return None
+    usage = row.get("usage") or {}
+    with _USAGE_LOCK:
+        card = json.loads(path.read_text(encoding="utf-8"))
+        prices = _prices(card)
+        have = card.get("collected") or {}
+        card["collected"] = _totals(
+            int(have.get("prompt_tokens") or 0) + int(usage.get("in") or 0),
+            int(have.get("completion_tokens") or 0) + int(usage.get("out") or 0),
+            int(have.get("calls") or 0) + 1,
+            prices,
+        )
+        _write_card(path, card)
+        return card["collected"]
 
 
 def load_dotenv() -> None:
@@ -190,6 +233,7 @@ def main() -> None:
             raise SystemExit("--concurrency must be at least 1")
         cfg = replace(cfg, concurrency=args.concurrency)
     cfg = replace(cfg, models=tuple(picked))
+    reconcile_usage(args.model)
     py = PYTHON if PYTHON.exists() else Path(sys.executable)
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO / "pipelines")
@@ -213,14 +257,27 @@ def main() -> None:
         print(f"collect {rel} -> {answers.relative_to(REPO)} ({len(todo)} questions, {pending} to call)")
         bar = tqdm(total=pending, desc=str(rel), unit="call", leave=True, disable=pending == 0)
 
-        def tick(*_a, _bar=bar, _model=args.model) -> None:
+        def on_saved(row, _bar=bar, _model=args.model) -> None:
+            totals = add_usage(_model, row)
             _bar.update(1)
-            record_usage(_model)
+            if totals:
+                _bar.set_postfix(usd=f"{totals['cost_usd']:.4f}", refresh=False)
 
-        done, failed, messages = collect(
-            todo, cfg, answers, on_result=tick, on_failure=tick, digest_from=all_qs,
-        )
-        bar.close()
+        def on_failure(*_a, _bar=bar) -> None:
+            _bar.update(1)
+
+        try:
+            done, failed, messages = collect(
+                todo, cfg, answers, on_result=on_saved, on_failure=on_failure, digest_from=all_qs,
+            )
+        except Stopped as stop:
+            bar.close()
+            reconcile_usage(args.model)
+            print(f"\n{stop}", file=sys.stderr)
+            os._exit(130)
+        finally:
+            bar.close()
+            reconcile_usage(args.model)
         print(f"  collected {done}, pending {failed}")
         if failed:
             for msg in messages:

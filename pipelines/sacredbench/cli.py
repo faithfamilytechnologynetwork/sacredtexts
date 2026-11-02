@@ -8,6 +8,7 @@ Run from the repo root:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -21,7 +22,7 @@ from sacredbench import convert as conv
 from sacredbench import export as exp
 from sacredbench import generate as gen
 from sacredbench import schema
-from sacredbench.collect import CollectError, _existing, _panel_fingerprint
+from sacredbench.collect import CollectError, Stopped, _existing, _panel_fingerprint
 from sacredbench.collect import collect as run_collect
 from sacredbench.providers import is_quota_error
 from sacredbench.config import ConfigError, load_config
@@ -370,11 +371,15 @@ def collect(
         f"{pending} to call, {skipped} already saved "
         f"(concurrency {cfg.concurrency})"
     )
-    done, failed, messages = run_collect(
-        qs, cfg, out,
-        on_result=lambda q, m, text: typer.echo(f"  done {q.id} x {m.id}"),
-        digest_from=all_qs,
-    )
+    try:
+        done, failed, messages = run_collect(
+            qs, cfg, out,
+            on_result=lambda row: typer.echo(f"  done {row['question_id']} x {row['model_id']}"),
+            digest_from=all_qs,
+        )
+    except Stopped as stop:
+        typer.echo(str(stop), err=True)
+        os._exit(130)
     typer.echo(f"collected {done} answers -> {out}")
     if failed:
         if any(is_quota_error(Exception(msg)) for msg in messages):
