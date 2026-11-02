@@ -133,3 +133,22 @@ from another tradition in another script.
   fast. Exactly 2 rows re-drew: → Abu Dawud 2709 (whole saying; 4 words with 65:2, the stock
   opening "من كان يؤمن بالله") and Ibn Majah 3948 (whole saying, no Qur'an run ≥3). 6-word threshold
   kept; overlap screen still changes 1/38 (Nasa'i 3573).
+- Pushed 5a03fb1; GitHub CI green (pipelines + viewer, both runs); local dispatcher 855 passed,
+  2 skipped. pr gate held.
+
+## Merged outside porch (2026-11-02)
+- PR #78 was merged by repo collaborator JonathanKarr33 at 2026-11-02T07:31:54Z (merge commit
+  0a6eb3d). The merged head is 5a03fb1, the last commit I pushed, so main has exactly the reviewed
+  code. #75 and #76 are closed. The porch `pr` gate was never approved: the merge happened on
+  GitHub, outside porch.
+- Architect: nothing more to build; mark the project complete without the human-approval flag;
+  stand down; don't touch main.
+- Porch: `porch done 75 --merged 78` recorded the merge. Porch can't go further without approving
+  the gate: `porch verify --skip` only runs in the verify phase, and getting there requires
+  `porch approve 75 pr --a-human-explicitly-approved-this`. A builder never runs that, so the
+  project stays at phase `pr` with the gate pending. Closing it out takes a human-authorized
+  approve, then `porch verify 75 --skip "<reason>"`.
+- Side effect: `porch done --help` ignored `--help` and ran a real `porch done`. Both checks
+  passed and it stopped at the gate. No phase advanced.
+- Stood down. Worktree cleanup waits for the owner's word. This entry is committed only on the
+  local builder branch, so main's copy stops at the skip-list round.
