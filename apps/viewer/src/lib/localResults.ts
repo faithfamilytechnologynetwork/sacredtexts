@@ -5,6 +5,7 @@
 // independent of the GitHub data layer — this is the local-only results view.
 
 import { classifyFailure, type FailureKind } from "./failureKind";
+import { fetchSharded } from "./shards";
 
 export interface Cell {
   n: number;
@@ -362,11 +363,25 @@ export type LoadResult =
   | { ok: true; summary: Summary; results: QuestionResult[] }
   | { ok: false; kind: "missing" | "http" | "malformed"; message: string };
 
+type ArtifactFetch =
+  | { ok: true; text: string }
+  | { ok: false; kind: "missing" | "http" | "malformed"; message: string };
+
+/** Fetch one artifact's text. When the whole file is missing, a static host (Cloudflare
+ * Pages) may have it as line-boundary shards plus a `<url>.parts.json` manifest, because
+ * Pages caps one file at 25 MiB (see shards.ts). Those parts are reassembled and verified.
+ * With no manifest the original "missing" stands. The dev endpoint never shards. */
+async function fetchArtifact(fetcher: typeof fetch, url: string): Promise<ArtifactFetch> {
+  const whole = await fetchWhole(fetcher, url);
+  if (whole.ok || whole.kind !== "missing") return whole;
+  return (await fetchSharded(fetcher, url)) ?? whole;
+}
+
 /** Fetch one artifact's text, distinguishing missing (404 / non-JSON 200) from HTTP
  * failures. Shape-sniffing (a leading `<`) catches the SPA index.html a static host
  * returns 200 for an unknown path — so a prod host without the dev run endpoint yields a
  * clean "missing", not a crash. */
-async function fetchArtifact(
+async function fetchWhole(
   fetcher: typeof fetch,
   url: string,
 ): Promise<{ ok: true; text: string } | { ok: false; kind: "missing" | "http"; message: string }> {

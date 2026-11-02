@@ -1,0 +1,7 @@
+# Cloudflare Pages: the viewer as a static SPA with the run data baked in.
+# Build with `pnpm build:pages` (vite build + scripts/bake-runs.ts), then deploy as the
+# README describes. There is no _redirects file: Pages already serves index.html for unknown
+# paths when dist has no top-level 404.html, and assertPagesReady checks that it has none.
+name = "sacredtexts-viewer"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-03-01"

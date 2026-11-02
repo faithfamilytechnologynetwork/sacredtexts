@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { execSync, spawn } from "node:child_process";
 import { createServer } from "node:net";
@@ -108,6 +108,22 @@ describe("build / deploy invariants", () => {
       );
       expect(css, `.${cls} is not mapped onto the theme-aware --${pole} token`).toMatch(themed);
     }
+  });
+
+  it("the REAL build is Cloudflare Pages-shaped: no 404.html, _headers shipped, wrangler.toml, build:pages", () => {
+    // Pages serves index.html for unknown paths (the SPA fallback for /standings, /run/...) only
+    // while dist has no top-level 404.html. There is deliberately no _redirects file:
+    // wrangler drops `/* /index.html 200` as an infinite loop.
+    expect(existsSync("dist/404.html"), "a 404.html turns off Pages' SPA fallback").toBe(false);
+    expect(existsSync("dist/_redirects")).toBe(false);
+    const headers = readFileSync("dist/_headers", "utf8");
+    expect(headers).toMatch(/^\/runs\/_index\n\s+Cache-Control: no-cache$/m);
+    expect(headers).toMatch(/^\/runs\/\*\n\s+Content-Type: text\/plain; charset=utf-8$/m);
+    const wrangler = readFileSync("wrangler.toml", "utf8");
+    expect(wrangler).toMatch(/^name = "sacredtexts-viewer"$/m);
+    expect(wrangler).toMatch(/^pages_build_output_dir = "\.\/dist"$/m);
+    const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { scripts: Record<string, string> };
+    expect(pkg.scripts["build:pages"]).toBe("vite build && vite-node scripts/bake-runs.ts");
   });
 
   it("the start command runs the minimal static host with its deps present (no /api proxy)", () => {

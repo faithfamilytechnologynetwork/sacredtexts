@@ -1,0 +1,14 @@
+# Cloudflare Pages response headers. vite build copies this file into dist/.
+#
+# wrangler has no MIME type for .jsonl, the .partNNN shards, or the extension-less _index and
+# _gaps. Pages would send those files with no Content-Type, so Cloudflare would not compress
+# them, and the panel run's answers alone are about 50 MB. The client reads every /runs file
+# as text, so text/plain is correct for all of them.
+/runs/*
+  Content-Type: text/plain; charset=utf-8
+
+# The run index and the gap list are recomputed on every deploy. Never serve a stale copy.
+/runs/_index
+  Cache-Control: no-cache
+/runs/_gaps
+  Cache-Control: no-cache
