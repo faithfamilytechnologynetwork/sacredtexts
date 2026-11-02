@@ -23,7 +23,7 @@ from pathlib import Path
 
 from sacredbench.config import RunConfig
 from sacredbench.generate import Question, question_set_digest
-from sacredbench.providers import complete, is_quota_error
+from sacredbench.providers import complete, is_fatal_error
 
 
 class CollectError(Exception):
@@ -141,7 +141,7 @@ def collect(
         try:
             text, usage, attempts = complete(m, q.prompt)  # raises on failure
         except Exception as e:
-            if is_quota_error(e):
+            if is_fatal_error(e):
                 stop.set()
             raise
         finished = datetime.now(timezone.utc)
@@ -180,7 +180,7 @@ def collect(
                 failures.append(f"{q.id} x {m.id}: {e}")
                 if on_failure:
                     on_failure(q, m, e)
-                if is_quota_error(e):
+                if is_fatal_error(e):
                     stop.set()
                     for pending in futures:
                         pending.cancel()

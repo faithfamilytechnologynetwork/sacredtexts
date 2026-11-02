@@ -79,6 +79,32 @@ def sampling_kwargs(model: ModelSpec) -> dict:
     return {"temperature": model.temperature}
 
 
+def is_fatal_error(exc: BaseException) -> bool:
+    """True when retrying more cells cannot succeed: no key, rejected key, or no credit."""
+    if is_quota_error(exc):
+        return True
+    seen = exc
+    for _ in range(4):
+        if seen is None:
+            break
+        code = getattr(seen, "status_code", None)
+        if code in (401, 402, 403):
+            return True
+        text = str(seen).lower()
+        if any(
+            phrase in text
+            for phrase in (
+                "missing credential",
+                "invalid api key",
+                "invalid_api_key",
+                "unauthorized",
+            )
+        ):
+            return True
+        seen = seen.__cause__
+    return False
+
+
 def is_quota_error(exc: BaseException) -> bool:
     """True when the host refused the call for credit or quota, not a transient blip."""
     if getattr(exc, "status_code", None) == 402:

@@ -116,6 +116,12 @@ def main() -> None:
     )
     parser.add_argument("--test", action="store_true", help="only the first 3 passages of each tradition")
     parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=None,
+        help="calls in flight at once (default: concurrency in the panel file, currently 4)",
+    )
+    parser.add_argument(
         "--only",
         action="append",
         default=[],
@@ -146,6 +152,10 @@ def main() -> None:
     if not picked:
         ids = ", ".join(m.id for m in cfg.models)
         raise SystemExit(f"no model id {args.model!r} in {PANEL} (ids: {ids})")
+    if args.concurrency is not None:
+        if args.concurrency < 1:
+            raise SystemExit("--concurrency must be at least 1")
+        cfg = replace(cfg, concurrency=args.concurrency)
     cfg = replace(cfg, models=tuple(picked))
     py = PYTHON if PYTHON.exists() else Path(sys.executable)
     env = os.environ.copy()
@@ -154,8 +164,7 @@ def main() -> None:
         all_qs = load_questions(questions)
         if args.test:
             tradition = questions.relative_to(ROOT).parts[0]
-            preferred = [c for c in chosen.get(tradition, []) if c in passages_in(all_qs)]
-            keep = preferred[:TEST_PASSAGES] or passages_in(all_qs)[:TEST_PASSAGES]
+            keep = [c for c in chosen.get(tradition, []) if c in passages_in(all_qs)][:TEST_PASSAGES]
             todo = rows_for(all_qs, set(keep))
             if not todo:
                 print(f"skip {questions.relative_to(ROOT)} (none of the 3 passages are in this file)")
