@@ -1,0 +1,229 @@
+{
+  "models": {
+    "terra": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.9524,
+        "coverage": 1.0,
+        "correct": 20,
+        "incorrect": 1,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.2857,
+        "coverage": 1.0,
+        "correct": 6,
+        "incorrect": 15,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0476,
+        "normalized": 0.2857,
+        "token_f1": 0.7433,
+        "token_f1_base": 0.7433,
+        "contains_reference": 0.2857
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2928,
+        "token_f1_base": 0.2928,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.7143,
+        "coverage": 1.0,
+        "correct": 15,
+        "incorrect": 6,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.4881,
+        "coverage": 1.0,
+        "correct": 41,
+        "incorrect": 43,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "terra": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.9524,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.2857,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 15,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.7143,
+          "coverage": 1.0,
+          "correct": 15,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.4881,
+          "coverage": 1.0,
+          "correct": 41,
+          "incorrect": 43,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "terra": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.5,
+          "coverage": 1.0,
+          "correct": 2,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.95,
+          "coverage": 1.0,
+          "correct": 19,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.3,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 14,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 14,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.4875,
+          "coverage": 1.0,
+          "correct": 39,
+          "incorrect": 41,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "terra": {
+        "calls": 84,
+        "in": 10574,
+        "out": 4997
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 10574,
+      "out": 4997
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:29.049112+00:00"
+}

@@ -1,0 +1,255 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9333,
+    "correct": 0,
+    "incorrect": 28,
+    "refused": 2,
+    "refused_rate": 0.0667
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9333,
+    "correct": 0,
+    "incorrect": 28,
+    "refused": 2,
+    "refused_rate": 0.0667,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0852,
+    "token_f1_base": 0.0852,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "refused": 30,
+    "refused_rate": 1.0,
+    "exact": null,
+    "normalized": null,
+    "token_f1": null,
+    "token_f1_base": null,
+    "contains_reference": null
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 0.0333,
+    "correct": 1,
+    "incorrect": 0,
+    "refused": 29,
+    "refused_rate": 0.9667
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.0175,
+    "coverage": 0.475,
+    "correct": 1,
+    "incorrect": 56,
+    "refused": 63,
+    "refused_rate": 0.525
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Judaism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.0333,
+     "correct": 1,
+     "incorrect": 0,
+     "refused": 29,
+     "refused_rate": 0.9667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.0175,
+     "coverage": 0.475,
+     "correct": 1,
+     "incorrect": 56,
+     "refused": 63,
+     "refused_rate": 0.525
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Talmud Bavli\u0000William Davidson Edition - Aramaic\u0000he": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.0333,
+     "correct": 1,
+     "incorrect": 0,
+     "refused": 29,
+     "refused_rate": 0.9667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.0175,
+     "coverage": 0.475,
+     "correct": 1,
+     "incorrect": 56,
+     "refused": 63,
+     "refused_rate": 0.525
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.0333,
+     "correct": 1,
+     "incorrect": 0,
+     "refused": 29,
+     "refused_rate": 0.9667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.0175,
+     "coverage": 0.475,
+     "correct": 1,
+     "incorrect": 56,
+     "refused": 63,
+     "refused_rate": 0.525
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "refused": 15,
+    "refused_rate": 1.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.0667,
+    "correct": 1,
+    "incorrect": 0,
+    "refused": 14,
+    "refused_rate": 0.9333
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 18252,
+    "out": 37822
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 18252,
+   "out": 37822
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:51.482820+00:00"
+}

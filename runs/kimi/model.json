@@ -33,7 +33,18 @@
       "tool_choice",
       "tools",
       "top_logprobs"
-    ]
+    ],
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": true,
+      "supported_efforts": [
+        "max",
+        "high",
+        "low",
+        "none"
+      ],
+      "default_effort": "max"
+    }
   },
   "probe": {
     "ok": true,
@@ -44,5 +55,11 @@
     "completion_tokens": 16,
     "total_tokens": 108,
     "cost_usd": 0.000344
+  },
+  "collected": {
+    "calls": 1938,
+    "prompt_tokens": 242832,
+    "completion_tokens": 246606,
+    "cost_usd": 2.951724
   }
 }

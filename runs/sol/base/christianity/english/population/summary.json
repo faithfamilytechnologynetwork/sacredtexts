@@ -1,0 +1,182 @@
+{
+  "models": {
+    "sol": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": null,
+        "coverage": 0.0,
+        "correct": 0,
+        "incorrect": 0,
+        "refused": 30,
+        "refused_rate": 1.0,
+        "exact": null,
+        "normalized": null,
+        "token_f1": null,
+        "token_f1_base": null,
+        "contains_reference": null
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": null,
+        "coverage": 0.0,
+        "correct": 0,
+        "incorrect": 0,
+        "refused": 30,
+        "refused_rate": 1.0,
+        "exact": null,
+        "normalized": null,
+        "token_f1": null,
+        "token_f1_base": null,
+        "contains_reference": null
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 1.0,
+        "coverage": 0.5,
+        "correct": 60,
+        "incorrect": 0,
+        "refused": 60,
+        "refused_rate": 0.5
+      }
+    }
+  },
+  "by_tradition": {
+    "sol": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 1.0,
+          "coverage": 0.5,
+          "correct": 60,
+          "incorrect": 0,
+          "refused": 60,
+          "refused_rate": 0.5
+        }
+      }
+    }
+  },
+  "by_text": {
+    "sol": {
+      "The Bible\u0000NRSV\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 1.0,
+          "coverage": 0.5,
+          "correct": 60,
+          "incorrect": 0,
+          "refused": 60,
+          "refused_rate": 0.5
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "sol": {
+        "calls": 120,
+        "in": 6891,
+        "out": 5894
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 6891,
+      "out": 5894
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:36.590014+00:00"
+}

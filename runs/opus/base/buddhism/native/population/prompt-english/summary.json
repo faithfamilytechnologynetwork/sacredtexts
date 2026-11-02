@@ -1,0 +1,246 @@
+{
+ "models": {
+  "opus": {
+   "cite_passage": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 1.0,
+    "normalized": 1.0,
+    "token_f1": 1.0,
+    "token_f1_base": 1.0,
+    "contains_reference": 1.0
+   },
+   "retrieve_quote": {
+    "n": 3,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.6667,
+    "token_f1": 0.991,
+    "token_f1_base": 0.991,
+    "contains_reference": 0.6667
+   },
+   "verify_source": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 9,
+    "accuracy": 0.8889,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "by_tradition": {
+  "opus": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "opus": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "opus": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "opus": {
+   "no": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "opus": {
+    "calls": 9,
+    "in": 1308,
+    "out": 2931
+   }
+  },
+  "total": {
+   "calls": 9,
+   "in": 1308,
+   "out": 2931
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:50.257241+00:00"
+}

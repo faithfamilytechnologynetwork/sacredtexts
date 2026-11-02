@@ -1,0 +1,182 @@
+{
+  "models": {
+    "haiku": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 0.9,
+        "correct": 27,
+        "incorrect": 0,
+        "refused": 3,
+        "refused_rate": 0.1
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.3,
+        "correct": 0,
+        "incorrect": 9,
+        "refused": 21,
+        "refused_rate": 0.7,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2883,
+        "token_f1_base": 0.3054,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.0333,
+        "correct": 0,
+        "incorrect": 1,
+        "refused": 29,
+        "refused_rate": 0.9667,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2405,
+        "token_f1_base": 0.2405,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": null,
+        "coverage": 0.0,
+        "correct": 0,
+        "incorrect": 0,
+        "refused": 30,
+        "refused_rate": 1.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7297,
+        "coverage": 0.3083,
+        "correct": 27,
+        "incorrect": 10,
+        "refused": 83,
+        "refused_rate": 0.6917
+      }
+    }
+  },
+  "by_tradition": {
+    "haiku": {
+      "Hinduism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 0.9,
+          "correct": 27,
+          "incorrect": 0,
+          "refused": 3,
+          "refused_rate": 0.1
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.3,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 21,
+          "refused_rate": 0.7
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.0333,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 29,
+          "refused_rate": 0.9667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7297,
+          "coverage": 0.3083,
+          "correct": 27,
+          "incorrect": 10,
+          "refused": 83,
+          "refused_rate": 0.6917
+        }
+      }
+    }
+  },
+  "by_text": {
+    "haiku": {
+      "Bhagavad Gita\u0000Annie Besant (1922)\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 0.9,
+          "correct": 27,
+          "incorrect": 0,
+          "refused": 3,
+          "refused_rate": 0.1
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.3,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 21,
+          "refused_rate": 0.7
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.0333,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 29,
+          "refused_rate": 0.9667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7297,
+          "coverage": 0.3083,
+          "correct": 27,
+          "incorrect": 10,
+          "refused": 83,
+          "refused_rate": 0.6917
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "haiku": {
+        "calls": 120,
+        "in": 10169,
+        "out": 20049
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 10169,
+      "out": 20049
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:42.633954+00:00"
+}

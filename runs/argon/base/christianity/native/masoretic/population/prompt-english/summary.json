@@ -1,0 +1,229 @@
+{
+  "models": {
+    "argon": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.5238,
+        "coverage": 1.0,
+        "correct": 11,
+        "incorrect": 10,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.2857,
+        "normalized": 0.4286,
+        "token_f1": 0.9205,
+        "token_f1_base": 0.9205,
+        "contains_reference": 0.5238
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.301,
+        "token_f1_base": 0.301,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 21,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.381,
+        "coverage": 1.0,
+        "correct": 32,
+        "incorrect": 52,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "argon": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.5238,
+          "coverage": 1.0,
+          "correct": 11,
+          "incorrect": 10,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.381,
+          "coverage": 1.0,
+          "correct": 32,
+          "incorrect": 52,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "argon": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.25,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.55,
+          "coverage": 1.0,
+          "correct": 11,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.3875,
+          "coverage": 1.0,
+          "correct": 31,
+          "incorrect": 49,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "argon": {
+        "calls": 84,
+        "in": 13813,
+        "out": 5122
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 13813,
+      "out": 5122
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:47.998347+00:00"
+}

@@ -104,9 +104,10 @@ describe("LeaderboardPage — states & run selection", () => {
   it("surfaces a localized error for a bad run but keeps the selector usable", async () => {
     vi.stubGlobal("fetch", mapFetcher({
       // The index is newest-first (listRuns sorts mtime desc), so index[0] = 'broken' is the
-      // default selection; only its summary.json is served → loadRun fails.
+      // default selection; its summary is not a summary, so the leaderboard reports the
+      // failure and leaves the selector usable.
       "/runs/_index": JSON.stringify([{ id: "broken", mtimeMs: 2 }, { id: "good", mtimeMs: 1 }]),
-      "/runs/broken/summary.json": JSON.stringify(sampleSummary),
+      "/runs/broken/summary.json": '{"models":"nope"}',
       ...runFiles("good"),
     }));
     renderApp("/");
@@ -153,13 +154,13 @@ describe("LeaderboardPage — stale-request guard (rapid run switch)", () => {
 
     await userEvent.selectOptions(select, "fast");
     // fast resolves immediately and renders
-    expect(await screen.findByText("fastmodel")).toBeInTheDocument();
+    expect((await screen.findAllByText("fastmodel")).length).toBeGreaterThan(0);
 
     // now let the earlier (slow) load finish: it must be ignored, not overwrite fast
     releaseSlow();
     await new Promise((r) => setTimeout(r, 20));
     expect(screen.queryByText("slowmodel")).toBeNull();
-    expect(screen.getByText("fastmodel")).toBeInTheDocument();
+    expect(screen.getAllByText("fastmodel").length).toBeGreaterThan(0);
   });
 });
 
@@ -207,11 +208,11 @@ describe.skipIf(!present)("LeaderboardPage — committed run gate", () => {
     // per-model token totals (claude-haiku: 5,810 in / 41,140 out / 100 calls)
     expect(screen.getByText("5,810 in · 41,140 out · 100 calls")).toBeInTheDocument();
 
-    // four traditions (each repeats once per model row in the by-tradition table)
-    expect(screen.getAllByText("Judaism").length).toBe(4);
-    expect(screen.getAllByText("Protestant Christian").length).toBe(4);
-    expect(screen.getAllByText("Roman Catholic").length).toBe(4);
-    expect(screen.getAllByText("The Church of Jesus Christ of Latter-Day Saints").length).toBe(4);
+    const traditionTable = screen.getByTestId("tradition-table");
+    expect(within(traditionTable).getAllByText("Judaism").length).toBe(4);
+    expect(within(traditionTable).getAllByText("Protestant Christian").length).toBe(4);
+    expect(within(traditionTable).getAllByText("Roman Catholic").length).toBe(4);
+    expect(within(traditionTable).getAllByText("The Church of Jesus Christ of Latter-Day Saints").length).toBe(4);
     // the LDS cell for claude-haiku now 95% (Spec 15 phase 3: accuracy excludes refusals — of 25
     // LDS cells, 5 refused, 19 correct, 1 incorrect → 19/20 graded; n stays the answered count 25)
     expect(screen.getAllByText("95% (n=25)").length).toBeGreaterThan(0);

@@ -1,0 +1,229 @@
+{
+  "models": {
+    "qwen3-32b": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.2381,
+        "coverage": 1.0,
+        "correct": 5,
+        "incorrect": 16,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0967,
+        "token_f1_base": 0.0967,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0498,
+        "token_f1_base": 0.0498,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.4211,
+        "coverage": 0.9048,
+        "correct": 8,
+        "incorrect": 11,
+        "refused": 2,
+        "refused_rate": 0.0952
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.1585,
+        "coverage": 0.9762,
+        "correct": 13,
+        "incorrect": 69,
+        "refused": 2,
+        "refused_rate": 0.0238
+      }
+    }
+  },
+  "by_tradition": {
+    "qwen3-32b": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.2381,
+          "coverage": 1.0,
+          "correct": 5,
+          "incorrect": 16,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.4211,
+          "coverage": 0.9048,
+          "correct": 8,
+          "incorrect": 11,
+          "refused": 2,
+          "refused_rate": 0.0952
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.1585,
+          "coverage": 0.9762,
+          "correct": 13,
+          "incorrect": 69,
+          "refused": 2,
+          "refused_rate": 0.0238
+        }
+      }
+    }
+  },
+  "by_text": {
+    "qwen3-32b": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.25,
+          "coverage": 1.0,
+          "correct": 5,
+          "incorrect": 15,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.4444,
+          "coverage": 0.9,
+          "correct": 8,
+          "incorrect": 10,
+          "refused": 2,
+          "refused_rate": 0.1
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.1667,
+          "coverage": 0.975,
+          "correct": 13,
+          "incorrect": 65,
+          "refused": 2,
+          "refused_rate": 0.025
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "qwen3-32b": {
+        "calls": 84,
+        "in": 13173,
+        "out": 47017
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 13173,
+      "out": 47017
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:42.771314+00:00"
+}

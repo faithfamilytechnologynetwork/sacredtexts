@@ -1,0 +1,182 @@
+{
+  "models": {
+    "deepseek-v4-pro": {
+      "cite_passage": {
+        "n": 2,
+        "accuracy": 0.5,
+        "coverage": 1.0,
+        "correct": 1,
+        "incorrect": 1,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 2,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 2,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.8706,
+        "token_f1_base": 0.9706,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 3,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 3,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.5935,
+        "token_f1_base": 0.5935,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 2,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 2,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 9,
+        "accuracy": 0.3333,
+        "coverage": 1.0,
+        "correct": 3,
+        "incorrect": 6,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "deepseek-v4-pro": {
+      "Buddhism": {
+        "cite_passage": {
+          "n": 2,
+          "accuracy": 0.5,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 2,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 3,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 2,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 2,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 9,
+          "accuracy": 0.3333,
+          "coverage": 1.0,
+          "correct": 3,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "deepseek-v4-pro": {
+      "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+        "cite_passage": {
+          "n": 2,
+          "accuracy": 0.5,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 2,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 3,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 2,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 2,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 9,
+          "accuracy": 0.3333,
+          "coverage": 1.0,
+          "correct": 3,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "deepseek-v4-pro": {
+        "calls": 9,
+        "in": 915,
+        "out": 283
+      }
+    },
+    "total": {
+      "calls": 9,
+      "in": 915,
+      "out": 283
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:30.693641+00:00"
+}

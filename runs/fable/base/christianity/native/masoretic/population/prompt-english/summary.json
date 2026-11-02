@@ -1,0 +1,229 @@
+{
+  "models": {
+    "fable": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.7143,
+        "coverage": 1.0,
+        "correct": 15,
+        "incorrect": 6,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0476,
+        "normalized": 0.5238,
+        "token_f1": 0.8572,
+        "token_f1_base": 0.8572,
+        "contains_reference": 0.7143
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.3044,
+        "token_f1_base": 0.3044,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.95,
+        "coverage": 0.9524,
+        "correct": 19,
+        "incorrect": 1,
+        "refused": 1,
+        "refused_rate": 0.0476
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.4096,
+        "coverage": 0.9881,
+        "correct": 34,
+        "incorrect": 49,
+        "refused": 1,
+        "refused_rate": 0.0119
+      }
+    }
+  },
+  "by_tradition": {
+    "fable": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.7143,
+          "coverage": 1.0,
+          "correct": 15,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.95,
+          "coverage": 0.9524,
+          "correct": 19,
+          "incorrect": 1,
+          "refused": 1,
+          "refused_rate": 0.0476
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.4096,
+          "coverage": 0.9881,
+          "correct": 34,
+          "incorrect": 49,
+          "refused": 1,
+          "refused_rate": 0.0119
+        }
+      }
+    }
+  },
+  "by_text": {
+    "fable": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.25,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.75,
+          "coverage": 1.0,
+          "correct": 15,
+          "incorrect": 5,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.9474,
+          "coverage": 0.95,
+          "correct": 18,
+          "incorrect": 1,
+          "refused": 1,
+          "refused_rate": 0.05
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.4177,
+          "coverage": 0.9875,
+          "correct": 33,
+          "incorrect": 46,
+          "refused": 1,
+          "refused_rate": 0.0125
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "fable": {
+        "calls": 84,
+        "in": 17218,
+        "out": 11100
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 17218,
+      "out": 11100
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:49.035240+00:00"
+}

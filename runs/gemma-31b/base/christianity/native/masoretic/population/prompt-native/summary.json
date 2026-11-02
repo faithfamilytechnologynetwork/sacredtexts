@@ -1,0 +1,229 @@
+{
+  "models": {
+    "gemma-31b": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.0952,
+        "coverage": 1.0,
+        "correct": 2,
+        "incorrect": 19,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.028,
+        "token_f1_base": 0.028,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0464,
+        "token_f1_base": 0.0464,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.8571,
+        "coverage": 1.0,
+        "correct": 18,
+        "incorrect": 3,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.2381,
+        "coverage": 1.0,
+        "correct": 20,
+        "incorrect": 64,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "gemma-31b": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.0952,
+          "coverage": 1.0,
+          "correct": 2,
+          "incorrect": 19,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.8571,
+          "coverage": 1.0,
+          "correct": 18,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.2381,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 64,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemma-31b": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.25,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.1,
+          "coverage": 1.0,
+          "correct": 2,
+          "incorrect": 18,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.85,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.2375,
+          "coverage": 1.0,
+          "correct": 19,
+          "incorrect": 61,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemma-31b": {
+        "calls": 84,
+        "in": 10785,
+        "out": 3164
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 10785,
+      "out": 3164
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:37.651286+00:00"
+}

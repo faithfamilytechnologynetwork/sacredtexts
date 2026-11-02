@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gemini-flash": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.25,
+        "coverage": 0.4,
+        "correct": 3,
+        "incorrect": 9,
+        "refused": 18,
+        "refused_rate": 0.6,
+        "exact": 0.1667,
+        "normalized": 0.25,
+        "token_f1": 0.8362,
+        "token_f1_base": 0.8478,
+        "contains_reference": 0.25
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.1429,
+        "coverage": 0.7,
+        "correct": 3,
+        "incorrect": 18,
+        "refused": 9,
+        "refused_rate": 0.3,
+        "exact": 0.1429,
+        "normalized": 0.1429,
+        "token_f1": 0.9563,
+        "token_f1_base": 0.9748,
+        "contains_reference": 0.1429
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7097,
+        "coverage": 0.775,
+        "correct": 66,
+        "incorrect": 27,
+        "refused": 27,
+        "refused_rate": 0.225
+      }
+    }
+  },
+  "by_tradition": {
+    "gemini-flash": {
+      "Islam": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.25,
+          "coverage": 0.4,
+          "correct": 3,
+          "incorrect": 9,
+          "refused": 18,
+          "refused_rate": 0.6
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.1429,
+          "coverage": 0.7,
+          "correct": 3,
+          "incorrect": 18,
+          "refused": 9,
+          "refused_rate": 0.3
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7097,
+          "coverage": 0.775,
+          "correct": 66,
+          "incorrect": 27,
+          "refused": 27,
+          "refused_rate": 0.225
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemini-flash": {
+      "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.25,
+          "coverage": 0.4,
+          "correct": 3,
+          "incorrect": 9,
+          "refused": 18,
+          "refused_rate": 0.6
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.1429,
+          "coverage": 0.7,
+          "correct": 3,
+          "incorrect": 18,
+          "refused": 9,
+          "refused_rate": 0.3
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7097,
+          "coverage": 0.775,
+          "correct": 66,
+          "incorrect": 27,
+          "refused": 27,
+          "refused_rate": 0.225
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemini-flash": {
+        "calls": 120,
+        "in": 8664,
+        "out": 13220
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 8664,
+      "out": 13220
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:44.095017+00:00"
+}

@@ -1,0 +1,182 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.069,
+    "coverage": 0.9667,
+    "correct": 2,
+    "incorrect": 27,
+    "refused": 1,
+    "refused_rate": 0.0333
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9333,
+    "correct": 0,
+    "incorrect": 28,
+    "refused": 2,
+    "refused_rate": 0.0667,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.3916,
+    "token_f1_base": 0.3916,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.6,
+    "correct": 0,
+    "incorrect": 18,
+    "refused": 12,
+    "refused_rate": 0.4,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2266,
+    "token_f1_base": 0.2266,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 22,
+    "incorrect": 8,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2286,
+    "coverage": 0.875,
+    "correct": 24,
+    "incorrect": 81,
+    "refused": 15,
+    "refused_rate": 0.125
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Judaism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.069,
+     "coverage": 0.9667,
+     "correct": 2,
+     "incorrect": 27,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6,
+     "correct": 0,
+     "incorrect": 18,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2286,
+     "coverage": 0.875,
+     "correct": 24,
+     "incorrect": 81,
+     "refused": 15,
+     "refused_rate": 0.125
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "Talmud Bavli\u0000William Davidson Edition - English\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.069,
+     "coverage": 0.9667,
+     "correct": 2,
+     "incorrect": 27,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9333,
+     "correct": 0,
+     "incorrect": 28,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6,
+     "correct": 0,
+     "incorrect": 18,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2286,
+     "coverage": 0.875,
+     "correct": 24,
+     "incorrect": 81,
+     "refused": 15,
+     "refused_rate": 0.125
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 13749,
+    "out": 28118
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13749,
+   "out": 28118
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:43:50.546333+00:00"
+}

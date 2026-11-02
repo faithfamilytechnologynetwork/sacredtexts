@@ -82,8 +82,8 @@ describe("LeaderboardTable", () => {
     await renderTable(summary);
     expect(screen.getByText("By tradition")).toBeInTheDocument();
     expect(
-      screen.getByText("The Church of Jesus Christ of Latter-Day Saints"),
-    ).toBeInTheDocument();
+      screen.getAllByText("The Church of Jesus Christ of Latter-Day Saints").length,
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText("72% (n=5)").length).toBeGreaterThan(0);
   });
 
@@ -137,7 +137,7 @@ describe("LeaderboardTable", () => {
   it("renders a null-overall model as 'n/a' without crashing", async () => {
     await renderTable({ models: { x: { _overall: { n: 0, accuracy: null } } }, by_tradition: {} });
     // The model still appears, ranked last, and its null-overall cell formats as "n/a".
-    expect(screen.getByText("x")).toBeInTheDocument();
+    expect(screen.getAllByText("x").length).toBeGreaterThan(0);
     expect(screen.getAllByText("n/a").length).toBeGreaterThan(0);
   });
 

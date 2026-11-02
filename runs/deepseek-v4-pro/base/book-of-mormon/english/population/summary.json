@@ -1,0 +1,182 @@
+{
+ "models": {
+  "deepseek-v4-pro": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.5667,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 13,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.2333,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 23,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.1333,
+    "normalized": 0.2333,
+    "token_f1": 0.5628,
+    "token_f1_base": 0.5628,
+    "contains_reference": 0.2333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.5667,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 13,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.3667,
+    "normalized": 0.4333,
+    "token_f1": 0.6794,
+    "token_f1_base": 0.6794,
+    "contains_reference": 0.5667
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.3,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 21,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.4167,
+    "coverage": 1.0,
+    "correct": 50,
+    "incorrect": 70,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "by_tradition": {
+  "deepseek-v4-pro": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.3,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 21,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4167,
+     "coverage": 1.0,
+     "correct": 50,
+     "incorrect": 70,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "deepseek-v4-pro": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.3,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 21,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4167,
+     "coverage": 1.0,
+     "correct": 50,
+     "incorrect": 70,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "deepseek-v4-pro": {
+    "calls": 120,
+    "in": 7823,
+    "out": 2008
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 7823,
+   "out": 2008
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:44:19.113932+00:00"
+}

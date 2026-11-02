@@ -4,13 +4,13 @@ import { CenteredSpinner } from "../components/Loading";
 import { LeaderboardTable } from "../components/LeaderboardTable";
 import { RunSelector } from "../components/RunSelector";
 import { benchmarkRuns, fetchRunIndex, type RunRef } from "../lib/runIndex";
-import { loadRun, type Summary } from "../lib/localResults";
+import { loadSummary, type Summary } from "../lib/localResults";
 
 // The `/` home: the benchmark leaderboard over a selectable run.
 //
 // Run selection lives in the URL as a bare run id (`/?run=<id>`), validated by the plain
 // validateSearch fn on the index route (zod is pruned). The id is resolved to the fetch
-// base `/runs/${encodeURIComponent(id)}` before loadRun. A `?run=` that is not a known run
+// base `/runs/${encodeURIComponent(id)}` before loadSummary. A `?run=` that is not a known run
 // id (e.g. an old Spec-1 `?run=/runs/<id>` base-path value) falls back to the default —
 // the most-recent run — rather than erroring. The selector reads and writes `?run=`, so a
 // selection is shareable and refresh-safe.
@@ -70,7 +70,7 @@ export function LeaderboardPage() {
     let live = true;
     setRunState({ status: "loading" });
     (async () => {
-      const result = await loadRun(`/runs/${encodeURIComponent(selectedId)}`, fetch);
+      const result = await loadSummary(`/runs/${encodeURIComponent(selectedId)}`, fetch);
       if (!live) return;
       setRunState(
         result.ok

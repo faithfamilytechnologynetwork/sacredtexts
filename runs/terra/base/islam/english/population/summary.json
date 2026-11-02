@@ -1,0 +1,182 @@
+{
+  "models": {
+    "terra": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.5667,
+        "coverage": 1.0,
+        "correct": 17,
+        "incorrect": 13,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.4,
+        "normalized": 0.5667,
+        "token_f1": 0.969,
+        "token_f1_base": 0.9824,
+        "contains_reference": 0.5667
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.2333,
+        "coverage": 1.0,
+        "correct": 7,
+        "incorrect": 23,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.1667,
+        "normalized": 0.2333,
+        "token_f1": 0.9479,
+        "token_f1_base": 0.9717,
+        "contains_reference": 0.2333
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7,
+        "coverage": 1.0,
+        "correct": 84,
+        "incorrect": 36,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "terra": {
+      "Islam": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5667,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 13,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 84,
+          "incorrect": 36,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "terra": {
+      "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5667,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 13,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 84,
+          "incorrect": 36,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "terra": {
+        "calls": 120,
+        "in": 9344,
+        "out": 3715
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 9344,
+      "out": 3715
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:28.778253+00:00"
+}

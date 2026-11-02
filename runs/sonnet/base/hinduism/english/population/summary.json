@@ -1,0 +1,255 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9,
+    "coverage": 1.0,
+    "correct": 27,
+    "incorrect": 3,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.1333,
+    "coverage": 1.0,
+    "correct": 4,
+    "incorrect": 26,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2136,
+    "token_f1_base": 0.2184,
+    "contains_reference": 0.1333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.3085,
+    "token_f1_base": 0.3159,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.56,
+    "coverage": 0.8333,
+    "correct": 14,
+    "incorrect": 11,
+    "refused": 5,
+    "refused_rate": 0.1667
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.3913,
+    "coverage": 0.9583,
+    "correct": 45,
+    "incorrect": 70,
+    "refused": 5,
+    "refused_rate": 0.0417
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.56,
+     "coverage": 0.8333,
+     "correct": 14,
+     "incorrect": 11,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3913,
+     "coverage": 0.9583,
+     "correct": 45,
+     "incorrect": 70,
+     "refused": 5,
+     "refused_rate": 0.0417
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Bhagavad Gita\u0000Annie Besant (1922)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.56,
+     "coverage": 0.8333,
+     "correct": 14,
+     "incorrect": 11,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3913,
+     "coverage": 0.9583,
+     "correct": 45,
+     "incorrect": 70,
+     "refused": 5,
+     "refused_rate": 0.0417
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.56,
+     "coverage": 0.8333,
+     "correct": 14,
+     "incorrect": 11,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3913,
+     "coverage": 0.9583,
+     "correct": 45,
+     "incorrect": 70,
+     "refused": 5,
+     "refused_rate": 0.0417
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.8667,
+    "correct": 13,
+    "incorrect": 0,
+    "refused": 2,
+    "refused_rate": 0.1333
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.0833,
+    "coverage": 0.8,
+    "correct": 1,
+    "incorrect": 11,
+    "refused": 3,
+    "refused_rate": 0.2
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 10409,
+    "out": 25086
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 10409,
+   "out": 25086
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:55.154946+00:00"
+}

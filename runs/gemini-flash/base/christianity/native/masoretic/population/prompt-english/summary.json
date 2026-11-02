@@ -1,0 +1,229 @@
+{
+  "models": {
+    "gemini-flash": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.2857,
+        "coverage": 1.0,
+        "correct": 6,
+        "incorrect": 15,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.1429,
+        "normalized": 0.2857,
+        "token_f1": 0.7295,
+        "token_f1_base": 0.7295,
+        "contains_reference": 0.2857
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2976,
+        "token_f1_base": 0.2976,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.85,
+        "coverage": 0.9524,
+        "correct": 17,
+        "incorrect": 3,
+        "refused": 1,
+        "refused_rate": 0.0476
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.2771,
+        "coverage": 0.9881,
+        "correct": 23,
+        "incorrect": 60,
+        "refused": 1,
+        "refused_rate": 0.0119
+      }
+    }
+  },
+  "by_tradition": {
+    "gemini-flash": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.2857,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 15,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.85,
+          "coverage": 0.9524,
+          "correct": 17,
+          "incorrect": 3,
+          "refused": 1,
+          "refused_rate": 0.0476
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.2771,
+          "coverage": 0.9881,
+          "correct": 23,
+          "incorrect": 60,
+          "refused": 1,
+          "refused_rate": 0.0119
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemini-flash": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.25,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.3,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 14,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.8421,
+          "coverage": 0.95,
+          "correct": 16,
+          "incorrect": 3,
+          "refused": 1,
+          "refused_rate": 0.05
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.2785,
+          "coverage": 0.9875,
+          "correct": 22,
+          "incorrect": 57,
+          "refused": 1,
+          "refused_rate": 0.0125
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemini-flash": {
+        "calls": 84,
+        "in": 10535,
+        "out": 94533
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 10535,
+      "out": 94533
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:44.467269+00:00"
+}

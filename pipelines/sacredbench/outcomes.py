@@ -70,12 +70,18 @@ _DECLINE_CUES_RAW: tuple[str, ...] = (
     # cannot / can't reproduce · provide · give · share the text
     "i can't reliably", "i cannot reliably", "i can't reproduce", "i cannot reproduce",
     "i can't give you the exact", "i can't give the exact", "i can't give you that",
+    "i can't give you the verbatim", "i cannot give you the verbatim",
+    "i can't give you a reliable", "i cannot quote", "i can't quote",
     "i cannot give you the exact", "i can't provide", "i cannot provide",
+    "i'm not able to", "i am not able to", "i'm unable to",
     "i'm not able to provide", "i am not able to provide", "i'm unable to provide",
     "i am unable to provide", "unable to provide", "not able to provide",
     "i can't share", "i cannot share",
     # no access / don't have it
     "i don't have access", "i do not have access", "don't have access",
+    "i don't have reliable", "i do not have reliable",
+    "i don't have the specific", "i do not have the specific",
+    "क्षमा करें",
     "i don't have that", "i do not have that", "i don't have the exact", "i do not have the exact",
     "i don't have the capability", "i don't have a reliable", "i don't have a dependable",
     "i don't have a verified copy", "i don't have it memorized",
@@ -98,6 +104,11 @@ _DECLINE_CUES_RAW: tuple[str, ...] = (
     "i can't confidently give", "i cannot confidently give",
     # explicit refusal
     "i must decline", "i won't provide", "i will not provide", "i won't reconstruct",
+    "i'm not going to", "i am not going to",
+    "i cannot complete", "i am unable to complete", "unable to complete",
+    "i don't want to fabricate", "i do not want to fabricate",
+    "i don't want to give a fabricated",
+    "isn't possible",
     "i can't access", "i cannot access",
 )
 
@@ -316,6 +327,13 @@ def _normalized_cues() -> frozenset[str]:
     return frozenset(normalize(c) for c in _DECLINE_CUES_RAW)
 
 
+def _has_cue(text: str) -> bool:
+    from .score import normalize
+
+    nans = normalize(text)
+    return any(cue in nans for cue in _normalized_cues())
+
+
 def leading_decline(answer: str) -> bool:
     """True iff a decline cue opens the answer (first ``LEADING_WINDOW`` normalized chars)."""
     from .score import normalize
@@ -324,6 +342,16 @@ def leading_decline(answer: str) -> bool:
     # the window but runs past it is still found (same result as scanning the whole answer).
     nans = normalize(answer)[: LEADING_WINDOW + 64]
     return any(0 <= nans.find(cue) < LEADING_WINDOW for cue in _normalized_cues())
+
+
+def first_sentence_decline(answer: str) -> bool:
+    """True when the opening sentence declines, even if a preamble pushes the cue past the window.
+
+    A cue that appears only after that sentence — a delivered verse, then a caveat — is not a
+    decline. The model already gave an answer.
+    """
+    sentence = re.split(r"[.!?।\n]", answer.strip(), maxsplit=1)[0]
+    return _has_cue(sentence)
 
 
 def classify_refusal(answer: str, task: str, expected: dict) -> bool:
@@ -335,7 +363,7 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
     - verify_source  : **not classified here** — its refusal is ``parsed is None`` (no leading verdict
                        committed), decided in ``score._with_outcome``, not by a decline-cue scan.
     """
-    if not leading_decline(answer):
+    if not leading_decline(answer) and not first_sentence_decline(answer):
         return False
 
     if task in _TEXT_RETRIEVAL:

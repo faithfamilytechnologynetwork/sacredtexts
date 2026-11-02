@@ -612,13 +612,22 @@ _NON_WORD_LEAD = re.compile(r"[^\w]*")
 # Pali "na" can never flip an English answer.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "ar": (("نعم",), ("لا",)),                    # Arabic
-    "he": (("כן",), ("לא",)),                    # Hebrew
-    "arc": (("כן",), ("לא",)),                   # Aramaic (Hebrew script; לא = no in both)
-    "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι")),  # Greek, as the Greek prompt asks (ναι ή όχι)
+    "he": (("כן",), ("לא", "אין", "לאו")),       # Hebrew, including stand-alone אין and לאו
+    "arc": (("כן",), ("לא", "אין", "לאו")),      # Aramaic (Hebrew script; לא = no in both)
+    "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι", "οὐχί", "οὔ")),  # Greek, as the prompt asks
     "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),                 # Gurmukhi / Punjabi
-    "sa": (("हाँ", "हां"), ("नहीं", "नही")),          # Devanagari / Sanskrit
+    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि")),  # Devanagari, including stand-alone न and नहि
     "pi": (("āma",), ("na",)),                   # Pali (Latin script)
 }
+
+
+def _strip_marks(text: str) -> str:
+    """Drop combining marks so a pointed or accented verdict matches the bare word.
+
+    Hebrew כֵּן and לֹא, and Greek Οὐχί, are the same yes/no words as כן, לא, and ουχί.
+    """
+    nfd = unicodedata.normalize("NFD", text)
+    return "".join(ch for ch in nfd if not unicodedata.category(ch).startswith("M"))
 
 
 def _stands_alone(rest: str) -> bool:
@@ -650,7 +659,7 @@ def _native_verdict(window: str, language: "str | None") -> str | None:
     English "Answer:", so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
     """
     yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
-    s = _ARABIC_MARKS.sub("", unicodedata.normalize("NFC", window))
+    s = _strip_marks(_ARABIC_MARKS.sub("", window))
     s = s[_NON_WORD_LEAD.match(s).end():]
     label = _NATIVE_LABEL_PREFIX.get(language or "")
     if label is not None:
@@ -659,7 +668,7 @@ def _native_verdict(window: str, language: "str | None") -> str | None:
     s = s.casefold()
     for verdict, tokens in (("yes", yes), ("no", no)):
         for token in tokens:
-            t = unicodedata.normalize("NFC", token).casefold()
+            t = _strip_marks(token).casefold()
             if s.startswith(t) and _stands_alone(s[len(t):]):
                 return verdict
     return None
@@ -727,6 +736,13 @@ def text_key(source: dict) -> tuple[str, str, str] | None:
 # contain NUL, so distinct tuples never collide (unlike a " | " join). Same convention the viewer's
 # standings key uses. Split back with .split("\u0000") for display.
 TEXT_KEY_SEP = "\u0000"
+# How the question was asked. One file is usually one kind; the panel viewer
+# sums these cells to compare an English prompt with a native prompt.
+_PROMPT_KIND = {
+    "ask_english": "English prompt",
+    "ask_native": "Native prompt",
+    "en_ask_en_answer": "English text",
+}
 
 
 def _text_label_display(key: str) -> str:
@@ -1012,6 +1028,8 @@ def score_file(
     per_cell: dict[tuple[str, str], dict] = {}  # (model_id, task) -> accumulators
     per_trad: dict[tuple[str, str, str], dict] = {}  # (model_id, tradition, task) -> {n, correct}
     per_text: dict[tuple[str, str, str], dict] = {}  # (model_id, text_label, task) -> {n, correct, refused}
+    per_prompt: dict[tuple[str, str, str], dict] = {}  # (model_id, prompt kind, task)
+    per_verify: dict[tuple[str, str], dict] = {}  # (model_id, "yes"|"no")
     usage: dict[str, dict] = {}  # model_id -> {calls, in, out, model, served_by{host:count}}
     with open(scores_path, "w", encoding="utf-8") as out:
         for d in rows:
@@ -1079,6 +1097,21 @@ def score_file(
                 xacc["n"] += 1
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
+            prompt = _PROMPT_KIND.get(src.get("condition"))
+            if prompt:
+                pacc = per_prompt.setdefault(
+                    (d["model_id"], prompt, d["task"]), {"n": 0, "correct": 0, "refused": 0}
+                )
+                pacc["n"] += 1
+                pacc["correct"] += metrics["correct"]
+                pacc["refused"] += int(refused)
+            if d["task"] == "verify_source" and metrics.get("expected") in ("yes", "no"):
+                vacc = per_verify.setdefault(
+                    (d["model_id"], metrics["expected"]), {"n": 0, "correct": 0, "refused": 0}
+                )
+                vacc["n"] += 1
+                vacc["correct"] += metrics["correct"]
+                vacc["refused"] += int(refused)
 
     expected = expected or {}
     summary: dict = {"models": {}, "by_tradition": {}, "by_text": {}}
@@ -1141,6 +1174,27 @@ def score_file(
                 ov["expected_n"] = exp_total
                 ov["missing"] = max(exp_total - ov["n"], 0)
             tasks["_overall"] = ov
+
+    if per_prompt:
+        summary["by_prompt"] = {}
+        for (model_id, prompt, task) in sorted(per_prompt):
+            cell = _outcome_cell(per_prompt[(model_id, prompt, task)], ())
+            summary["by_prompt"].setdefault(model_id, {}).setdefault(prompt, {})[task] = cell
+        for model_id, kinds in summary["by_prompt"].items():
+            for prompt, tasks in kinds.items():
+                raw = [per_prompt[(model_id, prompt, t)] for t in tasks if (model_id, prompt, t) in per_prompt]
+                tasks["_overall"] = _outcome_cell(
+                    {
+                        "n": sum(c["n"] for c in raw),
+                        "correct": sum(c["correct"] for c in raw),
+                        "refused": sum(c["refused"] for c in raw),
+                    },
+                    (),
+                )
+    if per_verify:
+        summary["verify"] = {}
+        for (model_id, side) in sorted(per_verify):
+            summary["verify"].setdefault(model_id, {})[side] = _outcome_cell(per_verify[(model_id, side)], ())
 
     # per-model x text x task: one text = one (work, version, language), the right denominator
     # now that per-tradition balance no longer holds (Spec 26). Carries outcomes

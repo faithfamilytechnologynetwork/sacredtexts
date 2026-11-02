@@ -1,0 +1,255 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.2667,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 22,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0333,
+    "normalized": 0.0333,
+    "token_f1": 0.6074,
+    "token_f1_base": 0.6236,
+    "contains_reference": 0.2667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.8,
+    "correct": 0,
+    "incorrect": 24,
+    "refused": 6,
+    "refused_rate": 0.2,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.7889,
+    "token_f1_base": 0.8171,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8519,
+    "coverage": 0.9,
+    "correct": 23,
+    "incorrect": 4,
+    "refused": 3,
+    "refused_rate": 0.1
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.5495,
+    "coverage": 0.925,
+    "correct": 61,
+    "incorrect": 50,
+    "refused": 9,
+    "refused_rate": 0.075
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.8,
+     "correct": 0,
+     "incorrect": 24,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8519,
+     "coverage": 0.9,
+     "correct": 23,
+     "incorrect": 4,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5495,
+     "coverage": 0.925,
+     "correct": 61,
+     "incorrect": 50,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.8,
+     "correct": 0,
+     "incorrect": 24,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8519,
+     "coverage": 0.9,
+     "correct": 23,
+     "incorrect": 4,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5495,
+     "coverage": 0.925,
+     "correct": 61,
+     "incorrect": 50,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.8,
+     "correct": 0,
+     "incorrect": 24,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8519,
+     "coverage": 0.9,
+     "correct": 23,
+     "incorrect": 4,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5495,
+     "coverage": 0.925,
+     "correct": 61,
+     "incorrect": 50,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.6667,
+    "coverage": 0.8,
+    "correct": 8,
+    "incorrect": 4,
+    "refused": 3,
+    "refused_rate": 0.2
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 13133,
+    "out": 15020
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13133,
+   "out": 15020
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:53.168392+00:00"
+}

@@ -76,6 +76,7 @@ def catalogue_row(row: dict) -> dict:
             "output": _per_million(pricing.get("completion")),
         },
         "supported_parameters": row.get("supported_parameters") or [],
+        "reasoning": row.get("reasoning") or {},
     }
 
 

@@ -52,6 +52,12 @@ export interface PanelEntry {
 export interface Summary {
   models: Record<string, Record<string, Cell>>; // modelId -> task | "_overall" -> Cell
   by_tradition?: Record<string, Record<string, Record<string, Cell>>>; // model -> tradition -> task -> Cell
+  /** model -> "English prompt" | "Native prompt" | "English text" -> task -> Cell. Panel runs only. */
+  by_prompt?: Record<string, Record<string, Record<string, Cell>>>;
+  /** model -> real passage (yes) or not this edition (no). Panel runs only. */
+  verify?: Record<string, { yes?: Cell; no?: Cell }>;
+  /** Pooled verify-no items by what the model was shown. Panel runs only. */
+  verify_negative?: Record<string, Cell>;
   usage?: Usage;
   panel?: Record<string, PanelEntry>;
   // ISO-8601 UTC timestamp score.py stamps at summarise time: the mtime-independent recency
@@ -135,7 +141,7 @@ export function parseSummary(obj: unknown): Summary {
   // Validate the nested shape the render path dereferences, so a structurally-malformed
   // summary (e.g. {"models":{"m":null}}) returns a typed "malformed" LoadResult rather than
   // throwing a TypeError deep in rankedModels/summaryTasks/leaderboardRows at render time.
-  const { models, by_tradition, usage, panel } = obj as Record<string, unknown>;
+  const { models, by_tradition, by_prompt, verify, verify_negative, usage, panel } = obj as Record<string, unknown>;
   if (!isRecord(models)) {
     throw new Error("summary.json: 'models' is not an object");
   }
@@ -153,6 +159,15 @@ export function parseSummary(obj: unknown): Summary {
       }
     }
   }
+  if (by_prompt !== undefined && by_prompt !== null && !isRecord(by_prompt)) {
+    throw new Error("summary.json: 'by_prompt' is not an object");
+  }
+  if (verify !== undefined && verify !== null && !isRecord(verify)) {
+    throw new Error("summary.json: 'verify' is not an object");
+  }
+  if (verify_negative !== undefined && verify_negative !== null && !isRecord(verify_negative)) {
+    throw new Error("summary.json: 'verify_negative' is not an object");
+  }
   if (usage !== undefined && usage !== null) {
     if (!isRecord(usage) || !isRecord((usage as Record<string, unknown>).per_model)) {
       throw new Error("summary.json: 'usage.per_model' is not an object");
@@ -165,6 +180,9 @@ export function parseSummary(obj: unknown): Summary {
   return {
     models: s.models,
     by_tradition: s.by_tradition ?? {},
+    by_prompt: isRecord(by_prompt) ? (by_prompt as Summary["by_prompt"]) : undefined,
+    verify: isRecord(verify) ? (verify as Summary["verify"]) : undefined,
+    verify_negative: isRecord(verify_negative) ? (verify_negative as Summary["verify_negative"]) : undefined,
     usage: s.usage,
     panel: s.panel,
     // Carried through for recency (Issue #7); only trusted when it is actually a string.

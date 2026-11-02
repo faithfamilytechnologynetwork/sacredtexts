@@ -1,0 +1,182 @@
+{
+ "models": {
+  "argon": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0333,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 29,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0333,
+    "token_f1": 0.3702,
+    "token_f1_base": 0.4236,
+    "contains_reference": 0.0333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.5333,
+    "correct": 0,
+    "incorrect": 16,
+    "refused": 14,
+    "refused_rate": 0.4667,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0189,
+    "token_f1_base": 0.0485,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.96,
+    "coverage": 0.8333,
+    "correct": 24,
+    "incorrect": 1,
+    "refused": 5,
+    "refused_rate": 0.1667
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2475,
+    "coverage": 0.8417,
+    "correct": 25,
+    "incorrect": 76,
+    "refused": 19,
+    "refused_rate": 0.1583
+   }
+  }
+ },
+ "by_tradition": {
+  "argon": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.5333,
+     "correct": 0,
+     "incorrect": 16,
+     "refused": 14,
+     "refused_rate": 0.4667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.96,
+     "coverage": 0.8333,
+     "correct": 24,
+     "incorrect": 1,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2475,
+     "coverage": 0.8417,
+     "correct": 25,
+     "incorrect": 76,
+     "refused": 19,
+     "refused_rate": 0.1583
+    }
+   }
+  }
+ },
+ "by_text": {
+  "argon": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.5333,
+     "correct": 0,
+     "incorrect": 16,
+     "refused": 14,
+     "refused_rate": 0.4667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.96,
+     "coverage": 0.8333,
+     "correct": 24,
+     "incorrect": 1,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2475,
+     "coverage": 0.8417,
+     "correct": 25,
+     "incorrect": 76,
+     "refused": 19,
+     "refused_rate": 0.1583
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "argon": {
+    "calls": 120,
+    "in": 14031,
+    "out": 4464
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 14031,
+   "out": 4464
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:43:53.051161+00:00"
+}

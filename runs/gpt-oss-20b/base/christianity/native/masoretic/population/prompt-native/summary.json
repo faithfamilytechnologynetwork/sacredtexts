@@ -1,0 +1,229 @@
+{
+  "models": {
+    "gpt-oss-20b": {
+      "cite_passage": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 0.9048,
+        "correct": 0,
+        "incorrect": 19,
+        "refused": 2,
+        "refused_rate": 0.0952,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.021,
+        "token_f1_base": 0.021,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 21,
+        "accuracy": 0.0,
+        "coverage": 0.9524,
+        "correct": 0,
+        "incorrect": 20,
+        "refused": 1,
+        "refused_rate": 0.0476,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0025,
+        "token_f1_base": 0.0025,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 21,
+        "accuracy": 0.8095,
+        "coverage": 1.0,
+        "correct": 17,
+        "incorrect": 4,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 84,
+        "accuracy": 0.2099,
+        "coverage": 0.9643,
+        "correct": 17,
+        "incorrect": 64,
+        "refused": 3,
+        "refused_rate": 0.0357
+      }
+    }
+  },
+  "by_tradition": {
+    "gpt-oss-20b": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 0.9048,
+          "correct": 0,
+          "incorrect": 19,
+          "refused": 2,
+          "refused_rate": 0.0952
+        },
+        "retrieve_quote": {
+          "n": 21,
+          "accuracy": 0.0,
+          "coverage": 0.9524,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 1,
+          "refused_rate": 0.0476
+        },
+        "verify_source": {
+          "n": 21,
+          "accuracy": 0.8095,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 84,
+          "accuracy": 0.2099,
+          "coverage": 0.9643,
+          "correct": 17,
+          "incorrect": 64,
+          "refused": 3,
+          "refused_rate": 0.0357
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gpt-oss-20b": {
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+        "cite_passage": {
+          "n": 1,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 1,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 1,
+          "refused_rate": 1.0
+        },
+        "retrieve_quote": {
+          "n": 1,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 1,
+          "refused_rate": 1.0
+        },
+        "verify_source": {
+          "n": 1,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 4,
+          "accuracy": 0.5,
+          "coverage": 0.5,
+          "correct": 1,
+          "incorrect": 1,
+          "refused": 2,
+          "refused_rate": 0.5
+        }
+      },
+      "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+        "cite_passage": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 0.95,
+          "correct": 0,
+          "incorrect": 19,
+          "refused": 1,
+          "refused_rate": 0.05
+        },
+        "retrieve_quote": {
+          "n": 20,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 20,
+          "accuracy": 0.8,
+          "coverage": 1.0,
+          "correct": 16,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 80,
+          "accuracy": 0.2025,
+          "coverage": 0.9875,
+          "correct": 16,
+          "incorrect": 63,
+          "refused": 1,
+          "refused_rate": 0.0125
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gpt-oss-20b": {
+        "calls": 84,
+        "in": 15670,
+        "out": 118594
+      }
+    },
+    "total": {
+      "calls": 84,
+      "in": 15670,
+      "out": 118594
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:34.971456+00:00"
+}

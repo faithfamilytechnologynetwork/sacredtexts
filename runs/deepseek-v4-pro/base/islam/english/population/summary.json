@@ -1,0 +1,182 @@
+{
+  "models": {
+    "deepseek-v4-pro": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.2333,
+        "coverage": 1.0,
+        "correct": 7,
+        "incorrect": 23,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.1667,
+        "normalized": 0.2333,
+        "token_f1": 0.6208,
+        "token_f1_base": 0.631,
+        "contains_reference": 0.2333
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.1333,
+        "coverage": 1.0,
+        "correct": 4,
+        "incorrect": 26,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.1333,
+        "normalized": 0.1333,
+        "token_f1": 0.5711,
+        "token_f1_base": 0.5863,
+        "contains_reference": 0.1333
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.8333,
+        "coverage": 1.0,
+        "correct": 25,
+        "incorrect": 5,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.55,
+        "coverage": 1.0,
+        "correct": 66,
+        "incorrect": 54,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "deepseek-v4-pro": {
+      "Islam": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.1333,
+          "coverage": 1.0,
+          "correct": 4,
+          "incorrect": 26,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8333,
+          "coverage": 1.0,
+          "correct": 25,
+          "incorrect": 5,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.55,
+          "coverage": 1.0,
+          "correct": 66,
+          "incorrect": 54,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "deepseek-v4-pro": {
+      "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.1333,
+          "coverage": 1.0,
+          "correct": 4,
+          "incorrect": 26,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8333,
+          "coverage": 1.0,
+          "correct": 25,
+          "incorrect": 5,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.55,
+          "coverage": 1.0,
+          "correct": 66,
+          "incorrect": 54,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "deepseek-v4-pro": {
+        "calls": 120,
+        "in": 9108,
+        "out": 2392
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 9108,
+      "out": 2392
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:30.670421+00:00"
+}

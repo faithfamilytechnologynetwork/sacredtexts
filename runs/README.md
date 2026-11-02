@@ -51,43 +51,34 @@ Each of those has `population/` (and `familiarity/`, not in the run). A native e
 
 ## Collected so far
 
-Population questions only. `qwen3-32b` is the only model with answers. The run was stopped during the first file, so there is no `summary.json` yet and the correctness table below stays at 0.
+Snapshot while collection is still running, 2 November 2026. Saved answer cells: **29,197 of 32,562 (89.7%)**. That target is the original plan plus the English Book of Mormon and encyclicals (240 questions each, every model). The original six-tradition plan alone is **26,558 of 28,722 (92.5%)**. The two English sets are **2,639 of 3,840 (68.7%)**.
 
-| | |
-|---|---:|
-| file | `christianity/english/population` |
-| answers | 55 of 120 |
-| other files | 0 |
-| input tokens | 3,323 |
-| output tokens | 51,080 |
-| cost | $0.0146 |
+A full model is 2,160 cells (1,920 + 240). A limited model is 1,938 (1,698 + 240). Limited means Buddhism is the first 9 questions of each Buddhism file. Finished at that target: argon, deepseek-v4-pro, gemini-flash, gemma-31b, haiku, kimi, luna, opus, sonnet, terra. Still short: astra 1,313, beam 1,935, fable 1,553, gpt-oss-20b 1,438, qwen3-32b 815, sol 1,653.
 
-Output tokens are high because Qwen3 reasoning is still on. The same command continues this file, then the rest of the population.
-
-`python3 items/for-test/analyze_run.py` rewrites `runs/<model>/analysis.md` from the answer files. `runs/analysis-template.md` is the blank FAccT card for when every folder has scores.
+`python3 items/for-test/paper_figures.py` rewrites the figures and the LaTeX tables from the answer files. A dash has not been run. An asterisk is a tradition that has been started and not finished. Accuracy is correct / (correct + incorrect). Refusals are excluded.
 
 ## Correct so far
 
-Replace a `0` when that model’s `summary.json` files are in. These are scored results, not answer counts.
+Same numbers as `runs/paper/models-by-tradition.tex`, in percent. `*` is partial.
 
-| model | Chr | Jud | Isl | Sik | Hin | Bud |
-|---|---:|---:|---:|---:|---:|---:|
-| `fable` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `opus` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sonnet` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `haiku` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `astra` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sol` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `terra` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `luna` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `argon` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `gemini-flash` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `deepseek-v4-pro` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `kimi` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `beam` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `gemma-31b` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `qwen3-32b` | 0 | 0 | 0 | 0 | 0 | 0 |
-| `gpt-oss-20b` | 0 | 0 | 0 | 0 | 0 | 0 |
+| model | Chr | Jud | Isl | Hin | Sik | Bud | BoM | Enc |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `fable` | 73.4 | 26.3 | 81.9* | 58.6* | 41.5* | — | — | — |
+| `opus` | 71.4 | 26.5 | 80.5 | 63.7 | 29.7 | 83.3* | 89.0 | 50.6 |
+| `sonnet` | 55.2 | 14.7 | 74.9 | 51.4 | 17.0 | 37.5* | 42.7 | 33.3 |
+| `haiku` | 47.9 | 21.9 | 71.9 | 56.5 | 22.0 | 29.1 | 23.4 | 33.3 |
+| `astra` | 65.4 | 41.1 | 90.7 | — | 24.3* | — | — | — |
+| `sol` | 64.0 | 36.3 | 90.1 | 50.7* | 23.3 | — | — | — |
+| `terra` | 58.5 | 26.4 | 85.0 | 51.1 | 21.2 | 72.8 | 60.0 | 31.6 |
+| `luna` | 54.1 | 18.0 | 78.7 | 54.6 | 22.2 | 41.6 | 31.4 | 27.0 |
+| `argon` | 68.9 | 29.5 | 90.6 | 61.4 | 25.3 | 82.4* | 79.2 | 51.0 |
+| `gemini-flash` | 63.7 | 29.7 | 81.7 | 61.9 | 20.2 | 72.1 | 70.1 | 51.2 |
+| `deepseek-v4-pro` | 57.2 | 14.2 | 61.9 | 44.8 | 22.6 | 18.8* | 41.7 | 28.3 |
+| `kimi` | 59.6 | 23.2 | 74.1 | 55.6 | 23.5 | 50.0* | 52.2 | 37.5 |
+| `beam` | 59.2* | 23.2 | 78.8 | 61.3 | 26.0 | 26.7* | 57.6* | 30.8 |
+| `gemma-31b` | 26.1 | 14.9 | 39.2 | 26.5 | 17.1 | 17.0 | 15.8 | 21.7 |
+| `qwen3-32b` | 27.7 | 15.4 | 25.3* | — | — | — | — | — |
+| `gpt-oss-20b` | 17.8 | 15.7 | 15.8* | 14.3* | 14.1 | — | — | — |
 
 ## A model
 

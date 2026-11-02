@@ -1,0 +1,182 @@
+{
+ "models": {
+  "gemini-flash": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.6207,
+    "coverage": 0.9667,
+    "correct": 18,
+    "incorrect": 11,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.4483,
+    "normalized": 0.6207,
+    "token_f1": 0.7959,
+    "token_f1_base": 0.7959,
+    "contains_reference": 0.6207
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 0.9333,
+    "correct": 14,
+    "incorrect": 14,
+    "refused": 2,
+    "refused_rate": 0.0667,
+    "exact": 0.4643,
+    "normalized": 0.5,
+    "token_f1": 0.7998,
+    "token_f1_base": 0.7998,
+    "contains_reference": 0.5
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 24,
+    "incorrect": 6,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.7009,
+    "coverage": 0.975,
+    "correct": 82,
+    "incorrect": 35,
+    "refused": 3,
+    "refused_rate": 0.025
+   }
+  }
+ },
+ "by_tradition": {
+  "gemini-flash": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6207,
+     "coverage": 0.9667,
+     "correct": 18,
+     "incorrect": 11,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.9333,
+     "correct": 14,
+     "incorrect": 14,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7009,
+     "coverage": 0.975,
+     "correct": 82,
+     "incorrect": 35,
+     "refused": 3,
+     "refused_rate": 0.025
+    }
+   }
+  }
+ },
+ "by_text": {
+  "gemini-flash": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6207,
+     "coverage": 0.9667,
+     "correct": 18,
+     "incorrect": 11,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.9333,
+     "correct": 14,
+     "incorrect": 14,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7009,
+     "coverage": 0.975,
+     "correct": 82,
+     "incorrect": 35,
+     "refused": 3,
+     "refused_rate": 0.025
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "gemini-flash": {
+    "calls": 120,
+    "in": 7601,
+    "out": 28680
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 7601,
+   "out": 28680
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:46:06.556326+00:00"
+}

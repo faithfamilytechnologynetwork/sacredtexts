@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gemini-flash": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.9,
+        "coverage": 1.0,
+        "correct": 27,
+        "incorrect": 3,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.5667,
+        "coverage": 1.0,
+        "correct": 17,
+        "incorrect": 13,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0667,
+        "normalized": 0.5,
+        "token_f1": 0.8077,
+        "token_f1_base": 0.8077,
+        "contains_reference": 0.5667
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.4333,
+        "coverage": 1.0,
+        "correct": 13,
+        "incorrect": 17,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0333,
+        "token_f1": 0.6909,
+        "token_f1_base": 0.7091,
+        "contains_reference": 0.4333
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.9,
+        "coverage": 1.0,
+        "correct": 27,
+        "incorrect": 3,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7,
+        "coverage": 1.0,
+        "correct": 84,
+        "incorrect": 36,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "gemini-flash": {
+      "Buddhism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9,
+          "coverage": 1.0,
+          "correct": 27,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5667,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 13,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4333,
+          "coverage": 1.0,
+          "correct": 13,
+          "incorrect": 17,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.9,
+          "coverage": 1.0,
+          "correct": 27,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 84,
+          "incorrect": 36,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemini-flash": {
+      "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9,
+          "coverage": 1.0,
+          "correct": 27,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5667,
+          "coverage": 1.0,
+          "correct": 17,
+          "incorrect": 13,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4333,
+          "coverage": 1.0,
+          "correct": 13,
+          "incorrect": 17,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.9,
+          "coverage": 1.0,
+          "correct": 27,
+          "incorrect": 3,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 84,
+          "incorrect": 36,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemini-flash": {
+        "calls": 120,
+        "in": 9654,
+        "out": 17290
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 9654,
+      "out": 17290
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:44.214882+00:00"
+}

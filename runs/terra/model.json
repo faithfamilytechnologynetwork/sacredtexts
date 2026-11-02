@@ -30,7 +30,20 @@
       "tool_choice",
       "tools",
       "verbosity"
-    ]
+    ],
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": true,
+      "supported_efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "default_effort": "medium"
+    }
   },
   "probe": {
     "ok": true,
@@ -41,5 +54,11 @@
     "completion_tokens": 5,
     "total_tokens": 18,
     "cost_usd": 3.8e-05
+  },
+  "collected": {
+    "calls": 2160,
+    "prompt_tokens": 212731,
+    "completion_tokens": 95895,
+    "cost_usd": 0.692206
   }
 }

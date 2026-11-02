@@ -1,0 +1,182 @@
+{
+ "models": {
+  "beam": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0333,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 29,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1849,
+    "token_f1_base": 0.1849,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.2,
+    "correct": 0,
+    "incorrect": 6,
+    "refused": 24,
+    "refused_rate": 0.8,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0888,
+    "token_f1_base": 0.0888,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 0.8,
+    "correct": 16,
+    "incorrect": 8,
+    "refused": 6,
+    "refused_rate": 0.2
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.1889,
+    "coverage": 0.75,
+    "correct": 17,
+    "incorrect": 73,
+    "refused": 30,
+    "refused_rate": 0.25
+   }
+  }
+ },
+ "by_tradition": {
+  "beam": {
+   "Judaism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.2,
+     "correct": 0,
+     "incorrect": 6,
+     "refused": 24,
+     "refused_rate": 0.8
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 0.8,
+     "correct": 16,
+     "incorrect": 8,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1889,
+     "coverage": 0.75,
+     "correct": 17,
+     "incorrect": 73,
+     "refused": 30,
+     "refused_rate": 0.25
+    }
+   }
+  }
+ },
+ "by_text": {
+  "beam": {
+   "Talmud Bavli\u0000William Davidson Edition - Aramaic\u0000he": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.2,
+     "correct": 0,
+     "incorrect": 6,
+     "refused": 24,
+     "refused_rate": 0.8
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 0.8,
+     "correct": 16,
+     "incorrect": 8,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1889,
+     "coverage": 0.75,
+     "correct": 17,
+     "incorrect": 73,
+     "refused": 30,
+     "refused_rate": 0.25
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "beam": {
+    "calls": 120,
+    "in": 17453,
+    "out": 182373
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 17453,
+   "out": 182373
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:05:35.258328+00:00"
+}

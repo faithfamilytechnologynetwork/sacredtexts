@@ -1,0 +1,182 @@
+{
+  "models": {
+    "haiku": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.1333,
+        "correct": 0,
+        "incorrect": 4,
+        "refused": 26,
+        "refused_rate": 0.8667
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.4667,
+        "correct": 0,
+        "incorrect": 14,
+        "refused": 16,
+        "refused_rate": 0.5333,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0411,
+        "token_f1_base": 0.067,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": null,
+        "coverage": 0.0,
+        "correct": 0,
+        "incorrect": 0,
+        "refused": 30,
+        "refused_rate": 1.0,
+        "exact": null,
+        "normalized": null,
+        "token_f1": null,
+        "token_f1_base": null,
+        "contains_reference": null
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.1538,
+        "coverage": 0.4333,
+        "correct": 2,
+        "incorrect": 11,
+        "refused": 17,
+        "refused_rate": 0.5667
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.0645,
+        "coverage": 0.2583,
+        "correct": 2,
+        "incorrect": 29,
+        "refused": 89,
+        "refused_rate": 0.7417
+      }
+    }
+  },
+  "by_tradition": {
+    "haiku": {
+      "Sikhism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.1333,
+          "correct": 0,
+          "incorrect": 4,
+          "refused": 26,
+          "refused_rate": 0.8667
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.4667,
+          "correct": 0,
+          "incorrect": 14,
+          "refused": 16,
+          "refused_rate": 0.5333
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.1538,
+          "coverage": 0.4333,
+          "correct": 2,
+          "incorrect": 11,
+          "refused": 17,
+          "refused_rate": 0.5667
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.0645,
+          "coverage": 0.2583,
+          "correct": 2,
+          "incorrect": 29,
+          "refused": 89,
+          "refused_rate": 0.7417
+        }
+      }
+    }
+  },
+  "by_text": {
+    "haiku": {
+      "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.1333,
+          "correct": 0,
+          "incorrect": 4,
+          "refused": 26,
+          "refused_rate": 0.8667
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.4667,
+          "correct": 0,
+          "incorrect": 14,
+          "refused": 16,
+          "refused_rate": 0.5333
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": null,
+          "coverage": 0.0,
+          "correct": 0,
+          "incorrect": 0,
+          "refused": 30,
+          "refused_rate": 1.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.1538,
+          "coverage": 0.4333,
+          "correct": 2,
+          "incorrect": 11,
+          "refused": 17,
+          "refused_rate": 0.5667
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.0645,
+          "coverage": 0.2583,
+          "correct": 2,
+          "incorrect": 29,
+          "refused": 89,
+          "refused_rate": 0.7417
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "haiku": {
+        "calls": 120,
+        "in": 22141,
+        "out": 23879
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 22141,
+      "out": 23879
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:38.969874+00:00"
+}

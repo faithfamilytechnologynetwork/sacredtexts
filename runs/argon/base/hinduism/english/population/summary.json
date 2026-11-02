@@ -1,0 +1,182 @@
+{
+ "models": {
+  "argon": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.4138,
+    "coverage": 0.9667,
+    "correct": 12,
+    "incorrect": 17,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.2759,
+    "normalized": 0.3448,
+    "token_f1": 0.8732,
+    "token_f1_base": 0.8786,
+    "contains_reference": 0.4138
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.1111,
+    "coverage": 0.9,
+    "correct": 3,
+    "incorrect": 24,
+    "refused": 3,
+    "refused_rate": 0.1,
+    "exact": 0.037,
+    "normalized": 0.0741,
+    "token_f1": 0.7558,
+    "token_f1_base": 0.7701,
+    "contains_reference": 0.1111
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.6466,
+    "coverage": 0.9667,
+    "correct": 75,
+    "incorrect": 41,
+    "refused": 4,
+    "refused_rate": 0.0333
+   }
+  }
+ },
+ "by_tradition": {
+  "argon": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.4138,
+     "coverage": 0.9667,
+     "correct": 12,
+     "incorrect": 17,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1111,
+     "coverage": 0.9,
+     "correct": 3,
+     "incorrect": 24,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.6466,
+     "coverage": 0.9667,
+     "correct": 75,
+     "incorrect": 41,
+     "refused": 4,
+     "refused_rate": 0.0333
+    }
+   }
+  }
+ },
+ "by_text": {
+  "argon": {
+   "Bhagavad Gita\u0000Annie Besant (1922)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.4138,
+     "coverage": 0.9667,
+     "correct": 12,
+     "incorrect": 17,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1111,
+     "coverage": 0.9,
+     "correct": 3,
+     "incorrect": 24,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.6466,
+     "coverage": 0.9667,
+     "correct": 75,
+     "incorrect": 41,
+     "refused": 4,
+     "refused_rate": 0.0333
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "argon": {
+    "calls": 120,
+    "in": 12014,
+    "out": 2487
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 12014,
+   "out": 2487
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:56:24.413057+00:00"
+}

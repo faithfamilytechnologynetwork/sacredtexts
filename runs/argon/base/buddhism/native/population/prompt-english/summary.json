@@ -1,0 +1,182 @@
+{
+ "models": {
+  "argon": {
+   "cite_passage": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 2,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.5,
+    "normalized": 0.5,
+    "token_f1": 0.8334,
+    "token_f1_base": 0.8334,
+    "contains_reference": 0.5
+   },
+   "retrieve_quote": {
+    "n": 3,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.6667,
+    "token_f1": 0.9815,
+    "token_f1_base": 0.9815,
+    "contains_reference": 0.6667
+   },
+   "verify_source": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 0.5,
+    "correct": 1,
+    "incorrect": 0,
+    "refused": 1,
+    "refused_rate": 0.5
+   },
+   "_overall": {
+    "n": 9,
+    "accuracy": 0.75,
+    "coverage": 0.8889,
+    "correct": 6,
+    "incorrect": 2,
+    "refused": 1,
+    "refused_rate": 0.1111
+   }
+  }
+ },
+ "by_tradition": {
+  "argon": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 0.5,
+     "correct": 1,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.5
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.75,
+     "coverage": 0.8889,
+     "correct": 6,
+     "incorrect": 2,
+     "refused": 1,
+     "refused_rate": 0.1111
+    }
+   }
+  }
+ },
+ "by_text": {
+  "argon": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 0.5,
+     "correct": 1,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.5
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.75,
+     "coverage": 0.8889,
+     "correct": 6,
+     "incorrect": 2,
+     "refused": 1,
+     "refused_rate": 0.1111
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "argon": {
+    "calls": 9,
+    "in": 1112,
+    "out": 336
+   }
+  },
+  "total": {
+   "calls": 9,
+   "in": 1112,
+   "out": 336
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:56:35.554396+00:00"
+}

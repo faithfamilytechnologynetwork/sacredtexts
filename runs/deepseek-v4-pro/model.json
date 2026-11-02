@@ -41,7 +41,16 @@
       "top_k",
       "top_logprobs",
       "top_p"
-    ]
+    ],
+    "reasoning": {
+      "mandatory": false,
+      "supported_efforts": [
+        "xhigh",
+        "high",
+        "none"
+      ],
+      "default_effort": "high"
+    }
   },
   "probe": {
     "ok": true,
@@ -52,5 +61,11 @@
     "completion_tokens": 16,
     "total_tokens": 27,
     "cost_usd": 3.39e-05
+  },
+  "collected": {
+    "calls": 1938,
+    "prompt_tokens": 198460,
+    "completion_tokens": 98394,
+    "cost_usd": 0.6323968
   }
 }

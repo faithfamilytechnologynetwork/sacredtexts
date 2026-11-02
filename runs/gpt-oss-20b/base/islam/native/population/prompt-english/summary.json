@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gpt-oss-20b": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.069,
+        "coverage": 0.9667,
+        "correct": 2,
+        "incorrect": 27,
+        "refused": 1,
+        "refused_rate": 0.0333
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 30,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0374,
+        "token_f1_base": 0.0374,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.9667,
+        "correct": 0,
+        "incorrect": 29,
+        "refused": 1,
+        "refused_rate": 0.0333,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0239,
+        "token_f1_base": 0.0239,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.6,
+        "coverage": 1.0,
+        "correct": 18,
+        "incorrect": 12,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.1695,
+        "coverage": 0.9833,
+        "correct": 20,
+        "incorrect": 98,
+        "refused": 2,
+        "refused_rate": 0.0167
+      }
+    }
+  },
+  "by_tradition": {
+    "gpt-oss-20b": {
+      "Islam": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.069,
+          "coverage": 0.9667,
+          "correct": 2,
+          "incorrect": 27,
+          "refused": 1,
+          "refused_rate": 0.0333
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 30,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.9667,
+          "correct": 0,
+          "incorrect": 29,
+          "refused": 1,
+          "refused_rate": 0.0333
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.6,
+          "coverage": 1.0,
+          "correct": 18,
+          "incorrect": 12,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.1695,
+          "coverage": 0.9833,
+          "correct": 20,
+          "incorrect": 98,
+          "refused": 2,
+          "refused_rate": 0.0167
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gpt-oss-20b": {
+      "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.069,
+          "coverage": 0.9667,
+          "correct": 2,
+          "incorrect": 27,
+          "refused": 1,
+          "refused_rate": 0.0333
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 30,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.9667,
+          "correct": 0,
+          "incorrect": 29,
+          "refused": 1,
+          "refused_rate": 0.0333
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.6,
+          "coverage": 1.0,
+          "correct": 18,
+          "incorrect": 12,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.1695,
+          "coverage": 0.9833,
+          "correct": 20,
+          "incorrect": 98,
+          "refused": 2,
+          "refused_rate": 0.0167
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gpt-oss-20b": {
+        "calls": 120,
+        "in": 25787,
+        "out": 164179
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 25787,
+      "out": 164179
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:34.488587+00:00"
+}
