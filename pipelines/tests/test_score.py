@@ -75,6 +75,122 @@ def test_verify_source_committed_verdict_with_trailing_decline_is_graded():
     assert score_answer("verify_source", "I cannot determine that.", {"answer": "no"})["outcome"] == "refused"
 
 
+# --- issue #76: per-script leading-stance yes/no --------------------------------------------------
+
+@pytest.mark.parametrize("ans,lang,expected", [
+    # bare native verdicts parse on their own script
+    ("نعم", "ar", "yes"), ("لا", "ar", "no"),
+    ("كن", "he", None),                                   # not a Hebrew verdict word
+    ("כן", "he", "yes"), ("לא", "he", "no"),
+    ("ਹਾਂ", "pa", "yes"), ("ਨਹੀਂ", "pa", "no"),
+    ("हाँ", "sa", "yes"), ("हां", "sa", "yes"), ("नहीं", "sa", "no"),
+    ("āma", "pi", "yes"), ("na", "pi", "no"),
+    # leading native verdict wins even with a trailing clause (same as the English leading-stance)
+    ("لا، بل هو من صحيح مسلم", "ar", "no"),
+    ("כן, זה מספר תהילים", "he", "yes"),
+    # English is ALWAYS eligible, whatever the cell language (a model may answer in English)
+    ("No", "ar", "no"), ("Yes.", "pi", "yes"),
+])
+def test_parse_yes_no_native_scripts(ans, lang, expected):
+    assert parse_yes_no(ans, lang) == expected
+
+
+@pytest.mark.parametrize("ans,lang", [
+    # #23 hardening per script: the verdict token is NOT leading (a non-verdict word leads, the
+    # verdict is buried) -> None (refused), never gamed into a false-premise correct.
+    ("أعتقد أنه لا يمكن التحقق من ذلك، لكن نعم", "ar"),     # leads "أعتقد" (I think)
+    ("אני חושב שאי אפשר לאמת זאת, אבל כן", "he"),           # leads "אני" (I)
+    ("ਮੈਨੂੰ ਲੱਗਦਾ ਹੈ ਕਿ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋ ਸਕਦੀ, ਪਰ ਹਾਂ", "pa"),
+    ("मुझे लगता है कि इसे सत्यापित नहीं किया जा सकता, लेकिन हाँ", "sa"),
+    ("ahaṃ na jānāmi, āma", "pi"),                          # leads "ahaṃ" (I), buried "na"/"āma"
+])
+def test_parse_yes_no_native_negation_evasion_is_none(ans, lang):
+    assert parse_yes_no(ans, lang) is None
+
+
+@pytest.mark.parametrize("ans,lang", [
+    # PR #78 review: a native "no" word is ALSO the sentence-negation particle. A refusal that opens
+    # with it ("I cannot verify", "I don't know") must stay refused, never be scored a verdict.
+    ("لا أستطيع التحقق من ذلك", "ar"),                      # "I cannot verify that"
+    ("لا أعرف", "ar"),                                     # "I don't know"
+    ("لا سبيل إلى التحقق من ذلك، لكن نعم", "ar"),           # the parse_yes_no docstring example
+    ("لاَ أعرف", "ar"),                                     # a diacritic on the particle changes nothing
+    ("לא ניתן לאמת זאת", "he"),                             # "this cannot be verified"
+    ("לא יודע", "he"),                                     # "don't know"
+    ("na jānāmi", "pi"),                                   # "I do not know"
+    ("ਨਹੀਂ ਪਤਾ", "pa"),                                     # "don't know"
+    ("नहीं पता", "sa"),                                     # "don't know"
+    ("Όχι μόνο αυτό", "grc"),                              # "not only this"
+    # a word that merely BEGINS with the native token is not the token
+    ("لاحظت أن هذا النص", "ar"), ("natthi", "pi"), ("Ναιάδα", "grc"), ("לאחר עיון, כן", "he"),
+    # symmetric rule: a native YES word followed by another word is not read either, so the stand-alone
+    # rule cannot bias the parser towards one verdict
+    ("نعم هذا من القرآن", "ar"),
+])
+def test_parse_yes_no_native_negation_particle_is_not_a_verdict(ans, lang):
+    assert parse_yes_no(ans, lang) is None
+
+
+@pytest.mark.parametrize("ans,lang,expected", [
+    # PR #78 review: the terminator is read by Unicode category, so a word ending in a nasal/vowel mark
+    # (ਹਾਂ, हाँ, नहीं) still ends at a danda (।, U+0964) — `\b` alone misses it
+    ("ਹਾਂ।", "pa", "yes"), ("ਨਹੀਂ।", "pa", "no"), ("ਹਾਂ ।", "pa", "yes"),
+    ("हाँ।", "sa", "yes"), ("नहीं।", "sa", "no"), ("हां॥", "sa", "yes"),
+    # Greek, as the Greek prompt asks (ναι ή όχι) — added in PR #78 round 2
+    ("Ναι", "grc", "yes"), ("ναι.", "grc", "yes"), ("Ναί, είναι από το Ευαγγέλιο", "grc", "yes"),
+    ("Όχι", "grc", "no"), ("όχι.", "grc", "no"), ("ὄχι, ...", "grc", "no"),
+    # a native verdict followed by punctuation or wrapped in quotes still parses
+    ("«لا»", "ar", "no"), ("لا،", "ar", "no"), ("لا.", "ar", "no"), ("نعم، هذا من القرآن", "ar", "yes"),
+    ("לא.", "he", "no"), ("**כן**", "he", "yes"),
+    ("na.", "pi", "no"), ("āma, ...", "pi", "yes"),
+])
+def test_parse_yes_no_native_verdict_then_punctuation(ans, lang, expected):
+    assert parse_yes_no(ans, lang) == expected
+
+
+@pytest.mark.parametrize("ans,expected", [
+    # PR #78 round 2: a vowelled verdict is the same word
+    ("نَعَمْ.", "yes"), ("نَعَمْ", "yes"), ("لَا،", "no"), ("لَا", "no"), ("«لَا»", "no"),
+    # ... and the native "Answer:" label is stripped like the English one
+    ("الجواب: لا", "no"), ("الجواب: نعم.", "yes"), ("الإجابة: نعم", "yes"), ("الاجابة - لا", "no"),
+    ("الرد: لا", "no"), ("الجَوَابُ: نَعَمْ", "yes"), ("**الجواب:** لا", "no"), ("Answer: لا", "no"),
+    # the stand-alone rule still applies after a vowelled particle or a label
+    ("لَا أَعْرِفُ", None), ("الجواب: لا أستطيع التحقق", None), ("الجواب: لا يمكن الجزم", None),
+    # a label is only a label with its colon/dash; a buried verdict is not leading
+    ("الجواب لا", None), ("الجواب هو: نعم", None),
+])
+def test_parse_yes_no_arabic_vowels_and_label(ans, expected):
+    assert parse_yes_no(ans, "ar") == expected
+
+
+def test_native_label_and_marks_do_not_touch_other_cells():
+    # the Arabic label is read only on an Arabic cell; English parsing is byte-identical
+    assert parse_yes_no("الجواب: لا", "he") is None
+    assert parse_yes_no("الجواب: لا", None) is None
+    assert parse_yes_no("Answer: no") == parse_yes_no("Answer: no", "ar") == "no"
+
+
+def test_native_tokens_only_eligible_for_their_language():
+    # A native token is NOT read when the cell language does not select it. This is what keeps every
+    # committed (English-answer) verify cell byte-stable: adding native tables cannot flip a cell whose
+    # language does not carry those tokens. The Latin Pali "na" is the sharp case.
+    assert parse_yes_no("لا", None) is None            # Arabic "no" with no language -> not read
+    assert parse_yes_no("لا", "he") is None            # wrong script's table -> not read
+    assert parse_yes_no("na", None) is None            # Pali "no" is never read as English
+    assert parse_yes_no("na", "ar") is None            # ... nor on a non-Pali cell
+    assert parse_yes_no("na", "pi") == "no"            # only on a Pali cell
+    # English behaviour is unchanged whether or not a language is passed
+    assert parse_yes_no("Yes.") == parse_yes_no("Yes.", "ar") == "yes"
+
+
+def test_score_answer_plumbs_language_for_native_verdict():
+    # score_answer forwards the question language so a native verdict is graded, not refused.
+    graded = score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"}, language="ar")
+    assert graded["parsed"] == "no" and graded["correct"] == 1 and graded["outcome"] == "correct"
+    # without the language the same answer has no readable leading verdict -> refused (old behaviour)
+    assert score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"})["outcome"] == "refused"
+
+
 def test_retrieve_quote_tiers():
     exp = {"text": "The keeper planted twelve trees."}
     exact = score_answer("retrieve_quote", "The keeper planted twelve trees.", exp)

@@ -3,29 +3,60 @@
 Each file has a uniform population sample of 30 and a separate familiarity
 panel (every citation in well_known.yaml). Sikh citations are Ang N:k in
 reading order. Within each sample, half of the verify_source rows quote a
-different work and expect "no".
+different work and expect "no". An Arabic passage's "no" quotes the matn of a
+hadith that shares no text with the Qur'an (issue #75).
+
+Run with the pipelines environment from the repo root:
+``uv --project pipelines run python items/for-test/review/build_questions.py``.
 """
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import html
 import json
 import random
 import re
+import unicodedata
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from sacredbench.catalogue import load_source
 from sacredbench.convert import _SGGS_ANG_ERRATA, clean_sggs_line
 from sacredbench.generate import split_quote
 from sacredbench.item_sample import Passage, draw_passages, load_well_known
+from sacredbench.score import fold_aware_contains, parse_yes_no
 
 REVIEW = Path(__file__).resolve().parent
 RAW = Path(__file__).resolve().parents[3] / "texts" / "raw"
 TAG = re.compile(r"<[^>]+>")
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
 MIN_WORDS = 16
+
+QURAN_FILE = RAW / "Sunni Islam" / "quran_uthmani_from_qul.json.json"
+QURAN_VERSION = "Uthmani (QUL)"
+# Owner-signed Arabic templates (Waleed, native Arabic speaker, 2026-11-01). "رسم" is
+# orthography not a print run ("طبعة"), "النص" for revelation, "رقم السورة والآية" for the
+# reference, and a closing "فقط" because Arabic-prompted models tend to open with a preamble
+# before the verdict (see METHODOLOGY.md). build_review.py renders the review page from these.
+QURAN_AR = {
+    "retrieve_quote": "ما نص الموضع {citation} في القرآن الكريم بالرسم العثماني؟ أجب بالنص المطابق لهذه النسخة فقط، دون أي زيادة.",
+    "complete_unit": 'أكمل هذا النص من القرآن الكريم بالرسم العثماني: "{head}" أجب بالكلمات المتبقية فقط.',
+    "cite_passage": 'أين ورد هذا النص في القرآن الكريم بالرسم العثماني؟ "{text}" أجب برقم السورة والآية فقط، بالصيغة نفسها: {example}.',
+    "verify_source": 'هل النص التالي من القرآن الكريم بالرسم العثماني؟ "{text}" أجب بـ«نعم» أو «لا» فقط.',
+}
+
+# The six canonical hadith collections (Kutub al-Sittah) are the Qur'an's same-script "no"
+# donors (issue #75; the set is the owner's choice, #74). Payload, work and version are read
+# from texts/raw/Sunni Islam/source.yaml, so true_version / true_citation cannot drift from it.
+KUTUB_AL_SITTAH = (
+    "Sahih al-Bukhari", "Sahih Muslim", "Sunan Abi Dawud",
+    "Jami` at-Tirmidhi", "Sunan an-Nasa'i", "Sunan Ibn Majah",
+)
+HADITH_SEED = 20261030
+QURAN_SHARED_WORDS = 6  # a donor sharing this many consecutive words with an ayah is rejected
 
 EN = {
     "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
@@ -35,7 +66,16 @@ EN = {
 }
 
 
+# English display names the model sees in a prompt, overriding the default
+# "the {version} edition". The catalogue `version` string is unchanged in each
+# question's source metadata; only the prompt wording changes. The Qur'an is named
+# "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
+_EDITION_DISPLAY = {"Uthmani (QUL)": "the Uthmani Qur'an"}
+
+
 def edition_name(name: str) -> str:
+    if name in _EDITION_DISPLAY:
+        return _EDITION_DISPLAY[name]
     if "edition" in name.lower():
         return name
     return f"the {name} edition"
@@ -141,14 +181,14 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
 
 
 def islam() -> list[dict]:
-    quran = json.loads((RAW / "Sunni Islam" / "quran_uthmani_from_qul.json.json").read_text())
-    famous_rows = famous_passages("The Qur'an", "Uthmani (QUL)")
+    quran = json.loads(QURAN_FILE.read_text())
+    famous_rows = famous_passages("The Qur'an", QURAN_VERSION)
     famous_cit = {p.citation: p for p in famous_rows}
     ordinary, famous = [], []
     for key, row in quran.items():
         text = row["text"].strip()
         if len(text.split()) >= MIN_WORDS:
-            passage = famous_cit.get(key) or Passage(key, "The Qur'an", "Uthmani (QUL)")
+            passage = famous_cit.get(key) or Passage(key, "The Qur'an", QURAN_VERSION)
             ordinary.append((passage, text))
         elif key in famous_cit:
             famous.append((famous_cit[key], text))
@@ -157,15 +197,9 @@ def islam() -> list[dict]:
         raise SystemExit(f"Qur'an famous citations missing from QUL: {sorted(missing)}")
     drawn = population_draw([p for p, _ in ordinary], famous_rows, seed=20261030)
     text = {p.citation: t for p, t in ordinary + famous}
-    ar = {
-        "retrieve_quote": "ما نص {citation} من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.",
-        "complete_unit": 'أكمل هذا الاقتباس من القرآن، طبعة عثماني (QUL): "{head}" أجب بالكلمات المتبقية فقط.',
-        "cite_passage": 'أين أجد هذا النص في القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بالاستشهاد فقط، على شكل: {example}.',
-        "verify_source": 'هل النص التالي من القرآن، طبعة عثماني (QUL)؟ "{text}" أجب بنعم أو لا.',
-    }
     items = [(p, "population", text[p.citation], None) for p in drawn]
     items += [(famous_cit[c], "familiarity", text[c], None) for c in famous_cit]
-    return rows_for(items, tradition="Islam", version="Uthmani (QUL)", native_tmpl=ar)
+    return rows_for(items, tradition="Islam", version=QURAN_VERSION, native_tmpl=QURAN_AR)
 
 
 def sikhism() -> list[dict]:
@@ -383,12 +417,233 @@ def _donor_rank(row: dict, donor: dict) -> int:
     return 1
 
 
+def hadith_collections() -> list:
+    """The catalogue targets of the six canonical collections (Arabic), in KUTUB_AL_SITTAH order."""
+    source = load_source(RAW / "Sunni Islam" / "source.yaml", raw_root=RAW)
+    by_work: dict[str, list] = {}
+    for target in source.targets:
+        if target.converter == "hadith_sunnah" and target.language == "ar":
+            by_work.setdefault(target.work, []).append(target)
+    bad = [work for work in KUTUB_AL_SITTAH if len(by_work.get(work, [])) != 1]
+    if bad:
+        raise SystemExit(f"source.yaml needs exactly one Arabic hadith_sunnah target for each of {bad}")
+    return [by_work[work][0] for work in KUTUB_AL_SITTAH]
+
+
+# A donor is a SAYING of the Prophet (owner, #75 round 2): the span sunnah.com puts in quotation marks
+# right after a salawat (… صلى الله عليه وسلم ‏"‏ …), optionally with a speech verb between
+# (قَالَ / يَقُولُ / فَقَالَ / أَنَّهُ قَالَ), up to its closing mark. Neither the narrator chain (isnad)
+# nor anything after the closing mark (a narrator's remark, a second chain, the compiler's commentary)
+# is quoted. sunnah.com writes these words bare, vowelled (in either mark order) and broken across
+# lines, so each is matched letter by letter with any vowel marks, dagger alif or tatweel after a
+# letter, and any alef (with or without hamza) for an alef.
+_AR_MARKS = "[\u064b-\u065f\u0670\u0640]*"
+_AR_LETTER = "\u0621-\u064a"
+
+
+def _arabic_phrase(*words: str) -> str:
+    """A regex for these Arabic words however sunnah.com vowels them or breaks the line."""
+    def letter(c: str) -> str:
+        return ("[\u0627\u0623\u0625\u0622\u0671]" if c in "\u0627\u0623" else re.escape(c)) + _AR_MARKS
+    return r"\s+".join("".join(letter(c) for c in word) for word in words)
+
+
+_SALAWAT = re.compile("(?:" + _arabic_phrase("صلى", "الله", "عليه", "وسلم") + "|\ufdfa)")
+# whole words, so قَالَتْ ("she said") and يَقُولُوا are not speech verbs here
+_SPEECH_VERB = "(?:" + "|".join(
+    _arabic_phrase(*verb) for verb in (("أنه", "قال"), ("فقال",), ("قال",), ("يقول",))
+) + f")(?!{_AR_MARKS}[{_AR_LETTER}])"
+_GAP = "[\\s\u200e\u200f:\u060c,.\\-\u2013\u2014\u0640]*"  # spaces, LRM/RLM, colon, comma, dash, tatweel
+_SAYING_OPEN = re.compile(_SALAWAT.pattern + _GAP + f"(?:{_SPEECH_VERB}{_GAP})?" + '"')
+# separators sunnah.com puts just inside the opening mark
+_MATN_LEAD = re.compile("^[\\s\u200e\u200f\u0640.:\u060c,\u061b\\-\u2013\u2014]+")
+# A span that opens a narrator chain or a reported clause (حَدَّثَنَا, عَنْ, أَنَّ …) announces "hadith"
+# from its first word. Compared by letters only, hamza kept, so أَنَّ is caught and إِنَّ ("indeed") is not.
+_CHAIN_OPENERS = frozenset({
+    "حدثنا", "حدثني", "أخبرنا", "أخبرني", "اخبرنا", "اخبرني", "أنبأنا", "انبانا", "عن", "وعن", "أن",
+})
+_DIVINE_EPITHET = r"(?:\s+(?:" + "|".join(
+    _arabic_phrase(*e) for e in (("تعالى",), ("عز", "وجل"), ("تبارك", "وتعالى"), ("سبحانه",))
+) + "))?"
+_SAYS = "(?:" + _arabic_phrase("قال") + "|" + _arabic_phrase("يقول") + ")"
+_WORD_END = f"(?!{_AR_MARKS}[{_AR_LETTER}])"
+# God's speech inside the saying (hadith qudsi, or a Qur'an citation framed as قَالَ اللَّهُ): not the
+# Prophet's own words, so not a donor — قَالَ اللَّهُ / يَقُولُ اللَّهُ / قَالَ رَبُّكُمْ / إِنَّ اللَّهَ … قَالَ
+_DIVINE_SPEECH = re.compile("(?:" + "|".join((
+    _SAYS + r"\s+(?:" + "|".join(_arabic_phrase(w) for w in ("الله", "ربكم", "ربك", "ربي")) + ")" + _WORD_END,
+    _arabic_phrase("إن", "الله") + _DIVINE_EPITHET + r"\s+" + _SAYS + _WORD_END,
+)) + ")")
+
+
+def _letters(word: str) -> str:
+    """A word's letters only, hamza kept: no vowel marks or punctuation (أَنَّ → أن, إِنَّ → إن)."""
+    return "".join(c for c in unicodedata.normalize("NFC", word) if unicodedata.category(c).startswith("L"))
+
+
+def hadith_matn(text: str) -> str | None:
+    """The quotable saying of a sunnah.com hadith, or None when it has none.
+
+    The saying is the first quoted span that opens right after a salawat (with an optional speech verb
+    between), up to its closing quotation mark, without the right-to-left marks sunnah.com puts around
+    its quotation marks. None when there is no such span, or when the span
+    - has fewer than MIN_WORDS words;
+    - opens with a narrator chain or reported clause (حَدَّثَنَا, أَخْبَرَنَا, عَنْ, وَعَنْ, أَنَّ, …);
+    - reads as a bare verdict itself ("لاَ، …", "نَعَمْ.") by the scorer's own ``parse_yes_no``;
+    - carries God's speech (قَالَ اللَّهُ, يَقُولُ اللَّهُ, إِنَّ اللَّهَ … قَالَ): hadith qudsi are out;
+    - carries a salawat (صلى الله عليه وسلم): the Qur'an never does, so it would announce "hadith".
+    """
+    opening = _SAYING_OPEN.search(text)
+    if opening is None:
+        return None
+    closing = text.find('"', opening.end())
+    if closing == -1:
+        return None
+    span = _MATN_LEAD.sub("", text[opening.end():closing])
+    matn = " ".join(span.replace("‎", "").replace("‏", "").split())
+    words = matn.split()
+    if len(words) < MIN_WORDS or _letters(words[0]) in _CHAIN_OPENERS:
+        return None
+    if parse_yes_no(matn, "ar") is not None or _DIVINE_SPEECH.search(matn) or _SALAWAT.search(matn):
+        return None
+    return matn
+
+
+@functools.lru_cache(maxsize=None)
+def _hadith_pool() -> tuple[dict, ...]:
+    """Every hadith with a quotable matn, as donor rows, in catalogue then book order.
+
+    Shaped like a ``retrieve_quote`` donor. Citation and version mirror ``convert_hadith_sunnah``, so a
+    "no" item records the same true_version / true_citation the standardized corpus would. Parsed on
+    the first Arabic flip only; a build with no Arabic passage never reads the hadith files.
+    """
+    pool = []
+    for target in hadith_collections():
+        data = json.loads((RAW / "Sunni Islam" / target.payload).read_text(encoding="utf-8"))
+        for h in data["hadiths"]:
+            matn = hadith_matn(h.get("arabic") or "")
+            if matn is None:
+                continue
+            pool.append({
+                "tradition": "Islam",
+                "work": target.work,
+                "version": target.version,
+                "citation": f"{target.work} {h['idInBook']}",
+                "expected": {"text": matn},
+            })
+    if not pool:
+        raise SystemExit("no hadith matn found for the Qur'an verify_source 'no' items")
+    return tuple(pool)
+
+
+# Letters the Uthmani and Imla'i orthographies spell differently (long ā, alef-maqsura / ya, hamza,
+# wasla, the waw of ٱلصَّلَوٰة). Dropping them gives one consonantal skeleton per word in either spelling.
+_ORTHOGRAPHY_VARIABLE = frozenset("اىيءٱو")
+
+
+def _skeleton(text: str) -> str:
+    """Arabic base letters only, minus the orthography-variable ones.
+
+    Marks, tatweel, Qur'anic annotation signs, digits, punctuation and spaces all go, so every
+    spelling of the same words has the same skeleton. ``_skeleton(a) in _skeleton(b)`` is therefore a
+    necessary condition for ``fold_aware_contains(b, a)``: a prefilter, never a verdict.
+    """
+    return "".join(
+        c for c in unicodedata.normalize("NFKD", text)
+        if "؀" <= c <= "ࣿ" and unicodedata.category(c) == "Lo"
+        and c not in _ORTHOGRAPHY_VARIABLE and not "ۖ" <= c <= "ۭ"
+    )
+
+
+def _skeleton_words(text: str) -> list[str]:
+    """The text's words as skeletons, dropping words that have none (pause marks, a lone يا)."""
+    return [s for s in (_skeleton(w) for w in text.split()) if s]
+
+
+@functools.lru_cache(maxsize=None)
+def _quran_index() -> tuple[list[tuple[str, str, str]], dict[tuple[str, ...], str]]:
+    """Every ayah as (citation, text, skeleton), and each run of QURAN_SHARED_WORDS skeleton words → an ayah."""
+    quran = json.loads(QURAN_FILE.read_text(encoding="utf-8"))
+    ayahs = [(key, row["text"], _skeleton(row["text"])) for key, row in quran.items()]
+    runs: dict[tuple[str, ...], str] = {}
+    n = QURAN_SHARED_WORDS
+    for key, text, _ in ayahs:
+        words = _skeleton_words(text)
+        for i in range(len(words) - n + 1):
+            runs.setdefault(tuple(words[i:i + n]), key)
+    return ayahs, runs
+
+
+def quran_overlap(text: str) -> str | None:
+    """The citation of an ayah the text shares Qur'an wording with, or None (owner-raised, #75).
+
+    Hadith quote the Qur'an, so a hadith donor could make a "no" item partly true. Shared wording is:
+    the text contains a whole ayah, or lies inside one (``fold_aware_contains``, both directions,
+    orthography-aware); or it shares QURAN_SHARED_WORDS consecutive words with one, comparing
+    consonantal skeletons so Uthmani and Imla'i spellings of the same words match.
+    """
+    ayahs, runs = _quran_index()
+    words = _skeleton_words(text)
+    n = QURAN_SHARED_WORDS
+    for i in range(len(words) - n + 1):
+        hit = runs.get(tuple(words[i:i + n]))
+        if hit is not None:
+            return hit
+    skeleton = _skeleton(text)
+    for key, ayah, ayah_skeleton in ayahs:
+        if ayah_skeleton in skeleton and fold_aware_contains(text, ayah):
+            return key
+        if skeleton in ayah_skeleton and fold_aware_contains(ayah, text):
+            return key
+    return None
+
+
+# Curated after reading every drawn donor (owner check, PR #78 round 3), keyed by "{work} {number}".
+# Applied at draw time, like the Qur'an-overlap screen, so only the rows that drew one of these re-draw.
+DONOR_SKIP = {
+    "Sahih al-Bukhari 6784": "reply fragment from a longer hadith; shares 5 words with 9:102",
+    "Sahih al-Bukhari 7122": "God's words (إِنَّ رَحْمَتِي تَغْلِبُ غَضَبِي) without a قَالَ اللَّهُ frame",
+}
+
+
+def _hadith_donor(row: dict) -> dict:
+    """This row's hadith donor, from an RNG seeded by the row alone (condition, sample, citation).
+
+    No other row, edition or tradition can move it. A candidate on DONOR_SKIP, or one that shares
+    Qur'an wording, is skipped for the row's next draw.
+    """
+    pool = _hadith_pool()
+    unknown = set(DONOR_SKIP) - {d["citation"] for d in pool}
+    if unknown:
+        raise SystemExit(f"DONOR_SKIP names hadith that are not in the donor pool: {sorted(unknown)}")
+    rng = random.Random(f"{HADITH_SEED}|{row['condition']}|{row['sample']}|{row['citation']}")
+    for _ in range(1000):
+        donor = pool[rng.randrange(len(pool))]
+        if donor["citation"] not in DONOR_SKIP and quran_overlap(donor["expected"]["text"]) is None:
+            return donor
+    raise SystemExit(f"no hadith donor free of Qur'an wording for {row['citation']}")
+
+
+def _quoted_passage(prompt: str) -> str:
+    """The passage a verify_source prompt quotes: the text between its first two double quotes."""
+    a = prompt.find('"')
+    b = prompt.find('"', a + 1)
+    if a == -1 or b == -1:
+        raise SystemExit(f"no quoted passage in: {prompt[:80]}")
+    return prompt[a + 1:b]
+
+
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     """Half of each condition's verify_source rows quote a different work.
 
     The donor is the same script as the passage being checked, and a nearer
     work when this corpus has one. A different tradition in another script is
-    the fallback for a language that has only one work.
+    the fallback for a language that has only one work. An Arabic passage (the
+    Qur'an) has the hadith collections as its same-script neighbours, so its
+    donor is a hadith matn that shares no Qur'an wording: the item is a real
+    "Qur'an or hadith?" judgement rather than an alphabet test (issue #75). The
+    gate is the quoted passage's script, not the tradition, so an English Qur'an
+    edition never receives an Arabic hadith. Each Arabic row's donor comes from
+    its own seeded RNG and does not touch the shared stream.
     """
     donors = []
     for rows in by_name.values():
@@ -405,10 +660,15 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
             group.sort(key=lambda r: r["citation"])
             flip = group[: len(group) // 2]
             for row in flip:
-                ranked = [d for d in donors if d["tradition"] != row["tradition"]]
-                best = min((_donor_rank(row, d) for d in ranked), default=2)
-                pool = [d for d in ranked if _donor_rank(row, d) == best] or ranked
-                donor = rng.choice(pool)
+                if _script(_quoted_passage(row["prompt"])) == "ar":
+                    donor = _hadith_donor(row)
+                else:
+                    ranked = [d for d in donors if d["tradition"] != row["tradition"]]
+                    best = min((_donor_rank(row, d) for d in ranked), default=2)
+                    pool = [d for d in ranked if _donor_rank(row, d) == best] or ranked
+                    if not pool:
+                        raise SystemExit(f"no verify_source donor for {row['tradition']} {row['citation']}")
+                    donor = rng.choice(pool)
                 text = donor["expected"]["text"]
                 row["expected"] = {
                     "answer": "no",
