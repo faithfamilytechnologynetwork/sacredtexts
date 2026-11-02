@@ -1,0 +1,182 @@
+{
+ "models": {
+  "beam": {
+   "cite_passage": {
+    "n": 9,
+    "accuracy": 0.8889,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 9,
+    "accuracy": 0.7778,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.6667,
+    "token_f1": 0.9395,
+    "token_f1_base": 0.9395,
+    "contains_reference": 0.7778
+   },
+   "retrieve_quote": {
+    "n": 9,
+    "accuracy": 0.5556,
+    "coverage": 1.0,
+    "correct": 5,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.5556,
+    "token_f1": 0.9636,
+    "token_f1_base": 0.9636,
+    "contains_reference": 0.5556
+   },
+   "verify_source": {
+    "n": 9,
+    "accuracy": 0.8889,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 36,
+    "accuracy": 0.7778,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 8,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "by_tradition": {
+  "beam": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 9,
+     "accuracy": 0.7778,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 9,
+     "accuracy": 0.5556,
+     "coverage": 1.0,
+     "correct": 5,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 36,
+     "accuracy": 0.7778,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "beam": {
+   "The Bible\u0000the Greek New Testament (Scrivener 1894)\u0000grc": {
+    "cite_passage": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 9,
+     "accuracy": 0.7778,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 9,
+     "accuracy": 0.5556,
+     "coverage": 1.0,
+     "correct": 5,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 9,
+     "accuracy": 0.8889,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 36,
+     "accuracy": 0.7778,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "beam": {
+    "calls": 36,
+    "in": 7759,
+    "out": 27955
+   }
+  },
+  "total": {
+   "calls": 36,
+   "in": 7759,
+   "out": 27955
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:05:35.047651+00:00"
+}

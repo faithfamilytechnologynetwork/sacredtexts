@@ -8,6 +8,7 @@ import { RootLayout } from "./routes/RootLayout";
 import { LeaderboardPage } from "./routes/LeaderboardPage";
 import { ExplorerPage } from "./routes/ExplorerPage";
 import { StandingsPage } from "./routes/StandingsPage";
+import { GapsPage } from "./routes/GapsPage";
 import { NotFound } from "./routes/NotFound";
 import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
@@ -63,7 +64,13 @@ const standingsRoute = createRoute({
   component: StandingsPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, explorerRoute, standingsRoute]);
+const gapsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/gaps",
+  component: GapsPage,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, explorerRoute, standingsRoute, gapsRoute]);
 
 export function createAppRouter(history?: RouterHistory) {
   return createRouter({

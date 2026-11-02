@@ -1,0 +1,182 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9667,
+    "correct": 0,
+    "incorrect": 29,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0502,
+    "token_f1_base": 0.066,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.8333,
+    "correct": 0,
+    "incorrect": 25,
+    "refused": 5,
+    "refused_rate": 0.1667,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0349,
+    "token_f1_base": 0.0536,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.9,
+    "coverage": 1.0,
+    "correct": 27,
+    "incorrect": 3,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2368,
+    "coverage": 0.95,
+    "correct": 27,
+    "incorrect": 87,
+    "refused": 6,
+    "refused_rate": 0.05
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.8333,
+     "correct": 0,
+     "incorrect": 25,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2368,
+     "coverage": 0.95,
+     "correct": 27,
+     "incorrect": 87,
+     "refused": 6,
+     "refused_rate": 0.05
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.8333,
+     "correct": 0,
+     "incorrect": 25,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2368,
+     "coverage": 0.95,
+     "correct": 27,
+     "incorrect": 87,
+     "refused": 6,
+     "refused_rate": 0.05
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 13888,
+    "out": 23499
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13888,
+   "out": 23499
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:59:00.630572+00:00"
+}

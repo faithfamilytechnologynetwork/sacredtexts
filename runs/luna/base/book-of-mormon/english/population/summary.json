@@ -1,0 +1,182 @@
+{
+ "models": {
+  "luna": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.5667,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 13,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.1034,
+    "coverage": 0.9667,
+    "correct": 3,
+    "incorrect": 26,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.0345,
+    "normalized": 0.1034,
+    "token_f1": 0.3934,
+    "token_f1_base": 0.3934,
+    "contains_reference": 0.1034
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.1724,
+    "coverage": 0.9667,
+    "correct": 5,
+    "incorrect": 24,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.1379,
+    "normalized": 0.1724,
+    "token_f1": 0.4625,
+    "token_f1_base": 0.4625,
+    "contains_reference": 0.1724
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 18,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.3136,
+    "coverage": 0.9833,
+    "correct": 37,
+    "incorrect": 81,
+    "refused": 2,
+    "refused_rate": 0.0167
+   }
+  }
+ },
+ "by_tradition": {
+  "luna": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.1034,
+     "coverage": 0.9667,
+     "correct": 3,
+     "incorrect": 26,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1724,
+     "coverage": 0.9667,
+     "correct": 5,
+     "incorrect": 24,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3136,
+     "coverage": 0.9833,
+     "correct": 37,
+     "incorrect": 81,
+     "refused": 2,
+     "refused_rate": 0.0167
+    }
+   }
+  }
+ },
+ "by_text": {
+  "luna": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.1034,
+     "coverage": 0.9667,
+     "correct": 3,
+     "incorrect": 26,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1724,
+     "coverage": 0.9667,
+     "correct": 5,
+     "incorrect": 24,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3136,
+     "coverage": 0.9833,
+     "correct": 37,
+     "incorrect": 81,
+     "refused": 2,
+     "refused_rate": 0.0167
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "luna": {
+    "calls": 120,
+    "in": 8069,
+    "out": 3811
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 8069,
+   "out": 3811
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:44:28.041654+00:00"
+}

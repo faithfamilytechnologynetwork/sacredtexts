@@ -1,0 +1,182 @@
+{
+  "models": {
+    "argon": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.2,
+        "coverage": 1.0,
+        "correct": 6,
+        "incorrect": 24,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.9333,
+        "correct": 0,
+        "incorrect": 28,
+        "refused": 2,
+        "refused_rate": 0.0667,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.3973,
+        "token_f1_base": 0.3973,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.1,
+        "correct": 0,
+        "incorrect": 3,
+        "refused": 27,
+        "refused_rate": 0.9,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.3415,
+        "token_f1_base": 0.3415,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.9667,
+        "coverage": 1.0,
+        "correct": 29,
+        "incorrect": 1,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.3846,
+        "coverage": 0.7583,
+        "correct": 35,
+        "incorrect": 56,
+        "refused": 29,
+        "refused_rate": 0.2417
+      }
+    }
+  },
+  "by_tradition": {
+    "argon": {
+      "Judaism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.2,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 24,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.9333,
+          "correct": 0,
+          "incorrect": 28,
+          "refused": 2,
+          "refused_rate": 0.0667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.1,
+          "correct": 0,
+          "incorrect": 3,
+          "refused": 27,
+          "refused_rate": 0.9
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.9667,
+          "coverage": 1.0,
+          "correct": 29,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.3846,
+          "coverage": 0.7583,
+          "correct": 35,
+          "incorrect": 56,
+          "refused": 29,
+          "refused_rate": 0.2417
+        }
+      }
+    }
+  },
+  "by_text": {
+    "argon": {
+      "Talmud Bavli\u0000William Davidson Edition - English\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.2,
+          "coverage": 1.0,
+          "correct": 6,
+          "incorrect": 24,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.9333,
+          "correct": 0,
+          "incorrect": 28,
+          "refused": 2,
+          "refused_rate": 0.0667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.1,
+          "correct": 0,
+          "incorrect": 3,
+          "refused": 27,
+          "refused_rate": 0.9
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.9667,
+          "coverage": 1.0,
+          "correct": 29,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.3846,
+          "coverage": 0.7583,
+          "correct": 35,
+          "incorrect": 56,
+          "refused": 29,
+          "refused_rate": 0.2417
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "argon": {
+        "calls": 120,
+        "in": 19914,
+        "out": 5491
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 19914,
+      "out": 5491
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:48.861369+00:00"
+}

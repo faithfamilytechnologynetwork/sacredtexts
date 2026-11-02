@@ -1,0 +1,182 @@
+{
+  "models": {
+    "luna": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.6667,
+        "coverage": 1.0,
+        "correct": 20,
+        "incorrect": 10,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.3333,
+        "coverage": 1.0,
+        "correct": 10,
+        "incorrect": 20,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0667,
+        "normalized": 0.3,
+        "token_f1": 0.5945,
+        "token_f1_base": 0.5945,
+        "contains_reference": 0.3333
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.3,
+        "coverage": 1.0,
+        "correct": 9,
+        "incorrect": 21,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.3,
+        "token_f1": 0.5526,
+        "token_f1_base": 0.5605,
+        "contains_reference": 0.3
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.5,
+        "coverage": 0.6667,
+        "correct": 10,
+        "incorrect": 10,
+        "refused": 10,
+        "refused_rate": 0.3333
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.4455,
+        "coverage": 0.9167,
+        "correct": 49,
+        "incorrect": 61,
+        "refused": 10,
+        "refused_rate": 0.0833
+      }
+    }
+  },
+  "by_tradition": {
+    "luna": {
+      "Buddhism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 10,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.3333,
+          "coverage": 1.0,
+          "correct": 10,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.3,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.5,
+          "coverage": 0.6667,
+          "correct": 10,
+          "incorrect": 10,
+          "refused": 10,
+          "refused_rate": 0.3333
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.4455,
+          "coverage": 0.9167,
+          "correct": 49,
+          "incorrect": 61,
+          "refused": 10,
+          "refused_rate": 0.0833
+        }
+      }
+    }
+  },
+  "by_text": {
+    "luna": {
+      "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 10,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.3333,
+          "coverage": 1.0,
+          "correct": 10,
+          "incorrect": 20,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.3,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 21,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.5,
+          "coverage": 0.6667,
+          "correct": 10,
+          "incorrect": 10,
+          "refused": 10,
+          "refused_rate": 0.3333
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.4455,
+          "coverage": 0.9167,
+          "correct": 49,
+          "incorrect": 61,
+          "refused": 10,
+          "refused_rate": 0.0833
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "luna": {
+        "calls": 120,
+        "in": 11852,
+        "out": 3206
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 11852,
+      "out": 3206
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:32.462699+00:00"
+}

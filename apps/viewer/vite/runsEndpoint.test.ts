@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { listRuns, resolveRunFile, createRunsHandler } from "./runsEndpoint";
+import { listRuns, resolveRunFile, createRunsHandler, collectGaps, negativeKind } from "./runsEndpoint";
 
 let tmp: string; // the runs root
 let outside: string; // a dir outside runs/, the target of symlink-escape attempts
@@ -120,6 +120,64 @@ describe("runsEndpoint listRuns", () => {
     expect(entry).toBeDefined();
     expect(entry!.generatedAt).toBeUndefined();
   });
+
+  it("rolls nested runs/<model>/base/**/summary.json into one panel run", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "panel-"));
+    try {
+      const cell = (correct: number, incorrect: number) => ({
+        n: correct + incorrect,
+        accuracy: correct / (correct + incorrect),
+        coverage: 1,
+        correct,
+        incorrect,
+        refused: 0,
+        refused_rate: 0,
+      });
+      const a = path.join(root, "haiku", "base", "christianity", "english", "population");
+      const b = path.join(root, "haiku", "base", "judaism", "english", "population");
+      fs.mkdirSync(a, { recursive: true });
+      fs.mkdirSync(b, { recursive: true });
+      fs.writeFileSync(
+        path.join(a, "summary.json"),
+        JSON.stringify({
+          models: { haiku: { retrieve_quote: cell(8, 2), _overall: cell(8, 2) } },
+          by_tradition: { haiku: { Christianity: { retrieve_quote: cell(8, 2), _overall: cell(8, 2) } } },
+          generated_at: "2026-11-02T19:00:00+00:00",
+          usage: { per_model: { haiku: { calls: 10, in: 100, out: 50 } }, total: { calls: 10, in: 100, out: 50 } },
+        }),
+      );
+      fs.writeFileSync(
+        path.join(b, "summary.json"),
+        JSON.stringify({
+          models: { haiku: { retrieve_quote: cell(1, 9), _overall: cell(1, 9) } },
+          by_tradition: { haiku: { Judaism: { retrieve_quote: cell(1, 9), _overall: cell(1, 9) } } },
+          generated_at: "2026-11-02T20:00:00+00:00",
+          usage: { per_model: { haiku: { calls: 10, in: 40, out: 10 } }, total: { calls: 10, in: 40, out: 10 } },
+        }),
+      );
+      fs.writeFileSync(path.join(a, "scores.jsonl"), '{"question_id":"q1"}\n');
+      const ids = listRuns(root).map((r) => r.id);
+      expect(ids).toContain("panel");
+      expect(ids).not.toContain("haiku");
+      const res = fakeRes();
+      createRunsHandler(root)({ url: "/panel/summary.json" }, res);
+      const body = JSON.parse(String(res.body)) as {
+        models: { haiku: { _overall: { n: number; correct: number; accuracy: number } } };
+        by_tradition: { haiku: Record<string, unknown> };
+        usage: { total: { calls: number } };
+        generated_at: string;
+      };
+      expect(body.models.haiku._overall).toMatchObject({ n: 20, correct: 9, accuracy: 0.45 });
+      expect(Object.keys(body.by_tradition.haiku).sort()).toEqual(["Christianity", "Judaism"]);
+      expect(body.usage.total.calls).toBe(20);
+      expect(body.generated_at).toBe("2026-11-02T20:00:00+00:00");
+      const scores = fakeRes();
+      createRunsHandler(root)({ url: "/panel/scores.jsonl" }, scores);
+      expect(String(scores.body)).toContain("q1");
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("runsEndpoint resolveRunFile confinement", () => {
@@ -142,6 +200,54 @@ describe("runsEndpoint resolveRunFile confinement", () => {
     if (!symlinked) return;
     // "inlink" points at run-a inside the root, yet is still rejected.
     expect(resolveRunFile(tmp, "inlink/summary.json")).toBeNull();
+  });
+});
+
+describe("negativeKind", () => {
+  it("splits an alphabet check from the two hard canon checks", () => {
+    expect(negativeKind("pa", "Sikhism", "Islam")).toBe("Different script");
+    expect(negativeKind("en", "Book of Mormon", "Encyclicals")).toBe("Book of Mormon shown an encyclical");
+    expect(negativeKind("he", "Judaism", "Christianity")).toBe("Talmud shown the Bible");
+  });
+});
+
+describe("collectGaps", () => {
+  it("lists unsaved questions on a file with no summary, and empty answers", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "gaps-"));
+    const qdir = fs.mkdtempSync(path.join(os.tmpdir(), "q-"));
+    try {
+      const run = path.join(root, "haiku", "base", "islam", "english", "population");
+      fs.mkdirSync(run, { recursive: true });
+      const questions = path.join(qdir, "items", "for-test", "islam", "english", "population", "questions.jsonl");
+      fs.mkdirSync(path.dirname(questions), { recursive: true });
+      fs.writeFileSync(
+        questions,
+        [
+          JSON.stringify({ id: "kept", task: "retrieve_quote", source: { tradition: ["Islam"], citation: "1:1" } }),
+          JSON.stringify({ id: "gone", task: "cite_passage", source: { tradition: ["Islam"], citation: "2:2" } }),
+        ].join("\n") + "\n",
+      );
+      fs.writeFileSync(
+        path.join(run, "answers.jsonl"),
+        JSON.stringify({ question_id: "kept", task: "retrieve_quote", answer: "text", question: { source: { tradition: ["Islam"], citation: "1:1" } } }) + "\n" +
+          JSON.stringify({ question_id: "blank", task: "verify_source", answer: "  ", question: { source: { tradition: ["Islam"], citation: "3:3" } } }) + "\n",
+      );
+      // questionsForSummary resolves ../items/for-test from the runs root. Point the
+      // fixture's sibling items tree at the questions we just wrote by using a runs
+      // root whose parent contains items/for-test. Rebuild under qdir.
+      const runs = path.join(qdir, "runs");
+      const dest = path.join(runs, "haiku", "base", "islam", "english", "population");
+      fs.mkdirSync(dest, { recursive: true });
+      fs.copyFileSync(path.join(run, "answers.jsonl"), path.join(dest, "answers.jsonl"));
+      const gaps = collectGaps(runs);
+      expect(gaps).toHaveLength(1);
+      expect(gaps[0]!.missing.map((m) => m.id)).toEqual(["gone"]);
+      expect(gaps[0]!.missing[0]!.citation).toBe("2:2");
+      expect(gaps[0]!.empty.map((m) => m.id)).toEqual(["blank"]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+      fs.rmSync(qdir, { recursive: true, force: true });
+    }
   });
 });
 

@@ -192,6 +192,12 @@ def main() -> None:
     )
     parser.add_argument("--test", action="store_true", help="only the first 3 passages of each tradition")
     parser.add_argument(
+        "--head",
+        type=int,
+        default=None,
+        help="only the first N questions of each selected file; the file digest stays the full set",
+    )
+    parser.add_argument(
         "--concurrency",
         type=int,
         default=None,
@@ -237,6 +243,7 @@ def main() -> None:
     py = PYTHON if PYTHON.exists() else Path(sys.executable)
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO / "pipelines")
+    unfinished: list[str] = []
     for questions in files:
         all_qs = load_questions(questions)
         if args.test:
@@ -247,7 +254,7 @@ def main() -> None:
                 print(f"skip {questions.relative_to(ROOT)} (none of the 3 passages are in this file)")
                 continue
         else:
-            todo = all_qs
+            todo = all_qs[: args.head] if args.head else all_qs
         dest = out_dir(args.model, questions)
         dest.mkdir(parents=True, exist_ok=True)
         answers = dest / "answers.jsonl"
@@ -282,7 +289,8 @@ def main() -> None:
         if failed:
             for msg in messages:
                 print(f"  {msg}", file=sys.stderr)
-            raise SystemExit(1)
+            unfinished.append(str(rel))
+            continue
         score = [
             str(py), "-m", "sacredbench", "score",
             str(answers),
@@ -292,6 +300,8 @@ def main() -> None:
         ]
         print(" ".join(score))
         subprocess.run(score, cwd=REPO, check=True, env=env)
+    if unfinished:
+        raise SystemExit(f"still pending: {', '.join(unfinished)}")
 
 
 if __name__ == "__main__":

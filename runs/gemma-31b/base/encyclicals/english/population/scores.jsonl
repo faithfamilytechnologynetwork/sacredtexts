@@ -1,0 +1,120 @@
+{"question_id": "871122e12941c2df", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "37e26b7dacad72dd", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1143, "token_f1_base": 0.1143, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "0bf84521c8930014", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1953, "token_f1_base": 0.1953, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "2c00f35afc83d16b", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "66d6025a821e2db3", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "4fa49a24c5ae3fda", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "a2465692731dc41c", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1455, "token_f1_base": 0.1455, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "882d0eeacb13d178", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1761, "token_f1_base": 0.1761, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5d9dbfbf7e319fe4", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "169148ab97af4ea6", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "11fbac1d6b2306b3", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3616, "token_f1_base": 0.3616, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "4f39ed56e3b042c5", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "0cf5ea5094c087d7", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0496, "token_f1_base": 0.0496, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "77880e8f510d8c60", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "05ec0e49965e7d78", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1793, "token_f1_base": 0.1793, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d2dc071cb27160ad", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1045, "token_f1_base": 0.1045, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "52a2a53b5683368b", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "9782f498a5aeba60", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "16ddb71119a05ffe", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0354, "token_f1_base": 0.0354, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6a705ce23cc62c92", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0857, "token_f1_base": 0.0857, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "1e1c2f61ef8c63e4", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1699, "token_f1_base": 0.1699, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "8abc4fe8c5977c20", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1723, "token_f1_base": 0.1723, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "f5111f3525ff4af3", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "ae9ab511ce2d095c", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "90c8f3cb41294fd7", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "0c97bf0a3d6d5f52", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0513, "token_f1_base": 0.0513, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "46f7baa24ce0bc35", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "e9dfdee8ee250426", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "1f8ccaa103194a1b", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "db76388defa8451b", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0741, "token_f1_base": 0.0741, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "937191ca1c2a61ea", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.4121, "token_f1_base": 0.4121, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "3593b931b41d136b", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2649, "token_f1_base": 0.2649, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "af776a7a807f44e7", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "0f01388c793b6dfb", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2752, "token_f1_base": 0.2752, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "c839db9502c50e51", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "5faa8778cfa32c58", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "524d9c24a9f5c0b9", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1277, "token_f1_base": 0.1277, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "4fbaf3b9d5077589", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "c8c00ccbe33f7e84", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0822, "token_f1_base": 0.0822, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "7639b4bc87eac3c6", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "5ad8e9f6735fcf54", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "769a14cc565e486a", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1376, "token_f1_base": 0.1376, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "e7bb06c458b228e4", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2297, "token_f1_base": 0.2297, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "a274aa0ad5733868", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "01cd069e655a7a07", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "582b7482a5b049d3", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "8719945c4328ccef", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.25, "token_f1_base": 0.25, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "cd8ec4a043669835", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "b2556174ec7cb235", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "59bbda678e860729", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1489, "token_f1_base": 0.1489, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "85c4d80a5460051d", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0526, "token_f1_base": 0.0526, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "3154137c71f9cc04", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "8ec4b754e088826e", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "a6199390e8b1f8c8", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3459, "token_f1_base": 0.3459, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "20ffed4df1bc9cd6", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0952, "token_f1_base": 0.0952, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "303e8afff1b92290", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "a31715e384d92e96", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "6862a1b581c48d66", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1026, "token_f1_base": 0.1026, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "cca4cb6c174684b4", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1616, "token_f1_base": 0.1616, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "2ff1c9b261b92de2", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "ee7d73763dea55cf", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "8aabb70825f36b5c", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "c5da9501bf946b6c", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3053, "token_f1_base": 0.3053, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "a63222762e339bbb", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.069, "token_f1_base": 0.069, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d2b6c64a934d754e", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "28875259cdbc8e68", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "cd02d779a219e060", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "1614b31fd28f7ddc", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2051, "token_f1_base": 0.2051, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "cb1c43b77c98e300", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3121, "token_f1_base": 0.3121, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "fbe2effb29f7f3a6", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "43c5e1978a74ccda", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5447577f8e2e3e59", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2597, "token_f1_base": 0.2597, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "0478576f04e54aec", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.129, "token_f1_base": 0.129, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "c3552f43ff109dcf", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "319158c57a84c40e", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "0c344c2ada70fc35", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3195, "token_f1_base": 0.3195, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "9d82745d6dee69e0", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "1b5f249b68a51a24", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0755, "token_f1_base": 0.0755, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "bde54c4172eef431", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.069, "token_f1_base": 0.069, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "be7c6768a9d989f7", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "cc1e5596312626cd", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2675, "token_f1_base": 0.2675, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "087f1b1612779b3c", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2553, "token_f1_base": 0.2553, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "18f788e8b109053f", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "943b26fc99ae13a1", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0455, "token_f1_base": 0.0455, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "076ec58ac5648ffd", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "7a69a16a664046ed", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "20e843da3a42a8f7", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "fd6a370f31e1b086", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2456, "token_f1_base": 0.2456, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "397fcdaf6105d1b8", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0253, "token_f1_base": 0.0253, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "7218a94e406a2d0b", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "b8d903751d9e9034", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2807, "token_f1_base": 0.2807, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "e43d7202d8996fe5", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "4ca50bd1c230c2a1", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "f782904a7ac98d1a", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "7521a1c906cc885d", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2745, "token_f1_base": 0.2745, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6a7e206e3c05acac", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0244, "token_f1_base": 0.0244, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "002e1e918a5e168d", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "60cbb668729b3f08", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "bb0fe2ec68536ebd", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0821, "token_f1_base": 0.0821, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "fcf2e65b3423595d", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0734, "token_f1_base": 0.0734, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d9291caab07a07a0", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "7ee08eba9128305c", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "5a15eef721a4b8c4", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.208, "token_f1_base": 0.208, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "39a6f52ccb9faa02", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "de0cf1ad98f188b8", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.175, "token_f1_base": 0.175, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "64a4491dd0d5944a", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1452, "token_f1_base": 0.1452, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "66c918b323f998c2", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "726d63a15bab6001", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3529, "token_f1_base": 0.3529, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "995dd6542c06015c", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "93764f94b59ea81e", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "08e2f27ab5af3049", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "c57c144d7d91533e", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1078, "token_f1_base": 0.1078, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "768b8adbf9330a11", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6449e665461338c5", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
+{"question_id": "66a7b19fadff0d83", "model_id": "gemma-31b", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0612, "token_f1_base": 0.0612, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "13e51c8222b3df6f", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2725, "token_f1_base": 0.2725, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "310ed06b237002f2", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1481, "token_f1_base": 0.1481, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "1effd3111fb1f12c", "model_id": "gemma-31b", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "0971f752bc7ca986", "model_id": "gemma-31b", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
+{"question_id": "18989472df159cce", "model_id": "gemma-31b", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0085, "token_f1_base": 0.0085, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}

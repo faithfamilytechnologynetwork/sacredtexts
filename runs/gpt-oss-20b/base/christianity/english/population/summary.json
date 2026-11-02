@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gpt-oss-20b": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.0333,
+        "coverage": 1.0,
+        "correct": 1,
+        "incorrect": 29,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.0455,
+        "coverage": 0.7333,
+        "correct": 1,
+        "incorrect": 21,
+        "refused": 8,
+        "refused_rate": 0.2667,
+        "exact": 0.0,
+        "normalized": 0.0455,
+        "token_f1": 0.2881,
+        "token_f1_base": 0.2881,
+        "contains_reference": 0.0455
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.0,
+        "coverage": 0.7333,
+        "correct": 0,
+        "incorrect": 22,
+        "refused": 8,
+        "refused_rate": 0.2667,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2735,
+        "token_f1_base": 0.2735,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.6667,
+        "coverage": 1.0,
+        "correct": 20,
+        "incorrect": 10,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.2115,
+        "coverage": 0.8667,
+        "correct": 22,
+        "incorrect": 82,
+        "refused": 16,
+        "refused_rate": 0.1333
+      }
+    }
+  },
+  "by_tradition": {
+    "gpt-oss-20b": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.0333,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 29,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0455,
+          "coverage": 0.7333,
+          "correct": 1,
+          "incorrect": 21,
+          "refused": 8,
+          "refused_rate": 0.2667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.7333,
+          "correct": 0,
+          "incorrect": 22,
+          "refused": 8,
+          "refused_rate": 0.2667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 10,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.2115,
+          "coverage": 0.8667,
+          "correct": 22,
+          "incorrect": 82,
+          "refused": 16,
+          "refused_rate": 0.1333
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gpt-oss-20b": {
+      "The Bible\u0000NRSV\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.0333,
+          "coverage": 1.0,
+          "correct": 1,
+          "incorrect": 29,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.0455,
+          "coverage": 0.7333,
+          "correct": 1,
+          "incorrect": 21,
+          "refused": 8,
+          "refused_rate": 0.2667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.0,
+          "coverage": 0.7333,
+          "correct": 0,
+          "incorrect": 22,
+          "refused": 8,
+          "refused_rate": 0.2667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 1.0,
+          "correct": 20,
+          "incorrect": 10,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.2115,
+          "coverage": 0.8667,
+          "correct": 22,
+          "incorrect": 82,
+          "refused": 16,
+          "refused_rate": 0.1333
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gpt-oss-20b": {
+        "calls": 120,
+        "in": 14077,
+        "out": 71170
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 14077,
+      "out": 71170
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:35.442731+00:00"
+}

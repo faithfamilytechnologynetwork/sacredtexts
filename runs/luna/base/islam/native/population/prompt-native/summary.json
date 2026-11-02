@@ -1,0 +1,182 @@
+{
+  "models": {
+    "luna": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.8667,
+        "coverage": 1.0,
+        "correct": 26,
+        "incorrect": 4,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.4667,
+        "normalized": 0.7333,
+        "token_f1": 0.9463,
+        "token_f1_base": 0.9463,
+        "contains_reference": 0.8667
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.4333,
+        "coverage": 1.0,
+        "correct": 13,
+        "incorrect": 17,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0667,
+        "normalized": 0.3,
+        "token_f1": 0.4465,
+        "token_f1_base": 0.4465,
+        "contains_reference": 0.4333
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.8,
+        "coverage": 1.0,
+        "correct": 24,
+        "incorrect": 6,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.775,
+        "coverage": 1.0,
+        "correct": 93,
+        "incorrect": 27,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "luna": {
+      "Islam": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4333,
+          "coverage": 1.0,
+          "correct": 13,
+          "incorrect": 17,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8,
+          "coverage": 1.0,
+          "correct": 24,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.775,
+          "coverage": 1.0,
+          "correct": 93,
+          "incorrect": 27,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "luna": {
+      "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4333,
+          "coverage": 1.0,
+          "correct": 13,
+          "incorrect": 17,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8,
+          "coverage": 1.0,
+          "correct": 24,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.775,
+          "coverage": 1.0,
+          "correct": 93,
+          "incorrect": 27,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "luna": {
+        "calls": 120,
+        "in": 17092,
+        "out": 7184
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 17092,
+      "out": 7184
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:32.006254+00:00"
+}

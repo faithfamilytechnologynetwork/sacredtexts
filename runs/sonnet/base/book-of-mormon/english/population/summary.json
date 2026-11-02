@@ -1,0 +1,182 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 18,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.3793,
+    "coverage": 0.9667,
+    "correct": 11,
+    "incorrect": 18,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.0345,
+    "normalized": 0.0345,
+    "token_f1": 0.1909,
+    "token_f1_base": 0.1909,
+    "contains_reference": 0.3793
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.4286,
+    "coverage": 0.4667,
+    "correct": 6,
+    "incorrect": 8,
+    "refused": 16,
+    "refused_rate": 0.5333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2965,
+    "token_f1_base": 0.2965,
+    "contains_reference": 0.4286
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 0.3,
+    "correct": 6,
+    "incorrect": 3,
+    "refused": 21,
+    "refused_rate": 0.7
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.4268,
+    "coverage": 0.6833,
+    "correct": 35,
+    "incorrect": 47,
+    "refused": 38,
+    "refused_rate": 0.3167
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.3793,
+     "coverage": 0.9667,
+     "correct": 11,
+     "incorrect": 18,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4286,
+     "coverage": 0.4667,
+     "correct": 6,
+     "incorrect": 8,
+     "refused": 16,
+     "refused_rate": 0.5333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 0.3,
+     "correct": 6,
+     "incorrect": 3,
+     "refused": 21,
+     "refused_rate": 0.7
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4268,
+     "coverage": 0.6833,
+     "correct": 35,
+     "incorrect": 47,
+     "refused": 38,
+     "refused_rate": 0.3167
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.3793,
+     "coverage": 0.9667,
+     "correct": 11,
+     "incorrect": 18,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4286,
+     "coverage": 0.4667,
+     "correct": 6,
+     "incorrect": 8,
+     "refused": 16,
+     "refused_rate": 0.5333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 0.3,
+     "correct": 6,
+     "incorrect": 3,
+     "refused": 21,
+     "refused_rate": 0.7
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4268,
+     "coverage": 0.6833,
+     "correct": 35,
+     "incorrect": 47,
+     "refused": 38,
+     "refused_rate": 0.3167
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 11331,
+    "out": 35736
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 11331,
+   "out": 35736
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:46:40.078641+00:00"
+}

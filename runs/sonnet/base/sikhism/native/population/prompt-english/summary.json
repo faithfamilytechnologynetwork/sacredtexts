@@ -1,0 +1,255 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.5667,
+    "correct": 0,
+    "incorrect": 17,
+    "refused": 13,
+    "refused_rate": 0.4333
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.4667,
+    "correct": 0,
+    "incorrect": 14,
+    "refused": 16,
+    "refused_rate": 0.5333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0151,
+    "token_f1_base": 0.0258,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.0667,
+    "correct": 0,
+    "incorrect": 2,
+    "refused": 28,
+    "refused_rate": 0.9333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0,
+    "token_f1_base": 0.0,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.75,
+    "coverage": 0.4,
+    "correct": 9,
+    "incorrect": 3,
+    "refused": 18,
+    "refused_rate": 0.6
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2,
+    "coverage": 0.375,
+    "correct": 9,
+    "incorrect": 36,
+    "refused": 75,
+    "refused_rate": 0.625
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.5667,
+     "correct": 0,
+     "incorrect": 17,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.4667,
+     "correct": 0,
+     "incorrect": 14,
+     "refused": 16,
+     "refused_rate": 0.5333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0667,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.75,
+     "coverage": 0.4,
+     "correct": 9,
+     "incorrect": 3,
+     "refused": 18,
+     "refused_rate": 0.6
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2,
+     "coverage": 0.375,
+     "correct": 9,
+     "incorrect": 36,
+     "refused": 75,
+     "refused_rate": 0.625
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.5667,
+     "correct": 0,
+     "incorrect": 17,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.4667,
+     "correct": 0,
+     "incorrect": 14,
+     "refused": 16,
+     "refused_rate": 0.5333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0667,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.75,
+     "coverage": 0.4,
+     "correct": 9,
+     "incorrect": 3,
+     "refused": 18,
+     "refused_rate": 0.6
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2,
+     "coverage": 0.375,
+     "correct": 9,
+     "incorrect": 36,
+     "refused": 75,
+     "refused_rate": 0.625
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.5667,
+     "correct": 0,
+     "incorrect": 17,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.4667,
+     "correct": 0,
+     "incorrect": 14,
+     "refused": 16,
+     "refused_rate": 0.5333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0667,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.75,
+     "coverage": 0.4,
+     "correct": 9,
+     "incorrect": 3,
+     "refused": 18,
+     "refused_rate": 0.6
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2,
+     "coverage": 0.375,
+     "correct": 9,
+     "incorrect": 36,
+     "refused": 75,
+     "refused_rate": 0.625
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.6,
+    "correct": 9,
+    "incorrect": 0,
+    "refused": 6,
+    "refused_rate": 0.4
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.0,
+    "coverage": 0.2,
+    "correct": 0,
+    "incorrect": 3,
+    "refused": 12,
+    "refused_rate": 0.8
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 22381,
+    "out": 38190
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 22381,
+   "out": 38190
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:53.645436+00:00"
+}

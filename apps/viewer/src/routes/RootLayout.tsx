@@ -18,6 +18,9 @@ export function RootLayout() {
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             {/* The brand (left) is the leaderboard home; this links to the cross-run view. */}
+            <Link to="/gaps" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
+              Gaps
+            </Link>
             <Link to="/standings" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
               Standings
             </Link>

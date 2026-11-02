@@ -1,0 +1,255 @@
+{
+ "models": {
+  "qwen3-32b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.4667,
+    "coverage": 1.0,
+    "correct": 14,
+    "incorrect": 16,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1581,
+    "token_f1_base": 0.1581,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0569,
+    "token_f1_base": 0.0569,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.7143,
+    "coverage": 0.7,
+    "correct": 15,
+    "incorrect": 6,
+    "refused": 9,
+    "refused_rate": 0.3
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2613,
+    "coverage": 0.925,
+    "correct": 29,
+    "incorrect": 82,
+    "refused": 9,
+    "refused_rate": 0.075
+   }
+  }
+ },
+ "by_tradition": {
+  "qwen3-32b": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4667,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 16,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7143,
+     "coverage": 0.7,
+     "correct": 15,
+     "incorrect": 6,
+     "refused": 9,
+     "refused_rate": 0.3
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2613,
+     "coverage": 0.925,
+     "correct": 29,
+     "incorrect": 82,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "by_text": {
+  "qwen3-32b": {
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4667,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 16,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7143,
+     "coverage": 0.7,
+     "correct": 15,
+     "incorrect": 6,
+     "refused": 9,
+     "refused_rate": 0.3
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2613,
+     "coverage": 0.925,
+     "correct": 29,
+     "incorrect": 82,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "qwen3-32b": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4667,
+     "coverage": 1.0,
+     "correct": 14,
+     "incorrect": 16,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7143,
+     "coverage": 0.7,
+     "correct": 15,
+     "incorrect": 6,
+     "refused": 9,
+     "refused_rate": 0.3
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2613,
+     "coverage": 0.925,
+     "correct": 29,
+     "incorrect": 82,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "verify": {
+  "qwen3-32b": {
+   "no": {
+    "n": 15,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 11,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.6667,
+    "coverage": 0.4,
+    "correct": 4,
+    "incorrect": 2,
+    "refused": 9,
+    "refused_rate": 0.6
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "qwen3-32b": {
+    "calls": 120,
+    "in": 23218,
+    "out": 66870
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 23218,
+   "out": 66870
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:24:04.916349+00:00"
+}

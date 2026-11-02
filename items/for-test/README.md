@@ -4,7 +4,7 @@ This folder is the test set for the six traditions. The population sample is 30 
 
 | Tradition | Native text | English prompt | Native prompt | English text | Missing |
 |---|---|---|---|---|---|
-| Christianity | Yes | Yes | Yes | Yes | Nothing on the main 30. Supplemental, not in the run: English only, 15 Book of Mormon verses and 15 papal encyclical paragraphs |
+| Christianity | Yes | Yes | Yes | Yes | The Book of Mormon and the encyclicals are their own categories, 30 English passages each, not part of this row |
 | Judaism | Yes | Yes | Yes | Yes | — |
 | Islam | Yes | Yes | Yes | Yes | — |
 | Sikhism | Yes | Yes | Yes | No | English text |

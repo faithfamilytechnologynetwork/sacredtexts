@@ -1,0 +1,255 @@
+{
+ "models": {
+  "astra": {
+   "cite_passage": {
+    "n": 37,
+    "accuracy": 0.027,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 36,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 37,
+    "accuracy": 0.7027,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 11,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.7027,
+    "token_f1": 0.8776,
+    "token_f1_base": 0.8776,
+    "contains_reference": 0.7027
+   },
+   "retrieve_quote": {
+    "n": 37,
+    "accuracy": 0.0,
+    "coverage": 0.8919,
+    "correct": 0,
+    "incorrect": 33,
+    "refused": 4,
+    "refused_rate": 0.1081,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0026,
+    "token_f1_base": 0.0098,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 37,
+    "accuracy": 0.4595,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 20,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 148,
+    "accuracy": 0.3056,
+    "coverage": 0.973,
+    "correct": 44,
+    "incorrect": 100,
+    "refused": 4,
+    "refused_rate": 0.027
+   }
+  }
+ },
+ "by_tradition": {
+  "astra": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 37,
+     "accuracy": 0.027,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 36,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 37,
+     "accuracy": 0.7027,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 11,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 37,
+     "accuracy": 0.0,
+     "coverage": 0.8919,
+     "correct": 0,
+     "incorrect": 33,
+     "refused": 4,
+     "refused_rate": 0.1081
+    },
+    "verify_source": {
+     "n": 37,
+     "accuracy": 0.4595,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 20,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 148,
+     "accuracy": 0.3056,
+     "coverage": 0.973,
+     "correct": 44,
+     "incorrect": 100,
+     "refused": 4,
+     "refused_rate": 0.027
+    }
+   }
+  }
+ },
+ "by_text": {
+  "astra": {
+   "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+    "cite_passage": {
+     "n": 37,
+     "accuracy": 0.027,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 36,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 37,
+     "accuracy": 0.7027,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 11,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 37,
+     "accuracy": 0.0,
+     "coverage": 0.8919,
+     "correct": 0,
+     "incorrect": 33,
+     "refused": 4,
+     "refused_rate": 0.1081
+    },
+    "verify_source": {
+     "n": 37,
+     "accuracy": 0.4595,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 20,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 148,
+     "accuracy": 0.3056,
+     "coverage": 0.973,
+     "correct": 44,
+     "incorrect": 100,
+     "refused": 4,
+     "refused_rate": 0.027
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "astra": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 37,
+     "accuracy": 0.027,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 36,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 37,
+     "accuracy": 0.7027,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 11,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 37,
+     "accuracy": 0.0,
+     "coverage": 0.8919,
+     "correct": 0,
+     "incorrect": 33,
+     "refused": 4,
+     "refused_rate": 0.1081
+    },
+    "verify_source": {
+     "n": 37,
+     "accuracy": 0.4595,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 20,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 148,
+     "accuracy": 0.3056,
+     "coverage": 0.973,
+     "correct": 44,
+     "incorrect": 100,
+     "refused": 4,
+     "refused_rate": 0.027
+    }
+   }
+  }
+ },
+ "verify": {
+  "astra": {
+   "no": {
+    "n": 17,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 20,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 20,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "astra": {
+    "calls": 148,
+    "in": 13066,
+    "out": 16045
+   }
+  },
+  "total": {
+   "calls": 148,
+   "in": 13066,
+   "out": 16045
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:24:34.065641+00:00"
+}

@@ -18,13 +18,50 @@ OpenRouter, …) via ``base_url`` + ``api_key_env``.
 
 from __future__ import annotations
 
+import json
 import os
 import time
+from pathlib import Path
 from typing import Any
 
 from sacredbench.config import ModelSpec
 
 _BACKOFF_BASE_SECONDS = 2.0
+# Lowest first. A mandatory model gets the cheapest effort it actually lists.
+_EFFORT_ORDER = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
+# Filled when a host rejects effort "none", so the rest of the process uses the fallback.
+_REASONING_EFFORT: dict[str, str] = {}
+
+
+def _lowest_effort(efforts: list[str], *, allow_none: bool) -> str | None:
+    rank = {name: i for i, name in enumerate(_EFFORT_ORDER)}
+    known = [name for name in efforts if name in rank and (allow_none or name != "none")]
+    return min(known, key=rank.__getitem__) if known else None
+
+
+def _reasoning_effort(model: ModelSpec) -> str | None:
+    """Effort to send, or None when this host is not OpenRouter-style.
+
+    ``none`` when the catalogue allows it. Otherwise the lowest listed effort.
+    Every current mandatory model lists ``low`` as that floor.
+    """
+    if not model.base_url:
+        return None
+    if model.id in _REASONING_EFFORT:
+        return _REASONING_EFFORT[model.id]
+    card = Path(__file__).resolve().parents[2] / "runs" / model.id / "model.json"
+    reasoning: dict = {}
+    if card.is_file():
+        try:
+            reasoning = json.loads(card.read_text(encoding="utf-8")).get("catalogue", {}).get("reasoning") or {}
+        except (OSError, json.JSONDecodeError):
+            reasoning = {}
+    efforts = list(reasoning.get("supported_efforts") or [])
+    if reasoning.get("mandatory") is True:
+        return _lowest_effort(efforts, allow_none=False) or "low"
+    if not efforts or "none" in efforts:
+        return "none"
+    return _lowest_effort(efforts, allow_none=False)
 REQUEST_TIMEOUT_SECONDS = 300.0
 
 # Anthropic server-side web-search tool, pinned to one param version (the SDK exposes
@@ -205,13 +242,33 @@ def _openai(model: ModelSpec, prompt: str) -> tuple[str, dict]:
     # OpenAI proper only accepts `max_completion_tokens`; OpenAI-compatible hosts
     # (base_url set: OpenRouter etc.) still take legacy `max_tokens`.
     tok_kwarg = "max_tokens" if model.base_url else "max_completion_tokens"
-    resp = client.chat.completions.create(
-        model=model.model,
-        messages=[{"role": "user", "content": prompt}],
-        **{tok_kwarg: model.max_tokens},
-        **sampling_kwargs(model),
-    )
-    text = resp.choices[0].message.content or ""
+    effort = _reasoning_effort(model)
+    host_kwargs = {"extra_body": {"reasoning": {"effort": effort}}} if effort else {}
+    try:
+        resp = client.chat.completions.create(
+            model=model.model,
+            messages=[{"role": "user", "content": prompt}],
+            **{tok_kwarg: model.max_tokens},
+            **sampling_kwargs(model),
+            **host_kwargs,
+        )
+    except Exception as e:
+        if effort == "none" and "reasoning is mandatory" in str(e).lower():
+            _REASONING_EFFORT[model.id] = "low"
+            resp = client.chat.completions.create(
+                model=model.model,
+                messages=[{"role": "user", "content": prompt}],
+                **{tok_kwarg: model.max_tokens},
+                **sampling_kwargs(model),
+                extra_body={"reasoning": {"effort": "low"}},
+            )
+        else:
+            raise
+    choices = getattr(resp, "choices", None) or []
+    message = getattr(choices[0], "message", None) if choices else None
+    if message is None:
+        raise RuntimeError(f"{model.id}: completion had no choices")
+    text = message.content or ""
     usage = _openai_usage(resp)
     # OpenRouter reports the actual serving host; record it for provenance.
     provider = getattr(resp, "provider", None)
@@ -302,7 +359,10 @@ def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tup
         messages=[{"role": "user", "content": prompt}],
         tools=[_openrouter_search_tool(model.model)],
         max_tokens=model.max_tokens,
-        extra_body={"usage": {"include": True}},  # ask the host to return cost + server_tool_use
+        extra_body={
+            "usage": {"include": True},
+            **({"reasoning": {"effort": _reasoning_effort(model)}} if _reasoning_effort(model) else {}),
+        },
         **sampling_kwargs(model),
     )
     choice = resp.choices[0]

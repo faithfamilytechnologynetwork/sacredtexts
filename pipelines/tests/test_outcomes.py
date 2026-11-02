@@ -50,6 +50,31 @@ def test_decline_prefixed_but_delivers_is_not_refused():
     assert classify_refusal(ans, "retrieve_quote", EXP) is False
 
 
+def test_preamble_then_decline_is_a_refusal():
+    # the cue is past the 60-character window, but the opening sentence never delivers an answer
+    ans = ("This verse is from the Jataka commentary and from a related collection of stories, "
+           "but I cannot reliably pinpoint its exact location, and I don't want to give a "
+           "fabricated citation.")
+    assert leading_decline(ans) is False
+    assert classify_refusal(ans, "cite_passage", {"citation": "1:1"}) is True
+    assert classify_refusal(
+        "I'm not going to reproduce this copyrighted edition.",
+        "complete_unit", EXP,
+    ) is True
+    assert classify_refusal(
+        "I am unable to complete the quote with the exact text.",
+        "complete_unit", EXP,
+    ) is True
+    assert classify_refusal(
+        "I do not have the specific text of that edition available.",
+        "retrieve_quote", EXP,
+    ) is True
+    assert classify_refusal(
+        "क्षमा करें, लेकिन मेरे पास उस संस्करण का पाठ नहीं है।",
+        "retrieve_quote", EXP,
+    ) is True
+
+
 def test_deliver_then_caveat_is_not_refused():
     # the cue TRAILS the delivered verse (past the leading window) -> an answer with a disclaimer,
     # not a refusal. Mirrors the real tutorial cell fb0ce4da6218 (verse, then "(couldn't retrieve)").

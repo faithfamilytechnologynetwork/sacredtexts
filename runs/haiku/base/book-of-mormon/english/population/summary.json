@@ -1,0 +1,182 @@
+{
+ "models": {
+  "haiku": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.16,
+    "coverage": 0.8333,
+    "correct": 4,
+    "incorrect": 21,
+    "refused": 5,
+    "refused_rate": 0.1667
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0667,
+    "coverage": 0.5,
+    "correct": 1,
+    "incorrect": 14,
+    "refused": 15,
+    "refused_rate": 0.5,
+    "exact": 0.0,
+    "normalized": 0.0667,
+    "token_f1": 0.2498,
+    "token_f1_base": 0.2498,
+    "contains_reference": 0.0667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 0.0667,
+    "correct": 1,
+    "incorrect": 1,
+    "refused": 28,
+    "refused_rate": 0.9333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2429,
+    "token_f1_base": 0.2429,
+    "contains_reference": 0.5
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 0.1667,
+    "correct": 5,
+    "incorrect": 0,
+    "refused": 25,
+    "refused_rate": 0.8333
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.234,
+    "coverage": 0.3917,
+    "correct": 11,
+    "incorrect": 36,
+    "refused": 73,
+    "refused_rate": 0.6083
+   }
+  }
+ },
+ "by_tradition": {
+  "haiku": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.16,
+     "coverage": 0.8333,
+     "correct": 4,
+     "incorrect": 21,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0667,
+     "coverage": 0.5,
+     "correct": 1,
+     "incorrect": 14,
+     "refused": 15,
+     "refused_rate": 0.5
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.0667,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.1667,
+     "correct": 5,
+     "incorrect": 0,
+     "refused": 25,
+     "refused_rate": 0.8333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.234,
+     "coverage": 0.3917,
+     "correct": 11,
+     "incorrect": 36,
+     "refused": 73,
+     "refused_rate": 0.6083
+    }
+   }
+  }
+ },
+ "by_text": {
+  "haiku": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.16,
+     "coverage": 0.8333,
+     "correct": 4,
+     "incorrect": 21,
+     "refused": 5,
+     "refused_rate": 0.1667
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0667,
+     "coverage": 0.5,
+     "correct": 1,
+     "incorrect": 14,
+     "refused": 15,
+     "refused_rate": 0.5
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.0667,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.1667,
+     "correct": 5,
+     "incorrect": 0,
+     "refused": 25,
+     "refused_rate": 0.8333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.234,
+     "coverage": 0.3917,
+     "correct": 11,
+     "incorrect": 36,
+     "refused": 73,
+     "refused_rate": 0.6083
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "haiku": {
+    "calls": 120,
+    "in": 11091,
+    "out": 15926
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 11091,
+   "out": 15926
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:44:30.150206+00:00"
+}

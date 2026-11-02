@@ -1,0 +1,255 @@
+{
+ "models": {
+  "opus": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9,
+    "correct": 0,
+    "incorrect": 27,
+    "refused": 3,
+    "refused_rate": 0.1
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.2069,
+    "coverage": 0.9667,
+    "correct": 6,
+    "incorrect": 23,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.0,
+    "normalized": 0.1724,
+    "token_f1": 0.4752,
+    "token_f1_base": 0.5015,
+    "contains_reference": 0.2069
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9,
+    "correct": 0,
+    "incorrect": 27,
+    "refused": 3,
+    "refused_rate": 0.1,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0063,
+    "token_f1_base": 0.0449,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2832,
+    "coverage": 0.9417,
+    "correct": 32,
+    "incorrect": 81,
+    "refused": 7,
+    "refused_rate": 0.0583
+   }
+  }
+ },
+ "by_tradition": {
+  "opus": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 6,
+     "incorrect": 23,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2832,
+     "coverage": 0.9417,
+     "correct": 32,
+     "incorrect": 81,
+     "refused": 7,
+     "refused_rate": 0.0583
+    }
+   }
+  }
+ },
+ "by_text": {
+  "opus": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 6,
+     "incorrect": 23,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2832,
+     "coverage": 0.9417,
+     "correct": 32,
+     "incorrect": 81,
+     "refused": 7,
+     "refused_rate": 0.0583
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "opus": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 6,
+     "incorrect": 23,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9,
+     "correct": 0,
+     "incorrect": 27,
+     "refused": 3,
+     "refused_rate": 0.1
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2832,
+     "coverage": 0.9417,
+     "correct": 32,
+     "incorrect": 81,
+     "refused": 7,
+     "refused_rate": 0.0583
+    }
+   }
+  }
+ },
+ "verify": {
+  "opus": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 11,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "opus": {
+    "calls": 120,
+    "in": 22381,
+    "out": 94513
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 22381,
+   "out": 94513
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:49.051261+00:00"
+}

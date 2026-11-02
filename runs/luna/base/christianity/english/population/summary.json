@@ -1,0 +1,182 @@
+{
+  "models": {
+    "luna": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.9333,
+        "coverage": 1.0,
+        "correct": 28,
+        "incorrect": 2,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.5,
+        "coverage": 0.9333,
+        "correct": 14,
+        "incorrect": 14,
+        "refused": 2,
+        "refused_rate": 0.0667,
+        "exact": 0.25,
+        "normalized": 0.4286,
+        "token_f1": 0.7437,
+        "token_f1_base": 0.7437,
+        "contains_reference": 0.5
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.3,
+        "coverage": 0.3333,
+        "correct": 3,
+        "incorrect": 7,
+        "refused": 20,
+        "refused_rate": 0.6667,
+        "exact": 0.0,
+        "normalized": 0.3,
+        "token_f1": 0.8231,
+        "token_f1_base": 0.8231,
+        "contains_reference": 0.3
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.8,
+        "coverage": 1.0,
+        "correct": 24,
+        "incorrect": 6,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7041,
+        "coverage": 0.8167,
+        "correct": 69,
+        "incorrect": 29,
+        "refused": 22,
+        "refused_rate": 0.1833
+      }
+    }
+  },
+  "by_tradition": {
+    "luna": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9333,
+          "coverage": 1.0,
+          "correct": 28,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5,
+          "coverage": 0.9333,
+          "correct": 14,
+          "incorrect": 14,
+          "refused": 2,
+          "refused_rate": 0.0667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.3,
+          "coverage": 0.3333,
+          "correct": 3,
+          "incorrect": 7,
+          "refused": 20,
+          "refused_rate": 0.6667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8,
+          "coverage": 1.0,
+          "correct": 24,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7041,
+          "coverage": 0.8167,
+          "correct": 69,
+          "incorrect": 29,
+          "refused": 22,
+          "refused_rate": 0.1833
+        }
+      }
+    }
+  },
+  "by_text": {
+    "luna": {
+      "The Bible\u0000NRSV\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9333,
+          "coverage": 1.0,
+          "correct": 28,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.5,
+          "coverage": 0.9333,
+          "correct": 14,
+          "incorrect": 14,
+          "refused": 2,
+          "refused_rate": 0.0667
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.3,
+          "coverage": 0.3333,
+          "correct": 3,
+          "incorrect": 7,
+          "refused": 20,
+          "refused_rate": 0.6667
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8,
+          "coverage": 1.0,
+          "correct": 24,
+          "incorrect": 6,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7041,
+          "coverage": 0.8167,
+          "correct": 69,
+          "incorrect": 29,
+          "refused": 22,
+          "refused_rate": 0.1833
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "luna": {
+        "calls": 120,
+        "in": 6891,
+        "out": 2245
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 6891,
+      "out": 2245
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:32.717934+00:00"
+}

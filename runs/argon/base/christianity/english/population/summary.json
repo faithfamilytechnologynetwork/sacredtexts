@@ -1,0 +1,182 @@
+{
+  "models": {
+    "argon": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.7667,
+        "coverage": 1.0,
+        "correct": 23,
+        "incorrect": 7,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.4667,
+        "normalized": 0.7,
+        "token_f1": 0.9394,
+        "token_f1_base": 0.9394,
+        "contains_reference": 0.7667
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.7667,
+        "coverage": 1.0,
+        "correct": 23,
+        "incorrect": 7,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.5,
+        "normalized": 0.7333,
+        "token_f1": 0.9746,
+        "token_f1_base": 0.9746,
+        "contains_reference": 0.7667
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.8833,
+        "coverage": 1.0,
+        "correct": 106,
+        "incorrect": 14,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "argon": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7667,
+          "coverage": 1.0,
+          "correct": 23,
+          "incorrect": 7,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.7667,
+          "coverage": 1.0,
+          "correct": 23,
+          "incorrect": 7,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.8833,
+          "coverage": 1.0,
+          "correct": 106,
+          "incorrect": 14,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "argon": {
+      "The Bible\u0000NRSV\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7667,
+          "coverage": 1.0,
+          "correct": 23,
+          "incorrect": 7,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.7667,
+          "coverage": 1.0,
+          "correct": 23,
+          "incorrect": 7,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.8833,
+          "coverage": 1.0,
+          "correct": 106,
+          "incorrect": 14,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "argon": {
+        "calls": 120,
+        "in": 9802,
+        "out": 2353
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 9802,
+      "out": 2353
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:48.078410+00:00"
+}

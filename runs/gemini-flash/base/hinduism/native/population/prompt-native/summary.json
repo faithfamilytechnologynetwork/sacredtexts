@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gemini-flash": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 30,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.7,
+        "coverage": 1.0,
+        "correct": 21,
+        "incorrect": 9,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.4333,
+        "token_f1": 0.6618,
+        "token_f1_base": 0.6618,
+        "contains_reference": 0.7
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.4,
+        "coverage": 1.0,
+        "correct": 12,
+        "incorrect": 18,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.2142,
+        "token_f1_base": 0.2179,
+        "contains_reference": 0.4
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.7333,
+        "coverage": 1.0,
+        "correct": 22,
+        "incorrect": 8,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7083,
+        "coverage": 1.0,
+        "correct": 85,
+        "incorrect": 35,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "gemini-flash": {
+      "Hinduism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4,
+          "coverage": 1.0,
+          "correct": 12,
+          "incorrect": 18,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.7333,
+          "coverage": 1.0,
+          "correct": 22,
+          "incorrect": 8,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7083,
+          "coverage": 1.0,
+          "correct": 85,
+          "incorrect": 35,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemini-flash": {
+      "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 30,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4,
+          "coverage": 1.0,
+          "correct": 12,
+          "incorrect": 18,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.7333,
+          "coverage": 1.0,
+          "correct": 22,
+          "incorrect": 8,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7083,
+          "coverage": 1.0,
+          "correct": 85,
+          "incorrect": 35,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemini-flash": {
+        "calls": 120,
+        "in": 6684,
+        "out": 12947
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 6684,
+      "out": 12947
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:45.434483+00:00"
+}

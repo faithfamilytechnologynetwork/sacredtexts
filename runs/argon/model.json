@@ -32,7 +32,16 @@
       "tool_choice",
       "tools",
       "top_p"
-    ]
+    ],
+    "reasoning": {
+      "mandatory": true,
+      "supported_efforts": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default_effort": "medium"
+    }
   },
   "probe": {
     "ok": true,
@@ -43,5 +52,11 @@
     "completion_tokens": 5,
     "total_tokens": 43,
     "cost_usd": 0.000126
+  },
+  "collected": {
+    "calls": 1938,
+    "prompt_tokens": 264083,
+    "completion_tokens": 111414,
+    "cost_usd": 1.642306
   }
 }

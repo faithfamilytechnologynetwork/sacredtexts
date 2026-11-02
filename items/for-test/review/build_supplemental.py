@@ -1,8 +1,8 @@
-"""English-only supplemental sample. Not part of the population run.
+"""English-only samples, each its own category.
 
-Fifteen Book of Mormon verses (2013 edition) and fifteen numbered paragraphs
-from the Vatican English encyclicals. Both live under
-christianity/modern/english/ and are not joined into the main collect.
+Thirty Book of Mormon verses (2013 edition) and thirty numbered paragraphs
+from the Vatican English encyclicals. The same seed keeps the original
+fifteen and adds fifteen. They are not part of the Christianity population.
 
     python items/for-test/review/build_supplemental.py
 """
@@ -26,7 +26,7 @@ from sacredbench.generate import split_quote  # noqa: E402
 from sacredbench.item_sample import Passage, draw_passages  # noqa: E402
 
 MIN_WORDS = 16
-N = 15
+N = 30
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
 EN = {
     "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
@@ -191,23 +191,18 @@ def write(folder: Path, rows: list[dict], *, notice: str) -> None:
 
 
 def main() -> None:
-    bom = rows_for(
-        book_of_mormon(),
-        tradition="The Church of Jesus Christ of Latter-Day Saints",
-        document_type="scripture",
-    )
-    enc = rows_for(encyclicals(), tradition="Roman Catholic", document_type="encyclical")
+    bom = rows_for(book_of_mormon(), tradition="Book of Mormon", document_type="scripture")
+    enc = rows_for(encyclicals(), tradition="Encyclicals", document_type="encyclical")
     flip_verify([bom, enc])
-    base = ROOT / "christianity" / "modern" / "english"
     write(
-        base / "book-of-mormon",
+        ROOT / "book-of-mormon" / "english" / "population",
         bom,
-        notice="Book of Mormon, 2013 edition, English. Supplemental sample, not part of the NRSV population run.",
+        notice="Book of Mormon, 2013 edition, English. Its own category, 30 verses, not part of the Christianity population.",
     )
     write(
-        base / "encyclicals",
+        ROOT / "encyclicals" / "english" / "population",
         enc,
-        notice="Vatican English encyclicals. Supplemental sample, not part of the NRSV population run.",
+        notice="Vatican English encyclicals. Their own category, 30 paragraphs, not part of the Christianity population.",
     )
 
 

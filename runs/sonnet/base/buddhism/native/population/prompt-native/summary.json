@@ -1,0 +1,246 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 2,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 2,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2468,
+    "token_f1_base": 0.2468,
+    "contains_reference": 0.5
+   },
+   "retrieve_quote": {
+    "n": 3,
+    "accuracy": 0.3333,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2775,
+    "token_f1_base": 0.2775,
+    "contains_reference": 0.3333
+   },
+   "verify_source": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 9,
+    "accuracy": 0.4444,
+    "coverage": 1.0,
+    "correct": 4,
+    "incorrect": 5,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.4444,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.4444,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 3,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 9,
+     "accuracy": 0.4444,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 2,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 9,
+    "in": 1268,
+    "out": 5163
+   }
+  },
+  "total": {
+   "calls": 9,
+   "in": 1268,
+   "out": 5163
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:55.535107+00:00"
+}

@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gpt-oss-20b": {
+      "cite_passage": {
+        "n": 9,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 9,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 9,
+        "accuracy": 0.0,
+        "coverage": 1.0,
+        "correct": 0,
+        "incorrect": 9,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.0411,
+        "token_f1_base": 0.0411,
+        "contains_reference": 0.0
+      },
+      "retrieve_quote": {
+        "n": 9,
+        "accuracy": 0.0,
+        "coverage": 0.8889,
+        "correct": 0,
+        "incorrect": 8,
+        "refused": 1,
+        "refused_rate": 0.1111,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.1081,
+        "token_f1_base": 0.1081,
+        "contains_reference": 0.0
+      },
+      "verify_source": {
+        "n": 9,
+        "accuracy": 0.5556,
+        "coverage": 1.0,
+        "correct": 5,
+        "incorrect": 4,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 36,
+        "accuracy": 0.1429,
+        "coverage": 0.9722,
+        "correct": 5,
+        "incorrect": 30,
+        "refused": 1,
+        "refused_rate": 0.0278
+      }
+    }
+  },
+  "by_tradition": {
+    "gpt-oss-20b": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 0.8889,
+          "correct": 0,
+          "incorrect": 8,
+          "refused": 1,
+          "refused_rate": 0.1111
+        },
+        "verify_source": {
+          "n": 9,
+          "accuracy": 0.5556,
+          "coverage": 1.0,
+          "correct": 5,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 36,
+          "accuracy": 0.1429,
+          "coverage": 0.9722,
+          "correct": 5,
+          "incorrect": 30,
+          "refused": 1,
+          "refused_rate": 0.0278
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gpt-oss-20b": {
+      "The Bible\u0000the Greek New Testament (Scrivener 1894)\u0000grc": {
+        "cite_passage": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 1.0,
+          "correct": 0,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 9,
+          "accuracy": 0.0,
+          "coverage": 0.8889,
+          "correct": 0,
+          "incorrect": 8,
+          "refused": 1,
+          "refused_rate": 0.1111
+        },
+        "verify_source": {
+          "n": 9,
+          "accuracy": 0.5556,
+          "coverage": 1.0,
+          "correct": 5,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 36,
+          "accuracy": 0.1429,
+          "coverage": 0.9722,
+          "correct": 5,
+          "incorrect": 30,
+          "refused": 1,
+          "refused_rate": 0.0278
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gpt-oss-20b": {
+        "calls": 36,
+        "in": 6171,
+        "out": 24796
+      }
+    },
+    "total": {
+      "calls": 36,
+      "in": 6171,
+      "out": 24796
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:34.602366+00:00"
+}

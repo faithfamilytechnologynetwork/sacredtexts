@@ -191,10 +191,10 @@ English Dhammapada. Each has a familiarity panel in `well_known.yaml` (Gita
 the population 30, so the drawn sample was left as it is. Dhammapada 1 is
 already in that draw, so it is not also on the familiarity list.
 
-`christianity/modern/english/` is a separate modern sample: 15 Book of
-Mormon verses (2013 edition) and 15 numbered paragraphs from the Vatican
-English encyclicals. English only. It is not part of the population run and
-is not averaged into the NRSV estimate.
+The Book of Mormon and the papal encyclicals are their own categories, not
+part of the Christianity sample. Each is 30 English passages: Book of Mormon
+verses from the 2013 edition, and numbered paragraphs from the Vatican
+English encyclicals. They are not averaged into the NRSV estimate.
 
 ## Models
 

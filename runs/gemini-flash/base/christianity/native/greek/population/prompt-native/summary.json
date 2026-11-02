@@ -1,0 +1,182 @@
+{
+  "models": {
+    "gemini-flash": {
+      "cite_passage": {
+        "n": 9,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 9,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 9,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 9,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.3333,
+        "normalized": 0.8889,
+        "token_f1": 0.963,
+        "token_f1_base": 0.963,
+        "contains_reference": 1.0
+      },
+      "retrieve_quote": {
+        "n": 9,
+        "accuracy": 0.8889,
+        "coverage": 1.0,
+        "correct": 8,
+        "incorrect": 1,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.0,
+        "normalized": 0.8889,
+        "token_f1": 0.9944,
+        "token_f1_base": 0.9944,
+        "contains_reference": 0.8889
+      },
+      "verify_source": {
+        "n": 9,
+        "accuracy": 1.0,
+        "coverage": 1.0,
+        "correct": 9,
+        "incorrect": 0,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 36,
+        "accuracy": 0.9722,
+        "coverage": 1.0,
+        "correct": 35,
+        "incorrect": 1,
+        "refused": 0,
+        "refused_rate": 0.0
+      }
+    }
+  },
+  "by_tradition": {
+    "gemini-flash": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 9,
+          "accuracy": 0.8889,
+          "coverage": 1.0,
+          "correct": 8,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 36,
+          "accuracy": 0.9722,
+          "coverage": 1.0,
+          "correct": 35,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "by_text": {
+    "gemini-flash": {
+      "The Bible\u0000the Greek New Testament (Scrivener 1894)\u0000grc": {
+        "cite_passage": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 9,
+          "accuracy": 0.8889,
+          "coverage": 1.0,
+          "correct": 8,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "verify_source": {
+          "n": 9,
+          "accuracy": 1.0,
+          "coverage": 1.0,
+          "correct": 9,
+          "incorrect": 0,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 36,
+          "accuracy": 0.9722,
+          "coverage": 1.0,
+          "correct": 35,
+          "incorrect": 1,
+          "refused": 0,
+          "refused_rate": 0.0
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "gemini-flash": {
+        "calls": 36,
+        "in": 3480,
+        "out": 18901
+      }
+    },
+    "total": {
+      "calls": 36,
+      "in": 3480,
+      "out": 18901
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:44.325300+00:00"
+}

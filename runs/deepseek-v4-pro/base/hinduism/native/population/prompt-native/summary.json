@@ -1,0 +1,182 @@
+{
+  "models": {
+    "deepseek-v4-pro": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.8667,
+        "coverage": 1.0,
+        "correct": 26,
+        "incorrect": 4,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.2333,
+        "coverage": 1.0,
+        "correct": 7,
+        "incorrect": 23,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.1333,
+        "normalized": 0.2333,
+        "token_f1": 0.5335,
+        "token_f1_base": 0.543,
+        "contains_reference": 0.2333
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.4444,
+        "coverage": 0.6,
+        "correct": 8,
+        "incorrect": 10,
+        "refused": 12,
+        "refused_rate": 0.4,
+        "exact": 0.0,
+        "normalized": 0.0,
+        "token_f1": 0.3441,
+        "token_f1_base": 0.3451,
+        "contains_reference": 0.4444
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.7,
+        "coverage": 1.0,
+        "correct": 21,
+        "incorrect": 9,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.5741,
+        "coverage": 0.9,
+        "correct": 62,
+        "incorrect": 46,
+        "refused": 12,
+        "refused_rate": 0.1
+      }
+    }
+  },
+  "by_tradition": {
+    "deepseek-v4-pro": {
+      "Hinduism": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4444,
+          "coverage": 0.6,
+          "correct": 8,
+          "incorrect": 10,
+          "refused": 12,
+          "refused_rate": 0.4
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.5741,
+          "coverage": 0.9,
+          "correct": 62,
+          "incorrect": 46,
+          "refused": 12,
+          "refused_rate": 0.1
+        }
+      }
+    }
+  },
+  "by_text": {
+    "deepseek-v4-pro": {
+      "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.2333,
+          "coverage": 1.0,
+          "correct": 7,
+          "incorrect": 23,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.4444,
+          "coverage": 0.6,
+          "correct": 8,
+          "incorrect": 10,
+          "refused": 12,
+          "refused_rate": 0.4
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.5741,
+          "coverage": 0.9,
+          "correct": 62,
+          "incorrect": 46,
+          "refused": 12,
+          "refused_rate": 0.1
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "deepseek-v4-pro": {
+        "calls": 120,
+        "in": 10176,
+        "out": 7587
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 10176,
+      "out": 7587
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:31.612044+00:00"
+}

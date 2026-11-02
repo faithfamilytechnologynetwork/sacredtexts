@@ -1,0 +1,255 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.2667,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 22,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.7,
+    "coverage": 1.0,
+    "correct": 21,
+    "incorrect": 9,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2193,
+    "token_f1_base": 0.2193,
+    "contains_reference": 0.7
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.4706,
+    "coverage": 0.5667,
+    "correct": 8,
+    "incorrect": 9,
+    "refused": 13,
+    "refused_rate": 0.4333,
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1422,
+    "token_f1_base": 0.1422,
+    "contains_reference": 0.4706
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.2632,
+    "coverage": 0.6333,
+    "correct": 5,
+    "incorrect": 14,
+    "refused": 11,
+    "refused_rate": 0.3667
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.4375,
+    "coverage": 0.8,
+    "correct": 42,
+    "incorrect": 54,
+    "refused": 24,
+    "refused_rate": 0.2
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4706,
+     "coverage": 0.5667,
+     "correct": 8,
+     "incorrect": 9,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.2632,
+     "coverage": 0.6333,
+     "correct": 5,
+     "incorrect": 14,
+     "refused": 11,
+     "refused_rate": 0.3667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4375,
+     "coverage": 0.8,
+     "correct": 42,
+     "incorrect": 54,
+     "refused": 24,
+     "refused_rate": 0.2
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4706,
+     "coverage": 0.5667,
+     "correct": 8,
+     "incorrect": 9,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.2632,
+     "coverage": 0.6333,
+     "correct": 5,
+     "incorrect": 14,
+     "refused": 11,
+     "refused_rate": 0.3667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4375,
+     "coverage": 0.8,
+     "correct": 42,
+     "incorrect": 54,
+     "refused": 24,
+     "refused_rate": 0.2
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4706,
+     "coverage": 0.5667,
+     "correct": 8,
+     "incorrect": 9,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.2632,
+     "coverage": 0.6333,
+     "correct": 5,
+     "incorrect": 14,
+     "refused": 11,
+     "refused_rate": 0.3667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4375,
+     "coverage": 0.8,
+     "correct": 42,
+     "incorrect": 54,
+     "refused": 24,
+     "refused_rate": 0.2
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.3333,
+    "correct": 5,
+    "incorrect": 0,
+    "refused": 10,
+    "refused_rate": 0.6667
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.0,
+    "coverage": 0.9333,
+    "correct": 0,
+    "incorrect": 14,
+    "refused": 1,
+    "refused_rate": 0.0667
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 16560,
+    "out": 24252
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 16560,
+   "out": 24252
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:54.260607+00:00"
+}

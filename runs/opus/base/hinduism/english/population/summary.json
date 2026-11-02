@@ -1,0 +1,255 @@
+{
+ "models": {
+  "opus": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.6897,
+    "coverage": 0.9667,
+    "correct": 20,
+    "incorrect": 9,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "exact": 0.5172,
+    "normalized": 0.6552,
+    "token_f1": 0.8983,
+    "token_f1_base": 0.911,
+    "contains_reference": 0.6897
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.55,
+    "coverage": 0.6667,
+    "correct": 11,
+    "incorrect": 9,
+    "refused": 10,
+    "refused_rate": 0.3333,
+    "exact": 0.2,
+    "normalized": 0.25,
+    "token_f1": 0.8169,
+    "token_f1_base": 0.8209,
+    "contains_reference": 0.55
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.8349,
+    "coverage": 0.9083,
+    "correct": 91,
+    "incorrect": 18,
+    "refused": 11,
+    "refused_rate": 0.0917
+   }
+  }
+ },
+ "by_tradition": {
+  "opus": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6897,
+     "coverage": 0.9667,
+     "correct": 20,
+     "incorrect": 9,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.55,
+     "coverage": 0.6667,
+     "correct": 11,
+     "incorrect": 9,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8349,
+     "coverage": 0.9083,
+     "correct": 91,
+     "incorrect": 18,
+     "refused": 11,
+     "refused_rate": 0.0917
+    }
+   }
+  }
+ },
+ "by_text": {
+  "opus": {
+   "Bhagavad Gita\u0000Annie Besant (1922)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6897,
+     "coverage": 0.9667,
+     "correct": 20,
+     "incorrect": 9,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.55,
+     "coverage": 0.6667,
+     "correct": 11,
+     "incorrect": 9,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8349,
+     "coverage": 0.9083,
+     "correct": 91,
+     "incorrect": 18,
+     "refused": 11,
+     "refused_rate": 0.0917
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "opus": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6897,
+     "coverage": 0.9667,
+     "correct": 20,
+     "incorrect": 9,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.55,
+     "coverage": 0.6667,
+     "correct": 11,
+     "incorrect": 9,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8349,
+     "coverage": 0.9083,
+     "correct": 91,
+     "incorrect": 18,
+     "refused": 11,
+     "refused_rate": 0.0917
+    }
+   }
+  }
+ },
+ "verify": {
+  "opus": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "opus": {
+    "calls": 120,
+    "in": 10409,
+    "out": 31792
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 10409,
+   "out": 31792
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T20:23:50.024364+00:00"
+}

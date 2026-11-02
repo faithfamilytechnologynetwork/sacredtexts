@@ -1,0 +1,182 @@
+{
+  "models": {
+    "terra": {
+      "cite_passage": {
+        "n": 30,
+        "accuracy": 0.9333,
+        "coverage": 1.0,
+        "correct": 28,
+        "incorrect": 2,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "complete_unit": {
+        "n": 30,
+        "accuracy": 0.7,
+        "coverage": 1.0,
+        "correct": 21,
+        "incorrect": 9,
+        "refused": 0,
+        "refused_rate": 0.0,
+        "exact": 0.4,
+        "normalized": 0.6333,
+        "token_f1": 0.9187,
+        "token_f1_base": 0.9187,
+        "contains_reference": 0.7
+      },
+      "retrieve_quote": {
+        "n": 30,
+        "accuracy": 0.6667,
+        "coverage": 0.8,
+        "correct": 16,
+        "incorrect": 8,
+        "refused": 6,
+        "refused_rate": 0.2,
+        "exact": 0.2917,
+        "normalized": 0.625,
+        "token_f1": 0.9739,
+        "token_f1_base": 0.9739,
+        "contains_reference": 0.6667
+      },
+      "verify_source": {
+        "n": 30,
+        "accuracy": 0.8667,
+        "coverage": 1.0,
+        "correct": 26,
+        "incorrect": 4,
+        "refused": 0,
+        "refused_rate": 0.0
+      },
+      "_overall": {
+        "n": 120,
+        "accuracy": 0.7982,
+        "coverage": 0.95,
+        "correct": 91,
+        "incorrect": 23,
+        "refused": 6,
+        "refused_rate": 0.05
+      }
+    }
+  },
+  "by_tradition": {
+    "terra": {
+      "Christianity": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9333,
+          "coverage": 1.0,
+          "correct": 28,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 0.8,
+          "correct": 16,
+          "incorrect": 8,
+          "refused": 6,
+          "refused_rate": 0.2
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7982,
+          "coverage": 0.95,
+          "correct": 91,
+          "incorrect": 23,
+          "refused": 6,
+          "refused_rate": 0.05
+        }
+      }
+    }
+  },
+  "by_text": {
+    "terra": {
+      "The Bible\u0000NRSV\u0000en": {
+        "cite_passage": {
+          "n": 30,
+          "accuracy": 0.9333,
+          "coverage": 1.0,
+          "correct": 28,
+          "incorrect": 2,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "complete_unit": {
+          "n": 30,
+          "accuracy": 0.7,
+          "coverage": 1.0,
+          "correct": 21,
+          "incorrect": 9,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "retrieve_quote": {
+          "n": 30,
+          "accuracy": 0.6667,
+          "coverage": 0.8,
+          "correct": 16,
+          "incorrect": 8,
+          "refused": 6,
+          "refused_rate": 0.2
+        },
+        "verify_source": {
+          "n": 30,
+          "accuracy": 0.8667,
+          "coverage": 1.0,
+          "correct": 26,
+          "incorrect": 4,
+          "refused": 0,
+          "refused_rate": 0.0
+        },
+        "_overall": {
+          "n": 120,
+          "accuracy": 0.7982,
+          "coverage": 0.95,
+          "correct": 91,
+          "incorrect": 23,
+          "refused": 6,
+          "refused_rate": 0.05
+        }
+      }
+    }
+  },
+  "usage": {
+    "per_model": {
+      "terra": {
+        "calls": 120,
+        "in": 6891,
+        "out": 2287
+      }
+    },
+    "total": {
+      "calls": 120,
+      "in": 6891,
+      "out": 2287
+    }
+  },
+  "evaluators": [
+    "strict",
+    "containment"
+  ],
+  "generated_at": "2026-11-02T19:38:29.190119+00:00"
+}

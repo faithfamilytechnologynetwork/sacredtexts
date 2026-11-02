@@ -40,7 +40,10 @@
       "top_k",
       "top_logprobs",
       "top_p"
-    ]
+    ],
+    "reasoning": {
+      "mandatory": false
+    }
   },
   "probe": {
     "ok": true,
@@ -53,9 +56,9 @@
     "cost_usd": 5.76e-06
   },
   "collected": {
-    "calls": 55,
-    "prompt_tokens": 3323,
-    "completion_tokens": 51080,
-    "cost_usd": 0.01456824
+    "calls": 864,
+    "prompt_tokens": 113622,
+    "completion_tokens": 555261,
+    "cost_usd": 0.16456284
   }
 }

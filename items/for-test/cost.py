@@ -42,11 +42,13 @@ RUNNABLE = (
     ROOT / "hinduism" / "english" / "population" / "questions.jsonl",
     ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
     ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ROOT / "book-of-mormon" / "english" / "population" / "questions.jsonl",
+    ROOT / "encyclicals" / "english" / "population" / "questions.jsonl",
 )
 PANEL = ROOT / "models" / "openrouter.yaml"
 SUBSET = ROOT / "models" / "openrouter-subset.yaml"
 OUT = ROOT / "COST.md"
-# Population files on disk. Familiarity and the Christian supplemental set are not here.
+# Population files on disk. Familiarity is not here. Book of Mormon and encyclicals are their own categories.
 WRITTEN = (
     ("Christianity", [
         ROOT / "christianity" / "english" / "population" / "questions.jsonl",
@@ -77,6 +79,12 @@ WRITTEN = (
     ("Buddhism", [
         ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
         ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
+    ]),
+    ("Book of Mormon", [
+        ROOT / "book-of-mormon" / "english" / "population" / "questions.jsonl",
+    ]),
+    ("Encyclicals", [
+        ROOT / "encyclicals" / "english" / "population" / "questions.jsonl",
     ]),
 )
 # 30 passages × 4 tasks. A native edition is two prompt languages (240).

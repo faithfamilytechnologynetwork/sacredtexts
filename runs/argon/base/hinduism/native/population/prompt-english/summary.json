@@ -1,0 +1,182 @@
+{
+ "models": {
+  "argon": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 15,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.7,
+    "coverage": 1.0,
+    "correct": 21,
+    "incorrect": 9,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "exact": 0.1,
+    "normalized": 0.7,
+    "token_f1": 0.8894,
+    "token_f1_base": 0.8894,
+    "contains_reference": 0.7
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.2941,
+    "coverage": 0.5667,
+    "correct": 5,
+    "incorrect": 12,
+    "refused": 13,
+    "refused_rate": 0.4333,
+    "exact": 0.0,
+    "normalized": 0.0588,
+    "token_f1": 0.6987,
+    "token_f1_base": 0.7043,
+    "contains_reference": 0.2941
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 15,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.5234,
+    "coverage": 0.8917,
+    "correct": 56,
+    "incorrect": 51,
+    "refused": 13,
+    "refused_rate": 0.1083
+   }
+  }
+ },
+ "by_tradition": {
+  "argon": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2941,
+     "coverage": 0.5667,
+     "correct": 5,
+     "incorrect": 12,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5234,
+     "coverage": 0.8917,
+     "correct": 56,
+     "incorrect": 51,
+     "refused": 13,
+     "refused_rate": 0.1083
+    }
+   }
+  }
+ },
+ "by_text": {
+  "argon": {
+   "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7,
+     "coverage": 1.0,
+     "correct": 21,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2941,
+     "coverage": 0.5667,
+     "correct": 5,
+     "incorrect": 12,
+     "refused": 13,
+     "refused_rate": 0.4333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5234,
+     "coverage": 0.8917,
+     "correct": 56,
+     "incorrect": 51,
+     "refused": 13,
+     "refused_rate": 0.1083
+    }
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "argon": {
+    "calls": 120,
+    "in": 13546,
+    "out": 3440
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13546,
+   "out": 3440
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "generated_at": "2026-11-02T19:48:06.552966+00:00"
+}
