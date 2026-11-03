@@ -20,7 +20,9 @@ def _row(qid, task, answer, expected):
         "question_id": qid, "model_id": "m1", "task": task, "answer": answer,
         "question_set_digest": "d",
         "question": {"expected": expected,
-                     "source": {"tradition": ["T"], "work": "W", "version": "V", "language": "en"}},
+                     # romanized Pali keeps its marks (the #94 Latin fold is English-only), so an
+                     # accent-only miss stays incorrect and is labeled diacritic_only
+                     "source": {"tradition": ["T"], "work": "W", "version": "V", "language": "pi"}},
     }
 
 
@@ -53,7 +55,7 @@ def test_overall_and_per_text_carry_the_same_split(tmp_path):
     ov = s["models"]["m1"]["_overall"]
     assert (ov["incorrect"], ov["minor"], ov["major"]) == (4, 2, 2)
     assert ov["kinds"] == {"diacritic_only": 1, "edition_variant": 1, "wrong_passage": 1, "wrong_verdict": 1}
-    text = s["by_text"]["m1"]["W\u0000V\u0000en"]
+    text = s["by_text"]["m1"]["W\u0000V\u0000pi"]
     assert text["retrieve_quote"]["kinds"] == {"diacritic_only": 1, "edition_variant": 1, "wrong_passage": 1}
     assert (text["_overall"]["minor"], text["_overall"]["major"]) == (2, 2)
     assert "minor" not in s["by_tradition"]["m1"]["T"]["retrieve_quote"]  # tradition table unchanged

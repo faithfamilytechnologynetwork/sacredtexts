@@ -41,3 +41,8 @@ parallel field; the taxonomy already exists in `failure_kind.py` / `failureKind.
   base_tokens↔score.base_letters agreement test (7 scripts), analysis_markdown minor-kind prose.
   Kept the by-text `ov['minor']` read unguarded on purpose: summary_markdown only renders a fresh
   score_file summary, which always carries it — a missing key should fail loud.
+- Merged origin/main again (#94 English-only Latin-diacritic fold, #95). My summary test's accent-only
+  row was `en` → now correct under #94; moved the test rows to `pi` (keeps marks). Post-#94 split
+  (in-memory re-score of all committed answers, nothing written): 21 diacritic_only / 592
+  edition_variant / 268 near_copy of 9,118 incorrect TR cells. Gate: pipelines 956 passed / 2 skipped,
+  viewer 233/233, items 20/20.
