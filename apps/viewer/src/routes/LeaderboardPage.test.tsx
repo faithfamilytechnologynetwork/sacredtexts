@@ -54,9 +54,16 @@ describe("LeaderboardPage — states & run selection", () => {
     expect(await screen.findByText(/Could not load the run index/i)).toBeInTheDocument();
   });
 
-  it("defaults to the most-recent run (index[0]) and renders its leaderboard", async () => {
+  it("defaults to the most-recent benchmark run, never a newer exp-* run, and renders its leaderboard", async () => {
+    // The experiment run is the newest (index[0]) and fully loadable, so only the benchmarkRuns
+    // filter in selectRunId keeps it from becoming the home default.
     vi.stubGlobal("fetch", mapFetcher({
-      "/runs/_index": JSON.stringify([{ id: "run-newer", mtimeMs: 2 }, { id: "run-older", mtimeMs: 1 }]),
+      "/runs/_index": JSON.stringify([
+        { id: "exp-newest-2026-10-30", mtimeMs: 3 },
+        { id: "run-newer", mtimeMs: 2 },
+        { id: "run-older", mtimeMs: 1 },
+      ]),
+      ...runFiles("exp-newest-2026-10-30"),
       ...runFiles("run-newer"),
       ...runFiles("run-older"),
     }));
