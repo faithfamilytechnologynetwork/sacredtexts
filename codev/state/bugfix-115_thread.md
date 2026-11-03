@@ -47,3 +47,13 @@ Pre-existing risk: since `हाँ` strips to `ह`, a leading `है।` woul
 - Verified: the new tests fail on HEAD's score.py (53 fail) and pass with the fix. Full suite passes both with
   the rerun jsonl copied into the worktree (1034 passed) and without it. Gotcha: pathlib `**` does not follow a
   symlinked `runs/rerun-…` (3.11), so a symlink silently skips the scan, and a copy was needed.
+
+## PR (2026-11-02)
+
+- PR #121. Merged origin/main twice (#110, #111); the #111 merge had an arch.md conflict, resolved keeping both notes.
+- Snag: `runs/rerun-2026-11-03` is live. `join_run.py` for gpt-oss-20b and qwen3-32b is still collecting, and new cells
+  move under #115, so the #95 scan failed in the main checkout. Architect decision: don't wait on live collections.
+  The #95 "nothing else moves" scan now reads only **git-tracked** `runs/**/scores.jsonl` (`_tracked_score_files`).
+  The rerun registry pins only the 14 models whose collection is complete; it is a witness, skip-if-absent.
+  The regenerated registry was identical (134 cells, none from gpt-oss/qwen).
+- CMAP round 1: codex APPROVE; gemini skipped (agy produced no output).

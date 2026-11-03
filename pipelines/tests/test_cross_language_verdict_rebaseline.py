@@ -17,12 +17,14 @@ The registered set was derived by running the pre-#95 and #95 parsers over every
 The committed scores are NOT rewritten by #95 (the rerun is rescored under the final contract), so
 the scan below accepts a registered cell as either still ``refused`` (pre-rescore) or already at its
 registered outcome (post-rescore). The scan below also accepts the cells #115 registers
-(``test_native_verdict_tokens_rebaseline.py``), which move under the same rule. Read-only; skips
-cleanly if the run evidence is absent.
+(``test_native_verdict_tokens_rebaseline.py``), which move under the same rule. It reads git-tracked
+score files only, so an untracked run (a live collection) never fails it. Read-only; skips cleanly if
+the run evidence is absent.
 """
 from __future__ import annotations
 
 import json
+import subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -32,6 +34,15 @@ from sacredbench.score import score_answer
 from tests.test_native_verdict_tokens_rebaseline import FLIPS as FLIPS_115
 
 RUNS = Path(__file__).resolve().parents[2] / "runs"
+
+
+def _tracked_score_files() -> list[Path]:
+    """The git-tracked ``runs/**/scores.jsonl``. An untracked run (a live collection, or one not yet
+    rescored under the final contract) never enters the scan below."""
+    tracked = subprocess.run(
+        ["git", "-C", str(RUNS.parent), "ls-files", "-z", "runs/"], capture_output=True, text=True, check=True,
+    ).stdout.split("\0")
+    return sorted(RUNS.parent / p for p in tracked if p.endswith("/scores.jsonl"))
 
 # answers folder (relative to runs/) -> {question_id: outcome under #95}
 FLIPS: dict[str, dict[str, str]] = {
@@ -145,13 +156,13 @@ def test_registered_cells_are_graded_as_registered(folder):
 
 
 def test_only_registered_cells_move_and_only_out_of_refused():
-    # Re-derive every committed verify_source score (runs/archive included) from its answer. A cell
-    # may differ from its committed outcome only if it is registered, committed `refused`, and now at
-    # its registered outcome (#95's or #115's): nothing else moves, and nothing moves into `refused` or
-    # from correct to incorrect. A score file without a sibling answers.jsonl cannot be re-derived and
-    # is passed over.
+    # Re-derive every committed (git-tracked) verify_source score (runs/archive included) from its
+    # answer. A cell may differ from its committed outcome only if it is registered, committed
+    # `refused`, and now at its registered outcome (#95's or #115's): nothing else moves, and nothing
+    # moves into `refused` or from correct to incorrect. A score file without a sibling answers.jsonl
+    # cannot be re-derived and is passed over.
     scanned = 0
-    for scores in sorted(RUNS.glob("**/scores.jsonl")):
+    for scores in _tracked_score_files():
         answers = _verify_answers(scores.parent)
         if answers is None:
             continue

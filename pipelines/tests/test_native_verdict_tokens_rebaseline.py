@@ -13,12 +13,14 @@ is pinned here by identity:
 
 - 23 cells in committed ``runs/``, all ``refused`` there: 21 → correct, 2 → incorrect.
   ``runs/archive``: none.
-- 134 cells in ``runs/rerun-2026-11-03`` (scored with #95): 133 → correct, 1 → incorrect (gemma's
-  ``**Nahi**`` on an expected yes).
+- 134 cells in the untracked ``runs/rerun-2026-11-03`` (scored with #95): 133 → correct, 1 → incorrect
+  (gemma's ``**Nahi**`` on an expected yes). Only the 14 models whose collection was complete are pinned;
+  qwen3-32b and gpt-oss-20b were still collecting. The rerun is a witness, not a gate: each folder skips
+  when absent.
 
 No committed ``scores.jsonl`` is rewritten. The "nothing else moves, nothing moves into ``refused``"
-scan is the one in ``test_cross_language_verdict_rebaseline.py``, which accepts the cells registered here.
-Read-only. Skips cleanly if the run evidence is absent.
+scan is the one in ``test_cross_language_verdict_rebaseline.py`` (git-tracked score files only), which
+accepts the cells registered here. Read-only. Skips cleanly if the run evidence is absent.
 """
 from __future__ import annotations
 
