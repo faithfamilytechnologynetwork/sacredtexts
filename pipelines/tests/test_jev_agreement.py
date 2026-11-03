@@ -21,7 +21,7 @@ def _triple(qid, mid, *, contains_reference, outcome, token_f1, matches_requeste
     score_row = {"question_id": qid, "model_id": mid, "task": "retrieve_quote",
                  "metrics": {"contains_reference": contains_reference, "outcome": outcome,
                              "token_f1": token_f1, "correct": int(outcome == "correct")}}
-    judgment_row = {"question_id": qid, "model_id": mid, "rubric_id": "sacredbench-jev-1",
+    judgment_row = {"question_id": qid, "model_id": mid, "rubric_id": "sacredbench-jev-5",
                     "matches_requested_p": matches_requested_p, "refusal_p": refusal_p,
                     "equivalence": "not_evaluated", "answer_digest": answer_digest(answer)}
     return answer_row, score_row, judgment_row

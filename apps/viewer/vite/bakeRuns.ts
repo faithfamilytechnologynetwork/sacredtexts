@@ -21,7 +21,7 @@ import { SHARD_BYTES, countRows, manifestUrl, partName, type ShardManifest } fro
 export const RUN_ARTIFACTS = ["summary.json", "scores.jsonl", "answers.jsonl", "questions.jsonl"] as const;
 
 /** The computed collections the client fetches: fetchRunIndex and GapsPage. */
-export const COLLECTION_URLS = ["/_index", "/_gaps"] as const;
+export const COLLECTION_URLS = ["/_index", "/_gaps", "/_judge"] as const;
 
 /** Cloudflare Pages' per-file limit. */
 export const PAGES_MAX_FILE_BYTES = 25 * 1024 * 1024;

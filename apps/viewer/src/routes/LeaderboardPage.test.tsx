@@ -34,7 +34,7 @@ function runFiles(id: string): Record<string, string> {
   };
 }
 
-describe("LeaderboardPage — states & run selection", () => {
+describe("ScoresPage — states & run selection", () => {
   it("shows the empty state when the run index is empty", async () => {
     vi.stubGlobal("fetch", mapFetcher({ "/runs/_index": "[]" }));
     renderApp("/");
@@ -68,7 +68,7 @@ describe("LeaderboardPage — states & run selection", () => {
       ...runFiles("run-older"),
     }));
     renderApp("/");
-    expect(await screen.findByText("Leaderboard")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Scores" })).toBeInTheDocument();
     expect((screen.getByLabelText("Run") as HTMLSelectElement).value).toBe("run-newer");
   });
 
@@ -79,7 +79,7 @@ describe("LeaderboardPage — states & run selection", () => {
       ...runFiles("run-older"),
     }));
     renderApp("/?run=run-older");
-    expect(await screen.findByText("Leaderboard")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Scores" })).toBeInTheDocument();
     expect((screen.getByLabelText("Run") as HTMLSelectElement).value).toBe("run-older");
   });
 
@@ -91,7 +91,7 @@ describe("LeaderboardPage — states & run selection", () => {
     }));
     // Old Spec-1 semantics put the full base path in ?run=; it is not a known id now.
     renderApp("/?run=%2Fruns%2Frun-older");
-    expect(await screen.findByText("Leaderboard")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Scores" })).toBeInTheDocument();
     expect((screen.getByLabelText("Run") as HTMLSelectElement).value).toBe("run-newer");
   });
 
@@ -123,12 +123,12 @@ describe("LeaderboardPage — states & run selection", () => {
     expect(screen.getByRole("option", { name: "good" })).toBeInTheDocument();
     // and selecting it recovers the view — the bad run did not take the page down
     await userEvent.selectOptions(screen.getByLabelText("Run"), "good");
-    expect(await screen.findByText("Leaderboard")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Scores" })).toBeInTheDocument();
     expect(screen.getAllByText("haiku").length).toBeGreaterThan(0);
   });
 });
 
-describe("LeaderboardPage — stale-request guard (rapid run switch)", () => {
+describe("ScoresPage — stale-request guard (rapid run switch)", () => {
   it("a slow earlier load cannot overwrite a newer selection", async () => {
     // Default selection ('slow') hangs until released; switching to 'fast' must win even
     // after 'slow' finally resolves.
@@ -195,11 +195,11 @@ function committedRunFetcher(): typeof fetch {
   }) as unknown as typeof fetch;
 }
 
-describe.skipIf(!present)("LeaderboardPage — committed run gate", () => {
+describe.skipIf(!present)("ScoresPage — committed run gate", () => {
   it("renders the committed run's leaderboard: ranking, columns, traditions, tokens", async () => {
     vi.stubGlobal("fetch", committedRunFetcher());
     renderApp("/");
-    expect(await screen.findByText("Leaderboard")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Scores" })).toBeInTheDocument();
 
     // ranking (main table): claude-haiku (0.5556, refusal-excluded) first, the two 0.0 models last
     // (id tiebreak). Order is unchanged by the phase-3 rebaseline — only the accuracy values moved.

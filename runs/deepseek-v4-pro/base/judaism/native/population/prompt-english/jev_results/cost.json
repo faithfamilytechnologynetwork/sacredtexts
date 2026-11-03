@@ -1,0 +1,62 @@
+{
+ "n": 60,
+ "kinds": {
+  "meaning_change": 6,
+  "neither": 14,
+  "requested_wording": 1,
+  "wrong_passage": 39
+ },
+ "theology": {
+  "accurate": 1,
+  "gloss": 5,
+  "distorted": 52,
+  "no_claim": 2
+ },
+ "incoherent": 2,
+ "axes": {
+  "kind": [
+   "refusal",
+   "requested_wording",
+   "other_indexed_wording",
+   "faithful_paraphrase",
+   "meaning_change",
+   "wrong_passage",
+   "neither"
+  ],
+  "theology": [
+   {
+    "label": "accurate",
+    "level": 0
+   },
+   {
+    "label": "gloss",
+    "level": 1
+   },
+   {
+    "label": "distorted",
+    "level": 2
+   },
+   {
+    "label": "contradicted",
+    "level": 3
+   },
+   {
+    "label": "no_claim",
+    "level": null
+   }
+  ]
+ },
+ "validity": {
+  "headline": "string match in scores.jsonl",
+  "second_instrument": "jev_agreement on refusal_p and matches_requested_p",
+  "kind": "descriptive until humans label the same cells",
+  "theology": "descriptive until humans label the same cells"
+ },
+ "headline": "scores.jsonl string match; these fields do not set correct",
+ "refusal_p_ge_0.5": 0,
+ "total_cost_usd": 0.003423,
+ "judge_models": [
+  "typesafe/jev-1.14-20261014"
+ ],
+ "rubric_id": "sacredbench-jev-5"
+}

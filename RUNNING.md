@@ -13,35 +13,36 @@ reference run is about $13.
 
 ## Test set
 
-The run is the population sample: the same 30 passages, four tasks each.
-A native edition is two files, an English prompt and a native-language prompt.
-Familiarity lists are in the sibling `familiarity/` folders and are not
-part of this command. The panel is 16 models, search off.
+The run is the population sample: 30 passages, four tasks each. A native
+edition is two files, an English prompt and a native-language prompt.
+Sikhism has no English file. Buddhism is the Pali text with an English prompt.
+Book of Mormon and encyclicals are extra English sets, 30 passages each.
+Familiarity lists sit in sibling `familiarity/` folders and are not collected.
+The panel is `items/for-test/models/openrouter.yaml`, 16 models, temperature 0,
+search off. Prices are in `items/for-test/COST.md`.
 
 ```bash
 python items/for-test/join_run.py --model haiku --test
 python items/for-test/join_run.py --model haiku
-```
-
-`--test` calls the first 3 passages of each tradition. The second command, without `--test`, keeps those answers and collects the rest. See `runs/README.md`.
-
-That creates `runs/haiku/base/` and, under it, the same folders as the question
-files (`christianity/english/population/`, `sikhism/native/population/`, and
-the rest). Each folder receives `answers.jsonl`, then `scores.jsonl`,
-`summary.json`, and `summary.md`. Run the same command again to retry cells
-that failed. Add `--only sikhism/native/population` to collect one folder.
-
-A pilot is one tradition and one model. Tradition names are `Christianity`,
-`Judaism`, and `Islam`. Model ids include `haiku`, `opus`, `sol`, and
-`gpt-oss-20b`.
-
-```bash
+python items/for-test/join_run.py --model haiku --tradition islam --tradition judaism
+python items/for-test/join_run.py --model haiku --tradition book-of-mormon --tradition encyclicals
 python items/for-test/join_run.py --model haiku --only christianity/english/population
 ```
 
-That answers file is only the Christianity English questions for haiku. Run
-the same command without `--only` to collect the other population files.
-Finished haiku rows in a folder that already has answers are skipped.
+`--test` calls the first 3 passages of each tradition, then the same command
+without `--test` fills the rest into the same answer files. Repeat
+`--tradition`. Names are the folder names: `christianity`, `judaism`, `islam`,
+`sikhism`, `hinduism`, `buddhism`, `book-of-mormon`, `encyclicals`. Passing
+several names to one flag is an error. `--head 9` keeps the first 9 questions
+of each selected file and still stamps the full-file digest, which is how the
+limited models take Buddhism.
+
+That creates `runs/haiku/base/` and, under it, the same folders as the question
+files. A finished file receives `answers.jsonl`, then `scores.jsonl`,
+`summary.json`, and `summary.md`. A file with a pending cell is not scored.
+Run the same command again to retry cells that failed. Finished
+question-and-model pairs are not called again. `--run-dir runs/<name>` writes
+a new tree instead of `runs/<model>/`. See `runs/README.md`.
 
 Each answer row records the model id, the OpenRouter slug, the provider,
 temperature, max tokens, and the panel fingerprint (provider, model,
@@ -63,8 +64,8 @@ key is out of credit, the run stops, in-flight calls may finish, and the rest
 are not sent. Add credit and run the same command again.
 
 Resume stops if the question file changed, or if a model id now has a
-different provider, slug, temperature, or search setting. Use a new `--out`
-file in that case.
+different provider, slug, temperature, or search setting. Point `--run-dir`
+at a new folder in that case.
 
 When a rebuild changed only some questions, write a new run folder and copy
 the unchanged answers from the old one:
@@ -84,7 +85,80 @@ still counts a copied row, so read the spend of the new run from
 folders.
 
 `score`, `analyze`, and `facct` are free. They can run on a partial answers
-file. They do not call a model.
+file. They do not call a model. The headline is the string score: a folded
+match or a contained quotation is correct, a refusal is a separate outcome,
+and it does not enter accuracy.
+
+## Run Jev
+
+Jev is a paid second pass. It does not rescore, and it does not change
+`correct`. Run it only after `join_run` has written `answers.jsonl` for one
+folder. The first command prints the estimate and stops. Add `--yes` to spend.
+
+```bash
+uv --project pipelines run python -m sacredbench judge \
+  runs/haiku/base/christianity/english/population/answers.jsonl
+uv --project pipelines run python -m sacredbench judge \
+  runs/haiku/base/christianity/english/population/answers.jsonl --yes
+```
+
+The default write is next to those answers:
+
+```text
+runs/haiku/base/christianity/english/population/jev_results/judgments.jsonl
+runs/haiku/base/christianity/english/population/jev_results/judgments.jsonl.manifest.json
+runs/haiku/base/christianity/english/population/jev_results/cost.json
+```
+
+One Decisions call covers the cells that still need a judge. Cite and verify
+are skipped. A quote or completion the string score already settled (folded
+equality, or the reference contained in the answer) is skipped and is not
+billed. Restricted editions are not sent. `--limit 20` caps how many cells
+this invocation calls. The pre-flight estimate uses $0.00003 per cell.
+`cost.json` stores the measured tokens and dollars after the call.
+
+Each row records a wording label (`kind`) and a separate claim scale
+(`theology`: accurate 0, gloss 1, distorted 2, contradicted 3, or no_claim).
+Those two fields are descriptive until people apply the same labels. The
+string score remains the result. The tradition name is not sent to Jev.
+
+The same command resumes. A cell already in the sidecar is not called again.
+The resolved build is part of the file. If OpenRouter resolves `jev-latest`
+to a different build, the resume stops; point `--out` at a new
+`judgments.jsonl`. The rubric id is `sacredbench-jev-5`. Spelling, accents,
+and vowel signs are not a distorted claim, and a quotation that drops a clause
+is not accurate. A file already judged under an older rubric needs its own
+`--out`, such as `jev_results/judgments-v5.jsonl`.
+
+Counts without a new call:
+
+```bash
+uv --project pipelines run python -m sacredbench judge-summary \
+  runs/haiku/base/christianity/english/population/jev_results/judgments.jsonl
+```
+
+Agreement with the string score, also free. This is the check on Jev's
+refusal and containment questions. It does not validate the theology scale.
+
+```bash
+uv --project pipelines run python -m sacredbench judge-agreement \
+  runs/haiku/base/christianity/english/population/answers.jsonl \
+  runs/haiku/base/christianity/english/population/scores.jsonl \
+  runs/haiku/base/christianity/english/population/jev_results/judgments.jsonl \
+  --md-out runs/haiku/base/christianity/english/population/jev_results/agreement.md
+```
+
+An edition index is optional. It adds other wordings so `other_indexed_wording`
+can be chosen. It needs the questions file whose manifest carries the corpus
+hash:
+
+```bash
+uv --project pipelines run python -m sacredbench judge \
+  runs/haiku/base/christianity/english/population/answers.jsonl \
+  --equivalence-index path/to/index.jsonl \
+  --questions items/for-test/christianity/english/population/questions.jsonl \
+  --yes
+```
 
 ## Reference run
 

@@ -734,16 +734,18 @@ def editions(
 @app.command()
 def judge(
     answers: Path = typer.Argument(help="answers.jsonl from `collect`"),
-    out: Path = typer.Option(Path("runs/judgments.jsonl"), help="sidecar judgments file (resumable)"),
+    out: Path = typer.Option(
+        None,
+        help="sidecar judgments file (resumable). Default: <answers dir>/jev_results/judgments.jsonl",
+    ),
     model: str = typer.Option(None, help="Decisions model id (default: the floating jev-latest alias)"),
     concurrency: int = typer.Option(4, help="parallel decision calls"),
     limit: int = typer.Option(None, help="cap cells judged this invocation (budget guard)"),
     raw_root: Path = typer.Option(Path("texts/raw"), help="catalogue root for the restricted-target guard"),
     equivalence_index: Path = typer.Option(
         None, "--equivalence-index",
-        help="#32 equivalence index (JSONL + .manifest.json); turns ON the passage-equivalence "
-             "question. Requires --questions (for the run corpus_hash). Without it, equivalence is "
-             "recorded as 'not_evaluated'.",
+        help="edition index (JSONL + .manifest.json) of other wordings for this citation. "
+             "Requires --questions. Without it, other_indexed_wording has no alternates to match.",
     ),
     questions: Path = typer.Option(
         None, "--questions",
@@ -760,6 +762,8 @@ def judge(
     from sacredbench import jev
 
     jev_model = model or jev.JEV_MODEL
+    if out is None:
+        out = answers.parent / "jev_results" / "judgments.jsonl"
     if not answers.exists():
         raise typer.BadParameter(f"input path not found: {answers} — run `collect` first")
     try:
@@ -767,7 +771,9 @@ def judge(
     except json.JSONDecodeError as exc:
         raise typer.BadParameter(f"{answers} is not valid JSONL ({exc}) — regenerate with `collect`")
     sources = _require_catalogue(raw_root)
-    restricted = frozenset(aud.restricted_keys(sources))
+    # NRSV files at or under 500 distinct verses are the permitted quotation, same
+    # rule as the audit. NABRE and the Greek Orthodox extracts stay blocked.
+    restricted = frozenset(aud.restricted_keys(sources) - aud.within_quotation_allowance(rows))
 
     # Equivalence index (off unless supplied). Its corpus_hash must bind to the run's, which lives
     # only in the questions manifest — located by the explicit --questions option, never by guessing.
@@ -803,6 +809,7 @@ def judge(
         f"pre-flight: {est['pending']} cell(s) to judge with {jev_model} "
         f"(~${est['estimated_usd']:.4f}); {est['already_judged']} already judged, "
         f"{est['skipped_task']} non-text-retrieval skipped, "
+        f"{est['skipped_string']} already matched by the string score, "
         f"{est['skipped_restricted']} restricted-source skipped"
     )
     if est["pending"] == 0:
@@ -817,7 +824,10 @@ def judge(
         restricted_keys=restricted, index_digest=index_digest,
     )
     summary = jev.summarize(out)
+    cost_path = out.parent / "cost.json"
+    cost_path.write_text(json.dumps(summary, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     typer.echo(f"judged {done} -> {out}; file has {summary['n']} row(s) {summary['kinds']}")
+    typer.echo(f"cost card -> {cost_path}")
     typer.echo(f"total Jev spend this file: ${summary['total_cost_usd']:.6f}")
     if summary["judge_models"]:
         typer.echo("resolved judge model(s): " + ", ".join(summary["judge_models"]))

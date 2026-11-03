@@ -123,6 +123,19 @@ def test_clean_evidence_passes(tmp_path):
     assert audit_paths([p], sources) == []
 
 
+def test_within_quotation_allowance_keeps_nrsv_and_not_nabre():
+    from sacredbench.audit import within_quotation_allowance
+
+    def row(version, citation):
+        return {"question": {"source": {"work": "The Bible", "version": version, "language": "en", "citation": citation}}}
+
+    rows = [row("NRSV", f"Exodus 1:{i}") for i in range(30)]
+    rows.append(row("NABRE", "Genesis 1:1"))
+    allowed = within_quotation_allowance(rows)
+    assert ("The Bible", "NRSV", "en") in allowed
+    assert ("The Bible", "NABRE", "en") not in allowed
+
+
 def test_nrsv_quotation_within_500_verses_passes(tmp_path):
     sources = cat.discover_catalogue(RAW)
     p = tmp_path / "answers.jsonl"

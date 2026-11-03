@@ -626,6 +626,163 @@ function itemOf(row: Record<string, unknown>, id: string): GapItem {
   };
 }
 
+const KIND_ORDER = [
+  "refusal",
+  "requested_wording",
+  "other_indexed_wording",
+  "faithful_paraphrase",
+  "meaning_change",
+  "wrong_passage",
+  "neither",
+] as const;
+
+const THEOLOGY_ORDER = ["accurate", "gloss", "distorted", "contradicted", "no_claim"] as const;
+
+export interface JudgeModel {
+  model: string;
+  rows: number;
+  coherent: number;
+  incoherent: number;
+  cost: number;
+  kind: Record<string, number>;
+  theology: Record<string, number>;
+}
+
+export interface JudgeTradition {
+  tradition: string;
+  rows: number;
+  coherent: number;
+  incoherent: number;
+  kind: Record<string, number>;
+  theology: Record<string, number>;
+}
+
+export interface JudgeReport {
+  /** Sidecar the counts were read from. Older sidecars are ignored. */
+  file: string;
+  models: JudgeModel[];
+  traditions: JudgeTradition[];
+}
+
+const TRADITION_LABEL: Record<string, string> = {
+  christianity: "Christianity",
+  judaism: "Judaism",
+  islam: "Islam",
+  hinduism: "Hinduism",
+  sikhism: "Sikhism",
+  buddhism: "Buddhism",
+  "book-of-mormon": "Book of Mormon",
+  encyclicals: "Encyclicals",
+};
+
+const TRADITION_ORDER = Object.values(TRADITION_LABEL);
+
+function emptyCounts(keys: readonly string[]): Record<string, number> {
+  return Object.fromEntries(keys.map((k) => [k, 0]));
+}
+
+/** Coherent Jev rows, by model, from every `jev_results/judgments-v5.jsonl` under runs.
+ * Incoherent rows are counted apart and are not added to the kind or theology columns. */
+export function collectJudge(runsDir: string): JudgeReport {
+  const byModel = new Map<string, JudgeModel>();
+  let root: string;
+  try {
+    root = fs.realpathSync(runsDir);
+  } catch {
+    return { file: "judgments-v5.jsonl", models: [], traditions: [] };
+  }
+  const byTradition = new Map<string, JudgeTradition>();
+  const walk = (dir: string) => {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (e.isSymbolicLink()) continue;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        if (dir === root && SKIP_TOP.has(e.name)) continue;
+        walk(p);
+      }
+    }
+    const sidecar = path.join(dir, "judgments-v5.jsonl");
+    let stat: fs.Stats;
+    try {
+      stat = fs.lstatSync(sidecar);
+    } catch {
+      return;
+    }
+    if (stat.isSymbolicLink() || !stat.isFile()) return;
+    const rel = path.relative(root, dir);
+    const parts = rel.split(path.sep);
+    const top = parts[0];
+    if (!top || SKIP_TOP.has(top)) return;
+    const baseAt = parts.indexOf("base", 1);
+    const model = baseAt > 0 ? parts[baseAt - 1]! : top;
+    const folder = baseAt >= 0 && parts.length > baseAt + 1 ? parts[baseAt + 1]! : "";
+    const tradition = TRADITION_LABEL[folder] ?? folder;
+    let bucket = byModel.get(model);
+    if (!bucket) {
+      bucket = {
+        model,
+        rows: 0,
+        coherent: 0,
+        incoherent: 0,
+        cost: 0,
+        kind: emptyCounts(KIND_ORDER),
+        theology: emptyCounts(THEOLOGY_ORDER),
+      };
+      byModel.set(model, bucket);
+    }
+    let traditionBucket = tradition ? byTradition.get(tradition) : undefined;
+    if (tradition && !traditionBucket) {
+      traditionBucket = {
+        tradition,
+        rows: 0,
+        coherent: 0,
+        incoherent: 0,
+        kind: emptyCounts(KIND_ORDER),
+        theology: emptyCounts(THEOLOGY_ORDER),
+      };
+      byTradition.set(tradition, traditionBucket);
+    }
+    for (const row of readJsonl(sidecar)) {
+      bucket.rows += 1;
+      if (traditionBucket) traditionBucket.rows += 1;
+      const usage = row.usage as { cost?: unknown } | undefined;
+      if (typeof usage?.cost === "number") bucket.cost += usage.cost;
+      if (row.coherent === false) {
+        bucket.incoherent += 1;
+        if (traditionBucket) traditionBucket.incoherent += 1;
+        continue;
+      }
+      bucket.coherent += 1;
+      if (traditionBucket) traditionBucket.coherent += 1;
+      const kind = typeof row.kind === "string" ? row.kind : "";
+      const theology = typeof row.theology === "string" ? row.theology : "";
+      if (kind in bucket.kind) bucket.kind[kind] = (bucket.kind[kind] ?? 0) + 1;
+      if (theology in bucket.theology) bucket.theology[theology] = (bucket.theology[theology] ?? 0) + 1;
+      if (traditionBucket && kind in traditionBucket.kind) {
+        traditionBucket.kind[kind] = (traditionBucket.kind[kind] ?? 0) + 1;
+      }
+      if (traditionBucket && theology in traditionBucket.theology) {
+        traditionBucket.theology[theology] = (traditionBucket.theology[theology] ?? 0) + 1;
+      }
+    }
+  };
+  walk(root);
+  const models = [...byModel.values()].sort((a, b) => (a.model < b.model ? -1 : a.model > b.model ? 1 : 0));
+  for (const m of models) m.cost = Math.round(m.cost * 1e6) / 1e6;
+  const traditions = [...byTradition.values()].sort((a, b) => {
+    const ai = TRADITION_ORDER.indexOf(a.tradition);
+    const bi = TRADITION_ORDER.indexOf(b.tradition);
+    return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  });
+  return { file: "judgments-v5.jsonl", models, traditions };
+}
+
 function readJsonl(file: string | null): Record<string, unknown>[] {
   if (!file) return [];
   let text: string;
@@ -811,6 +968,11 @@ export function createRunsHandler(runsDir: string) {
     if (decoded === "/_gaps") {
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify(collectGaps(runsDir)));
+      return;
+    }
+    if (decoded === "/_judge") {
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(collectJudge(runsDir)));
       return;
     }
     if (decoded === "" || decoded === "/" || decoded === "/_index") {

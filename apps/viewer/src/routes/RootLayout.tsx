@@ -1,6 +1,15 @@
 import { useEffect, useRef } from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
+const NAV = [
+  { to: "/", label: "Scores" },
+  { to: "/errors", label: "Verses" },
+  { to: "/findings", label: "Findings" },
+  { to: "/standings", label: "Standings" },
+  { to: "/judge", label: "Judge" },
+  { to: "/gaps", label: "Gaps" },
+] as const;
+
 export function RootLayout() {
   // `main` is the app's scroll container (h-dvh shell) — its scrollTop would otherwise persist across
   // route changes. Reset it to the top on every pathname change.
@@ -12,22 +21,21 @@ export function RootLayout() {
     // So `document` never overflows — a page fits one screen; the inner scroll does the rest.
     <div className="flex h-dvh flex-col bg-background text-foreground">
       <header className="shrink-0 border-b border-default-200">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3">
           <Link to="/" className="text-lg font-semibold">
             SacredBench
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            {/* The brand (left) is the leaderboard home. Errors is the picker in front of the
-                error explorer (which needs a run + model); Standings is the cross-run view. */}
-            <Link to="/errors" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
-              Errors
-            </Link>
-            <Link to="/gaps" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
-              Gaps
-            </Link>
-            <Link to="/standings" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
-              Standings
-            </Link>
+          <nav aria-label="Primary" className="flex flex-wrap items-center gap-1 text-sm">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                activeOptions={{ exact: true }}
+                className="rounded-md px-2.5 py-1 text-default-600 hover:bg-default-100 hover:text-foreground [&.active]:bg-default-100 [&.active]:font-semibold [&.active]:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>

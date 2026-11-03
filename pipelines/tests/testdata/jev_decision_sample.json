@@ -8,8 +8,14 @@
     "kind": {
       "type": "choice",
       "choice": "requested_wording",
-      "probabilities": {"refusal": 0, "requested_wording": 0.98, "other_indexed_wording": 0.01, "neither": 0.01},
+      "probabilities": {"refusal": 0, "requested_wording": 0.96, "other_indexed_wording": 0.01, "faithful_paraphrase": 0.01, "meaning_change": 0.01, "wrong_passage": 0.01, "neither": 0},
       "confidence": 0.97
+    },
+    "theology": {
+      "type": "choice",
+      "choice": "accurate",
+      "probabilities": {"accurate": 0.9, "gloss": 0.1, "distorted": 0, "contradicted": 0, "no_claim": 0},
+      "confidence": 0.9
     }
   },
   "usage": {"input_tokens": 640, "output_tokens": 93, "cost": 2.688e-05}

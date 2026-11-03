@@ -82,7 +82,12 @@ export function LeaderboardTable({ summary, runId }: { summary: Summary; runId: 
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-semibold">Leaderboard</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Scores</h1>
+        <Link to="/errors" search={{ run: runId }} className="text-sm text-default-700 underline">
+          Open the verses
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-default-500">
         Accuracy is how often a model is right when it answers. Coverage is how often it answers.
         Refusals stay out of accuracy, so a model that declines the hard verse can outrank one that

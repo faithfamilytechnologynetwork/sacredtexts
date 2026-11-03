@@ -130,6 +130,10 @@ describe("selectRunId — the run a page opens (leaderboard home and /errors)", 
     expect(selectRunId(runs)).toBe("run-b");
   });
 
+  it("defaults to the panel run when it is in the index", () => {
+    expect(selectRunId([{ id: "run-b" }, { id: "panel" }, { id: "run-a" }])).toBe("panel");
+  });
+
   it("honours a requested id that names a known run, experiment runs included", () => {
     expect(selectRunId(runs, "run-a")).toBe("run-a");
     expect(selectRunId(runs, "exp-newest-2026-10-30")).toBe("exp-newest-2026-10-30");

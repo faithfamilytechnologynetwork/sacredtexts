@@ -121,6 +121,9 @@ def join_cells(answers: list[dict], scores: list[dict], judgments: list[dict]) -
             "matches_requested_p": j.get("matches_requested_p"),
             "equivalence": j.get("equivalence"),
             "kind": j.get("kind"),
+            "theology": j.get("theology"),
+            "coherent": j.get("coherent"),
+            "coherence_notes": j.get("coherence_notes") or [],
             "answer": answer.get("answer"),
             "expected_text": expected,
         })
@@ -189,6 +192,7 @@ def agreement(cells: list[dict]) -> dict:
         "not_refused": _distribution([c["refusal_p"] for c in cells if not det_refused(c)]),
     }
 
+    incoherent = [c for c in cells if c.get("coherent") is False]
     disagreements = []
     for c in cells:
         axes = []
@@ -214,6 +218,7 @@ def agreement(cells: list[dict]) -> dict:
                     "judge_prob_by_deterministic_class": ref_by_class},
         "n_disagreements": len(disagreements),
         "disagreements": disagreements,
+        "incoherent": len(incoherent),
     }
 
 
@@ -229,7 +234,8 @@ def render_markdown(report: dict) -> str:
     lines = [
         "# Jev agreement report",
         "",
-        f"Judged cells: **{report['n_cells']}** · threshold p ≥ {report['threshold']}",
+        f"Judged cells: **{report['n_cells']}** · threshold p ≥ {report['threshold']} · "
+        f"incoherent judge rows: **{report.get('incoherent', 0)}**",
         "",
         "## Containment — judge `matches_requested_p` vs deterministic `contains_reference`",
     ]
