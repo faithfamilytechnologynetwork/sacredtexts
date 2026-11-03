@@ -49,11 +49,7 @@ These citations are the question file. Population and familiarity are separate s
 - `cite_passage`: Where in {version} can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
 - `verify_source`: Is the following text from {version}? "{text}" Answer Yes or No.
 
-## Prompts in the text's language (draft)
+## Prompts in the text's language
 
-A native speaker should correct these before a run.
-
-- `retrieve_quote`: Ko {citation} pāṭho Dhammapade (Chaṭṭha Saṅgāyana, VRI)? Tasseva pāṭham eva vissajjehi.
-- `complete_unit`: Dhammapadato (Chaṭṭha Saṅgāyana, VRI) imaṃ udāharaṇaṃ paripūrehi: "{head}" Avasiṭṭhapadāni yeva vissajjehi.
-- `cite_passage`: Kattha Dhammapade (Chaṭṭha Saṅgāyana, VRI) ayaṃ pāṭho? "{text}" Ṭhānam eva vissajjehi, iminā ākārena: {example}.
-- `verify_source`: Ayaṃ pāṭho Dhammapadato (Chaṭṭha Saṅgāyana, VRI)? "{text}" Āma vā no vā vissajjehi.
+None. Romanized Pali has no native speakers, so the Dhammapada is asked with the
+English prompt only (owner decision, #113).
