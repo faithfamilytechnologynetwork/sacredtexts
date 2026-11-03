@@ -347,7 +347,7 @@ The flip is inside one model, on the same verses. Gemini Flash, Qur'an prompted 
 
 ## Close wording that still scores incorrect
 
-1611 incorrect answers still have token F1 of at least 0.70. The strict score is doing what it was built for: a near miss is not a hit. Most of them are Gemini Flash completions.
+1607 incorrect answers still have token F1 of at least 0.70. The strict score is doing what it was built for: a near miss is not a hit. Most of them are Gemini Flash completions.
 
 - beam, retrieve_quote: 98
 - terra, retrieve_quote: 97
@@ -362,13 +362,13 @@ The flip is inside one model, on the same verses. Gemini Flash, Qur'an prompted 
 - sol, retrieve_quote: 62
 - gemini-flash, complete_unit: 61
 - deepseek-v4-pro, retrieve_quote: 59
-- opus, complete_unit: 59
+- opus, complete_unit: 58
 - astra, retrieve_quote: 57
-- astra, complete_unit: 54
+- astra, complete_unit: 53
 - fable, retrieve_quote: 52
 - deepseek-v4-pro, complete_unit: 47
-- fable, complete_unit: 46
 - luna, retrieve_quote: 46
+- fable, complete_unit: 44
 - sol, complete_unit: 43
 - sonnet, retrieve_quote: 41
 - haiku, complete_unit: 39

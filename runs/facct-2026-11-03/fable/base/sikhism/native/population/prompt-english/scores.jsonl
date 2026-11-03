@@ -104,7 +104,7 @@
 {"question_id": "5fa5017de63ce57e", "model_id": "fable", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
 {"question_id": "dffbc8234d263eb0", "model_id": "fable", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9474, "token_f1_base": 0.9474, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "a3a4ef8ee36a5aa9", "model_id": "fable", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
-{"question_id": "fedccb9fed113993", "model_id": "fable", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9524, "token_f1_base": 0.9524, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "fedccb9fed113993", "model_id": "fable", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9524, "token_f1_base": 0.9524, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "2d2b207002e38a73", "model_id": "fable", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "4954a9ede6a3cac5", "model_id": "fable", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9032, "token_f1_base": 0.9032, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "f38ed5bd203f70a8", "model_id": "fable", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}

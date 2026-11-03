@@ -63,7 +63,7 @@
 {"question_id": "20a22f2ea766c86d", "model_id": "astra", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
 {"question_id": "3532983daec7fb6c", "model_id": "astra", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
 {"question_id": "45efc7b02894b792", "model_id": "astra", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
-{"question_id": "715857cce322744d", "model_id": "astra", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9412, "token_f1_base": 0.9412, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "715857cce322744d", "model_id": "astra", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9412, "token_f1_base": 0.9412, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "e34efb3814f13cd6", "model_id": "astra", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
 {"question_id": "f2b7bc49bfca2949", "model_id": "astra", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.05, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
 {"question_id": "2e4027926a5a0c86", "model_id": "astra", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
