@@ -91,17 +91,27 @@ def sggs_is_pankti(data: str) -> bool:
     return bool(_SGGS_VISHRAAM.search(data))
 
 
+def sggs_is_one_tuk(data: str) -> bool:
+    """One tuk: nothing but verse counters and ``ਰਹਾਉ`` after its first ``॥``. Shabad OS sometimes
+    stores several tuks as one record, and such a record can cross a page break: its last record
+    on Ang 315 holds three tuks, and BaniDB prints the third on Ang 316. An edge question asks only
+    of a one-tuk record, so its expected text is on the Ang it names."""
+    rest = data.partition("॥")[2].replace("ਰਹਾਉ", "")
+    return not re.sub(r"[\s॥੦-੯]", "", rest)
+
+
 def sggs_edge_pankti(
     ang_lines: list[tuple[str, str, str]], prefer: str, taken: set[str] = frozenset(),
 ) -> tuple[str, str, str] | None:
     """``(edge, citation, text)``: the Ang's ``prefer`` edge ("first" or "last"), else the other one,
     skipping an edge that is a heading or already in ``taken``. ``ang_lines`` is the Ang's
-    ``(citation, text, raw data)`` in reading order. None when neither edge is left: an Ang asks
+    ``(citation, text, raw data)`` in reading order. An edge that is a heading, or several tuks
+    in one record, is skipped too. None when neither edge is left: an Ang asks
     at most two retrieve questions, and a third passage drawn from it gets none."""
     edges = {"first": ang_lines[0], "last": ang_lines[-1]}
     for edge in (prefer, "last" if prefer == "first" else "first"):
         citation, text, data = edges[edge]
-        if edge not in taken and sggs_is_pankti(data):
+        if edge not in taken and sggs_is_pankti(data) and sggs_is_one_tuk(data):
             return edge, citation, text
     return None
 

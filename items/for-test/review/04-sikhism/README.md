@@ -5,7 +5,7 @@
 - Language: Gurmukhi (Sant Bhasha)
 - Raw file: `texts/raw/Sikhism/sggs_shabados.json`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: 256 questions. Population sample: 30 passages. Familiarity panel: 3 passages. Report those two separately.
+- Size: 254 questions. Population sample: 30 passages. Familiarity panel: 3 passages. Report those two separately.
 
 ## Passages to check
 

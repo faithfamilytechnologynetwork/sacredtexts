@@ -175,8 +175,9 @@ def test_sikh_retrieval_rows_ask_for_an_edge_pankti_of_the_ang():
     by_ang = _ang_lines()
     rows = _sikh_rows()
     retrieve = [q for q in rows if q["task"] == "retrieve_quote"]
-    # Two edges per Ang: a population Ang that holds more drawn passages asks only two of them.
-    assert len(retrieve) == 58
+    # Two edges per Ang: a population Ang that holds more drawn passages asks only two of them, and
+    # Ang 315 asks none (a heading first, a record crossing into Ang 316 last).
+    assert len(retrieve) == 56
     edges = {"first": 0, "last": 0}
     for q in retrieve:
         assert not re.search(r"\d+:\d+", q["prompt"]), q["id"]
@@ -187,6 +188,7 @@ def test_sikh_retrieval_rows_ask_for_an_edge_pankti_of_the_ang():
         text, data = by_ang[ang][0 if edge == "first" else -1]
         assert q["expected"] == {"text": text}, q["id"]
         assert re.search(r"[;.,]", data), q["id"]  # a pankti (vishraam marks), never a heading
+        assert not re.sub(r"[\s॥੦-੯]", "", data.partition("॥")[2].replace("ਰਹਾਉ", "")), q["id"]  # one tuk
         assert q["source"]["citation"].partition(":")[0] == ang, q["id"]
         edges[edge] += 1
     assert edges["first"] and edges["last"]
@@ -196,7 +198,8 @@ def test_sikh_retrieval_rows_ask_for_an_edge_pankti_of_the_ang():
         asked = [q["prompt"] for q in file_rows if q["task"] == "retrieve_quote"]
         assert len(asked) == len(set(asked)), path
         cited = {q["expected"]["citation"] for q in file_rows if q["task"] == "cite_passage"}
-        assert {q["source"]["citation"].partition(":")[0] for q in file_rows if q["task"] == "retrieve_quote"} == cited
+        retrieved = {q["source"]["citation"].partition(":")[0] for q in file_rows if q["task"] == "retrieve_quote"}
+        assert retrieved <= cited and cited - retrieved <= {"Ang 315"}, path  # Ang 315: no askable edge
 
 
 def test_an_edge_heading_is_never_asked_for():
@@ -211,6 +214,11 @@ def test_an_edge_heading_is_never_asked_for():
     for heading in ("ਗਉੜੀ ਮਹਲਾ ੫ ॥", "ਪਉੜੀ ॥", "ੴ ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ ॥", "ਸਲੋਕ ਮਃ ੪ ॥"):
         assert not bq.sggs_is_pankti(heading)
     assert bq.sggs_is_pankti("ਪੇਡੁ ਮੁੰਢਾਹੂੰ ਕਟਿਆ; ਤਿਸੁ ਡਾਲ ਸੁਕੰਦੇ ॥੧੨॥")
+    # Ang 315's last record holds three tuks; BaniDB prints the third on Ang 316. Never an edge.
+    crossing = "ਬਾਹਰਿ ਬਹੈ ਪੰਚਾ ਵਿਚਿ; ਤਪਾ ਸਦਾਏ ॥ ਅੰਦਰਿ ਬਹੈ ਤਪਾ ਪਾਪ ਕਮਾਏ ॥ ਹਰਿ ਅੰਦਰਲਾ ਪਾਪੁ; ਪੰਚਾ ਨੋ ਉਘਾ ਕਰਿ ਵੇਖਾਲਿਆ ॥"
+    assert not bq.sggs_is_one_tuk(crossing)
+    assert bq.sggs_is_one_tuk("ਹਰਿ ਹੋ; ਹੋ ਕਿਰਪਾਨ ॥੧॥ ਰਹਾਉ ॥") and bq.sggs_is_one_tuk("ਪੇਡੁ ਮੁੰਢਾਹੂੰ ਕਟਿਆ; ਤਿਸੁ ਡਾਲ ਸੁਕੰਦੇ ॥੧੨॥")
+    assert bq.sggs_edge_pankti([("Ang 315:1", "a", "ਸਲੋਕ ਮਃ ੫ ॥"), ("Ang 315:45", "b", crossing)], "last") is None
     lines = [("Ang 306:1", "a", "ਸਲੋਕ ਮਃ ੪ ॥"), ("Ang 306:2", "b", "x; y ॥"), ("Ang 306:3", "c", "ਪਉੜੀ ॥")]
     assert bq.sggs_edge_pankti(lines[1:], "last") == ("first", "Ang 306:2", "b")
     assert bq.sggs_edge_pankti(lines[:2], "first") == ("last", "Ang 306:2", "b")
