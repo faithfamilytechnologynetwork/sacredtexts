@@ -656,7 +656,7 @@ _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Devanagari: Hindi हाँ / Sanskrit आम् (yes); न, नहि, नास्ति, and the Pali reply नो हेतं ("not so").
     # Hindi nahi / nahiṃ written in Latin script stay on sa cells only, like every Latin word.
     "sa": (
-        ("हाँ", "हां", "आम्", "आम"),
+        ("हाँ", "हां", "आम्"),
         ("नहीं", "नही", "न", "नहि", "नास्ति", "नो", "नो हेतं", "nahi", "nahiṃ"),
     ),
     "pi": (("āma",), ("na", "nahi", "nahiṃ")),   # Pali (Latin script); nahi(ṃ) as Pali or Hindi
@@ -677,13 +677,18 @@ _ANY_CELL_YES = tuple(dict.fromkeys(w for yes, _ in _YES_NO_TABLES for w in yes 
 _ANY_CELL_NO = tuple(dict.fromkeys(w for _, no in _YES_NO_TABLES for w in no if not _is_latin(w)))
 
 
+_DEVANAGARI_VIRAMA = "्"
+
+
 def _strip_marks(text: str) -> str:
     """Drop combining marks so a pointed or accented verdict matches the bare word.
 
-    Hebrew כֵּן and לֹא, and Greek Οὐχί, are the same yes/no words as כן, לא, and ουχί.
+    Hebrew כֵּן and לֹא, and Greek Οὐχί, are the same yes/no words as כן, לא, and ουχί. The Devanagari
+    virama is kept, because it changes the word: ``आम्`` is Sanskrit "yes", but the bare ``आम`` is Hindi
+    "common" or "mango" (``आम-तौर पर``, "generally") and is never a verdict.
     """
     nfd = unicodedata.normalize("NFD", text)
-    return "".join(ch for ch in nfd if not unicodedata.category(ch).startswith("M"))
+    return "".join(ch for ch in nfd if ch == _DEVANAGARI_VIRAMA or not unicodedata.category(ch).startswith("M"))
 
 
 def _stands_alone(rest: str) -> bool:

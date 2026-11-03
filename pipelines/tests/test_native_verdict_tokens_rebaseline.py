@@ -11,7 +11,9 @@ stripped on every cell, and ``_stands_alone`` skips a zero-width non-joiner afte
 The registered set was derived by running the pre-#115 and #115 parsers over every scored answer and
 is pinned here by identity:
 
-- 23 cells in committed ``runs/``, all ``refused`` there: 21 → correct, 2 → incorrect.
+- 22 cells in committed ``runs/``, all ``refused`` there: 20 → correct, 2 → incorrect. The bare ``आम`` is
+  never a verdict (Hindi "common"/"mango"; the virama is kept in matching), so gemini-flash's
+  ``आम (Yes)`` stays ``refused``.
   ``runs/archive``: none.
 - 134 cells in the untracked ``runs/rerun-2026-11-03`` (scored with #95): 133 → correct, 1 → incorrect
   (gemma's ``**Nahi**`` on an expected yes). Only the 14 models whose collection was complete are pinned;
@@ -41,9 +43,8 @@ RUNS = Path(__file__).resolve().parents[2] / "runs"
         ("आम्", "sa", "yes"),
         ("आम्।", "sa", "yes"),
         ("**आम्।** अयं श्लोकः", "sa", "yes"),
-        ("आम (Yes)", "sa", "yes"),
-        ("आम्‌।", "sa", "yes"),
-        ("हाँ‌।", "sa", "yes"),     # a zero-width non-joiner after a word that was already listed
+        ("आम्\u200c।", "sa", "yes"),
+        ("हाँ\u200c।", "sa", "yes"),     # a zero-width non-joiner after a word that was already listed
         ("הן", "he", "yes"),
         ("הן.", "he", "yes"),
         ("הין", "he", "yes"),
@@ -57,8 +58,8 @@ RUNS = Path(__file__).resolve().parents[2] / "runs"
         ("नो।", "pi", "no"),
         ("उत्तर: हाँ", "sa", "yes"),
         ("उत्तर: **हाँ**", "sa", "yes"),
-        ("उत्तरम्: आम्‌ (हाँ)।", "sa", "yes"),
-        ("उत्तरम्: **आम्‌।**", "sa", "yes"),
+        ("उत्तरम्: आम्\u200c (हाँ)।", "sa", "yes"),
+        ("उत्तरम्: **आम्\u200c।**", "sa", "yes"),
         ("उत्तर: नहीं", "en", "no"),     # the labels are read on every cell
         ("الجواب: لا", "en", "no"),
     ],
@@ -71,7 +72,10 @@ def test_verdict_is_read(answer, language, verdict):
     "answer, language",
     [
         ("आम् इति न", "sa"),           # a following word: not a stand-alone verdict
-        ("आम्‌इति", "sa"),
+        ("आम-तौर पर यह श्लोक नहीं है", "sa"),  # bare आम ("common") is never a verdict, even before a hyphen
+        ("आम।", "sa"),
+        ("आम (Yes)", "sa"),
+        ("आम्\u200cइति", "sa"),
         ("הן לא", "he"),
         ("הין לא", "he"),
         ("nahi jānāmi", "pi"),
@@ -104,7 +108,7 @@ FLIPS: dict[str, dict[str, str]] = {
         "1bf456e20feaa9ee": "correct", "1c7778747163ad02": "correct", "42dc0d16da558321": "correct",
     },
     "gemini-flash/base/hinduism/native/population/prompt-english": {
-        "0b1497819e8787de": "correct", "1c7778747163ad02": "correct",
+        "0b1497819e8787de": "correct",
     },
     "gemma-31b/base/buddhism/native/population/prompt-english": {
         "f0062121ba12ba06": "incorrect",
@@ -217,13 +221,23 @@ FLIPS: dict[str, dict[str, str]] = {
 }
 
 
+# The rerun models whose collection was complete when the registry was derived. qwen3-32b and gpt-oss-20b
+# were still collecting, so they are not pinned, and the counts below cannot drift with them.
+RERUN_COMPLETE_MODELS = frozenset({
+    "argon", "astra", "beam", "deepseek-v4-pro", "fable", "gemini-flash", "gemma-31b", "haiku", "kimi", "luna",
+    "opus", "sol", "sonnet", "terra",
+})
+
+
 def test_registered_set_size():
+    assert {f.split("/")[1] for f in FLIPS if f.startswith("rerun-")} <= RERUN_COMPLETE_MODELS
+
     def outcomes(rerun: bool) -> Counter:
         return Counter(
             o for folder, cells in FLIPS.items() if folder.startswith("rerun-") == rerun for o in cells.values()
         )
 
-    assert outcomes(rerun=False) == {"correct": 21, "incorrect": 2}
+    assert outcomes(rerun=False) == {"correct": 20, "incorrect": 2}
     assert outcomes(rerun=True) == {"correct": 133, "incorrect": 1}
 
 

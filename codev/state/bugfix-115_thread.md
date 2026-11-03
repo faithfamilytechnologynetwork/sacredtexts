@@ -61,3 +61,12 @@ Pre-existing risk: since `हाँ` strips to `ह`, a leading `है।` woul
 - Architect chose (a): #95's two luna prompt-native cells stay pinned while their evidence is tracked. Dependency noted in
   the PR body: whoever removes that evidence drops the cells and sets the #95 size to {correct: 58, incorrect: 25}.
   #115's 3 gemma prompt-native cells would take its committed count to {correct: 19, incorrect: 1}.
+- Architect integration review: APPROVE with 3 pre-merge fixes, all done:
+  1. `test_registered_set_size` is scoped to the 14 complete rerun models (`RERUN_COMPLETE_MODELS`; the rerun folders
+     must be a subset). The counts are over the static registry, so a live model can't drift them.
+  2. `_tracked_score_files()` skips (FileNotFoundError / CalledProcessError) instead of erroring when there is no git.
+  3. `_strip_marks` now keeps the Devanagari virama (U+094D). `आम्` (yes) needs it; bare `आम` (Hindi "common"/"mango",
+     `आम-तौर पर`) is never a verdict. The no-op `आम` entry is dropped. Diff vs v1 over 15,337 verify cells (committed +
+     archive + 14-model rerun): exactly 1 move, committed gemini-flash `आम (Yes)` correct→refused, removed from the
+     registry (committed now 22: 20 correct, 2 incorrect). Negatives added: `आम-तौर पर यह श्लोक नहीं है`, `आम।`, `आम (Yes)`.
+- Suite 1047 passed / 24 skipped; the rerun witness (copied in) passes 85.

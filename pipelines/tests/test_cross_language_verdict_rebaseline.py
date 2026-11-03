@@ -39,9 +39,12 @@ RUNS = Path(__file__).resolve().parents[2] / "runs"
 def _tracked_score_files() -> list[Path]:
     """The git-tracked ``runs/**/scores.jsonl``. An untracked run (a live collection, or one not yet
     rescored under the final contract) never enters the scan below."""
-    tracked = subprocess.run(
-        ["git", "-C", str(RUNS.parent), "ls-files", "-z", "runs/"], capture_output=True, text=True, check=True,
-    ).stdout.split("\0")
+    try:
+        tracked = subprocess.run(
+            ["git", "-C", str(RUNS.parent), "ls-files", "-z", "runs/"], capture_output=True, text=True, check=True,
+        ).stdout.split("\0")
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pytest.skip("no git checkout to list the tracked run evidence")
     return sorted(RUNS.parent / p for p in tracked if p.endswith("/scores.jsonl"))
 
 # answers folder (relative to runs/) -> {question_id: outcome under #95}
