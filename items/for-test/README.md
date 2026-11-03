@@ -1,6 +1,6 @@
 # Items for test
 
-This folder is the test set for the six traditions. The population sample is 30 passages. A native edition is asked twice, an English prompt and a prompt in the text's language. An English edition, when this corpus has one, is a third file. Sampling is in `METHODOLOGY.md`.
+This folder is the test set for the six traditions. The population sample is 30 passages. A native edition is asked twice, an English prompt and a prompt in the text's language, except the Pali Dhammapada, which is asked with the English prompt only (#113). An English edition, when this corpus has one, is a third file. Sampling is in `METHODOLOGY.md`.
 
 | Tradition | Native text | English prompt | Native prompt | English text | Missing |
 |---|---|---|---|---|---|
@@ -9,7 +9,7 @@ This folder is the test set for the six traditions. The population sample is 30 
 | Islam | Yes | Yes | Yes | Yes | — |
 | Sikhism | Yes | Yes | Yes | No | English text |
 | Hinduism | Yes | Yes | Yes | Yes | — |
-| Buddhism | Yes | Yes | Yes | No | English text |
+| Buddhism | Yes | Yes | No | No | English text. No Pali-language prompt: Pali has no native speakers (#113) |
 
 `*/familiarity/` is the pre-registered list and is not in the run (Christianity 4, Judaism 1, Islam 8, Sikhism 3, Hinduism 4, Buddhism 4). `cost.py` writes `COST.md`. `models/openrouter.yaml` is the 16-model run and `models/openrouter-subset.yaml` is 7 of those models. `review/` is check pages only.
 
@@ -49,7 +49,7 @@ A verify question can quote some other tradition; those quotes are not copied he
 
 The run is the `population/` folder. `passages.json` there is the 30 passages, and `run` is true. The `familiarity/` folder is not collected with the run (Christianity 4, Judaism 1, Islam 8, Sikhism 3, Hinduism 4, Buddhism 4).
 
-A native edition is the same passages asked twice: `prompt-english/` and `prompt-native/`. Christianity's native text is not a second draw and not two full Bibles. Hebrew Bible verses are in `native/masoretic/` and New Testament verses are in `native/greek/`. Each of those has `population/` (the same 30, split) and `familiarity/` (Genesis 1:1 and Psalms 23:1; John 3:16 and Matthew 6:9). The NRSV file is the English edition. `modern/english/` is the supplemental Book of Mormon and encyclical set, not a population or familiarity sample.
+A native edition is the same passages asked twice: `prompt-english/` and `prompt-native/`. Buddhism has `prompt-english/` only. Christianity's native text is not a second draw and not two full Bibles. Hebrew Bible verses are in `native/masoretic/` and New Testament verses are in `native/greek/`. Each of those has `population/` (the same 30, split) and `familiarity/` (Genesis 1:1 and Psalms 23:1; John 3:16 and Matthew 6:9). The NRSV file is the English edition. `modern/english/` is the supplemental Book of Mormon and encyclical set, not a population or familiarity sample.
 
 | Tradition | Questions in the run | Population | Familiarity | File |
 |---|---|---|---|---|
@@ -58,7 +58,7 @@ A native edition is the same passages asked twice: `prompt-english/` and `prompt
 | Islam (Arabic, two prompts, then Saheeh International) | 120 + 120 + 120 | 30 | 8, not in the run | `islam/native/population/`, `islam/english/population/` |
 | Sikhism (Gurmukhi, two prompts) | 240 | 30 | 3, not in the run | `sikhism/native/population/prompt-english/`, `prompt-native/` |
 | Hinduism (Sanskrit, two prompts, then English) | 120 + 120 + 120 | 30 | 4, not in the run | `hinduism/native/population/`, `hinduism/english/population/` |
-| Buddhism (Pali, two prompts) | 120 + 120 | 30 | 4, not in the run | `buddhism/native/population/` |
+| Buddhism (Pali, English prompt only) | 120 | 30 | 4, not in the run | `buddhism/native/population/prompt-english/` |
 
 Report the population sample and the familiarity panel separately. The reason
 is in `METHODOLOGY.md`.
@@ -115,7 +115,7 @@ Search is the `search` key at the top of the panel file. It is `false`, which st
 
 OpenRouter has no language field. The prompt already names the edition and the answer language. One collect writes every model in the chosen file into the same answers file; each row is marked with its `model_id`.
 
-`COST.md` prices List A. Christianity, Judaism, Islam, and Hinduism are 360 population questions each (native two prompts, plus an English edition). Sikhism and Buddhism are 240 (native only). Familiarity lists and `christianity/modern/` are not in that total. Refresh with `python items/for-test/cost.py`.
+`COST.md` prices List A. Christianity, Judaism, Islam, and Hinduism are 360 population questions each (native two prompts, plus an English edition). Sikhism is 240 (native only). Buddhism is 120 (Pali, English prompt only). Familiarity lists and `christianity/modern/` are not in that total. Refresh with `python items/for-test/cost.py`.
 
 `complete_unit` scores the remaining words of that passage. An answer that then continues into later verses still counts as correct, because the remainder is contained in the answer. A cite task that asks for a passage from the wrong edition is not in this run.
 
