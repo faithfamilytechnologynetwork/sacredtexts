@@ -1,0 +1,17 @@
+id: bugfix-85
+title: items-for-test-masoretic-promp
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-03T02:56:45.838Z'
+    approved_at: '2026-11-03T03:06:34.058Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T02:39:19.950Z'
+updated_at: '2026-11-03T03:06:39.620Z'
+pr_ready_for_human: false
