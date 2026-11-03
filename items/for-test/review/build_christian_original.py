@@ -63,14 +63,40 @@ def split_cite(citation: str) -> tuple[str, int, int]:
     return book, int(chapter), int(verse)
 
 
+def _qere(note: re.Match) -> str:
+    if '<rdg type="x-qere"/>' in note.group(0):  # written, not read
+        return ""
+    rdg = re.search(r'<rdg type="x-qere">(.*?)</rdg>', note.group(0), re.S)
+    if not rdg:
+        raise SystemExit(f"Ketiv/Qere note without a Qere reading: {note.group(0)}")
+    return rdg.group(1)
+
+
+def wlc_text(verse: str) -> str:
+    """One OSHB ``<verse>`` as plain text, by the WLC rendering convention in METHODOLOGY.md (#85).
+
+    The pointed Qere replaces the Ketiv; every other ``<note>`` is apparatus and is dropped; the
+    setumah and petuchah paragraph markers (ס, פ) are dropped; the morpheme "/" is deleted.
+    Maqaf, sof pasuq, paseq, vowels and cantillation stay.
+    """
+    ketiv = r'<w [^>]*type="x-ketiv"[^>]*>.*?</w>|<seg [^>]*subType="x-ketiv"[^>]*>.*?</seg>'
+    text = re.sub(ketiv, "", verse, flags=re.S)
+    text = re.sub(r'<note type="variant">.*?</note>', _qere, text, flags=re.S)
+    text = re.sub(r'<note\b[^>]*>.*?</note>|<seg type="x-(?:samekh|pe)">.*?</seg>', "", text, flags=re.S)
+    text = re.sub(r"<[^>]+>", "", text).replace("/", "")
+    text = re.sub(r"\s+", " ", text).strip()
+    if re.search(r"[A-Za-z<>/]", text):
+        raise SystemExit(f"WLC tagging left in the verse text: {text}")
+    return text
+
+
 def wlc_books(citations: list[str]) -> dict[str, str]:
     books = sorted({OSIS[split_cite(c)[0]] for c in citations if split_cite(c)[0] not in NT})
     out = {}
     for book in books:
         xml = urllib.request.urlopen(WLC_URL.format(book=book), timeout=60).read().decode("utf-8")
         for match in re.finditer(r'<verse osisID="([^"]+)">(.*?)</verse>', xml, re.S):
-            text = re.sub(r"<[^>]+>", "", match.group(2))
-            out[match.group(1)] = re.sub(r"\s+", " ", text).strip()
+            out[match.group(1)] = wlc_text(match.group(2))
     return out
 
 

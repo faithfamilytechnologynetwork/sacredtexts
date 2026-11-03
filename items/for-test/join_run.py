@@ -40,7 +40,7 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
 sys.path.insert(0, str(REPO / "pipelines"))
 
-from sacredbench.collect import Stopped, _existing, collect  # noqa: E402
+from sacredbench.collect import Stopped, _existing, carry_forward, collect  # noqa: E402
 from sacredbench.config import load_config  # noqa: E402
 from sacredbench.generate import Question, load_questions  # noqa: E402
 
@@ -136,7 +136,7 @@ def reconcile_usage(model_id: str, run_dir: Path) -> dict | None:
                     if not line.strip():
                         continue
                     row = json.loads(line)
-                    if row.get("model_id") != model_id:
+                    if row.get("model_id") != model_id or row.get("carried_from"):
                         continue
                     usage = row.get("usage") or {}
                     prompt_tokens += int(usage.get("in") or 0)
@@ -265,8 +265,19 @@ def main() -> None:
         help="write under <run-dir>/<model>/ instead of runs/<model>/ (relative to the repo root), "
         "such as runs/rerun-2026-11-03",
     )
+    parser.add_argument(
+        "--carry-from",
+        default=None,
+        help="an earlier run folder, such as runs/rerun-2026-11-03 (runs for the committed archive); "
+        "an answer whose question id and prompt are unchanged is copied, not called again",
+    )
     args = parser.parse_args()
     run_dir = resolve_run_dir(args.run_dir)
+    carry_dir = (REPO / args.carry_from).resolve() if args.carry_from else None
+    if carry_dir and not (carry_dir / args.model / "base").is_dir():
+        raise SystemExit(f"--carry-from {carry_dir} has no {args.model}/base/ folder")
+    if carry_dir == run_dir:
+        raise SystemExit("--carry-from must be an earlier run, not the run being written")
     files = list(RUNNABLE)
     missing = [p for p in files if not p.exists()]
     if missing:
@@ -318,6 +329,9 @@ def main() -> None:
         dest.mkdir(parents=True, exist_ok=True)
         answers = dest / "answers.jsonl"
         rel = questions.parent.relative_to(ROOT)
+        source = out_dir(args.model, questions, carry_dir) / "answers.jsonl" if carry_dir else None
+        if source and source.exists():
+            print(f"carry {rel}: {carry_forward(todo, cfg, answers, source, digest_from=all_qs)} answers from {source}")
         saved, *_ = _existing(answers)
         pending = sum(1 for q in todo if (q.id, args.model) not in saved)
         shown = answers.relative_to(REPO) if answers.is_relative_to(REPO) else answers
