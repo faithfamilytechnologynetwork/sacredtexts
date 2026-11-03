@@ -553,16 +553,17 @@ def test_gemini_grounding_incomplete_finish_fails_loud(monkeypatch):
         complete(m, "prompt")
 
 
-def test_gemini_search_off_passes_no_tool_and_ignores_finish(monkeypatch):
-    """The search-off Gemini path is byte-identical to prior behaviour: no grounding tool, no
-    finish-reason gate (a non-STOP finish off-arm is not this experiment's concern), no
-    provenance keys."""
+def test_gemini_search_off_passes_no_tool_and_records_finish_without_gating(monkeypatch):
+    """The search-off Gemini path: no grounding tool, no finish-reason gate (a non-STOP finish
+    off-arm is committed and scored), no search provenance keys. The finish reason is recorded,
+    not enforced (#93)."""
     captured = _install_fake_gemini(monkeypatch, _gemini_resp(finish="MAX_TOKENS"))
     m = ModelSpec(id="g", provider="gemini", model="gemini-x", tools=())
     text, usage, _ = complete(m, "prompt")
     assert text == "the answer"                        # not failed loud despite MAX_TOKENS
     assert getattr(captured["config"], "tools", None) is None
     assert "web_search_requests" not in usage and "citations" not in usage
+    assert usage["finish_reason"] == "MAX_TOKENS"
 
 
 # --- tools-aware panel identity in summary.json ------------------------------
