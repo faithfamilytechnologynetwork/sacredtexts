@@ -1,0 +1,17 @@
+id: bugfix-111
+title: cite-passage-scores-correct-ci
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-03T03:08:15.079Z'
+    approved_at: '2026-11-03T03:14:25.124Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T02:53:40.765Z'
+updated_at: '2026-11-03T03:14:33.468Z'
+pr_ready_for_human: false
