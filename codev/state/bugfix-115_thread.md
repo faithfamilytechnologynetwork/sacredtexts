@@ -57,3 +57,7 @@ Pre-existing risk: since `हाँ` strips to `ह`, a leading `है।` woul
   The rerun registry pins only the 14 models whose collection is complete; it is a witness, skip-if-absent.
   The regenerated registry was identical (134 cells, none from gpt-oss/qwen).
 - CMAP round 1: codex APPROVE; gemini skipped (agy produced no output).
+- CMAP: codex APPROVE, claude APPROVE (asked for a PR body refresh after 98e355a, now done), gemini skipped (OK per architect).
+- Architect chose (a): #95's two luna prompt-native cells stay pinned while their evidence is tracked. Dependency noted in
+  the PR body: whoever removes that evidence drops the cells and sets the #95 size to {correct: 58, incorrect: 25}.
+  #115's 3 gemma prompt-native cells would take its committed count to {correct: 19, incorrect: 1}.
