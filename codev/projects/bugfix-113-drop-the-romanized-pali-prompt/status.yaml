@@ -1,0 +1,14 @@
+id: bugfix-113
+title: drop-the-romanized-pali-prompt
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T03:00:36.629Z'
+updated_at: '2026-11-03T03:00:36.630Z'
