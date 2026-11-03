@@ -63,7 +63,8 @@ def report(model: str) -> str:
         for row in rows:
             question = row.get("question") or {}
             expected = question.get("expected") or {}
-            metrics = score_answer(row.get("task") or "", row.get("answer") or "", expected)
+            language = (question.get("source") or {}).get("language")
+            metrics = score_answer(row.get("task") or "", row.get("answer") or "", expected, language=language)
             outcome = metrics.get("outcome") or "incorrect"
             bucket = by_task[row.get("task") or "?"]
             bucket[outcome] += 1
