@@ -1,7 +1,7 @@
 id: bugfix-115
 title: verify-source-unknown-native-v
 protocol: bugfix
-phase: pr
+phase: verified
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -13,5 +13,5 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T03:03:08.441Z'
-updated_at: '2026-11-03T03:38:34.747Z'
+updated_at: '2026-11-03T03:38:39.645Z'
 pr_ready_for_human: false
