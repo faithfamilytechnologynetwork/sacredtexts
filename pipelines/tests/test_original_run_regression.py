@@ -67,6 +67,14 @@ SURVEY_COUNT = 24
 SURVEY_SHA256 = "8244e9fb6c6b4d44ed067c3e0f6a75504f6bf28031259fe3ec334a90f24c5060"
 
 
+# Rows a later, deliberate cite_passage contract change moves (#112: Talmud scored at daf+amud, so
+# 2 cells are credited, and segment_match is reported on the 21 Talmud/Ang cells; #118 moves none
+# here). The committed scores are NOT rebaselined (the FAccT card is frozen, #74); each moved row is
+# pinned by identity with its committed AND re-scored metrics, so an unregistered move, a swap, or a
+# drifted value all fail.
+CONTRACT_MOVERS = Path(__file__).parent / "testdata" / "original_run_cite_contract_movers.jsonl"
+
+
 def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
     answers = RUN / "answers.jsonl"
     committed = RUN / "scores.jsonl"
@@ -74,8 +82,22 @@ def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
         pytest.skip("original-2026-10-21 evidence not present")
     out = tmp_path / "scores.jsonl"
     score_file(answers, out)  # no roster/panel needed to reproduce per-answer scores
-    # byte-for-byte, order included (score_file preserves input-row order).
-    assert out.read_text(encoding="utf-8") == committed.read_text(encoding="utf-8")
+    movers = {
+        m["row"]: m
+        for m in map(json.loads, CONTRACT_MOVERS.read_text(encoding="utf-8").splitlines())
+    }
+    assert len(movers) == 21 and sum(m["rescored"]["correct"] > m["committed"]["correct"] for m in movers.values()) == 2
+    rescored = out.read_text(encoding="utf-8").splitlines()
+    old = committed.read_text(encoding="utf-8").splitlines()
+    assert len(rescored) == len(old)
+    # byte-for-byte, order included (score_file preserves input-row order), except registered rows
+    for i, (new_line, old_line) in enumerate(zip(rescored, old)):
+        if i not in movers:
+            assert new_line == old_line, f"row {i} moved but is not registered"
+            continue
+        m, new_row, old_row = movers[i], json.loads(new_line), json.loads(old_line)
+        assert (old_row["question_id"], old_row["model_id"]) == (m["question_id"], m["model_id"]), i
+        assert (old_row["metrics"], new_row["metrics"]) == (m["committed"], m["rescored"]), i
 
 
 # The committed FAccT card is FROZEN as of issue #74. Until #74 this test rebuilt the card and
