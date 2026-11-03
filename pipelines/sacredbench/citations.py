@@ -193,6 +193,9 @@ _PAGE_WORD = _alternation(_fold(w) for w in ("page", "ਪੰਨਾ"))
 _PAGE_RX = re.compile(f"{_START}(?:{_PAGE_WORD})(?=\\s+\\d)")
 _PAGE_AFTER_ANG_RX = re.compile(f"({_START}ang\\s+\\d+(?:\\s*:\\s*\\d+)?)[\\s,;(\\[]*(?:{_PAGE_WORD})\\s+\\d+{_END}")
 _NEGATION = _alternation(_fold(w) for w in ("not", "ਨਹੀਂ"))
+# A colon citation with no work name before it ("…, 1402:3", "(1402:3)"): no letter, Indic sign or
+# digit directly before the number, nor a letter one space before.
+_BARE_COLON_RX = re.compile(r"(?<![^\W\d_])(?<![ऀ-෿])(?<![^\W\d_]\s)(?<![ऀ-෿]\s)(?<!\d)(\d+)\s*:\s*\d+(?!\w)")
 
 
 def _page_as_ang(text: str) -> str:
@@ -220,13 +223,21 @@ def _score_at_ang(answer: str, expected_citation: str, example: str | None) -> d
     only as a disclaimed echo (``Ang 315 (not Ang 306)``); offered beside the answer (``Ang 306 or Ang
     315``) it is a rival, because nearly every Sikh cite prompt shows the same example. The headline is
     this verdict alone: on the raw answer the no-colon extractor skips every ``Ang N:k`` span, so the
-    containment fallback would credit a hedge. There is no line to match: ``segment_match`` is None."""
+    containment fallback would credit a hedge. There is no line to match: ``segment_match`` is None.
+
+    A bare ``N:k`` (no work name) restating a named Ang is that Ang's line, not a rival: ``Ang 1402
+    (Raag Jaijavanti, 1402:3)`` is Ang 1402. Known limits, accepted on the #135 follow-up review: a page
+    right after an Ang is a qualifier even with another number (``Ang 1402, Page 1403`` is Ang 1402);
+    a bare second number is not a candidate (``Ang 1402 or 1403``); an echo disclaimed away from the
+    example (``(Note: Ang 306 is the example you gave.)``) is a rival."""
     target = int(expected_citation.split()[1])
-    text = _ang_text(answer, expected_citation)
+    text = re.sub(r"\s+", " ", _ang_text(answer, expected_citation))
+    named = {int(n) for n in _ANG_RX.findall(text)}
     if example is not None:
         for ang in _ANG_RX.findall(_ang_text(example, expected_citation)):
             text = _echo_rx(int(ang)).sub(" ", text)
     angs = {int(n) for n in _ANG_RX.findall(text)}
+    text = _BARE_COLON_RX.sub(lambda m: " " if int(m[1]) in named else m[0], text)
     rivals = {normalize(m[0]) for m in _COLON_CITE.finditer(text)}
     n = int(target in angs) + len(angs - {target}) + len(rivals)
     return {"correct": int(target in angs and n == 1), "n_candidates": n, "segment_match": None}

@@ -66,3 +66,7 @@ Architect post-merge review of #136. Fixed in `_score_at_ang`:
    (example rejected 5 words away). Architect chose to keep the narrow rule (a clause rule credits "not sure whether 306 or 315").
 3. Page word after an Ang = qualifier; elsewhere = Ang label (my proposal; the architect's first rule credited `Ang 315 or Page 316`).
 4. arch-critical.md / arch.md carry the #135 exception. Oracle asserts question_id per row.
+- PR #138 review (architect): P2 fixed: a bare `N:k` (no work name) restating a named Ang is that Ang's line, not a
+  rival (`Ang 1402 (…, 1402:3)` → correct). P3 known limits noted in the `_score_at_ang` docstring: `Ang 1402, Page 1403`
+  → correct; `Ang 1402 or 1403` → correct (bare second number not a candidate); a far-away disclaimed echo is a rival.
+  Oracle + movers table unchanged (1 registered mover).

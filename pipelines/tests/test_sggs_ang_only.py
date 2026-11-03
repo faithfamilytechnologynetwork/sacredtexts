@@ -148,6 +148,29 @@ def test_the_form_example_offered_beside_the_ang_is_a_hedge(answer):
     assert (_cite(answer)["outcome"], _cite(answer)["n_candidates"]) == ("incorrect", 2)
 
 
+@pytest.mark.parametrize(
+    ("answer", "outcome", "n"),
+    [
+        # PR #138 review (P2): a bare N:k restating a named Ang is that Ang's line, not a rival
+        ("Ang 1402 (Guru Arjan, Raag Jaijavanti, 1402:3)", "correct", 1),
+        ("Ang 1402 (1402:3)", "correct", 1),
+        ("ਅੰਗ ੧੪੦੨ (੧੪੦੨:੩)", "correct", 1),
+        ("Ang 1402, not Ang 306 (306:13)", "correct", 1),  # the disclaimed example's own line
+        ("Ang 1402 (306:13)", "incorrect", 2),  # a bare N:k whose Ang is not named is still a rival
+        ("Ang 1402 (Raag Jaijavanti, John 1:1)", "incorrect", 2),  # a colon citation of another work
+        ("Ang 1402, Psalms 119:176", "incorrect", 2),
+        # probes from the same review that already behaved, pinned
+        ("Page 1402 (Ang 1402)", "correct", 1),
+        ("Ang 1402 (page 1402 of the SGGS)", "correct", 1),
+        ("Sri Guru Granth Sahib, Ang 1402", "correct", 1),
+        ("It is not Ang 1402; it is Ang 306.", "incorrect", 2),
+    ],
+)
+def test_a_bare_line_of_a_named_ang_is_not_a_rival(answer, outcome, n):
+    scored = _cite(answer, "Ang 1402")
+    assert (scored["outcome"], scored["n_candidates"]) == (outcome, n)
+
+
 def test_the_form_example_alone_is_a_wrong_locus():
     assert (_cite("Ang 306")["outcome"], _cite("Ang 306")["n_candidates"]) == ("incorrect", 1)
 
