@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from sacredbench.score import fold_citation_digits, normalize, score_answer
+from sacredbench.score import _single_citation_correct, _with_outcome, fold_citation_digits, normalize, score_answer
 
 RUNS = Path(__file__).resolve().parents[2] / "runs"
 MOVERS = Path(__file__).parent / "testdata" / "citation_digit_fold_movers.tsv"
@@ -70,9 +70,7 @@ def test_one_citation_in_two_numeral_systems_is_not_a_hedge():
         ("٤٦:٣٤", "34:46"),  # reversed
         ("٣٤:٤٦٥", "34:46"),  # boundary: 34:465 is not 34:46
         ("١٣٤:٤٦", "34:46"),  # boundary on the left
-        ("آل عمران: ١٤٠", "3:140"),  # surah name, not the requested citation form (deepseek, committed)
         ("ਅੰਗ ੩੦੮:੧੩.", "Ang 306:13"),  # wrong ang (astra, committed)
-        ("ਅੰਗ ੭੩੪:੮", "Ang 734:8"),  # numerals only: the Gurmukhi label is not read as "Ang"
     ],
 )
 def test_wrong_or_differently_labelled_citations_stay_incorrect(answer, citation):
@@ -97,6 +95,17 @@ def test_shared_normalize_and_other_tasks_do_not_fold():
 
 
 # --- oracle over the committed 2026-11-02 run ------------------------------------------------
+
+# A surah-named citation (آل عمران: ١٤٠) and a Gurmukhi-labelled one (ਅੰਗ ੭੩੪:੮) stay incorrect under
+# this layer; #112 credits them (test_citation_equivalence.py).
+
+
+def _digit_fold_layer(answer: str, expected: dict) -> dict:
+    """The #111 matcher alone. The #112 equivalence layer above it is pinned by its own oracle
+    (test_citation_equivalence.py), so this one keeps pinning only the digit fold."""
+    correct, n = _single_citation_correct(answer, expected["citation"])
+    return _with_outcome({"correct": correct, "n_candidates": n}, "cite_passage", answer, expected)
+
 
 # The registered moves: only these keys may change.
 _MOVE_KEYS = {"correct", "outcome", "n_candidates"}
@@ -144,7 +153,7 @@ def test_committed_cite_passage_cells_move_only_as_registered():
             if row["task"] != "cite_passage":
                 continue
             assert row["question_id"] == old["question_id"], folder
-            new = score_answer("cite_passage", row["answer"], row["question"]["expected"])
+            new = _digit_fold_layer(row["answer"], row["question"]["expected"])
             key = (folder, i, row["question_id"])
             if key not in registered:
                 assert new == old["metrics"], f"{key} moved but is not registered"

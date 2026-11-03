@@ -53,7 +53,11 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
                                    NOT read as "no") — closes the #23 PAPER GATE
 - cite_passage                   : the SINGLE extracted citation EQUALS ground truth
                                    (boundary-aware, not containment); a multi-candidate
-                                   hedge scores 0, a repeated correct citation does not
+                                   hedge scores 0, a repeated correct citation does not.
+                                   A citation in the text's own notation counts (``Πράξεις
+                                   24:1``, ``שמות כח:מג``); Talmud is scored at daf+amud and the
+                                   Guru Granth Sahib at the Ang, with ``segment_match`` beside it
+                                   (``citations.py``, #112)
 
 (``identify_version`` and ``identify_source`` were retired in Spec 26: the question set is
 original-language-only, so there are never ≥2 editions of one work for ``identify_version``, and
@@ -65,6 +69,7 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
 - ``cite_passage`` over Arabic ground truth: the span extractors expect a Latin-script leading
   word. Native-script numerals (Arabic-Indic, Devanagari, Gurmukhi …) ARE read as ASCII in the
   citation path (``fold_citation_digits``, #111); ``normalize()`` itself does not fold them.
+  Native-script labels and Hebrew letter-numerals are rewritten by ``citations.py`` (#112).
 """
 
 from __future__ import annotations
@@ -946,8 +951,9 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             task, answer, expected,
         )
     if task == "cite_passage":
-        correct, n = _single_citation_correct(answer, expected["citation"])
-        return _with_outcome({"correct": correct, "n_candidates": n}, task, answer, expected)
+        from .citations import score_citation  # native notation + Talmud/GGS granularity (#112)
+
+        return _with_outcome(score_citation(answer, expected["citation"]), task, answer, expected)
     raise ScoreError(f"unknown task {task!r}")
 
 
