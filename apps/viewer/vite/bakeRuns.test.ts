@@ -219,6 +219,11 @@ beforeAll(() => {
     path.join(root, "items", "for-test", "islam", "questions.jsonl"),
     roster.map((id) => ({ id, task: "retrieve_quote", prompt: `What is ${id}?`, expected: { text: "بِسْمِ ٱللَّهِ" }, source: { tradition: ["Islam"], citation: id } })),
   );
+  // A named panel folder (a `join_run.py --run-dir runs/rerun-…` rerun): its own virtual run,
+  // kept out of the default panel.
+  const rerun = path.join(runsDir, "rerun-2026-11-03", "m1", "base", "islam");
+  writeRun(rerun, "m1", ["p1", "p2"], "2026-11-03T00:00:00Z");
+  fs.rmSync(path.join(rerun, "questions.jsonl"));
   // A gap: answers saved with no summary (an unfinished collect), one roster row unsaved.
   writeJsonl(path.join(root, "items", "for-test", "judaism", "questions.jsonl"), [
     { id: "j1", task: "retrieve_quote", source: { tradition: ["Judaism"], citation: "Gen 1:1" } },
@@ -232,10 +237,13 @@ afterAll(() => {
 });
 
 describe("clientRunUrls", () => {
-  it("covers _index, _gaps, and the four artifacts of every indexed run incl. panel + archive", () => {
+  it("covers _index, _gaps, and the four artifacts of every indexed run incl. both panels + archive", () => {
     const urls = clientRunUrls(runsDir);
     const ids = listRuns(runsDir).map((r) => r.id);
-    expect(ids).toEqual(expect.arrayContaining(["panel", "run-a", "run-b", "archive/old-2026-01-01"]));
+    expect(ids).toEqual(
+      expect.arrayContaining(["panel", "rerun-2026-11-03", "run-a", "run-b", "archive/old-2026-01-01"]),
+    );
+    expect(urls).toContain("/rerun-2026-11-03/summary.json");
     expect(urls.slice(0, 2)).toEqual(["/_index", "/_gaps"]);
     expect(urls).toHaveLength(2 + 4 * ids.length);
     expect(urls).toContain("/panel/answers.jsonl");
@@ -287,8 +295,9 @@ describe("bakeRuns: the static tree serves the dev endpoint's bytes for every cl
 
   it("matches byte-for-byte: whole files, sharded parts, and 404s alike", async () => {
     const counts = await assertParity(runsDir, env);
-    // 4 runs x 4 artifacts + _index + _gaps = 18 URLs: 1 sharded, 3 absent, 14 whole.
-    expect(counts).toEqual({ whole: 14, sharded: 1, absent: 3 });
+    // 5 runs x 4 artifacts + _index + _gaps = 22 URLs: 1 sharded, 3 absent, 18 whole.
+    expect(counts).toEqual({ whole: 18, sharded: 1, absent: 3 });
+    expect(fs.existsSync(path.join(env.dist, "runs", "rerun-2026-11-03", "summary.json"))).toBe(true);
     expect(result.notFound.sort()).toEqual(["/run-b/answers.jsonl", "/run-b/questions.jsonl", "/run-b/scores.jsonl"]);
     expect(result.sharded.map((s) => s.url)).toEqual(["/panel/answers.jsonl"]);
     expect(result.sharded[0]!.parts).toBeGreaterThan(1);
@@ -299,8 +308,8 @@ describe("bakeRuns: the static tree serves the dev endpoint's bytes for every cl
     expect(gaps.map((g) => g.file)).toEqual([path.join("m2", "base", "judaism")]);
   });
 
-  it("the client's loadRun reads the same run from the static host as from dev (panel + archive)", async () => {
-    for (const id of ["panel", "archive/old-2026-01-01", "run-a"]) {
+  it("the client's loadRun reads the same run from the static host as from dev (panels + archive)", async () => {
+    for (const id of ["panel", "rerun-2026-11-03", "archive/old-2026-01-01", "run-a"]) {
       const base = `/runs/${encodeURIComponent(id)}`;
       const fromDev = await loadRun(`${env.devBase}${base}`, fetch);
       const fromStatic = await loadRun(`${env.staticBase}${base}`, fetch);
