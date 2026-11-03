@@ -659,12 +659,17 @@ _NON_WORD_LEAD = re.compile(r"[^\w]*")
 # #95): a model may answer a Pali cell in Punjabi, or a Hebrew cell in Syriac.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "ar": (("نعم",), ("لا",)),                    # Arabic
-    "he": (("כן",), ("לא", "אין", "לאו")),       # Hebrew, including stand-alone אין and לאו
-    "arc": (("כן",), ("לא", "אין", "לאו")),      # Aramaic (Hebrew script; לא = no in both)
+    "he": (("כן", "הן"), ("לא", "אין", "לאו")),  # Hebrew, incl. Mishnaic הן (yes), stand-alone אין, לאו
+    "arc": (("כן", "הן", "הין"), ("לא", "אין", "לאו")),  # Aramaic (Hebrew script), incl. הין (yes)
     "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι", "οὐχί", "οὔ")),  # Greek, as the prompt asks
     "pa": (("ਹਾਂ", "ਹਾਂ ਜੀ"), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi, including the polite ਹਾਂ ਜੀ
-    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि", "नास्ति")),  # Devanagari, incl. न, नहि, नास्ति
-    "pi": (("āma",), ("na",)),                   # Pali (Latin script)
+    # Devanagari: Hindi हाँ / Sanskrit आम् (yes); न, नहि, नास्ति, and the Pali reply नो हेतं ("not so").
+    # Hindi nahi / nahiṃ written in Latin script stay on sa cells only, like every Latin word.
+    "sa": (
+        ("हाँ", "हां", "आम्"),
+        ("नहीं", "नही", "न", "नहि", "नास्ति", "नो", "नो हेतं", "nahi", "nahiṃ"),
+    ),
+    "pi": (("āma",), ("na", "nahi", "nahiṃ")),   # Pali (Latin script); nahi(ṃ) as Pali or Hindi
 }
 # Syriac has no corpus here, but models answer Hebrew-script cells in it.
 _SYRIAC_YES_NO = (("ܐܝܢ",), ("ܠܐ",))
@@ -682,13 +687,18 @@ _ANY_CELL_YES = tuple(dict.fromkeys(w for yes, _ in _YES_NO_TABLES for w in yes 
 _ANY_CELL_NO = tuple(dict.fromkeys(w for _, no in _YES_NO_TABLES for w in no if not _is_latin(w)))
 
 
+_DEVANAGARI_VIRAMA = "्"
+
+
 def _strip_marks(text: str) -> str:
     """Drop combining marks so a pointed or accented verdict matches the bare word.
 
-    Hebrew כֵּן and לֹא, and Greek Οὐχί, are the same yes/no words as כן, לא, and ουχί.
+    Hebrew כֵּן and לֹא, and Greek Οὐχί, are the same yes/no words as כן, לא, and ουχί. The Devanagari
+    virama is kept, because it changes the word: ``आम्`` is Sanskrit "yes", but the bare ``आम`` is Hindi
+    "common" or "mango" (``आम-तौर पर``, "generally") and is never a verdict.
     """
     nfd = unicodedata.normalize("NFD", text)
-    return "".join(ch for ch in nfd if not unicodedata.category(ch).startswith("M"))
+    return "".join(ch for ch in nfd if ch == _DEVANAGARI_VIRAMA or not unicodedata.category(ch).startswith("M"))
 
 
 def _stands_alone(rest: str) -> bool:
@@ -696,9 +706,10 @@ def _stands_alone(rest: str) -> bool:
     only whitespace and then punctuation or a symbol, or the end of the window. A following word means
     the token is the sentence-negation particle (لا أستطيع, לא ניתן, na jānāmi), not a verdict. Read
     by Unicode category, so a token ending in a nasal or vowel mark (ਹਾਂ, हाँ, नहीं) still terminates
-    at a danda (।)."""
+    at a danda (।), and an invisible format character after it (a zero-width non-joiner, U+200C,
+    after ``आम्``) is skipped like a mark."""
     i = 0
-    while i < len(rest) and unicodedata.category(rest[i]).startswith("M"):
+    while i < len(rest) and unicodedata.category(rest[i]) in ("Mn", "Mc", "Me", "Cf"):
         i += 1
     rest = rest[i:].lstrip()
     return not rest or unicodedata.category(rest[0])[0] in "PS"
@@ -707,28 +718,29 @@ def _stands_alone(rest: str) -> bool:
 # Arabic vowel marks and Qur'anic annotation signs: an answer may vowel its verdict (نَعَمْ, لَا).
 # Dropped before the native match; they occur only in Arabic text, and the tokens carry none.
 _ARABIC_MARKS = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭ]")
-# The native counterpart of ``_LABEL_PREFIX`` ("الجواب: لا"), stripped the same way, on its cell only.
-_NATIVE_LABEL_PREFIX = {
-    "ar": re.compile(r"^(?:الجواب|الإجابة|الاجابة|الرد)\s*[:\-–]\s*"),
-}
+# The native counterparts of ``_LABEL_PREFIX`` ("الجواب: لا", "उत्तर: हाँ"), stripped the same way on
+# every cell, like the native words (issue #115). They are matched against the mark-stripped window,
+# so the pattern is built from the mark-stripped labels.
+_NATIVE_LABELS = ("الجواب", "الإجابة", "الاجابة", "الرد", "उत्तर", "उत्तरम्")
+_NATIVE_LABEL_PREFIX = re.compile(
+    r"^(?:" + "|".join(dict.fromkeys(re.escape(_strip_marks(w)) for w in _NATIVE_LABELS)) + r")\s*[:\-–]\s*"
+)
 
 
 def _native_verdict(window: str, language: "str | None") -> str | None:
     """The leading native yes/no word of the window, when it stands alone; else ``None``.
 
     The words are the cell language's own plus every non-Latin native word. Arabic vowel marks are
-    dropped first, and a bare native label ("الجواب:") is stripped like the English "Answer:", so
-    ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``. The label stays per-cell (stripped only on its own
-    language's cell) even though the words are now read on every cell.
+    dropped first, and a bare native label ("الجواب:", "उत्तर:") is stripped like the English
+    "Answer:", on every cell, so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no`` and ``"उत्तर: हाँ"`` as
+    ``yes``.
     """
     own_yes, own_no = _YES_NO_BY_LANG.get(language or "", ((), ()))
     yes, no = own_yes + _ANY_CELL_YES, own_no + _ANY_CELL_NO
     s = _strip_marks(_ARABIC_MARKS.sub("", window))
     s = s[_NON_WORD_LEAD.match(s).end():]
-    label = _NATIVE_LABEL_PREFIX.get(language or "")
-    if label is not None:
-        s = label.sub("", s)
-        s = s[_NON_WORD_LEAD.match(s).end():]
+    s = _NATIVE_LABEL_PREFIX.sub("", s)
+    s = s[_NON_WORD_LEAD.match(s).end():]
     s = s.casefold()
     for verdict, tokens in (("yes", yes), ("no", no)):
         for token in tokens:
