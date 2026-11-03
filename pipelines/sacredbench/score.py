@@ -608,17 +608,32 @@ _NON_WORD_LEAD = re.compile(r"[^\w]*")
 
 # Per-language native yes/no words (issue #76), keyed by the question's ``source.language``. English
 # (``_YES_NO_LEADING``) stays eligible on every cell, unchanged, because a model may answer in English
-# whatever the prompt language. A native word is only read on its own language's cell, so the Latin
-# Pali "na" can never flip an English answer.
+# whatever the prompt language. A Latin-script native word is only read on its own language's cell, so
+# the Pali "na" can never flip an English answer. Every other native word is read on every cell (issue
+# #95): a model may answer a Pali cell in Punjabi, or a Hebrew cell in Syriac.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "ar": (("نعم",), ("لا",)),                    # Arabic
     "he": (("כן",), ("לא", "אין", "לאו")),       # Hebrew, including stand-alone אין and לאו
     "arc": (("כן",), ("לא", "אין", "לאו")),      # Aramaic (Hebrew script; לא = no in both)
     "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι", "οὐχί", "οὔ")),  # Greek, as the prompt asks
-    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),                 # Gurmukhi / Punjabi
-    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि")),  # Devanagari, including stand-alone न and नहि
+    "pa": (("ਹਾਂ", "ਹਾਂ ਜੀ"), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi, including the polite ਹਾਂ ਜੀ
+    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि", "नास्ति")),  # Devanagari, incl. न, नहि, नास्ति
     "pi": (("āma",), ("na",)),                   # Pali (Latin script)
 }
+# Syriac has no corpus here, but models answer Hebrew-script cells in it.
+_SYRIAC_YES_NO = (("ܐܝܢ",), ("ܠܐ",))
+
+
+def _is_latin(word: str) -> bool:
+    """Whether every letter of ``word`` is Latin script. A word with no letters counts as Latin, so it
+    stays gated to its own cell (the safe direction)."""
+    return all(unicodedata.name(ch, "").startswith("LATIN") for ch in word if ch.isalpha())
+
+
+_YES_NO_TABLES = (*_YES_NO_BY_LANG.values(), _SYRIAC_YES_NO)
+# The non-Latin native words, read on every cell whatever its language (issue #95).
+_ANY_CELL_YES = tuple(dict.fromkeys(w for yes, _ in _YES_NO_TABLES for w in yes if not _is_latin(w)))
+_ANY_CELL_NO = tuple(dict.fromkeys(w for _, no in _YES_NO_TABLES for w in no if not _is_latin(w)))
 
 
 def _strip_marks(text: str) -> str:
@@ -655,10 +670,13 @@ _NATIVE_LABEL_PREFIX = {
 def _native_verdict(window: str, language: "str | None") -> str | None:
     """The leading native yes/no word of the window, when it stands alone; else ``None``.
 
-    Arabic vowel marks are dropped first, and a bare native label ("الجواب:") is stripped like the
-    English "Answer:", so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
+    The words are the cell language's own plus every non-Latin native word. Arabic vowel marks are
+    dropped first, and a bare native label ("الجواب:") is stripped like the English "Answer:", so
+    ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``. The label stays per-cell (stripped only on its own
+    language's cell) even though the words are now read on every cell.
     """
-    yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    own_yes, own_no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    yes, no = own_yes + _ANY_CELL_YES, own_no + _ANY_CELL_NO
     s = _strip_marks(_ARABIC_MARKS.sub("", window))
     s = s[_NON_WORD_LEAD.match(s).end():]
     label = _NATIVE_LABEL_PREFIX.get(language or "")
@@ -696,7 +714,9 @@ def parse_yes_no(answer: str, language: "str | None" = None) -> str | None:
     ``no`` inside ``"There is no way to verify this"`` and score a false-premise ``no``-correct.
 
     ``language`` is the question's ``source.language`` (issue #76). English is read first, exactly as
-    before, on every cell. Then that language's native yes/no word is read, under one extra rule: it
+    before, on every cell. Then a native yes/no word is read: any non-Latin one on every cell (issue
+    #95, so Punjabi ``ਨਹੀਂ`` on a Pali cell is a verdict), and a Latin-script one (Pali ``na``) only
+    on its own language's cell. One extra rule applies to every native word: it
     must stand alone, followed only by punctuation or the end of the window. Native "no" words are also
     the sentence-negation particle, so ``"لا أستطيع التحقق"`` ("I cannot verify"), ``"לא ניתן לאמת"`` and
     Pali ``"na jānāmi"`` lead with that word but are refusals, not verdicts, and stay ``None``.
