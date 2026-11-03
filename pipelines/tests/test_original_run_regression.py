@@ -5,7 +5,8 @@ three-model panel) and the **generation-invariance anchor** that replaced the re
 generator guard (`test_first_run_regression.py`). Two invariants:
 
 - **Scoring invariance (always runs):** re-scoring the committed `answers.jsonl` to a scratch
-  path reproduces the committed `scores.jsonl` byte-for-byte — proof that scoring changes did
+  path reproduces the committed `scores.jsonl` byte-for-byte (except the one cell issue #117
+  registers in `testdata/native_decline_movers.tsv`) — proof that scoring changes did
   not move the only committed evidence that exercises Arabic/Aramaic `normalize()`, the
   leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit` over 1,428 real answers.
 - **Generation invariance (skips if `texts/standardized/` is absent, i.e. in a fresh clone /
@@ -75,20 +76,28 @@ SURVEY_SHA256 = "8244e9fb6c6b4d44ed067c3e0f6a75504f6bf28031259fe3ec334a90f24c506
 CONTRACT_MOVERS = Path(__file__).parent / "testdata" / "original_run_cite_contract_movers.jsonl"
 
 
-def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
+def test_rescoring_committed_original_run_reproduces_scores(tmp_path, native_decline_movers):
     answers = RUN / "answers.jsonl"
     committed = RUN / "scores.jsonl"
     if not answers.exists() or not committed.exists():
         pytest.skip("original-2026-10-21 evidence not present")
     out = tmp_path / "scores.jsonl"
     score_file(answers, out)  # no roster/panel needed to reproduce per-answer scores
+    # issue #117: a Hebrew decline is now refused (committed file not rewritten)
+    old = committed.read_text(encoding="utf-8").splitlines()
+    for folder, row, qid in native_decline_movers:
+        if folder != "archive/original-2026-10-21":
+            continue
+        cell = json.loads(old[row])
+        assert cell["question_id"] == qid and cell["metrics"]["outcome"] == "incorrect"
+        cell["metrics"]["outcome"] = "refused"
+        old[row] = json.dumps(cell, ensure_ascii=False)
     movers = {
         m["row"]: m
         for m in map(json.loads, CONTRACT_MOVERS.read_text(encoding="utf-8").splitlines())
     }
     assert len(movers) == 21 and sum(m["rescored"]["correct"] > m["committed"]["correct"] for m in movers.values()) == 2
     rescored = out.read_text(encoding="utf-8").splitlines()
-    old = committed.read_text(encoding="utf-8").splitlines()
     assert len(rescored) == len(old)
     # byte-for-byte, order included (score_file preserves input-row order), except registered rows
     for i, (new_line, old_line) in enumerate(zip(rescored, old)):

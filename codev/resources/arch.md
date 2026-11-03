@@ -89,7 +89,15 @@ round-trip that proves no invention/reordering.
   witnessed by `test_citation_digit_fold.py`). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
-  beside it (for `verify_source`, `refused ⟺ parsed is None`). `score_file` also labels every cell
+  beside it (for `verify_source`, `refused ⟺ parsed is None`). A decline is detected by cue phrases
+  in the leading 60 characters or the opening sentence. There are English cues and a narrow
+  native-script set (Hebrew, Gurmukhi, Devanagari, Arabic, modern Greek; issue #117). Native-language
+  declines are not limited to the native-prompt arms: 21% of the #117 movers are on English-prompt
+  arms, where the model still answers in the edition's language. The native set
+  matches whole words only, never includes a phrase that occurs in scripture (two single Talmud
+  occurrences excepted), and leaves out bare apologies, which also open non-existence claims. The
+  Spec-48 assertion frames are English, so a native-language decline followed by a reconstruction
+  stays `refused` (`test_native_refusal_cues.py`). `score_file` also labels every cell
   with its `failure_kind` (issue #96) and reports `minor`/`major` (a split of `incorrect`) + a `kinds`
   map per model × task and per model × text in the summary; a near copy splits into `diacritic_only` /
   `edition_variant` / `near_copy` by base-letter token edits. Never an input to `correct`; `scores.jsonl`
