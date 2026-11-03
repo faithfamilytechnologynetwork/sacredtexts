@@ -2,7 +2,6 @@
   "tradition": "Christianity",
   "sample": "familiarity",
   "run": false,
-  "notice": "Familiarity panel, not in the population run. Masoretic text from the Westminster Leningrad Codex. Genesis 1:1 and Psalms 23:1 only.",
   "passages": [
     {
       "tradition": "Christianity",
@@ -22,5 +21,7 @@
         "native": "מִזְמ֥וֹר לְ/דָוִ֑ד KJV:Ps.23.1 יְהוָ֥ה רֹ֝עִ֗/י לֹ֣א אֶחְסָֽר׃"
       }
     }
-  ]
+  ],
+  "notice": "Familiarity panel, not in the population run. Masoretic text from the Westminster Leningrad Codex. Genesis 1:1 and Psalms 23:1 only.",
+  "provenance": "https://raw.githubusercontent.com/openscriptures/morphhb/3d15126fb1ef74867fc1434be1942e837932691f/wlc/{book}.xml"
 }

@@ -1,6 +1,6 @@
 # Sikhism
 
-- Canonical edition named in the question: **Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth)**
+- Canonical edition named in the question: **the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib**
 - English edition: **none in this corpus**
 - Language: Gurmukhi (Sant Bhasha)
 - Raw file: `texts/raw/Sikhism/sggs_shabados.json`
@@ -47,10 +47,12 @@ These citations are the question file. Population and familiarity are separate s
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth)? Reply with the exact text of that edition and nothing else.
-- `complete_unit`: Please complete this quote from Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth): "{head}" Reply with only the remaining words.
-- `cite_passage`: Where in Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
-- `verify_source`: Is the following text from Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth)? "{text}" Answer Yes or No.
+- `retrieve_quote`: What is the text of {citation} in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? Reply with the exact text of that edition and nothing else.
+- `complete_unit`: Complete this quotation from the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib: "{head}" Reply with only the remaining words.
+- `cite_passage`: Where in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
+- `verify_source`: Is the following text from the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? "{text}" Answer Yes or No.
+
+Each English prompt has a second line: `Answer in the language of the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib.`
 
 ## Prompts in the text's language (draft)
 

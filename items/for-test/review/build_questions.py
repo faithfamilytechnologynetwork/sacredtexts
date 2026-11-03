@@ -68,14 +68,25 @@ EN = {
 }
 
 
-# English display names the model sees in a prompt, overriding the default
-# "the {version} edition". The catalogue `version` string is unchanged in each
-# question's source metadata; only the prompt wording changes. The Qur'an is named
-# "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
+# English display names the model sees in a prompt. Each names the work as well as
+# the edition: a bare catalogue version ("Is the following text from 2013 edition?")
+# never says which work's edition (issue #90). The catalogue `version` string is
+# unchanged in each question's source metadata; only the prompt wording changes. The
+# Qur'an is named "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
 _EDITION_DISPLAY = {
     "Uthmani (QUL)": "the Uthmani Qur'an",
     "Saheeh International (QUL)": "the Saheeh International translation",
+    "William Davidson Edition - Aramaic": "the William Davidson Aramaic edition of the Babylonian Talmud",
+    "William Davidson Edition - English": "the William Davidson English edition of the Babylonian Talmud",
+    "Shabad OS (SGPC Shabadaarth)": "the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib",
+    "Stotra Samhita (Gita Press text)": "the Stotra Samhita (Gita Press text) edition of the Bhagavad Gita",
+    "Annie Besant (1922)": "the Annie Besant (1922) translation of the Bhagavad Gita",
+    "Chaṭṭha Saṅgāyana (VRI)": "the Chaṭṭha Saṅgāyana (VRI) edition of the Dhammapada",
+    "2013 edition": "the 2013 edition of the Book of Mormon",
+    "NRSV": "the New Revised Standard Version (NRSV)",
 }
+# Each encyclical is its own work, with the version "Vatican English text (<pope>, <date>)".
+_ENCYCLICAL_VERSION = re.compile(r"Vatican English text \((.+)\)")
 
 
 def prompt_text(text: str) -> str:
@@ -87,12 +98,37 @@ def prompt_text(text: str) -> str:
     return text.replace('"', "'").replace("“", "'").replace("”", "'")
 
 
-def edition_name(name: str) -> str:
-    if name in _EDITION_DISPLAY:
-        return _EDITION_DISPLAY[name]
-    if "edition" in name.lower():
-        return name
-    return f"the {name} edition"
+def prompt_for(template: str, fields: dict, suffix: str = "") -> dict:
+    """A row's prompt, the passage it quotes, and how to quote a different passage instead.
+
+    ``payload`` is the passage that fills the template's ``"{text}"``, and ``render`` rebuilds the
+    whole prompt around any passage. That is how a verify "no" row quotes its donor
+    (``add_verify_negatives``). Nothing searches a prompt for its quotation marks, because a passage
+    can contain them (PR #98: five encyclical "no" rows came out with a Book of Mormon donor spliced
+    onto the tail of the encyclical). A passage or an opening with a straight double quote fails here,
+    so every prompt quotes exactly one passage; English builders pass their text through ``prompt_text``.
+    """
+    def render(payload: str) -> str:
+        if '"' in payload:
+            raise SystemExit(f"a quoted passage contains a straight double quote: {payload[:80]!r}")
+        return template.format(**{**fields, "text": payload}) + suffix
+
+    if '"' in fields.get("head", ""):
+        raise SystemExit(f"a quoted opening contains a straight double quote: {fields['head'][:80]!r}")
+    return {"prompt": render(fields["text"]), "payload": fields["text"], "render": render}
+
+
+def edition_name(version: str, work: str | None = None) -> str:
+    """The edition as a prompt names it: the work and the edition, never a bare catalogue version.
+
+    ``work`` is needed only for an encyclical. An edition with no display name fails, so a new
+    edition cannot fall back to a name that leaves out the work (issue #90)."""
+    if version in _EDITION_DISPLAY:
+        return _EDITION_DISPLAY[version]
+    encyclical = _ENCYCLICAL_VERSION.fullmatch(version)
+    if encyclical and work:
+        return f"the Vatican English text of the encyclical {work} ({encyclical[1]})"
+    raise SystemExit(f"no prompt name for edition {version!r} of {work!r}: add one to _EDITION_DISPLAY")
 
 
 def famous_passages(work: str, version: str) -> list[Passage]:
@@ -131,8 +167,6 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             "citation": passage.citation, "version": edition_name(version),
             "head": prompt_text(head), "text": prompt_text(native), "example": example,
         }
-        en_q = {k: EN[k].format(**fields) for k in TASKS}
-        nat_q = {k: native_tmpl[k].format(**fields) for k in TASKS}
         expected = {
             "retrieve_quote": {"text": native},
             "complete_unit": {"text": rest, "full_text": native},
@@ -156,12 +190,12 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             # language to answer in. The native call is only the native-language question.
             out.append({
                 **base, "task": task, "condition": "ask_english",
-                "prompt": f"{en_q[task]}\nAnswer in the language of {edition_name(version)}.",
+                **prompt_for(EN[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
                 "expected": expected[task],
             })
             out.append({
                 **base, "task": task, "condition": "ask_native",
-                "prompt": nat_q[task],
+                **prompt_for(native_tmpl[task], fields),
                 "expected": expected[task],
             })
         if english is None:
@@ -171,8 +205,6 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             "citation": passage.citation, "version": edition_name(english_version),
             "head": prompt_text(head_e), "text": prompt_text(english), "example": example,
         }
-        en_q2 = {k: EN[k].format(**fields_e) for k in TASKS}
-        nat_q2 = {k: english_native_tmpl[k].format(**fields_e) for k in TASKS}
         expected_e = {
             "retrieve_quote": {"text": english},
             "complete_unit": {"text": rest_e, "full_text": english},
@@ -186,10 +218,9 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             if task == "complete_unit" and not rest_e.strip():
                 continue
             # One English question. The edition name is already in that line.
-            prompt = en_q2[task]
             out.append({
                 **base, "task": task, "condition": "en_ask_en_answer",
-                "english_version": english_version, "prompt": prompt, "expected": expected_e[task],
+                "english_version": english_version, **prompt_for(EN[task], fields_e), "expected": expected_e[task],
             })
     return out
 
@@ -332,6 +363,7 @@ NOTICE = (
     "copyright © 1989 National Council of the Churches of Christ in the United States of America. "
     "Used by permission. All rights reserved worldwide."
 )
+NRSV_URL = "https://bible.oremus.org/?version=nrsv&passage="
 _PSALM_HEAD = re.compile(r"^Psalm\s+\d+\s+\d+\s+")
 _OREMUS_BOOK = {"Psalms": "Psalm", "Song of Solomon": "Song of Songs"}
 
@@ -340,9 +372,9 @@ def fetch_nrsv(citation: str) -> str:
     """One verse from oremus's NRSV. The draw uses the Protestant citation list; this is the wording."""
     book, ref = citation.rsplit(" ", 1)
     query = f"{_OREMUS_BOOK.get(book, book)} {ref}"
-    url = "https://bible.oremus.org/?version=nrsv&passage=" + urllib.parse.quote(query)
+    url = NRSV_URL + urllib.parse.quote(query)
     req = urllib.request.Request(url, headers={"User-Agent": "academic-nrsv-draw"})
-    raw = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    raw = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
     match = re.search(r'class="bibletext">(.*?)</div>', raw, re.S)
     if not match:
         raise SystemExit(f"no NRSV text for {citation}")
@@ -371,7 +403,7 @@ def christianity() -> list[dict]:
     drawn = population_draw(ordinary, famous, seed=20261030)
     panel = list(drawn) + list(famous)
     verses = {p.citation: fetch_nrsv(p.citation) for p in panel}
-    version = "the New Revised Standard Version (NRSV)"
+    version = edition_name("NRSV")
     citations = [p.citation for p in panel]
     rows = []
     for passage in panel:
@@ -385,19 +417,20 @@ def christianity() -> list[dict]:
             "stratum": "famous" if sample == "familiarity" else "ordinary",
             "version": "NRSV", "condition": "en_ask_en_answer", "copyright": NOTICE,
         }
-        specs = [
-            ("retrieve_quote", f"What is the text of {passage.citation} in {version}? Reply with the exact text of that edition and nothing else.", {"text": text}),
-            ("complete_unit", f'Please complete this quote from {version}: "{head}" Reply with only the remaining words.', {"text": rest, "full_text": text}),
-            ("cite_passage", f'Where in {version} can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.', {"citation": passage.citation}),
-            ("verify_source", f'Is the following text from {version}? "{text}" Answer Yes or No.', {
+        fields = {"citation": passage.citation, "version": version, "head": head, "text": text, "example": example}
+        expected = {
+            "retrieve_quote": {"text": text},
+            "complete_unit": {"text": rest, "full_text": text},
+            "cite_passage": {"citation": passage.citation},
+            "verify_source": {
                 "answer": "yes", "true_tradition": "Christianity", "true_version": "NRSV",
                 "true_language": "en", "true_citation": passage.citation,
-            }),
-        ]
-        for task, prompt, expected in specs:
+            },
+        }
+        for task in TASKS:
             if task == "complete_unit" and not rest.strip():
                 continue
-            rows.append({**base, "task": task, "prompt": prompt, "expected": expected})
+            rows.append({**base, "task": task, **prompt_for(EN[task], fields), "expected": expected[task]})
     return rows
 
 
@@ -425,23 +458,62 @@ _NT = {
 }
 
 
-def _donor_rank(row: dict, donor: dict) -> int:
-    """0 is the nearest same-language other work. 2 is a different script."""
-    row_script = _script(row["expected"]["text"] if row["task"] == "retrieve_quote" else row["prompt"])
-    donor_script = _script(donor["expected"]["text"])
-    if donor["tradition"] == row["tradition"] or donor_script != row_script:
-        return 2
-    version = donor.get("version", "")
-    if row["tradition"] == "Judaism" and row_script == "he" and "Masoretic" in version:
-        return 0
-    if row["tradition"] == "Judaism" and row.get("condition") == "en_ask_en_answer" and version == "NRSV":
-        book = donor["citation"].rsplit(" ", 1)[0]
-        return 0 if book not in _NT else 2
-    if row["tradition"] == "Christianity" and "Masoretic" in row.get("version", "") and donor["tradition"] == "Judaism":
-        return 0
-    if row["tradition"] == "Christianity" and row.get("condition") == "en_ask_en_answer" and donor.get("work") == "Book of Mormon":
-        return 0
-    return 1
+def _asked_version(row: dict) -> str:
+    """The catalogue version a row asks about: its English edition when it has one."""
+    return row.get("english_version") or row["version"]
+
+
+def _is_native(row: dict) -> bool:
+    """A native edition (asked in either prompt language), not an English edition."""
+    return row["condition"] != "en_ask_en_answer"
+
+
+# The two English supplemental categories quote each other (METHODOLOGY.md).
+_SUPPLEMENTAL_SWAP = {"Book of Mormon": "Encyclicals", "Encyclicals": "Book of Mormon"}
+
+
+def _donor_pool(row: dict, donors: list[dict]) -> list[dict]:
+    """The passages a verify "no" row may quote: METHODOLOGY.md's donor table, one rule per edition.
+
+    The donor is always another work. The Qur'an's hadith donors are drawn by the caller.
+    """
+    version = _asked_version(row)
+    if row["tradition"] == "Judaism" and _is_native(row):
+        rule = lambda d: "Masoretic" in d["version"]  # Aramaic Talmud: the Masoretic text
+    elif row["tradition"] == "Judaism":
+        # English Talmud: the NRSV's Hebrew Bible verses, never the New Testament
+        rule = lambda d: d["version"] == "NRSV" and d["citation"].rsplit(" ", 1)[0] not in _NT
+    elif version == "NRSV":
+        rule = lambda d: d["tradition"] == "Book of Mormon"
+    elif "Masoretic" in version:
+        rule = lambda d: d["tradition"] == "Judaism" and _is_native(d)  # the Aramaic Talmud
+    elif row["tradition"] in _SUPPLEMENTAL_SWAP:
+        rule = lambda d: d["tradition"] == _SUPPLEMENTAL_SWAP[row["tradition"]]
+    elif not _is_native(row):
+        rule = lambda d: not _is_native(d)  # the English Gita: another tradition's English work
+    else:
+        # Greek NT, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada: no second work in that
+        # language, so another tradition's native passage in a different script, never English.
+        script = _script(row["payload"])
+        rule = lambda d: _is_native(d) and _script(d["expected"]["text"]) != script
+    pool = [d for d in donors if d["tradition"] != row["tradition"] and rule(d)]
+    if not pool:
+        raise SystemExit(f"no verify_source donor for {row['tradition']} {version} {row['citation']}")
+    return pool
+
+
+def verify_donors(by_name: dict[str, list[dict]]) -> list[dict]:
+    """Every set's passages, once each, in a fixed order: the pool every "no" row draws from."""
+    donors: dict[tuple[str, str, str], dict] = {}
+    for rows in by_name.values():
+        for row in rows:
+            if row["task"] == "retrieve_quote":
+                key = (row["tradition"], _asked_version(row), row["citation"])
+                donors.setdefault(key, {
+                    "tradition": row["tradition"], "version": key[1], "citation": row["citation"],
+                    "condition": row["condition"], "expected": {"text": row["expected"]["text"]},
+                })
+    return [donors[key] for key in sorted(donors)]
 
 
 def hadith_collections() -> list:
@@ -736,38 +808,16 @@ def _hadith_donor(row: dict) -> dict:
     raise SystemExit(f"no hadith donor free of Qur'an wording for {row['citation']}")
 
 
-def _quoted_passage(prompt: str) -> str:
-    """The passage a verify_source prompt quotes: the text between its first two double quotes."""
-    a = prompt.find('"')
-    b = prompt.find('"', a + 1)
-    if a == -1 or b == -1:
-        raise SystemExit(f"no quoted passage in: {prompt[:80]}")
-    return prompt[a + 1:b]
-
-
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
-    """Half of each condition's verify_source rows quote a different work.
+    """Half of each set's verify_source rows, per condition and sample, quote a different work.
 
-    The donor is the same script as the passage being checked, and a nearer
-    work when this corpus has one. A different tradition in another script is
-    the fallback for a language that has only one work. An Arabic passage (the
-    Qur'an) has the hadith collections as its same-script neighbours, so its
-    donor is a hadith matn that shares no Qur'an wording: the item is a real
-    "Qur'an or hadith?" judgement rather than an alphabet test (issue #75). The
-    gate is the quoted passage's script, not the tradition, so an English Qur'an
-    edition never receives an Arabic hadith. Each Arabic row's donor comes from
-    its own seeded RNG and does not touch the shared stream.
+    The donor follows METHODOLOGY.md's table (``_donor_pool``). An Arabic passage (the Qur'an) has the
+    hadith collections as its same-script neighbours, so its donor is a hadith matn that shares no
+    Qur'an wording (issue #75); the English Qur'an's donor is an English hadith. Every donor comes
+    from an RNG seeded by its row alone, over a pool in a fixed order, so no other row, set or build
+    order can move it and one run of ``main`` reproduces every file (issue #91).
     """
-    donors = []
-    for rows in by_name.values():
-        for row in rows:
-            if row["task"] == "retrieve_quote" and row["condition"] in {"ask_english", "ask_native", "en_ask_en_answer"}:
-                # The English Qur'an is a new donor class. Leaving it out of this pool
-                # keeps the already-drawn Christianity and Judaism negatives stable.
-                if row.get("english_version") == QURAN_EN_VERSION:
-                    continue
-                donors.append(row)
-    rng = random.Random(20261030)
+    donors = verify_donors(by_name)
     for rows in by_name.values():
         groups: dict[tuple[str, str], list[dict]] = {}
         for row in rows:
@@ -775,33 +825,26 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
                 groups.setdefault((row["condition"], row["sample"]), []).append(row)
         for group in groups.values():
             group.sort(key=lambda r: r["citation"])
-            flip = group[: len(group) // 2]
-            for row in flip:
-                if _script(_quoted_passage(row["prompt"])) == "ar":
+            for row in group[: len(group) // 2]:
+                if _script(row["payload"]) == "ar":
                     donor = _hadith_donor(row)
+                    text = donor["expected"]["text"]
                 elif row["tradition"] == "Islam" and row["condition"] == "en_ask_en_answer":
                     donor = _english_hadith_donor(row)
+                    text = donor["expected"]["text"]
                 else:
-                    ranked = [d for d in donors if d["tradition"] != row["tradition"]]
-                    best = min((_donor_rank(row, d) for d in ranked), default=2)
-                    pool = [d for d in ranked if _donor_rank(row, d) == best] or ranked
-                    if not pool:
-                        raise SystemExit(f"no verify_source donor for {row['tradition']} {row['citation']}")
-                    donor = rng.choice(pool)
-                text = donor["expected"]["text"]
+                    seed = "|".join([str(HADITH_SEED), row["tradition"], _asked_version(row),
+                                     row["condition"], row["sample"], row["citation"]])
+                    donor = random.Random(seed).choice(_donor_pool(row, donors))
+                    text = prompt_text(donor["expected"]["text"])
                 row["expected"] = {
                     "answer": "no",
                     "true_tradition": donor["tradition"],
                     "true_version": donor["version"],
                     "true_citation": donor["citation"],
                 }
-                lines = row["prompt"].split("\n")
-                for i, line in enumerate(lines):
-                    a = line.find('"')
-                    b = line.find('"', a + 1) if a != -1 else -1
-                    if a != -1 and b != -1:
-                        lines[i] = line[: a + 1] + text + line[b:]
-                row["prompt"] = "\n".join(lines)
+                # The same template, rendered around the donor (PR #98): never a splice between quote marks.
+                row["prompt"], row["payload"] = row["render"](text), text
 
 
 _RUN_META = {
@@ -860,40 +903,71 @@ def _language_dir(row: dict) -> Path:
     return base / prompt_lang if prompt_lang else base
 
 
-def _write_jsonl(path: Path, rows: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-    print(path.relative_to(REVIEW.parent), len(rows))
+def jsonl(rows: list[dict]) -> str:
+    return "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
 
 
-def place_questions(rows: list[dict]) -> None:
-    """One folder per tradition, then english or native. Christianity is english only."""
-    grouped: dict[Path, list[dict]] = {}
-    for row in rows:
-        grouped.setdefault(_language_dir(row), []).append(row)
-    for path, group in sorted(grouped.items()):
-        _write_jsonl(path / "questions.jsonl", group)
+def passages_json(payload: dict) -> str:
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
 
 
-def export_questions(built: dict[str, list[dict]]) -> None:
-    """Write each tradition under english or native, then population or familiarity.
+def question_files(built: dict[str, list[dict]]) -> dict[Path, str]:
+    """This script's four traditions as {path: file text}, under english or native, then the sample.
 
-    There is no second copy under review/. Sikhism is included. Scoring keeps
-    Gurmukhi vowel signs.
+    The NRSV passages.json records where its wording was fetched, because it is not in the repo.
     """
-    rows = [_collect_row(row) for group in built.values() for row in group]
-    place_questions(rows)
+    grouped: dict[Path, list[dict]] = {}
+    for row in (_collect_row(r) for name in _RUN_META for r in built[name.lower()]):
+        grouped.setdefault(_language_dir(row) / "questions.jsonl", []).append(row)
+    files = {path: jsonl(rows) for path, rows in grouped.items()}
+    for sample in ("population", "familiarity"):
+        files[REVIEW.parent / "christianity" / "english" / sample / "passages.json"] = passages_json({
+            "tradition": "Christianity", "sample": sample, "run": sample == "population",
+            "passages": [
+                {"tradition": "Christianity", "citation": r["citation"], "sample": sample,
+                 "version": "NRSV", "text": {"english": r["expected"]["text"]}}
+                for r in built["christianity"] if r["task"] == "retrieve_quote" and r["sample"] == sample
+            ],
+            "notice": NOTICE,
+            "provenance": NRSV_URL + "{citation}",
+        })
+    return files
+
+
+def build_all() -> dict[str, list[dict]]:
+    """Every question set under items/for-test, its verify "no" rows drawn from one pool (issue #91)."""
+    import build_christian_original
+    import build_remaining
+    import build_supplemental
+
+    sets = {"christianity": christianity(), "judaism": judaism(), "islam": islam(), "sikhism": sikhism()}
+    sets |= build_christian_original.build(sets["christianity"])
+    sets |= build_supplemental.build()
+    sets |= build_remaining.build()
+    add_verify_negatives(sets)
+    return sets
+
+
+def output_files(sets: dict[str, list[dict]]) -> dict[Path, str]:
+    """Every questions.jsonl, and the passages.json each set's builder writes, as {path: file text}."""
+    import build_christian_original
+    import build_remaining
+    import build_supplemental
+
+    return {
+        **question_files(sets),
+        **build_christian_original.output_files(sets),
+        **build_supplemental.output_files(sets),
+        **build_remaining.output_files(sets),
+    }
 
 
 def main() -> None:
-    built = {
-        "christianity": christianity(),
-        "judaism": judaism(),
-        "islam": islam(),
-        "sikhism": sikhism(),
-    }
-    add_verify_negatives(built)
-    export_questions(built)
+    """Rebuild every question set. Run twice, the files are byte-identical (METHODOLOGY.md)."""
+    for path, text in sorted(output_files(build_all()).items()):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        print(path.relative_to(REVIEW.parent))
 
 
 if __name__ == "__main__":

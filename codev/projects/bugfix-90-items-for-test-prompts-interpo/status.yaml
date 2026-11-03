@@ -1,0 +1,17 @@
+id: bugfix-90
+title: items-for-test-prompts-interpo
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-03T01:23:13.394Z'
+    approved_at: '2026-11-03T01:23:24.118Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T00:27:30.722Z'
+updated_at: '2026-11-03T01:23:31.101Z'
+pr_ready_for_human: false

@@ -53,7 +53,7 @@ These citations are the question file. Population and familiarity are separate s
 
 A native speaker should correct these before a run.
 
-- `retrieve_quote`: {citation} का पाठ {version} में क्या है? केवल उसी संस्करण का पाठ लिखें।
-- `complete_unit`: {version} से यह उद्धरण पूरा करें: "{head}" केवल शेष शब्द लिखें।
-- `cite_passage`: {version} में यह उद्धरण कहाँ है? "{text}" केवल संकेत लिखें, इस रूप में: {example}।
-- `verify_source`: क्या यह पाठ {version} से है? "{text}" हाँ या नहीं लिखें।
+- `retrieve_quote`: {citation} का पाठ श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) में क्या है? केवल उसी संस्करण का पाठ लिखें।
+- `complete_unit`: श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) से यह उद्धरण पूरा करें: "{head}" केवल शेष शब्द लिखें।
+- `cite_passage`: श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) में यह उद्धरण कहाँ है? "{text}" केवल संकेत लिखें, इस रूप में: {example}।
+- `verify_source`: क्या यह पाठ श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) से है? "{text}" हाँ या नहीं लिखें।

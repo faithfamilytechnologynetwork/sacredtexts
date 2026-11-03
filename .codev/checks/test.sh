@@ -44,6 +44,14 @@ if printf '%s\n' "$changed" | grep -qE '^fixtures/'; then
   touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
+# items/** is asserted by BOTH the items lane (items/for-test/test_*.py) and the pipelines lane:
+# pipelines/tests/test_question_sets_rebuild.py rebuilds every items/for-test question set and
+# pins it byte for byte (#91, PR #98). Without this, an items-only regeneration ran only the items
+# lane and could commit question files the build no longer reproduces. Map it to both lanes.
+if printf '%s\n' "$changed" | grep -qE '^items/'; then
+  touched=$(printf '%s\npipelines\nitems\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
 # runs/** and texts/** are read by BOTH lanes: pipelines pytest asserts the committed-run numbers and
 # the corpus, and apps/viewer vitest asserts the SAME committed-run evidence (src/local/tutorialRun.
 # test.ts loads the real runs/tutorial-2026-10-11 and pins its counts). The sed above maps these to

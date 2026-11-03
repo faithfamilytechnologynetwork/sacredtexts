@@ -85,5 +85,6 @@
       }
     }
   ],
-  "notice": "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text."
+  "notice": "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text.",
+  "provenance": "https://raw.githubusercontent.com/honza/textus-receptus/2bac2dae4a0961c84d6d544a40cbef8b8d8c4e32/data/gnt.flat.json"
 }

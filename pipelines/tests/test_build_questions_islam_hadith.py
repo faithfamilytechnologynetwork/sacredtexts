@@ -216,6 +216,12 @@ def test_quran_overlap_passes_a_clean_matn(bq):
     assert bq.quran_overlap("إنما الأعمال بالنيات وإنما لكل امرئ ما نوى فمن كانت هجرته إلى دنيا يصيبها") is None
 
 
+def _quoted(prompt: str) -> str:
+    """The one passage a committed prompt quotes; a prompt quoting more than one is itself a failure."""
+    assert prompt.count('"') == 2, prompt[:120]
+    return prompt.split('"')[1]
+
+
 def test_committed_islam_no_rows_quote_a_clean_hadith_matn(bq):
     raw = {
         t.work: {h["idInBook"]: h.get("arabic") or "" for h in
@@ -225,7 +231,7 @@ def test_committed_islam_no_rows_quote_a_clean_hadith_matn(bq):
     no_rows = _no_rows(_committed_islam_rows())
     assert no_rows, "expected committed Islam verify 'no' rows"
     for r in no_rows:
-        exp, quoted = r["expected"], bq._quoted_passage(r["prompt"])
+        exp, quoted = r["expected"], _quoted(r["prompt"])
         work, number = exp["true_citation"].rsplit(" ", 1)
         assert exp["true_tradition"] == "Islam" and exp["true_version"] == "sunnah.com Arabic"
         assert work in _SIX_WORKS
@@ -256,7 +262,7 @@ def test_committed_no_donors_are_exactly_one_quoted_span(bq):
     no_rows = _no_rows(_committed_islam_rows())
     assert len(no_rows) == 38
     for r in no_rows:
-        quoted = bq._quoted_passage(r["prompt"])
+        quoted = _quoted(r["prompt"])
         work, number = r["expected"]["true_citation"].rsplit(" ", 1)
         assert '"' not in quoted and "\u200f" not in quoted and "\u200e" not in quoted
         assert r["prompt"].count('"') == 2                          # the prompt quotes exactly one span
@@ -265,34 +271,31 @@ def test_committed_no_donors_are_exactly_one_quoted_span(bq):
 
 # --- the gate is the script; the donor is per row --------------------------------------------------
 
-def _verify_row(tradition, citation, passage, *, condition="ask_english", sample="population"):
+def _verify_row(bq, tradition, citation, passage, *, condition="ask_english", sample="population"):
     return {
         "tradition": tradition, "citation": citation, "sample": sample, "version": "v",
         "task": "verify_source", "condition": condition,
-        "prompt": f'Is the following text from X? "{passage}" Answer Yes or No.',
+        **bq.prompt_for('Is the following text from X? "{text}" Answer Yes or No.', {"text": passage}),
         "expected": {"answer": "yes"},
-    }
-
-
-def _quote_row(tradition, citation, text):
-    return {
-        "tradition": tradition, "citation": citation, "sample": "population", "version": "w", "work": "W",
-        "task": "retrieve_quote", "condition": "ask_english", "prompt": "", "expected": {"text": text},
     }
 
 
 def test_script_gate_english_quran_edition_gets_no_hadith(bq):
     english = "In the name of God, the Lord of Mercy, the Giver of Mercy, praise belongs to God, Lord of the Worlds"
-    islam = [_verify_row("Islam", "1:1", english), _verify_row("Islam", "1:2", english)]
-    other = [_quote_row("Christianity", "John 3:16", "For God so loved the world that he gave his only Son")]
-    bq.add_verify_negatives({"islam": islam, "christianity": other})
+    islam = [
+        dict(_verify_row(bq, "Islam", c, english, condition="en_ask_en_answer"), english_version=bq.QURAN_EN_VERSION)
+        for c in ("1:1", "1:2")
+    ]
+    bq.add_verify_negatives({"islam": islam})
     flipped = _no_rows(islam)
     assert len(flipped) == 1
-    assert flipped[0]["expected"]["true_tradition"] == "Christianity"   # same script, not a hadith
+    donor = flipped[0]["expected"]
+    assert donor["true_tradition"] == "Islam" and "Arabic" not in donor["true_version"]   # an English hadith
+    assert bq._script(_quoted(flipped[0]["prompt"])) == "lat"
 
 
 def test_empty_same_tradition_only_pool_fails_fast(bq):
-    rows = [_verify_row("Sikhism", "Ang 1:1", "ਸਤਿ ਨਾਮੁ"), _verify_row("Sikhism", "Ang 1:2", "ਸਤਿ ਨਾਮੁ")]
+    rows = [_verify_row(bq, "Sikhism", "Ang 1:1", "ਸਤਿ ਨਾਮੁ"), _verify_row(bq, "Sikhism", "Ang 1:2", "ਸਤਿ ਨਾਮੁ")]
     with pytest.raises(SystemExit, match="no verify_source donor"):
         bq.add_verify_negatives({"sikhism": rows})
 
@@ -337,7 +340,8 @@ def test_donor_skip_list_redraws_only_its_own_rows(bq, monkeypatch):
 def test_other_traditions_cannot_move_islam_donors(bq):
     alone = [(r["condition"], r["sample"], r["citation"], r["expected"]["true_citation"]) for r in _no_rows(_islam_built(bq))]
     islam = bq.islam()
-    bq.add_verify_negatives({"judaism": bq.judaism(), "islam": islam, "sikhism": bq.sikhism()})
+    # Judaism's donors (the Masoretic text, the NRSV) are not in this pool; Sikhism's (another script) are.
+    bq.add_verify_negatives({"islam": islam, "sikhism": bq.sikhism()})
     together = [(r["condition"], r["sample"], r["citation"], r["expected"]["true_citation"]) for r in _no_rows(islam)]
     assert together == alone
 

@@ -1,6 +1,6 @@
 # Christianity
 
-- Canonical edition named in the question: **NRSV**
+- Canonical edition named in the question: **the New Revised Standard Version (NRSV)**
 - English edition: **NRSV (same edition; the text is already English)**
 - Language: English
 - Raw file: `texts/raw/Protestant Christian/nrsv.json (gitignored; not in the public repo)`
@@ -50,9 +50,9 @@ These citations are the question file. Population and familiarity are separate s
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in NRSV? Reply with the exact text of that edition and nothing else.
-- `complete_unit`: Please complete this quote from NRSV: "{head}" Reply with only the remaining words.
-- `cite_passage`: Where in NRSV can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
-- `verify_source`: Is the following text from NRSV? "{text}" Answer Yes or No.
+- `retrieve_quote`: What is the text of {citation} in the New Revised Standard Version (NRSV)? Reply with the exact text of that edition and nothing else.
+- `complete_unit`: Complete this quotation from the New Revised Standard Version (NRSV): "{head}" Reply with only the remaining words.
+- `cite_passage`: Where in the New Revised Standard Version (NRSV) can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
+- `verify_source`: Is the following text from the New Revised Standard Version (NRSV)? "{text}" Answer Yes or No.
 
 This edition is English, so there is one answer language.

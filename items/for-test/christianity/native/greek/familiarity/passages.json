@@ -2,7 +2,6 @@
   "tradition": "Christianity",
   "sample": "familiarity",
   "run": false,
-  "notice": "Familiarity panel, not in the population run. Greek New Testament, Scrivener 1894. John 3:16 and Matthew 6:9 only.",
   "passages": [
     {
       "tradition": "Christianity",
@@ -22,5 +21,7 @@
         "native": "οὕτως οὖν προσεύχεσθε ὑμεῖς· Πάτερ ἡμῶν ὁ ἐν τοῖς οὐρανοῖς, ἁγιασθήτω τὸ ὄνομά σου·"
       }
     }
-  ]
+  ],
+  "notice": "Familiarity panel, not in the population run. Greek New Testament, Scrivener 1894. John 3:16 and Matthew 6:9 only.",
+  "provenance": "https://raw.githubusercontent.com/honza/textus-receptus/2bac2dae4a0961c84d6d544a40cbef8b8d8c4e32/data/gnt.flat.json"
 }
