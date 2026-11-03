@@ -50,6 +50,13 @@ def test_devanagari_gita_citation():
     assert _cite("१०:३६", "10:36")["outcome"] == "correct"
 
 
+def test_the_fold_is_symmetric():
+    # Every committed expected citation is ASCII; a native-numeral ground truth must still match.
+    assert _cite("34:46", "٣٤:٤٦")["outcome"] == "correct"
+    assert _cite("٣٤:٤٦", "३४:४६")["outcome"] == "correct"
+    assert _cite("34:47", "٣٤:٤٦")["outcome"] == "incorrect"
+
+
 def test_one_citation_in_two_numeral_systems_is_not_a_hedge():
     # Pre-#111 these were two distinct candidates, so a hedge.
     assert _cite("१०:३ (or 10:3)", "10:3") == {"correct": 1, "n_candidates": 1, "outcome": "correct"}

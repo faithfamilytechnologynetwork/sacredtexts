@@ -880,6 +880,7 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     Spans that all assert the EXPECTED citation count as ONE candidate however many
     times the model repeats it ("It is Jude 1:3. Jude 1:3 warns…") — repetition is
     not a hedge; only distinct OTHER citations are."""
+    expected_citation = fold_citation_digits(expected_citation)  # both sides (#111); all ASCII today
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
     boundary = re.compile(r"(?<!\w)" + re.escape(ne) + r"(?!\w)")

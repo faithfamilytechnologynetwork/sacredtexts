@@ -44,3 +44,14 @@ matches — boundary chars unchanged in `\w`-ness). ⇒ `old correct ⇒ new cor
   question ids twice (collected twice, ~1s apart, sometimes different answers — `15:16` vs
   `१५:१६`). Movers are pinned by (folder, row, qid) for that reason. Data left as is; flagged.
 - Regression: 11 of 21 tests fail with the fold turned into a no-op; full gate 990 passed.
+
+## PR #114 / CMAP (2026-11-03)
+
+- gemini APPROVE, codex APPROVE, claude APPROVE (no blocking issues).
+- Folded claude's comment 1: the expected citation is now folded too (symmetric; no-op on committed
+  data — 0 non-ASCII expected — but removes a trap for native-script ground truth in #39/#112).
+- Relayed to architect, not acted on here: claude counts **262** committed cells still incorrect
+  where the folded answer has the right numeric locus and only the book label differs (mostly
+  Greek NT `Πράξεις 24:1`, Hebrew tractates, 1 `ਅੰਗ`) → sizing for #112; the astra duplicate-id
+  file deserves its own issue; committed scores.jsonl now disagree with the scorer for 414 cells
+  until the architect's rebaseline/final scoring pass.
