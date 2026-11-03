@@ -146,7 +146,12 @@ round-trip that proves no invention/reordering.
   `fold_aware_contains`, so Saheeh's `Allāh` and Besant's `Pârtha` accept `Allah`/`Partha`. No
   other language folds (in romanized Pali the macron is the orthography, #50), the default
   `fold_aware_contains` call-sites do not fold, and `normalize()`/`token_f1`/`cite_passage` are
-  unchanged. Witnessed by `test_latin_diacritic_fold.py` (167 registered 2026-11-02 cells). (verify_source is hardened —
+  unchanged. Witnessed by `test_latin_diacritic_fold.py` (167 registered 2026-11-02 cells).
+  **Gurmukhi verse counters fold in containment only:** for a Gurmukhi reference,
+  `fold_aware_contains` also tries the answer with counters between dandas (`॥੧॥`, `॥੪॥੯॥`)
+  removed, since the corpus pankti drops them (`clean_sggs_line`). One more OR, so still a
+  superset; a number after a word (`ਮਹਲਾ ੫`) stays. Witnessed by `test_gurmukhi_verse_counter.py`
+  (7 registered committed cells). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised
