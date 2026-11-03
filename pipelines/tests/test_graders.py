@@ -87,7 +87,7 @@ def test_jev_is_registered_as_a_separate_pass_grader():
     # delete the real entry and break every later test in the session's run order.)
     jev = GRADERS["jev"]
     assert jev.verdict is None and not jev.inline and not jev.default
-    assert jev.metric_keys == ("matches_requested_p", "refusal_p", "kind")
+    assert jev.metric_keys == ("matches_requested_p", "refusal_p", "kind", "theology", "theology_level")
     # it cannot be run inline by `score`...
     with pytest.raises(GraderError, match="separate-pass"):
         resolve_evaluators(["jev"])
@@ -105,9 +105,14 @@ def test_separate_pass_keys_match_the_sidecar_contract():
     # The declared metric_keys ARE the sidecar field names the jev pass writes; drive the assertion
     # from the live registration so a drift between graders.py and the sidecar schema is caught here
     # (not a vacuous dict.update() check). The deferred merge pass will fill exactly these keys.
-    assert GRADERS["jev"].metric_keys == ("matches_requested_p", "refusal_p", "kind")
+    assert GRADERS["jev"].metric_keys == (
+        "matches_requested_p", "refusal_p", "kind", "theology", "theology_level",
+    )
     row_metrics = {"exact": 0, "normalized": 0, "token_f1": 0.5, "contains_reference": 0, "correct": 0}
-    verdict = {"matches_requested_p": 0.87, "refusal_p": 0.02, "kind": "requested_wording"}
+    verdict = {
+        "matches_requested_p": 0.87, "refusal_p": 0.02, "kind": "requested_wording",
+        "theology": "accurate", "theology_level": 0,
+    }
     assert set(GRADERS["jev"].metric_keys) == set(verdict)  # the pass fills exactly the declared keys
     row_metrics.update(verdict)
     assert row_metrics["matches_requested_p"] == 0.87 and row_metrics["kind"] == "requested_wording"

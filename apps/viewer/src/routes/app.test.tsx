@@ -27,11 +27,12 @@ describe("app shell", () => {
     expect(screen.queryByRole("link", { name: /^Review$/ })).toBeNull();
   });
 
-  it("exposes the Standings nav link to the cross-run view", async () => {
+  it("lists every primary page in the header", async () => {
     vi.stubGlobal("fetch", constFetcher("[]"));
     renderApp("/");
-    const link = await screen.findByRole("link", { name: "Standings" });
-    expect(link.getAttribute("href")).toBe("/standings");
+    const nav = await screen.findByRole("navigation", { name: "Primary" });
+    const hrefs = [...nav.querySelectorAll("a")].map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["/", "/errors", "/findings", "/standings", "/judge", "/gaps"]);
   });
 });
 

@@ -63,18 +63,46 @@ export function ExplorerPage() {
   };
 
   const backLink = (
-    <Link to="/" search={{ run: runId }} className="text-sm text-default-700 underline">
-      ← Back to leaderboard
-    </Link>
+    <p className="flex gap-4 text-sm">
+      <Link to="/errors" search={{ run: runId }} className="text-default-700 underline">
+        All models
+      </Link>
+      <Link to="/" search={{ run: runId }} className="text-default-700 underline">
+        Scores for this run
+      </Link>
+    </p>
   );
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       {backLink}
-      <h1 className="mt-2 text-2xl font-semibold">Error explorer</h1>
+      <h1 className="mt-2 text-2xl font-semibold">Verses</h1>
       <p className="mt-1 text-sm text-default-500">
         <span className="font-medium">{modelId}</span> over run <code>{runId}</code>
       </p>
+      {runState.status === "ready" && runState.models.length > 1 && (
+        <label className="mt-3 block text-sm">
+          Model{" "}
+          <select
+            className="ml-1 rounded border border-default-300 bg-background px-2 py-1"
+            value={modelId}
+            aria-label="Model"
+            onChange={(e) =>
+              navigate({
+                to: "/run/$runId/model/$modelId",
+                params: { runId, modelId: e.target.value },
+                search,
+              })
+            }
+          >
+            {runState.models.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {runState.status === "loading" && <CenteredSpinner label={`Loading run ${runId}…`} />}
 
@@ -115,7 +143,9 @@ export function ExplorerPage() {
             />
           </div>
 
-          <p className="mt-4 text-xs text-default-400">
+          <details className="mt-4 text-xs text-default-400">
+            <summary className="cursor-pointer text-sm text-default-600">How a verse is marked</summary>
+            <p className="mt-2">
             The <span className="font-medium">result</span> filter&apos;s{" "}
             <span className="font-medium">incorrect</span> shows only answered-but-wrong cells;
             refused and missing cells each have their own option.{" "}
@@ -129,7 +159,8 @@ export function ExplorerPage() {
             <span className="font-medium">addition</span> is a correct quote that continues past the
             reference — still counted correct. Per-metric <code>n/a</code> means the task emits no
             such similarity score.
-          </p>
+            </p>
+          </details>
 
           <p className="mt-2 text-sm text-default-500">
             Showing {filtered.length} of {stats.total}.

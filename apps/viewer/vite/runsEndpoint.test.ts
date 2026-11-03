@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { listRuns, resolveRunFile, createRunsHandler, collectGaps, negativeKind } from "./runsEndpoint";
+import { listRuns, resolveRunFile, createRunsHandler, collectGaps, collectJudge, negativeKind } from "./runsEndpoint";
 
 let tmp: string; // the runs root
 let outside: string; // a dir outside runs/, the target of symlink-escape attempts
@@ -397,6 +397,49 @@ describe("runsEndpoint handler", () => {
     const res = fakeRes();
     createRunsHandler(tmp)({ url: `/../${path.basename(outside)}/secret.json` }, res);
     expect(res.statusCode).toBe(404);
+  });
+});
+
+describe("collectJudge", () => {
+  it("counts coherent rows and holds incoherent rows out of the kind columns", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "judge-"));
+    const dir = path.join(root, "argon", "base", "islam", "jev_results");
+    fs.mkdirSync(dir, { recursive: true });
+    const row = (extra: Record<string, unknown>) =>
+      JSON.stringify({ kind: "refusal", theology: "no_claim", coherent: true, usage: { cost: 0.001 }, ...extra });
+    fs.writeFileSync(
+      path.join(dir, "judgments-v5.jsonl"),
+      [
+        row({}),
+        row({ kind: "faithful_paraphrase", theology: "distorted", coherent: false }),
+        row({ kind: "requested_wording", theology: "accurate" }),
+      ].join("\n") + "\n",
+    );
+    fs.writeFileSync(path.join(dir, "judgments.jsonl"), row({ kind: "wrong_passage", theology: "contradicted" }) + "\n");
+    const report = collectJudge(root);
+    expect(report.models).toEqual([
+      {
+        model: "argon",
+        rows: 3,
+        coherent: 2,
+        incoherent: 1,
+        cost: 0.003,
+        kind: {
+          refusal: 1,
+          requested_wording: 1,
+          other_indexed_wording: 0,
+          faithful_paraphrase: 0,
+          meaning_change: 0,
+          wrong_passage: 0,
+          neither: 0,
+        },
+        theology: { accurate: 1, gloss: 0, distorted: 0, contradicted: 0, no_claim: 1 },
+      },
+    ]);
+    expect(report.traditions.map((t) => t.tradition)).toEqual(["Islam"]);
+    expect(report.traditions[0]!.coherent).toBe(2);
+    expect(report.traditions[0]!.kind.faithful_paraphrase).toBe(0);
+    fs.rmSync(root, { recursive: true, force: true });
   });
 });
 

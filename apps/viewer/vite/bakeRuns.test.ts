@@ -244,8 +244,8 @@ describe("clientRunUrls", () => {
       expect.arrayContaining(["panel", "rerun-2026-11-03", "run-a", "run-b", "archive/old-2026-01-01"]),
     );
     expect(urls).toContain("/rerun-2026-11-03/summary.json");
-    expect(urls.slice(0, 2)).toEqual(["/_index", "/_gaps"]);
-    expect(urls).toHaveLength(2 + 4 * ids.length);
+    expect(urls.slice(0, 3)).toEqual(["/_index", "/_gaps", "/_judge"]);
+    expect(urls).toHaveLength(3 + 4 * ids.length);
     expect(urls).toContain("/panel/answers.jsonl");
     // Encoded exactly as the client encodes a run id (encodeURIComponent).
     expect(urls).toContain("/archive%2Fold-2026-01-01/summary.json");
@@ -295,8 +295,8 @@ describe("bakeRuns: the static tree serves the dev endpoint's bytes for every cl
 
   it("matches byte-for-byte: whole files, sharded parts, and 404s alike", async () => {
     const counts = await assertParity(runsDir, env);
-    // 5 runs x 4 artifacts + _index + _gaps = 22 URLs: 1 sharded, 3 absent, 18 whole.
-    expect(counts).toEqual({ whole: 18, sharded: 1, absent: 3 });
+    // 5 runs x 4 artifacts + _index + _gaps + _judge = 23 URLs: 1 sharded, 3 absent, 19 whole.
+    expect(counts).toEqual({ whole: 19, sharded: 1, absent: 3 });
     expect(fs.existsSync(path.join(env.dist, "runs", "rerun-2026-11-03", "summary.json"))).toBe(true);
     expect(result.notFound.sort()).toEqual(["/run-b/answers.jsonl", "/run-b/questions.jsonl", "/run-b/scores.jsonl"]);
     expect(result.sharded.map((s) => s.url)).toEqual(["/panel/answers.jsonl"]);

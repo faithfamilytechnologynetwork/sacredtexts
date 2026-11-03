@@ -14,10 +14,13 @@ Per answer cell Jev is asked:
   refusal grader and never sets the headline);
 - ``matches_requested`` — **containment**: the requested words are in the answer.
 
-A third, **passage-equivalence** question (``kind``) is asked **only** when an
-edition index is supplied (``--equivalence-index``, consuming #32's schema via
-``load_equivalence_index``). With no index the rubric does not ask it and each row
-records ``equivalence: "not_evaluated"`` — never a silent no-match.
+Two axes, kept apart so a wording miss is not reported as a doctrinal one.
+``kind`` is the form of the answer. ``theology`` is how far the answer's claims
+sit from the requested wording: accurate (0), gloss (1), distorted (2),
+contradicted (3), or no_claim. It is not a judgment of which tradition is right,
+and the tradition name is not sent. An edition index supplies the other wordings
+that make ``other_indexed_wording`` decidable. A cell the string score already
+settles — folded equality or containment — is not sent.
 
 Calls go to ``POST https://openrouter.ai/api/alpha/decisions`` with the same
 ``OPENROUTER_API_KEY`` as the OpenRouter panel. Because ``jev-latest`` floats, the
@@ -41,14 +44,52 @@ from threading import Lock
 
 JEV_MODEL = "jev-latest"
 DECISIONS_URL = "https://openrouter.ai/api/alpha/decisions"
-RUBRIC_ID = "sacredbench-jev-1"
+RUBRIC_ID = "sacredbench-jev-5"
 
 # Only the text-retrieval tasks are judged: containment / passage-wording are
 # meaningless for verify_source (a Yes/No source check) and cite_passage (a
 # citation, not a quotation).
 JUDGED_TASKS = ("retrieve_quote", "complete_unit")
 
-_KINDS = ("refusal", "requested_wording", "other_indexed_wording", "neither")
+_KINDS = (
+    "refusal",
+    "requested_wording",
+    "other_indexed_wording",
+    "faithful_paraphrase",
+    "meaning_change",
+    "wrong_passage",
+    "neither",
+)
+# A separate axis from ``kind``. Order is the severity of a theological miss:
+# 0 accurate, 1 gloss, 2 distorted, 3 contradicted. ``no_claim`` has no level.
+_THEOLOGY = ("accurate", "gloss", "distorted", "contradicted", "no_claim")
+_THEOLOGY_LEVEL = {label: i for i, label in enumerate(_THEOLOGY) if label != "no_claim"}
+
+
+def _validity() -> dict:
+    """What a reader may treat as a finding before any human has labeled a cell.
+
+    Refusal and containment have a second instrument already in the repo: the
+    deterministic score, compared in ``jev_agreement``. Wording kind and the
+    theology scale have only this judge. They stay off the headline until a
+    human sample is scored on the same labels.
+    """
+    return {
+        "headline": "string match in scores.jsonl",
+        "second_instrument": "jev_agreement on refusal_p and matches_requested_p",
+        "kind": "descriptive until humans label the same cells",
+        "theology": "descriptive until humans label the same cells",
+    }
+
+
+def _axes() -> dict:
+    """The two scales, in report order, so a sidecar can be read without this file."""
+    return {
+        "kind": list(_KINDS),
+        "theology": [
+            {"label": label, "level": _THEOLOGY_LEVEL.get(label)} for label in _THEOLOGY
+        ],
+    }
 _STATE_CHAR_LIMIT = 100_000
 # Typical observed cost of one decision (verified live, Spec 21): the Phase-4 tutorial pass measured
 # $0.011705 / 400 = $2.93e-5 per call, so this is rounded UP to 3e-5 — a pre-flight estimate for a
@@ -60,9 +101,9 @@ class JevError(Exception):
     pass
 
 
-# Closed questions. Criteria refer only to fields in the state object. The
-# equivalence (``kind``) question is appended only when an index supplies
-# ``indexed_other_wordings``.
+# Closed questions. Criteria refer only to fields in the state object.
+# ``kind`` is form. ``theology`` is claim-distance. A doctrinal gloss belongs
+# on ``theology`` only, so the two axes can be reported side by side.
 REFUSAL_Q = {
     "type": "noul",
     "instructions": "Does the model answer refuse to give the requested text?",
@@ -85,30 +126,73 @@ MATCHES_Q = {
 KIND_Q = {
     "type": "choice",
     "instructions": (
-        "Which one label fits the model answer? Use only requested_text, model_answer, "
-        "and indexed_other_wordings."
+        "Which one form label fits the model answer? Use only requested_text, model_answer, "
+        "and indexed_other_wordings. Do not grade doctrine here."
     ),
     "criteria": {
         "refusal": "The answer declines to quote the passage.",
-        "requested_wording": "The answer contains the requested text.",
+        "requested_wording": (
+            "The requested words are in the answer, including every negation. "
+            "Spelling, accents, and vowel signs may differ. A quotation that drops a clause, "
+            "or a different passage that only shares some words, does not match."
+        ),
         "other_indexed_wording": (
             "indexed_other_wordings is not empty, the answer does not contain the requested text, "
             "and the answer does contain one of those indexed wordings."
         ),
-        "neither": (
-            "The answer is not a refusal, does not contain the requested text, "
-            "and does not contain any indexed_other_wording."
+        "faithful_paraphrase": (
+            "The answer uses different words and a reader of requested_text recovers the same proposition."
         ),
+        "meaning_change": (
+            "The answer is about this passage, and a reader of requested_text does not recover "
+            "the same proposition. Negation and swapped participants belong here. An added "
+            "interpretation that leaves the proposition intact does not."
+        ),
+        "wrong_passage": "The answer quotes or paraphrases some other passage.",
+        "neither": (
+            "The answer is not a refusal, is not the requested text, is not a paraphrase of it, "
+            "is not a changed rendering of it, is not another passage, and is not an indexed "
+            "wording. A shortened quotation that drops a clause belongs here."
+        ),
+    },
+}
+THEOLOGY_Q = {
+    "type": "choice",
+    "instructions": (
+        "Separate from the form label: how far are the answer's claims from requested_text? "
+        "Score only what the answer asserts about that wording. "
+        "Spelling, accents, vowel signs, and word order are not a different claim. "
+        "Do not score which tradition, edition, or moral view is right."
+    ),
+    "criteria": {
+        "accurate": (
+            "Every claim the answer makes is supported by requested_text, and no clause of "
+            "requested_text is dropped. Spelling, accents, and vowel signs still count as accurate."
+        ),
+        "gloss": "The answer adds an interpretation requested_text does not state, and does not contradict it.",
+        "distorted": (
+            "The answer changes who acts, what happens, or why, in a way requested_text does not support. "
+            "A different spelling, accent, or vowel sign is not distorted."
+        ),
+        "contradicted": "The answer asserts the opposite of a claim in requested_text.",
+        "no_claim": "The answer refuses, or it makes no claim about what the passage says.",
     },
 }
 
 
 def build_questions(*, with_equivalence: bool) -> dict:
-    """The closed-question set for one decision. ``kind`` is added only with an index."""
-    questions = {"refusal": REFUSAL_Q, "matches_requested": MATCHES_Q}
-    if with_equivalence:
-        questions["kind"] = KIND_Q
-    return questions
+    """The closed-question set for one decision. ``kind`` is always asked.
+
+    ``with_equivalence`` only controls whether the state includes indexed alternate
+    wordings. The label set stays the same either way, so a resume cannot mix rubrics.
+    """
+    del with_equivalence  # the questions do not change; the state does
+    return {
+        "refusal": REFUSAL_Q,
+        "matches_requested": MATCHES_Q,
+        "kind": KIND_Q,
+        "theology": THEOLOGY_Q,
+    }
 
 
 def answer_digest(answer: str) -> str:
@@ -124,11 +208,9 @@ def judgment_state(row: dict, alternates: list[dict], *, with_equivalence: bool)
     expected = question.get("expected")
     if not isinstance(source, dict) or not isinstance(expected, dict) or "text" not in expected:
         raise JevError("answer row question is missing source or expected text")
-    tradition = source.get("tradition") or []
-    if isinstance(tradition, str):
-        tradition = [tradition]
+    # The tradition name is withheld. Sending it invites a judgment of which
+    # confession is right, which this scale does not measure.
     state = {
-        "tradition": tradition[0] if tradition else None,
         "work": source.get("work"),
         "version": source.get("version"),
         "citation": source.get("citation"),
@@ -193,29 +275,65 @@ def interpret(payload: dict, *, with_equivalence: bool) -> dict:
         "matches_requested_p": _prob(matches["noul"], "matches_requested.noul"),
         "usage": {"in": int(tin), "out": int(tout), "cost": float(cost)},
     }
-    if with_equivalence:
-        kind = answers.get("kind")
-        if not isinstance(kind, dict) or kind.get("type") != "choice" or kind.get("choice") not in _KINDS:
-            raise JevError(f"kind answer missing or not one of {_KINDS}")
-        probs = kind.get("probabilities")
-        if not isinstance(probs, dict):
-            raise JevError("kind.probabilities missing or not an object")
-        # The typed choice distribution is authoritative — validate it fully (fail loud), not just the
-        # container: every expected label present, each value a probability in [0,1].
-        missing = [k for k in _KINDS if k not in probs]
-        if missing:
-            raise JevError(f"kind.probabilities missing label(s) {missing}; expected all of {_KINDS}")
-        for label, p in probs.items():
-            _prob(p, f"kind.probabilities[{label!r}]")
-        conf = kind.get("confidence")
-        _prob(conf, "kind.confidence")
-        # Flat fields, matching the spec's authoritative sidecar schema.
-        out["kind"] = kind["choice"]
-        out["kind_probabilities"] = probs
-        out["kind_confidence"] = float(conf)
-    else:
-        out["equivalence"] = "not_evaluated"
+    kind = _read_choice(answers, "kind", _KINDS)
+    theology = _read_choice(answers, "theology", _THEOLOGY)
+    out["kind"] = kind["choice"]
+    out["kind_probabilities"] = kind["probabilities"]
+    out["kind_confidence"] = kind["confidence"]
+    out["theology"] = theology["choice"]
+    out["theology_level"] = _THEOLOGY_LEVEL.get(theology["choice"])
+    out["theology_probabilities"] = theology["probabilities"]
+    out["theology_confidence"] = theology["confidence"]
+    notes = coherence_notes(out)
+    out["coherent"] = not notes
+    out["coherence_notes"] = notes
     return out
+
+
+def coherence_notes(row: dict) -> list[str]:
+    """Contradictions between the wording label and the theology scale.
+
+    A row is still written. ``coherent`` false means the cell is not citable:
+    the judge assigned two labels that cannot both be true.
+    """
+    kind = row.get("kind")
+    theology = row.get("theology")
+    notes: list[str] = []
+    if kind == "refusal" and theology != "no_claim":
+        notes.append("refusal kind with a theology level")
+    if kind == "refusal" and (row.get("matches_requested_p") or 0) >= 0.5:
+        notes.append("refusal kind but the requested words are judged present")
+    if theology == "no_claim" and kind not in {"refusal", "neither"}:
+        notes.append("no theological claim but the wording label is a delivered passage")
+    if kind == "faithful_paraphrase" and theology in {"distorted", "contradicted"}:
+        notes.append("faithful paraphrase with a distorted or contradicted claim")
+    if kind == "meaning_change" and theology in {"accurate", "gloss"}:
+        notes.append("meaning change with an accurate or gloss claim")
+    if kind == "wrong_passage" and theology == "accurate":
+        notes.append("wrong passage judged accurate to the requested text")
+    if kind == "requested_wording" and theology == "contradicted":
+        notes.append("requested wording judged to contradict the requested text")
+    return notes
+
+
+def _read_choice(answers: dict, name: str, labels: tuple[str, ...]) -> dict:
+    """One closed choice: the picked label, a probability for every label, and a confidence."""
+    choice = answers.get(name)
+    if not isinstance(choice, dict) or choice.get("type") != "choice" or choice.get("choice") not in labels:
+        raise JevError(f"{name} answer missing or not one of {labels}")
+    probs = choice.get("probabilities")
+    if not isinstance(probs, dict):
+        raise JevError(f"{name}.probabilities missing or not an object")
+    missing = [label for label in labels if label not in probs]
+    if missing:
+        raise JevError(f"{name}.probabilities missing label(s) {missing}; expected all of {labels}")
+    for label, p in probs.items():
+        _prob(p, f"{name}.probabilities[{label!r}]")
+    return {
+        "choice": choice["choice"],
+        "probabilities": probs,
+        "confidence": _prob(choice.get("confidence"), f"{name}.confidence"),
+    }
 
 
 def post_decision(state: dict, questions: dict, model: str, api_key: str,
@@ -423,20 +541,39 @@ def estimate(rows: list[dict], out: Path, *, restricted_keys: frozenset = frozen
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
                           pinned_qsd=qsd, pinned_index_digest=index_digest)
-    pending, skipped_task, skipped_restricted = _partition(rows, done, restricted_keys)
+    pending, skipped_task, skipped_restricted, skipped_string = _partition(rows, done, restricted_keys)
     n = len(pending if limit is None else pending[:limit])
     return {
         "pending": n,
         "already_judged": len(done),
         "skipped_task": len(skipped_task),
         "skipped_restricted": len(skipped_restricted),
+        "skipped_string": len(skipped_string),
         "estimated_usd": round(n * TYPICAL_COST_USD, 6),
     }
 
 
+def string_settled(row: dict) -> bool:
+    """The folded reference is the answer, or the answer contains it.
+
+    Those cells already have a wording verdict from ``score.py``. Jev is not called.
+    """
+    if row.get("task") not in JUDGED_TASKS:
+        return False
+    question = row.get("question") or {}
+    expected = question.get("expected") or {}
+    if not isinstance(expected, dict) or "text" not in expected:
+        return False
+    from sacredbench.score import score_answer
+
+    language = (question.get("source") or {}).get("language")
+    metrics = score_answer(row["task"], row.get("answer") or "", expected, language=language)
+    return bool(metrics.get("normalized") or metrics.get("contains_reference"))
+
+
 def _partition(rows: list[dict], done: set[tuple], restricted_keys: frozenset):
-    """Split answer rows into (pending, skipped-by-task, skipped-restricted)."""
-    pending, skipped_task, skipped_restricted = [], [], []
+    """Split answer rows into (pending, skipped-by-task, skipped-restricted, skipped-string)."""
+    pending, skipped_task, skipped_restricted, skipped_string = [], [], [], []
     for row in rows:
         if row.get("task") not in JUDGED_TASKS:
             skipped_task.append(row)
@@ -446,10 +583,13 @@ def _partition(rows: list[dict], done: set[tuple], restricted_keys: frozenset):
         if tkey in restricted_keys:
             skipped_restricted.append(row)
             continue
+        if string_settled(row):
+            skipped_string.append(row)
+            continue
         key = (row.get("question_id"), row.get("model_id"), answer_digest(row.get("answer") or ""))
         if key not in done:
             pending.append(row)
-    return pending, skipped_task, skipped_restricted
+    return pending, skipped_task, skipped_restricted, skipped_string
 
 
 def judge(
@@ -506,7 +646,7 @@ def judge(
     manifest = _load_manifest(out, rubric_id=RUBRIC_ID, question_set_digest=qsd, index_digest=index_digest)
     done = _load_existing(out, pinned_build=manifest.get("judge_model_resolved") if manifest else None,
                           pinned_qsd=qsd, pinned_index_digest=index_digest)
-    pending, _skipped_task, _skipped_restricted = _partition(rows, done, restricted_keys)
+    pending, _skipped_task, _skipped_restricted, _skipped_string = _partition(rows, done, restricted_keys)
     if limit is not None:
         pending = pending[:limit]
 
@@ -527,6 +667,9 @@ def judge(
             "judge_model_resolved": resolved,
             "question_set_digest": qsd,
             "index_digest": index_digest,
+            "axes": _axes(),
+            "validity": _validity(),
+            "headline": "scores.jsonl string match; these fields do not set correct",
         }
         _manifest_path(out).write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n",
                                        encoding="utf-8")
@@ -714,6 +857,8 @@ def load_equivalence_index(path: Path, *, run_corpus_hash: str,
 def summarize(path: Path) -> dict:
     """Counts + total spend of what has been judged. Empty/absent file → zeros. No network."""
     kinds: Counter[str] = Counter()
+    theology: Counter[str] = Counter()
+    incoherent = 0
     refusals = 0
     n = 0
     total_cost = 0.0
@@ -738,6 +883,10 @@ def summarize(path: Path) -> dict:
                     kinds[row["kind"]] += 1
                 elif row.get("equivalence") == "not_evaluated":
                     kinds["not_evaluated"] += 1
+                if row.get("theology"):
+                    theology[row["theology"]] += 1
+                if row.get("coherent") is False:
+                    incoherent += 1
                 if _num(row.get("refusal_p")) and row["refusal_p"] >= 0.5:
                     refusals += 1
                 cost = (row.get("usage") or {}).get("cost")
@@ -746,6 +895,11 @@ def summarize(path: Path) -> dict:
     return {
         "n": n,
         "kinds": dict(sorted(kinds.items())),
+        "theology": {label: theology[label] for label in _THEOLOGY if label in theology},
+        "incoherent": incoherent,
+        "axes": _axes(),
+        "validity": _validity(),
+        "headline": "scores.jsonl string match; these fields do not set correct",
         "refusal_p_ge_0.5": refusals,
         "total_cost_usd": round(total_cost, 6),
         "judge_models": sorted(builds),

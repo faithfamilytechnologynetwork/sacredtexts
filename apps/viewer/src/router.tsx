@@ -10,6 +10,8 @@ import { ExplorerPage } from "./routes/ExplorerPage";
 import { StandingsPage } from "./routes/StandingsPage";
 import { GapsPage } from "./routes/GapsPage";
 import { ErrorsPage } from "./routes/ErrorsPage";
+import { JudgePage } from "./routes/JudgePage";
+import { FindingsPage } from "./routes/FindingsPage";
 import { NotFound } from "./routes/NotFound";
 import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
@@ -79,6 +81,18 @@ const gapsRoute = createRoute({
 
 // The error-explorer picker: `/errors` lists one run's models as links into the explorer. Same
 // `?run=<id>` validator as the leaderboard home; an unknown id falls back to the same default run.
+const findingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/findings",
+  component: FindingsPage,
+});
+
+const judgeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/judge",
+  component: JudgePage,
+});
+
 const errorsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/errors",
@@ -88,7 +102,15 @@ const errorsRoute = createRoute({
   }),
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, explorerRoute, standingsRoute, gapsRoute, errorsRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  explorerRoute,
+  standingsRoute,
+  gapsRoute,
+  errorsRoute,
+  judgeRoute,
+  findingsRoute,
+]);
 
 export function createAppRouter(history?: RouterHistory) {
   return createRouter({

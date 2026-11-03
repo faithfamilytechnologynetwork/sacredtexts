@@ -36,14 +36,14 @@ export function benchmarkRuns(runs: RunRef[]): RunRef[] {
 
 /**
  * The run a page opens: `requested` (a `?run=` value) when it names a known run — experiment runs
- * included, they stay openable — else the DEFAULT, the most-recent benchmark (non-`exp-*`) run, so
- * a one-off A/B snapshot never becomes the default view; `runs[0]` only if every run is an
- * experiment run. `runs` must be newest-first (as `fetchRunIndex` returns them). Shared by the
- * leaderboard home and the `/errors` picker so both open the same run by default.
+ * included, they stay openable — else the virtual `panel` run when it is in the index, else the
+ * most-recent benchmark (non-`exp-*`) run. `runs[0]` only if every run is an experiment run.
+ * Shared by the leaderboard home and the verse picker so both open the same run by default.
  */
 export function selectRunId(runs: RunRef[], requested?: string): string | undefined {
   if (runs.length === 0) return undefined;
   if (requested && runs.some((r) => r.id === requested)) return requested;
+  if (runs.some((r) => r.id === "panel")) return "panel";
   return (benchmarkRuns(runs)[0] ?? runs[0]!).id;
 }
 

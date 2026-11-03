@@ -23,14 +23,20 @@ async function renderTable(summary: Summary, runId = "run-1") {
     component: () => null,
     validateSearch: (s: Record<string, unknown>) => s,
   });
+  const errorsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/errors",
+    component: () => null,
+    validateSearch: (s: Record<string, unknown>) => s,
+  });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([explorerRoute]),
+    routeTree: rootRoute.addChildren([explorerRoute, errorsRoute]),
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
   const result = render(<RouterProvider router={router} />);
   // The router resolves its initial route asynchronously; wait for the table to mount
   // (the "Leaderboard" heading is unique, unlike the two tables when traditions render).
-  await screen.findByText("Leaderboard");
+  await screen.findByText("Scores");
   return result;
 }
 

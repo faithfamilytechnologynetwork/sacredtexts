@@ -63,7 +63,11 @@ GRADERS: dict[str, Grader] = {
     # Verdict-less: it contributes recorded metrics (in the sidecar), never the deterministic headline.
     # NB: `kind` is INDEX-CONDITIONAL in the sidecar — a no-index row records `equivalence:
     # "not_evaluated"` instead — so the deferred merge-into-scores.jsonl pass must treat it as optional.
-    "jev": Grader("jev", ("matches_requested_p", "refusal_p", "kind"), None, default=False, inline=False),
+    "jev": Grader(
+        "jev",
+        ("matches_requested_p", "refusal_p", "kind", "theology", "theology_level"),
+        None, default=False, inline=False,
+    ),
 }
 
 # Fail fast at import: an inline grader may only own fields score.py actually computes

@@ -98,10 +98,10 @@ export function ErrorsPage() {
   return (
     <div>
       <div className="mx-auto max-w-5xl px-4 pt-8">
-        <h1 className="text-2xl font-semibold">Errors</h1>
+        <h1 className="text-2xl font-semibold">Verses</h1>
         <p className="mt-1 text-sm text-default-500">
-          Pick a model to see every question it was asked in this run: its answer, the expected text,
-          and whether it was right, wrong, refused, or never saved. The explorer filters by task,
+          Pick a model to see every verse it was asked in this run: its answer, the expected text,
+          and whether that answer was right, wrong, refused, or never saved. The page filters by task,
           tradition, and kind of mistake.
         </p>
       </div>

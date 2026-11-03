@@ -105,6 +105,29 @@ def restricted_keys(sources: list[cat.Source]) -> set[tuple[str, str, str]]:
     }
 
 
+def within_quotation_allowance(rows: list[dict]) -> set[tuple[str, str, str]]:
+    """Restricted editions this file may quote: distinct citations at or under the allowance.
+
+    The NRSV permission is 500 verses. NABRE and the Greek Orthodox extracts are
+    never returned. An empty citation does not count toward the allowance.
+    """
+    quoted: dict[tuple[str, str, str], set[str]] = {}
+    for row in rows:
+        src = row.get("source")
+        if not isinstance(src, dict):
+            question = row.get("question")
+            src = question.get("source") if isinstance(question, dict) else None
+        if not isinstance(src, dict):
+            continue
+        key = (src.get("work"), src.get("version"), src.get("language"))
+        allowance = _QUOTATION_VERSES.get(key)
+        citation = str(src.get("citation") or "").strip()
+        if allowance is None or not citation:
+            continue
+        quoted.setdefault(key, set()).add(citation)
+    return {key for key, cites in quoted.items() if len(cites) <= _QUOTATION_VERSES[key]}
+
+
 def _iter_source_dicts(path: Path):
     """Yield the ``(work, version, language)`` source metadata of every record in a standardized
     document, an evidence row (questions/answers jsonl), or a FAccT card (``facct.json``).

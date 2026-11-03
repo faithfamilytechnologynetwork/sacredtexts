@@ -36,7 +36,7 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   it("lists every roster question for the model, including the missing one", async () => {
     vi.stubGlobal("fetch", mapFetcher(missingFixtureFiles));
     renderApp("/run/fix/model/haiku");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     // haiku's three roster questions: aaa (correct), bbb (wrong), ccc (missing)
     expect(screen.getByText("retrieve_quote-aaa")).toBeInTheDocument();
     expect(screen.getByText("retrieve_quote-bbb")).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   it("the missing-cell filter shows only the un-answered question, distinct from wrong", async () => {
     vi.stubGlobal("fetch", mapFetcher(missingFixtureFiles));
     renderApp("/run/fix/model/haiku?mode=missing");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     expect(screen.getByText("retrieve_quote-ccc")).toBeInTheDocument();
     expect(screen.getByText(/no answer produced/i)).toBeInTheDocument();
     // the wrong answer (bbb) and the correct one (aaa) are filtered out
@@ -62,7 +62,7 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   it("the wrong-answer filter shows the answered-but-incorrect question, not the missing one", async () => {
     vi.stubGlobal("fetch", mapFetcher(missingFixtureFiles));
     renderApp("/run/fix/model/haiku?mode=wrong");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     expect(screen.getByText("retrieve_quote-bbb")).toBeInTheDocument();
     expect(screen.queryByText("retrieve_quote-ccc")).toBeNull();
     // a wrong answer shows its three per-metric scores
@@ -74,7 +74,7 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   it("selecting a failure-mode filter narrows the list, and 'all' restores it (clearing)", async () => {
     vi.stubGlobal("fetch", mapFetcher(missingFixtureFiles));
     renderApp("/run/fix/model/haiku");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     expect(screen.getByText(/Showing 3 of 3/)).toBeInTheDocument();
 
     // drive the actual <select> → onChange → navigate(search) → URL → re-filter
@@ -94,7 +94,7 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
     // The sample's questions are all tradition "Protestant Christian" (a value with a space);
     // the leaderboard links it as tradition=Protestant+Christian, which must parse back.
     renderApp("/run/fix/model/haiku?tradition=Protestant+Christian");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     expect(screen.getByText(/Showing 3 of 3/)).toBeInTheDocument();
     expect(screen.getByText("retrieve_quote-aaa")).toBeInTheDocument();
     // a tradition that matches nothing yields the empty state
@@ -113,8 +113,10 @@ describe("ExplorerPage — missing-cell vs wrong-answer (fixture)", () => {
   it("the back-to-leaderboard link targets /?run=<runId>", async () => {
     vi.stubGlobal("fetch", mapFetcher(missingFixtureFiles));
     renderApp("/run/fix/model/haiku");
-    const back = await screen.findByRole("link", { name: /back to leaderboard/i });
-    expect(back).toHaveAttribute("href", "/?run=fix");
+    const scores = await screen.findByRole("link", { name: "Scores for this run" });
+    expect(scores).toHaveAttribute("href", "/?run=fix");
+    const models = screen.getByRole("link", { name: "All models" });
+    expect(models).toHaveAttribute("href", "/errors?run=fix");
   });
 
   it("surfaces a localized error for a run that fails to load", async () => {
@@ -148,7 +150,7 @@ describe.skipIf(!present)("ExplorerPage — committed run drill-in gate", () => 
     expect(present).toBe(true); // a vanished committed run should fail loudly, not silently skip
     vi.stubGlobal("fetch", committedRunFetcher());
     renderApp("/run/first-run-2026-10-11/model/claude-haiku");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     // 100 roster questions, 25 correct (overall accuracy 0.25), 0 missing
     expect(
       screen.getByText((c) => c.includes("100 questions") && c.includes("25 correct") && c.includes("0 missing")),
@@ -164,7 +166,7 @@ describe.skipIf(!present)("ExplorerPage — committed run drill-in gate", () => 
     expect(present).toBe(true);
     vi.stubGlobal("fetch", committedRunFetcher());
     renderApp("/run/first-run-2026-10-11/model/claude-haiku?correct=correct");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     expect(screen.getByText(/Showing 25 of 100/)).toBeInTheDocument();
   });
 
@@ -172,7 +174,7 @@ describe.skipIf(!present)("ExplorerPage — committed run drill-in gate", () => 
     expect(present).toBe(true);
     vi.stubGlobal("fetch", committedRunFetcher());
     renderApp("/run/first-run-2026-10-11/model/claude-haiku?mode=refused");
-    expect(await screen.findByText("Error explorer")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Verses" })).toBeInTheDocument();
     // Spec 15: claude-haiku declined 55 of its 100 cells — the refused URL/filter path works, and
     // the stats line reports the count (distinct from the 20 wrong).
     expect(screen.getByText(/Showing 55 of 100/)).toBeInTheDocument();

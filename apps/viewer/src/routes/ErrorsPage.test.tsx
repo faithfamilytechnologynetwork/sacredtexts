@@ -45,7 +45,7 @@ describe("Errors nav link", () => {
   it("renders in the header and targets /errors", async () => {
     vi.stubGlobal("fetch", errorsFetcher([], {}));
     renderApp("/");
-    const link = await screen.findByRole("link", { name: "Errors" });
+    const link = await screen.findByRole("link", { name: "Verses" });
     expect(link.getAttribute("href")).toBe("/errors");
   });
 });
@@ -130,7 +130,7 @@ describe("ErrorsPage — the error-explorer picker", () => {
       url === "/runs/run-b/summary.json" ? new Promise<Response>(() => {}) : base(url)) as unknown as typeof fetch);
     renderApp("/errors");
     expect(await screen.findByText("Loading run run-b…")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "Errors" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Verses" })).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();
   });
 
@@ -145,7 +145,7 @@ describe("ErrorsPage — the error-explorer picker", () => {
     renderApp("/errors");
     expect(await screen.findByText(/Could not load run run-b/)).toBeInTheDocument();
     // the page title stays up in the error state, not only once a run has loaded
-    expect(screen.getByRole("heading", { level: 1, name: "Errors" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Verses" })).toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText("Run"), "run-a");
     expect(await screen.findByRole("link", { name: "legacy" })).toBeInTheDocument();
   });

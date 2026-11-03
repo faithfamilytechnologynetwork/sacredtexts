@@ -21,6 +21,7 @@ from sacredbench.jev import (
     estimate,
     interpret,
     judge,
+    judgment_state,
     load_equivalence_index,
     summarize,
 )
@@ -34,7 +35,7 @@ def _live_payload() -> dict:
     return json.loads(FIXTURE.read_text(encoding="utf-8"))
 
 
-def _payload(refusal=0.1, matches=0.2, build="typesafe/jev-1.14-20261014", kind=None):
+def _payload(refusal=0.1, matches=0.2, build="typesafe/jev-1.14-20261014", kind="requested_wording"):
     p = {
         "id": "gen-dec-1",
         "model": build,
@@ -45,13 +46,22 @@ def _payload(refusal=0.1, matches=0.2, build="typesafe/jev-1.14-20261014", kind=
         },
         "usage": {"input_tokens": 12, "output_tokens": 0, "cost": 0.000001},
     }
-    if kind is not None:
-        # a full choice distribution over all kinds (the live API returns every label), the chosen
-        # one carrying the mass — interpret() now validates all labels are present + in [0,1]
-        probs = {k: 0.0 for k in ("refusal", "requested_wording", "other_indexed_wording", "neither")}
+    # a full choice distribution over all kinds (the live API returns every label), the chosen
+    # one carrying the mass — interpret() now validates all labels are present + in [0,1]
+    labels = (
+        "refusal", "requested_wording", "other_indexed_wording",
+        "faithful_paraphrase", "meaning_change", "wrong_passage", "neither",
+    )
+    probs = {k: 0.0 for k in labels}
+    if kind in probs:
         probs[kind] = 0.8
-        p["answers"]["kind"] = {"type": "choice", "choice": kind,
-                                "probabilities": probs, "confidence": 0.7}
+    p["answers"]["kind"] = {"type": "choice", "choice": kind,
+                            "probabilities": probs, "confidence": 0.7}
+    theology_labels = ("accurate", "gloss", "distorted", "contradicted", "no_claim")
+    tprobs = {k: 0.0 for k in theology_labels}
+    tprobs["accurate"] = 0.8
+    p["answers"]["theology"] = {"type": "choice", "choice": "accurate",
+                                "probabilities": tprobs, "confidence": 0.7}
     return p
 
 
@@ -77,11 +87,27 @@ def _row(answer="some other sentence entirely", task="retrieve_quote",
 
 # ---- interpret / fixture -------------------------------------------------
 
+def test_judgment_state_withholds_the_tradition_name():
+    state = judgment_state(_row(), [], with_equivalence=False)
+    assert "tradition" not in state
+    assert state["work"] == "The Bible"
+    assert state["requested_text"]
+
+
+def test_incoherent_labels_are_kept_and_marked():
+    from sacredbench.jev import coherence_notes
+
+    parsed = interpret(_payload(kind="meaning_change"), with_equivalence=False)
+    assert parsed["coherent"] is False
+    assert "meaning change" in parsed["coherence_notes"][0]
+    assert coherence_notes(interpret(_payload(), with_equivalence=False)) == []
+
+
 def test_interpret_two_questions_records_not_evaluated():
     parsed = interpret(_payload(refusal=0.9, matches=0.1), with_equivalence=False)
     assert parsed["refusal_p"] == 0.9
     assert parsed["matches_requested_p"] == 0.1
-    assert parsed["equivalence"] == "not_evaluated"
+    assert parsed["kind"] == "requested_wording"
     assert parsed["judge_model_resolved"] == "typesafe/jev-1.14-20261014"
     assert parsed["usage"]["cost"] == 0.000001
 
@@ -90,6 +116,7 @@ def test_interpret_equivalence_reads_the_live_fixture_shape():
     parsed = interpret(_live_payload(), with_equivalence=True)
     assert parsed["matches_requested_p"] == 0.97
     assert parsed["kind"] == "requested_wording"          # flat, matching the spec schema
+    assert parsed["theology"] == "accurate" and parsed["theology_level"] == 0
     assert parsed["kind_confidence"] == 0.97
     assert "equivalence" not in parsed
     assert parsed["judge_model_resolved"] == "typesafe/jev-1.14-20261014"
@@ -165,7 +192,7 @@ def test_judge_is_resumable_records_build_and_digest(tmp_path):
     assert written["judge_model"] == JEV_MODEL
     assert written["judge_model_resolved"] == "typesafe/jev-1.14-20261014"
     assert written["answer_digest"] == answer_digest("I'm sorry, I can't provide that.")
-    assert written["equivalence"] == "not_evaluated"
+    assert written["kind"] == "requested_wording"
     # manifest records the resolved build identity
     manifest = json.loads((tmp_path / "judgments.jsonl.manifest.json").read_text())
     assert manifest["judge_model_resolved"] == "typesafe/jev-1.14-20261014"
@@ -308,7 +335,7 @@ def test_summarize_on_truncated_file_fails_fast(tmp_path):
 
 def test_nonempty_sidecar_without_manifest_fails_fast(tmp_path):
     out = tmp_path / "j.jsonl"
-    out.write_text(json.dumps({"rubric_id": "sacredbench-jev-1", "question_id": "q",
+    out.write_text(json.dumps({"rubric_id": "sacredbench-jev-2", "question_id": "q",
                                "model_id": "m", "answer_digest": "x"}) + "\n", encoding="utf-8")
     # no manifest beside it → unknown build identity → refuse
     with pytest.raises(JevError, match="manifest"):
@@ -373,6 +400,23 @@ def test_failed_cell_is_not_written(tmp_path):
 
 # ---- estimate / summarize ------------------------------------------------
 
+def test_string_match_is_not_sent_to_the_judge(tmp_path):
+    out = tmp_path / "jev_results" / "judgments.jsonl"
+    text = "the requested line of scripture here"
+    calls = {"n": 0}
+
+    def decide(state):
+        calls["n"] += 1
+        return _payload()
+
+    row = _row(answer=text)
+    est = estimate([row], out)
+    assert est["pending"] == 0 and est["skipped_string"] == 1 and est["estimated_usd"] == 0
+    done, failed, _ = judge([row], out, decide=decide, concurrency=1)
+    assert (done, failed, calls["n"]) == (0, 0, 0)
+    assert not out.exists()
+
+
 def test_estimate_counts_pending_and_spend(tmp_path):
     out = tmp_path / "j.jsonl"
     rows = [_row(qid="q1"), _row(qid="q2", task="verify_source"),
@@ -391,11 +435,17 @@ def test_summarize_is_a_noop_over_a_finished_file_and_sums_cost(tmp_path):
     s = summarize(out)
     assert s["n"] == 2
     assert s["judge_models"] == ["typesafe/jev-1.14-20261014"]
-    assert s["kinds"]["not_evaluated"] == 2
+    assert s["kinds"]["requested_wording"] == 2
+    assert s["theology"]["accurate"] == 2
     assert s["refusal_p_ge_0.5"] == 2
     # each _payload() reports cost 0.000001 → total surfaced
     assert s["total_cost_usd"] == pytest.approx(0.000002)
-    assert s["rubric_id"] == "sacredbench-jev-1"
+    assert s["rubric_id"] == "sacredbench-jev-5"
+    assert [step["label"] for step in s["axes"]["theology"]] == [
+        "accurate", "gloss", "distorted", "contradicted", "no_claim",
+    ]
+    assert s["validity"]["theology"].startswith("descriptive")
+    assert s["validity"]["second_instrument"].startswith("jev_agreement")
 
 
 # ---- the judge is never on the default scoring path ----------------------
@@ -669,7 +719,7 @@ def test_judge_without_index_records_not_evaluated(tmp_path):
     out = tmp_path / "j.jsonl"
     judge([_row(qsd="d")], out, decide=lambda s: _payload(), concurrency=1, question_set_digest="d")
     row = json.loads(out.read_text(encoding="utf-8").strip())
-    assert row["equivalence"] == "not_evaluated" and "kind" not in row and "index_digest" not in row
+    assert row["kind"] == "requested_wording" and "index_digest" not in row
 
 
 _INDEX_ROWS_B = [{"work": "The Bible", "citation": "Genesis 1:1", "language": "en",
