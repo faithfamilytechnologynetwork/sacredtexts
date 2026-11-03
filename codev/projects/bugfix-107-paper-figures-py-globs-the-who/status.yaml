@@ -1,7 +1,7 @@
 id: bugfix-107
 title: paper-figures-py-globs-the-who
 protocol: bugfix
-phase: pr
+phase: verified
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -13,5 +13,5 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T01:18:30.094Z'
-updated_at: '2026-11-03T01:33:34.626Z'
+updated_at: '2026-11-03T01:33:39.711Z'
 pr_ready_for_human: false
