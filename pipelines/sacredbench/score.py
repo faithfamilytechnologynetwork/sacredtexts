@@ -63,7 +63,8 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
 - the citation anti-hedge counts only FORMALLY-SHAPED citation candidates, so a
   PROSE hedge ("it could be Jude 1:3, or perhaps chapter 1 verse 4") is not caught.
 - ``cite_passage`` over Arabic ground truth: the span extractors expect a Latin-script leading
-  word and ``normalize()`` does not fold Arabic-Indic digits — evaluated in the Spec 26 run.
+  word. Native-script numerals (Arabic-Indic, Devanagari, Gurmukhi …) ARE read as ASCII in the
+  citation path (``fold_citation_digits``, #111); ``normalize()`` itself does not fold them.
 """
 
 from __future__ import annotations
@@ -834,9 +835,24 @@ def _shape_rx(expected_citation: str) -> "re.Pattern[str]":
     return _NUM_CITE
 
 
+def fold_citation_digits(text: str) -> str:
+    """Issue #111: write every Unicode decimal digit (category ``Nd``) as its ASCII digit, so
+    ``٣٤:٤٦``, ``۳۴:۴۶`` and ``३४:४६`` read as ``34:46``. A citation is a number; a model told to
+    answer "in the language of" an edition rightly writes that script's numerals.
+
+    Citation path ONLY (``cite_passage``): ``normalize()`` stays byte-stable, and text retrieval and
+    verify_source never see this fold."""
+    return "".join(
+        str(unicodedata.digit(ch)) if not ch.isascii() and unicodedata.category(ch) == "Nd" else ch
+        for ch in text
+    )
+
+
 def _citation_candidates(answer: str, expected_citation: str) -> set[str]:
+    # Spans are extracted from the raw answer (``\d`` already matches every Nd digit) and folded
+    # afterwards, so span extents are unchanged and the fold can only merge candidates (#111).
     rx = _shape_rx(expected_citation)
-    return {normalize(m.group(0)) for m in rx.finditer(answer)}
+    return {normalize(fold_citation_digits(m.group(0))) for m in rx.finditer(answer)}
 
 
 def bounded_contains(answer: str, expected: str) -> bool:
@@ -878,8 +894,9 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     # wants on SHORT strings — exactly where the collision residue bites hardest. A no-op on all
     # committed evidence (citations are Latin/numeric, 0 Arabic), so nothing moves. When #39
     # introduces Arabic-script citations, design a citation-appropriate equivalence then (its own
-    # collision analysis) rather than silently inheriting the verse-length fold.
-    return int(bounded_contains(answer, expected_citation)), n
+    # collision analysis) rather than silently inheriting the verse-length fold. Native-script
+    # numerals ARE folded (#111): only digits change, so a match that held before still holds.
+    return int(bounded_contains(fold_citation_digits(answer), expected_citation)), n
 
 
 def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None) -> dict:
