@@ -17,7 +17,9 @@ The registered set was derived by running the pre-#95 and #95 parsers over every
 The committed scores are NOT rewritten by #95 (the rerun is rescored under the final contract), so
 the scan below accepts a registered cell as either still ``refused`` (pre-rescore) or already at its
 registered outcome (post-rescore). The scan below also accepts the cells #115 registers
-(``test_native_verdict_tokens_rebaseline.py``), which move under the same rule. It reads git-tracked
+(``test_native_verdict_tokens_rebaseline.py``), which move under the same rule, and the cells #128
+registers (``test_talmudic_aramaic_yes.py``: a stand-alone Aramaic ``אין`` is now "yes"), which move
+between correct and incorrect, never into or out of ``refused``. It reads git-tracked
 score files only, so an untracked run (a live collection) never fails it. Read-only; skips cleanly if
 the run evidence is absent.
 """
@@ -32,6 +34,7 @@ import pytest
 
 from sacredbench.score import score_answer
 from tests.test_native_verdict_tokens_rebaseline import FLIPS as FLIPS_115
+from tests.test_talmudic_aramaic_yes import FLIPS as FLIPS_128
 
 RUNS = Path(__file__).resolve().parents[2] / "runs"
 
@@ -162,7 +165,8 @@ def test_only_registered_cells_move_and_only_out_of_refused():
     # Re-derive every committed (git-tracked) verify_source score (runs/archive included) from its
     # answer. A cell may differ from its committed outcome only if it is registered, committed
     # `refused`, and now at its registered outcome (#95's or #115's): nothing else moves, and nothing
-    # moves into `refused` or from correct to incorrect. A score file without a sibling answers.jsonl
+    # moves into `refused` or from correct to incorrect. The one exception is #128's registered verdict
+    # flips (Aramaic אין read as yes), pinned by identity. A score file without a sibling answers.jsonl
     # cannot be re-derived and is passed over.
     scanned = 0
     for scores in _tracked_score_files():
@@ -179,7 +183,9 @@ def test_only_registered_cells_move_and_only_out_of_refused():
             scanned += 1
             committed = row["metrics"]["outcome"]
             now = _outcome(answers[key])["outcome"]
-            if now != committed:
+            if now != committed and FLIPS_128.get(folder, {}).get(row["question_id"]) == now:
+                assert {committed, now} == {"correct", "incorrect"}, (folder, row["question_id"], committed)
+            elif now != committed:
                 assert committed == "refused", (folder, row["question_id"], committed, now)
                 registered = FLIPS.get(folder, {}) | FLIPS_115.get(folder, {})
                 assert registered.get(row["question_id"]) == now, (folder, row["question_id"])
