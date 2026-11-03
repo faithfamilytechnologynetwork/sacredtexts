@@ -130,7 +130,10 @@ def _collect(models: list[str], run_dir: Path, questions: dict[str, dict]) -> tu
             question = row.get("question") or {}
             task = row.get("task") or ""
             language = (question.get("source") or {}).get("language")
-            metrics = score_answer(task, row.get("answer") or "", question.get("expected") or {}, language=language)
+            metrics = score_answer(
+                task, row.get("answer") or "", question.get("expected") or {}, language=language,
+                prompt=question.get("prompt"),
+            )
             outcome = metrics.get("outcome") or "incorrect"
             by_trad[(model, tradition)][outcome] += 1
             by_trad[(model, tradition)]["n"] += 1

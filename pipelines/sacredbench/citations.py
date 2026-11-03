@@ -163,26 +163,32 @@ def _conventional_unit(expected_citation: str) -> str | None:
     return f"{m[1]} {m[2]}" if m and m[1].casefold() in _tables().segmented else None
 
 
-def score_citation(answer: str, expected_citation: str) -> dict:
+def _drop_segment(text: str, unit: str) -> str:
+    """Drop the segment index from every citation of the unit's shape (daf+amud, or a bare page),
+    so a Mishnah citation "Bekhorot 1:1" is not read as daf 1."""
+    amud = unit[-1] in "ab"
+    return _tables().segment_rx.sub(lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text)
+
+
+def score_citation(answer: str, expected_citation: str, example_citation: str | None = None) -> dict:
     """``cite_passage`` metrics: ``correct`` and ``n_candidates``, plus ``segment_match`` for a
     segment-indexed citation. ``correct`` is the existing matcher's verdict OR the equivalence
-    verdict; ``n_candidates`` changes only on a cell the equivalence credits."""
-    correct, n = _single_citation_correct(answer, expected_citation)
+    verdict; ``n_candidates`` changes only on a cell the equivalence credits. ``example_citation``
+    (the prompt's form example, #118) is never counted as a candidate."""
+    correct, n = _single_citation_correct(answer, expected_citation, example_citation)
     metrics = {"correct": correct, "n_candidates": n}
     text = canonical_citation_text(answer, expected_citation)
     unit = _conventional_unit(expected_citation)
     if unit is not None:
-        metrics["segment_match"] = int(correct or _single_citation_correct(text, expected_citation)[0])
+        full, _ = _single_citation_correct(text, expected_citation, example_citation)
+        metrics["segment_match"] = int(correct or full)
         if HEADLINE_DROPS_SEGMENT:
-            # only a unit of the expected's shape (daf+amud, or a bare page) loses its segment, so
-            # a Mishnah citation "Bekhorot 1:1" is not read as daf 1
-            amud = unit[-1] in "ab"
-            text = _tables().segment_rx.sub(
-                lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text
-            )
+            text = _drop_segment(text, unit)
+            if example_citation is not None:
+                example_citation = _drop_segment(canonical_citation_text(example_citation, expected_citation), unit)
             expected_citation = unit
     if not correct:
-        credited, n = _single_citation_correct(text, expected_citation)
+        credited, n = _single_citation_correct(text, expected_citation, example_citation)
         if credited:
             metrics.update(correct=1, n_candidates=n)
     return metrics

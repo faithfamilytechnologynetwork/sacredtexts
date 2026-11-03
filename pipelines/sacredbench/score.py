@@ -878,19 +878,45 @@ def bounded_contains(answer: str, expected: str) -> bool:
 
 
 
-def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, int]:
+def example_citation(prompt: str) -> str | None:
+    """Issue #118: the prompt's form example ("… in the same form as: Dhammapada 184."), the citation
+    that immediately follows the instruction's ": " after the quoted passage. None when the prompt
+    has no quoted passage or no example there."""
+    _, quote, tail = prompt.rpartition('"')
+    _, colon, after = tail.partition(": ")
+    if not (quote and colon):
+        return None
+    for rx in (_COLON_CITE, _PARA_CITE, _NUM_CITE):
+        if m := rx.match(after):
+            return m.group(0)
+    return None
+
+
+def _single_citation_correct(
+    answer: str, expected_citation: str, example_citation: str | None = None
+) -> tuple[int, int]:
     """Returns (correct, n_candidates). A multi-candidate answer scores 0; otherwise
     the single candidate must EQUAL ground truth (boundary-aware, not containment).
 
     Spans that all assert the EXPECTED citation count as ONE candidate however many
     times the model repeats it ("It is Jude 1:3. Jude 1:3 warns…") — repetition is
-    not a hedge; only distinct OTHER citations are."""
+    not a hedge; only distinct OTHER citations are. Nor is echoing the prompt's form
+    example (``example_citation``, "Dhammapada 74, not Dhammapada 184") beside another
+    citation (#118); an answer whose only citation is the example keeps it, a wrong locus."""
     expected_citation = fold_citation_digits(expected_citation)  # both sides (#111); all ASCII today
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
     boundary = re.compile(r"(?<!\w)" + re.escape(ne) + r"(?!\w)")
     matching = {c for c in cands if boundary.search(c)}
     others = cands - matching
+    if example_citation is not None:
+        echoes = [
+            re.compile(r"(?<!\w)" + re.escape(x) + r"(?!\w)")
+            for x in _citation_candidates(example_citation, expected_citation)
+        ]
+        kept = {c for c in others if not any(e.search(c) for e in echoes)}
+        if matching or kept:  # an answer whose only citation IS the example still named a locus
+            others = kept
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
@@ -905,8 +931,12 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     return int(bounded_contains(fold_citation_digits(answer), expected_citation)), n
 
 
-def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None) -> dict:
+def score_answer(
+    task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None,
+    prompt: "str | None" = None,
+) -> dict:
     """Score one model answer. Returns the metrics dict described in the module docstring.
+    ``prompt`` (the question's prompt) lets ``cite_passage`` ignore an echo of its form example.
 
     For the text-retrieval tasks the reported submetric fields and the headline are determined by
     the selected ``graders`` (a list of ``graders.Grader``; ``None`` ⇒ the default deterministic
@@ -953,7 +983,8 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
     if task == "cite_passage":
         from .citations import score_citation  # native notation + Talmud/GGS granularity (#112)
 
-        return _with_outcome(score_citation(answer, expected["citation"]), task, answer, expected)
+        example = example_citation(prompt) if prompt else None
+        return _with_outcome(score_citation(answer, expected["citation"], example), task, answer, expected)
     raise ScoreError(f"unknown task {task!r}")
 
 
@@ -1151,6 +1182,7 @@ def score_file(
             metrics = score_answer(
                 d["task"], d["answer"], d["question"]["expected"], graders,
                 language=d["question"].get("source", {}).get("language"),
+                prompt=d["question"].get("prompt"),
             )
             out.write(
                 json.dumps(
