@@ -319,6 +319,11 @@ _WASL = "ٱ"          # ARABIC LETTER ALEF WASLA
 # End-of-āyah sign glued to a word, plus the verse digits that follow it.
 # Anywhere in the answer: a citation after the sign must not keep the last word stuck to it.
 _AYAH_NUMBER = re.compile(r"\u06DD\s*[0-9\u0660-\u0669\u06F0-\u06F9]*")
+# A Gurmukhi verse counter between dandas: ॥੧॥, ॥੪॥੯॥੬੦॥, ।।੧।।, ॥1॥. The corpus pankti
+# drops it (``clean_sggs_line``), so an answer that keeps the printed
+# ``… ਰਾਤਿ ॥੧॥ ਰਹਾਉ ॥`` has a stray number inside the quotation. A number that follows a
+# word (ਮਹਲਾ ੫) is not a counter and stays.
+_GURMUKHI_VERSE_COUNTER = re.compile(r"[\u0964\u0965]+(?:\s*[\u0A66-\u0A6F0-9]+\s*[\u0964\u0965]+)+")
 _MADDAH = "\u0653"  # ARABIC MADDAH ABOVE, the mark NFKD splits off alef-madda آ
 
 
@@ -561,6 +566,10 @@ def fold_aware_contains(answer: str, expected: str, *, fold_latin: bool = False)
         r"(?<!\w)" + re.escape(_latin_folded(expected)) + r"(?!\w)", _latin_folded(answer)
     ):
         return True
+    if any("\u0a00" <= c <= "\u0a7f" for c in expected):  # Gurmukhi reference only
+        # The printed verse counter is not part of the quotation. One more OR: still a superset.
+        stripped = _GURMUKHI_VERSE_COUNTER.sub(" ", answer)
+        return stripped != answer and bounded_contains(stripped, expected)
     if not any(_is_arabic_letter(c) for c in expected):
         return False                                 # non-Arabic refs get only today's behaviour
     pattern = _fold_containment_pattern(expected)
