@@ -1,0 +1,17 @@
+id: bugfix-97
+title: collect-py-daemonpool-uses-pri
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-03T01:06:13.263Z'
+    approved_at: '2026-11-03T01:06:28.616Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T00:57:09.747Z'
+updated_at: '2026-11-03T01:06:33.306Z'
+pr_ready_for_human: false

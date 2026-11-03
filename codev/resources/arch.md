@@ -69,8 +69,12 @@ round-trip that proves no invention/reordering.
   Anthropic path passes the server-side web-search tool (`web_search_20250305`,
   `max_uses: 5`) iff a spec enables it, records `web_search_requests`, and fails loud on
   a non-terminal `stop_reason` (allowlist `end_turn`/`stop_sequence`) so a truncated or
-  `pause_turn` turn never silently re-bills; `_openai`/`_gemini` lack that guard (latent
-  trap for a future mixed tool-using panel — the tutorial panel is all-anthropic).
+  `pause_turn` turn never silently re-bills. The search-off `_openai`/`_gemini` paths do
+  NOT fail on truncation: by decision (#93) a `length`/`MAX_TOKENS` cell is committed and
+  scored (a repetition loop that exhausts the budget is the model failing the question).
+  The anthropic, openai-chat, OpenRouter-search and gemini paths record the host's raw
+  reason as `usage.finish_reason` (not the Responses-API search path) so analysis can flag
+  truncated cells; it is omitted when the host sends none, never invented.
 - **score.py**: per-task headline contract — `retrieve_quote`/`complete_unit` → the OR of the
   SELECTED graders' verdicts (default `strict` + `containment` ⇒ `normalized OR contains_reference`,
   Spec 15; graders are named + selectable via `score --evaluator`, a paid/separate-pass grader
