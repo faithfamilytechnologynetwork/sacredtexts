@@ -98,7 +98,7 @@ export function ExplorerPage() {
         <>
           <p className="mt-3 text-sm text-default-600">
             {stats.total} question{stats.total === 1 ? "" : "s"} · {stats.correct} correct ·{" "}
-            {stats.wrong} wrong · {stats.refused} refused · {stats.missing} missing
+            {stats.wrong} wrong ({stats.nearMiss} near miss) · {stats.refused} refused · {stats.missing} missing
           </p>
           <p className="mt-1 text-sm text-default-600">
             Of the labeled misses, <span className="font-medium">{stats.minor} minor</span> stay on
@@ -127,7 +127,10 @@ export function ExplorerPage() {
             asked for: near copy, paraphrase, omission) or major (the object is replaced: wrong passage,
             other script, wrong locus, hedge, no citation, wrong verdict).{" "}
             <span className="font-medium">addition</span> is a correct quote that continues past the
-            reference — still counted correct. Per-metric <code>n/a</code> means the task emits no
+            reference — still counted correct. <span className="font-medium">near miss</span> marks a
+            wrong quote that is near-verbatim (token-F1 ≥ 0.9, or the reference once vowel signs and
+            accents are dropped) — likely another edition or orthography of the right text; still
+            counted incorrect. Per-metric <code>n/a</code> means the task emits no
             such similarity score.
           </p>
 

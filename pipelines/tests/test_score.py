@@ -199,7 +199,7 @@ def test_retrieve_quote_tiers():
     exact = score_answer("retrieve_quote", "The keeper planted twelve trees.", exp)
     assert exact == {
         "exact": 1, "normalized": 1, "token_f1": 1.0, "token_f1_base": 1.0, "contains_reference": 1,
-        "correct": 1, "outcome": "correct",
+        "correct": 1, "outcome": "correct", "near_miss": 0,
     }
     punct = score_answer("retrieve_quote", "the keeper planted twelve trees", exp)
     assert (punct["exact"], punct["normalized"], punct["correct"]) == (0, 1, 1)
@@ -209,7 +209,7 @@ def test_retrieve_quote_tiers():
 
 def test_default_graders_dict_shape_and_noop():
     # the default grader set emits the phase-1 submetric block (keys, order, values) PLUS the
-    # phase-3 `outcome` field appended last. The grader selection itself is a no-op (implicit default
+    # phase-3 `outcome` field, then the issue-#96 `near_miss` tier appended last. The grader selection itself is a no-op (implicit default
     # == explicit default); the run byte-guards prove the full dict over 800 real cells.
     exp = {"text": "The keeper planted twelve trees."}
     ans = "﴾The keeper planted twelve trees.﴿ (from a web page)"
@@ -220,6 +220,7 @@ def test_default_graders_dict_shape_and_noop():
     assert json.dumps(default_implicit) == json.dumps(default_explicit)
     assert list(default_implicit) == [
         "exact", "normalized", "token_f1", "token_f1_base", "contains_reference", "correct", "outcome",
+        "near_miss",
     ]
 
 
