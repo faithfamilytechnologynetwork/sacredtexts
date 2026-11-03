@@ -115,8 +115,9 @@ those remaining words are contained in it. A `cite_passage` item that should
 be declined because the quotation is from another edition is not in this run.
 
 Guru Granth Sahib citations are asked and scored at the Ang (page), because
-line numbering within an Ang is not standardised (issue #135). A line number
-the model adds is ignored, and `retrieve_quote` still names the pankti by line.
+line numbering within an Ang is not standardised (issue #135). A line, Mehl
+or raag the model adds beside the Ang is ignored; a second Ang is a hedge.
+`retrieve_quote` still names the pankti by line.
 
 Within each sample, half of the `verify_source` questions quote a real passage
 from a different work and expect `no`. The donor is the same language as the

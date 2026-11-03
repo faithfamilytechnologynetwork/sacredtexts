@@ -61,6 +61,45 @@ def test_a_second_citation_is_still_a_hedge(answer):
     assert (scored["outcome"], scored["n_candidates"]) == ("incorrect", 2)
 
 
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Ang 315, line 9", "Ang 315 line 9", "Ang 315 (line 9)", "Ang 315, pankti 9", "Ang 315, Mehl 5",
+        "Ang 315, Mehla 5", "Ang 315 (Raag Gauri, Mehl 3)", "The quote is found on Ang 315, line 9.",
+        "ਅੰਗ ੩੧੫, ਮਹਲਾ ੫", "ਅੰਗ ੩੧੫, ਪੰਕਤੀ ੯", "ਅੰਗ ੩੧੫ (ਰਾਗੁ ਗਉੜੀ, ਮਹਲਾ ੩)", "page 315 of 1430",
+    ],
+)
+def test_a_qualifier_beside_the_ang_is_not_a_second_citation(answer):
+    # Architect decision on PR #136: only another Ang or a colon citation of another work is a rival.
+    # Before it, a Latin "line 9" / "Mehl 5" was read as a second citation and a Gurmukhi "ਮਹਲਾ ੫" was not.
+    assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Ang 315, line 9 or Ang 316", "Ang 315 line 9, or perhaps Ang 316 line 2", "Ang 315 (Mehl 5) or John 1:1",
+        "ਅੰਗ ੩੧੫, ਮਹਲਾ ੫ ਜਾਂ ਅੰਗ ੩੧੬", "ਅੰਗ ੩੧੫, ਪੰਕਤੀ ੯ ਜਾਂ John 1:1",
+    ],
+)
+def test_a_qualified_ang_beside_another_citation_is_still_a_hedge(answer):
+    scored = _cite(answer)
+    assert (scored["outcome"], scored["n_candidates"]) == ("incorrect", 2)
+
+
+@pytest.mark.parametrize(
+    ("english", "gurmukhi"),
+    [
+        ("Ang 315, Mehl 5", "ਅੰਗ ੩੧੫, ਮਹਲਾ ੫"),
+        ("Ang 315, line 9", "ਅੰਗ ੩੧੫, ਪੰਕਤੀ ੯"),
+        ("Ang 316, Mehl 5", "ਅੰਗ ੩੧੬, ਮਹਲਾ ੫"),
+        ("Ang 315, Mehl 5 or Ang 316", "ਅੰਗ ੩੧੫, ਮਹਲਾ ੫ ਜਾਂ ਅੰਗ ੩੧੬"),
+    ],
+)
+def test_english_and_gurmukhi_score_alike(english, gurmukhi):
+    assert _cite(english) == _cite(gurmukhi)
+
+
 def test_echoing_the_form_example_is_not_a_hedge():
     assert _cite("Ang 315 (not Ang 306)")["outcome"] == "correct"
     assert _cite("Ang 306")["outcome"] == "incorrect"  # the example alone is a wrong locus

@@ -44,3 +44,15 @@ rebuilt data). Architect asked (17:54Z) for a per-model Sikh-cite movers table i
 - PR #136 opened. CMAP: codex=APPROVE, gemini=APPROVE; claude still running when the human said to
   proceed without it (recorded as "not awaited" in the handoff). `pr` gate fired; waiting on the
   architect/human. Merge with `gh pr merge --merge` (no --delete-branch) only after approval.
+
+## 2026-11-03 pr, iteration 2 (architect decision)
+
+- Claude CMAP: APPROVE (HIGH), flagged that on the bare-Ang path an English "Ang 315, line 9" /
+  "Ang 315, Mehl 5" read as a hedge while Gurmukhi "ਅੰਗ ੩੧੫, ਮਹਲਾ ੫" scored correct (#112 extractor).
+- Architect (18:16Z): FIX NOW. Rule: on the bare-Ang path a rival is only another Ang or a colon
+  citation of another work; line/pankti/Mehl(a)/raag qualifiers are not candidates.
+- `_score_at_ang` now extracts Angs explicitly (`_angs`) instead of `_single_citation_correct`; colon
+  rivals normalized. Tests: qualifiers correct, qualified-Ang + another Ang/colon = hedge, EN/Gurmukhi
+  parity. Oracle unchanged: 7200 non-Sikh + 960 Sikh old-expected identical; bare-Ang rescoring still
+  0 verdict movers (n_candidates-only diffs 32 → 25). Suite 1274 passed.
+- Filed #137: generate.py still builds Sikh cite rows at Ang N:k (moves ANCHOR_DIGEST; out of scope).
