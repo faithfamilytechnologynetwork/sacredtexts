@@ -108,6 +108,52 @@ def _existing(
     return keys, digests, missing, fps, fp_missing
 
 
+def carry_forward(
+    questions: list[Question],
+    config: RunConfig,
+    answers_path: Path,
+    source: Path,
+    digest_from: list[Question] | None = None,
+) -> int:
+    """Copy answers from an earlier answers file instead of calling the model again (#85).
+
+    A row is carried only when its question id AND prompt text are byte-identical to a question
+    here, and its panel fingerprint and max_tokens match the configured model: the model saw exactly
+    this prompt under this identity, so its answer stands. The copy is re-stamped with this file's
+    digest and question (``score`` reads ``expected`` from it) and records ``carried_from``. Cells
+    already in ``answers_path`` are never overwritten. Returns the number of rows carried.
+    """
+    digest = question_set_digest(digest_from if digest_from is not None else questions)
+    done_keys, existing_digests, missing, _, _ = _existing(answers_path)
+    if (existing_digests - {digest}) or missing:
+        raise CollectError(f"{answers_path} was not built for this question set; refusing to carry into it")
+    by_id = {q.id: q for q in questions}
+    models = {m.id: m for m in config.models}
+    carried = []
+    for line in source.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        q, m = by_id.get(row["question_id"]), models.get(row["model_id"])
+        if q is None or m is None or (q.id, m.id) in done_keys or row["question"]["prompt"] != q.prompt:
+            continue
+        if row.get("panel_fingerprint") != _panel_fingerprint(m) or row.get("max_tokens") != m.max_tokens:
+            continue
+        done_keys.add((q.id, m.id))
+        carried.append({
+            **row, "question_set_digest": digest, "question": asdict(q),
+            "carried_from": {
+                "answers": os.path.relpath(source, answers_path.parent),
+                "question_set_digest": row.get("question_set_digest"),
+            },
+        })
+    answers_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(answers_path, "a", encoding="utf-8") as f:
+        for row in carried:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return len(carried)
+
+
 def collect(
     questions: list[Question],
     config: RunConfig,
