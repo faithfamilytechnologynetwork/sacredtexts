@@ -1,7 +1,7 @@
 id: bugfix-117
 title: refusal-cues-are-english-only-
 protocol: bugfix
-phase: fix
+phase: pr
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T03:05:52.366Z'
-updated_at: '2026-11-03T03:18:05.830Z'
+updated_at: '2026-11-03T03:34:44.020Z'
