@@ -19,10 +19,13 @@ type IndexState =
   | { status: "failed"; message: string }
   | { status: "ready"; runs: RunRef[] };
 
+// A settled load carries the run id it belongs to. `selectedId` changes during render, before the
+// load effect resets the state, so a settled state is only shown when its `runId` matches — never
+// the previous run's models (or error) under the newly selected id.
 type RunState =
   | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; summary: Summary };
+  | { status: "error"; runId: string; message: string }
+  | { status: "ready"; runId: string; summary: Summary };
 
 export function ErrorsPage() {
   const { run } = useSearch({ from: "/errors" });
@@ -59,8 +62,8 @@ export function ErrorsPage() {
       if (!live) return;
       setRunState(
         result.ok
-          ? { status: "ready", summary: result.summary }
-          : { status: "error", message: `${result.kind}: ${result.message}` },
+          ? { status: "ready", runId: selectedId, summary: result.summary }
+          : { status: "error", runId: selectedId, message: `${result.kind}: ${result.message}` },
       );
     })();
     return () => {
@@ -88,16 +91,28 @@ export function ErrorsPage() {
     );
   }
 
+  // Only a state settled for the CURRENT selection counts; anything else is still loading.
+  const current: RunState =
+    runState.status !== "loading" && runState.runId === selectedId ? runState : { status: "loading" };
+
   return (
     <div>
+      <div className="mx-auto max-w-5xl px-4 pt-8">
+        <h1 className="text-2xl font-semibold">Errors</h1>
+        <p className="mt-1 text-sm text-default-500">
+          Pick a model to see every question it was asked in this run: its answer, the expected text,
+          and whether it was right, wrong, refused, or never saved. The explorer filters by task,
+          tradition, and kind of mistake.
+        </p>
+      </div>
       <RunSelector
         runs={runs}
         selectedId={selectedId}
         onSelect={(id) => navigate({ to: "/errors", search: { run: id } })}
-        error={runState.status === "error" ? `Could not load run ${selectedId}: ${runState.message}` : null}
+        error={current.status === "error" ? `Could not load run ${current.runId}: ${current.message}` : null}
       />
-      {runState.status === "loading" && <CenteredSpinner label={`Loading run ${selectedId}…`} />}
-      {runState.status === "ready" && <ModelPicker summary={runState.summary} runId={selectedId!} />}
+      {current.status === "loading" && <CenteredSpinner label={`Loading run ${selectedId}…`} />}
+      {current.status === "ready" && <ModelPicker summary={current.summary} runId={current.runId} />}
     </div>
   );
 }
@@ -105,18 +120,13 @@ export function ErrorsPage() {
 function ModelPicker({ summary, runId }: { summary: Summary; runId: string }) {
   const { rows } = leaderboardRows(summary);
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-semibold">Errors</h1>
-      <p className="mt-1 text-sm text-default-500">
-        Pick a model to see every question it was asked in this run: its answer, the expected text,
-        and whether it was right, wrong, refused, or never saved. The explorer filters by task,
-        tradition, and kind of mistake.
-      </p>
+    <div className="mx-auto max-w-5xl px-4 py-6">
       {rows.length === 0 ? (
-        <p className="mt-4 text-sm">This run has no models.</p>
+        <p className="text-sm">This run has no models.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
+            <caption className="sr-only">Models in run {runId}</caption>
             <thead>
               <tr className="border-b text-left">
                 <th className="py-1 pr-4">model</th>

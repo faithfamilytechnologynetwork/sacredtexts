@@ -54,7 +54,7 @@ describe("ErrorsPage — the error-explorer picker", () => {
   it("lists the default run's models (the leaderboard's default: newest non-experiment run)", async () => {
     vi.stubGlobal("fetch", errorsFetcher(INDEX, SUMMARIES));
     renderApp("/errors");
-    const table = await screen.findByRole("table");
+    const table = await screen.findByRole("table", { name: "Models in run run-b" });
     expect((screen.getByLabelText("Run") as HTMLSelectElement).value).toBe("run-b");
 
     const dataRows = within(table).getAllByRole("row").slice(1); // drop header
@@ -85,11 +85,53 @@ describe("ErrorsPage — the error-explorer picker", () => {
     await waitFor(() => expect(router.state.location.search).toEqual({ run: "run-a" }));
   });
 
+  it("never paints the previous run's models under the newly selected run id", async () => {
+    // Switching runs changes the selected id during render, before the load effect resets the
+    // state. A transient frame must not render run-b's models as /run/run-a/... links. A
+    // MutationObserver records every href the DOM ever carries, so even a frame that React
+    // replaces within the same act() is caught.
+    vi.stubGlobal("fetch", errorsFetcher(INDEX, SUMMARIES));
+    renderApp("/errors");
+    await screen.findByRole("link", { name: "haiku" });
+    const seen = new Set<string>();
+    const record = (n: Node) => {
+      if (n instanceof Element) {
+        for (const a of [n, ...n.querySelectorAll("a")]) {
+          const href = a.getAttribute("href");
+          if (a.tagName === "A" && href) seen.add(href);
+        }
+      }
+    };
+    const observer = new MutationObserver((records) => {
+      for (const r of records) {
+        record(r.target);
+        r.addedNodes.forEach(record);
+      }
+    });
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["href"] });
+    await userEvent.selectOptions(screen.getByLabelText("Run"), "run-a");
+    await screen.findByRole("link", { name: "legacy" });
+    observer.disconnect();
+    expect(seen).toContain("/run/run-a/model/legacy");
+    expect([...seen].filter((h) => h.startsWith("/run/run-a/") && h !== "/run/run-a/model/legacy")).toEqual([]);
+  });
+
   it("honours ?run=<id>, including an experiment run", async () => {
     vi.stubGlobal("fetch", errorsFetcher(INDEX, SUMMARIES));
     renderApp("/errors?run=exp-newest-2026-10-30");
     const link = await screen.findByRole("link", { name: "exp-model" });
     expect(link.getAttribute("href")).toBe("/run/exp-newest-2026-10-30/model/exp-model");
+  });
+
+  it("shows the page title while the selected run is still loading", async () => {
+    // run-b's summary never resolves, so the page stays in its run-loading state.
+    const base = errorsFetcher(INDEX, SUMMARIES);
+    vi.stubGlobal("fetch", (async (url: string) =>
+      url === "/runs/run-b/summary.json" ? new Promise<Response>(() => {}) : base(url)) as unknown as typeof fetch);
+    renderApp("/errors");
+    expect(await screen.findByText("Loading run run-b…")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Errors" })).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
   });
 
   it("shows the empty state when there are no runs", async () => {
@@ -102,6 +144,8 @@ describe("ErrorsPage — the error-explorer picker", () => {
     vi.stubGlobal("fetch", errorsFetcher(INDEX, { "run-a": SUMMARIES["run-a"]! }));
     renderApp("/errors");
     expect(await screen.findByText(/Could not load run run-b/)).toBeInTheDocument();
+    // the page title stays up in the error state, not only once a run has loaded
+    expect(screen.getByRole("heading", { level: 1, name: "Errors" })).toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText("Run"), "run-a");
     expect(await screen.findByRole("link", { name: "legacy" })).toBeInTheDocument();
   });
