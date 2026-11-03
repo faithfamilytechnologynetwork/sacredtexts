@@ -1,4 +1,4 @@
-"""Issues #90 and #91: every prompt names its work, and one command rebuilds every question set.
+"""Issues #90, #91, #113 and #116: every prompt names its work, and one command rebuilds every question set.
 
 ``items/for-test/review/build_questions.py``'s ``main`` builds every set's rows, draws every verify
 "no" row from one pool by METHODOLOGY.md's donor table, and writes each set. The test runs that
@@ -8,9 +8,11 @@ Testament at pinned commits) are replaced by the wording committed beside the qu
 What is pinned:
 - the build reproduces every committed questions.jsonl byte for byte, and the passages.json it writes;
 - each English prompt names the work, not a bare catalogue version ("from 2013 edition?", #90), and the
-  Sanskrit and Pali prompts name it in their own language instead of splicing in the English name;
+  Sanskrit prompts name it in their own language instead of splicing in the English name;
+- the Pali Dhammapada is asked with the English prompt only: there is no romanized-Pali prompt arm (#113);
 - every committed "no" row quotes the donor METHODOLOGY.md's table names for that edition (this is what
   retarget_verify.py used to apply after the build), and each set flips half its verify rows;
+- no file repeats a prompt, and no set quotes one "no" donor twice (#116);
 - every prompt that quotes a passage quotes exactly one, and a verify prompt's passage is the one its
   expected answer names: its own for "yes", the donor for "no" (PR #98: a splice between the first two
   quotation marks left five encyclical "no" rows with a donor glued onto the encyclical's tail).
@@ -61,7 +63,7 @@ def _rows(path: Path) -> list[dict]:
 
 def _committed() -> dict[Path, list[dict]]:
     paths = sorted(p for p in _ITEMS.rglob("questions.jsonl") if "review" not in p.parts)
-    assert len(paths) == 38
+    assert len(paths) == 36
     return {p: _rows(p) for p in paths}
 
 
@@ -157,13 +159,30 @@ def test_every_english_prompt_names_its_work():
             assert "from 2013 edition" not in words and "in 2013 edition" not in words
 
 
-def test_sanskrit_and_pali_prompts_name_the_work_in_their_own_language():
-    names = {"hinduism": "श्रीमद्भगवद्गीता", "buddhism": "Dhammapad"}
-    for tradition, name in names.items():
-        for path in (_ITEMS / tradition / "native").rglob("prompt-native/questions.jsonl"):
-            for row in _rows(path):
-                words = _outside_quote(row["prompt"])
-                assert name in words and "edition" not in words, (path.relative_to(_ITEMS), words[:120])
+def test_sanskrit_prompts_name_the_work_in_their_own_language():
+    paths = list((_ITEMS / "hinduism" / "native").rglob("prompt-native/questions.jsonl"))
+    assert paths
+    for path in paths:
+        for row in _rows(path):
+            words = _outside_quote(row["prompt"])
+            assert "श्रीमद्भगवद्गीता" in words and "edition" not in words, (path.relative_to(_ITEMS), words[:120])
+
+
+# --- #113: the Pali Dhammapada has no Pali-language prompt arm ---------------------------------------
+
+def test_buddhism_is_asked_with_the_english_prompt_only(rebuilt):
+    """Romanized Pali has no native speakers, so its native prompt is not comparable to the others (#113)."""
+    buddhism = _ITEMS / "buddhism" / "native"
+    for files in (set(rebuilt), set(_committed())):
+        ours = {p.relative_to(buddhism).as_posix() for p in files if buddhism in p.parents and p.name == "questions.jsonl"}
+        assert ours == {"population/prompt-english/questions.jsonl", "familiarity/prompt-english/questions.jsonl"}
+    assert not list(buddhism.rglob("prompt-native"))
+    for sample in ("population", "familiarity"):
+        rows = _rows(buddhism / sample / "prompt-english" / "questions.jsonl")
+        assert {r["source"]["condition"] for r in rows} == {"ask_english"}
+        cited = {r["source"]["citation"] for r in rows if r["task"] == "retrieve_quote"}
+        passages = json.loads((buddhism / sample / "passages.json").read_text(encoding="utf-8"))["passages"]
+        assert cited == {p["citation"] for p in passages}
 
 
 # --- the donor table (METHODOLOGY.md), which retarget_verify.py used to apply after the build -------
@@ -234,6 +253,16 @@ def test_each_set_flips_half_its_verify_rows():
 def test_question_ids_are_unique():
     ids = [row["id"] for rows in _committed().values() for row in rows]
     assert len(ids) == len(set(ids))
+
+
+def test_no_file_repeats_a_prompt_or_a_verify_donor():
+    """#116: a donor drawn with replacement asked one "no" item up to four times in a set. An encyclical's
+    prompt names its own encyclical, so a repeated donor there is a repeated quoted text, not prompt."""
+    for path, rows in _committed().items():
+        prompts = [row["prompt"] for row in rows]
+        assert len(prompts) == len(set(prompts)), path.relative_to(_ITEMS)
+        donors = [_quoted(r["prompt"]) for r in rows if r["task"] == "verify_source" and r["expected"]["answer"] == "no"]
+        assert len(donors) == len(set(donors)), path.relative_to(_ITEMS)
 
 
 # --- PR #98: each prompt quotes one passage, and a "no" row quotes exactly its donor -----------------

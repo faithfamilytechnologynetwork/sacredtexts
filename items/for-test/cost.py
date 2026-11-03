@@ -41,7 +41,6 @@ RUNNABLE = (
     ROOT / "hinduism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "hinduism" / "english" / "population" / "questions.jsonl",
     ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
-    ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ROOT / "book-of-mormon" / "english" / "population" / "questions.jsonl",
     ROOT / "encyclicals" / "english" / "population" / "questions.jsonl",
 )
@@ -78,7 +77,6 @@ WRITTEN = (
     ]),
     ("Buddhism", [
         ROOT / "buddhism" / "native" / "population" / "prompt-english" / "questions.jsonl",
-        ROOT / "buddhism" / "native" / "population" / "prompt-native" / "questions.jsonl",
     ]),
     ("Book of Mormon", [
         ROOT / "book-of-mormon" / "english" / "population" / "questions.jsonl",
@@ -90,6 +88,8 @@ WRITTEN = (
 # 30 passages × 4 tasks. A native edition is two prompt languages (240).
 # An English edition of that same work is 120 more. A finished tradition,
 # including Christianity once the original-language verses are in, is 360.
+# The Pali Dhammapada is asked with the English prompt only (120): romanized
+# Pali has no native speakers (#113).
 ONE_EDITION = 30 * 4
 NATIVE_BOTH_PROMPTS = ONE_EDITION * 2
 FINISHED_OTHER = NATIVE_BOTH_PROMPTS + ONE_EDITION
@@ -119,9 +119,10 @@ def question_count(path: Path) -> int:
 def six_traditions() -> list[tuple[str, int, str]]:
     """Population counts from the files on disk.
 
-    A tradition with an English edition is 360 questions. Sikhism and Buddhism
-    are 240: this corpus has no English edition of either work. A mismatch
-    means the files changed.
+    A tradition with an English edition is 360 questions. Sikhism is 240: this
+    corpus has no English edition. Buddhism is 120: no English edition, and the
+    Pali text is asked with the English prompt only (#113). A mismatch means the
+    files changed.
     """
     how = {
         "Christianity": "NRSV, plus the same 30 in Masoretic or Greek, both prompts",
@@ -129,7 +130,7 @@ def six_traditions() -> list[tuple[str, int, str]]:
         "Islam": "Uthmani in both prompt languages, plus Saheeh International",
         "Sikhism": "Gurmukhi, both prompts; no English edition in this corpus",
         "Hinduism": "Sanskrit in both prompt languages, plus Besant's English",
-        "Buddhism": "Pali, both prompts; no English edition in this corpus",
+        "Buddhism": "Pali, English prompt only; no English edition in this corpus",
     }
     expected = {
         "Christianity": FINISHED_OTHER,
@@ -137,13 +138,13 @@ def six_traditions() -> list[tuple[str, int, str]]:
         "Islam": FINISHED_OTHER,
         "Sikhism": 240,
         "Hinduism": FINISHED_OTHER,
-        "Buddhism": 240,
+        "Buddhism": ONE_EDITION,
     }
     on_disk = {name: sum(question_count(path) for path in paths) for name, paths in WRITTEN}
     for name, count in expected.items():
         if on_disk[name] != count:
             raise SystemExit(f"{name} population files have {on_disk[name]} questions, expected {count}")
-    return [(name, expected[name], how[name]) for name, _ in WRITTEN]
+    return [(name, expected[name], how[name]) for name in expected]
 
 
 def live_prices(panel: list[dict]) -> dict[str, dict[str, float]]:
@@ -254,8 +255,10 @@ def main() -> None:
         "the native text asked in English and in its own language (240), plus an",
         "English edition (120). Christianity's native text is the same 30 verses,",
         "Masoretic where the verse is from the Hebrew Bible and Greek where it is",
-        "from the New Testament. Islam adds Saheeh International. Sikhism and",
-        "Buddhism have no English edition, so those two are 240 questions.",
+        "from the New Testament. Islam adds Saheeh International. Sikhism has",
+        "no English edition, so it is 240 questions. Buddhism has no English",
+        "edition and its Pali text is asked with the English prompt only, so it",
+        "is 120 questions.",
         "",
         "## All six traditions",
         "",

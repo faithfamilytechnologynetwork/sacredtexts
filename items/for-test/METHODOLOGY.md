@@ -60,7 +60,10 @@ The Aramaic edition is two calls: an English prompt and a native-language
 prompt. The English edition is one call. Islam is the same shape: the Uthmani
 text as two calls, and Saheeh International as one English call, on the same
 citations. Sikhism is the native edition only, also as two calls. This corpus
-has no English Guru Granth Sahib.
+has no English Guru Granth Sahib. Buddhism's Pali Dhammapada is one call, the
+English prompt only. Romanized Pali is a liturgical language with no native
+speakers, so a Pali-language prompt would not measure what the other native
+prompts measure (owner decision, issue #113).
 
 The prompt names the work as well as the edition: "the 2013 edition of the
 Book of Mormon", "the William Davidson Aramaic edition of the Babylonian
@@ -69,9 +72,8 @@ II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
 edition?") left the model guessing which work was meant, and that cost 16-28
 points on `verify_source` for the traditions it hit (issue #90). The names are
 `_EDITION_DISPLAY` in `review/build_questions.py`; a new edition without one
-stops the build. The Sanskrit and Pali prompts name the Gita and the
-Dhammapada in their own language, as the Hebrew, Punjabi and Arabic ones
-already did. A native edition is not asked in both languages
+stops the build. The Sanskrit prompts name the Gita in their own language,
+as the Hebrew, Punjabi and Arabic ones already did. A native edition is not asked in both languages
 inside one prompt. The native-language lines are drafts for a native speaker.
 The model call has no language field. OpenRouter does not add one.
 
@@ -113,8 +115,11 @@ familiarity list of one passage stays `yes`, because half of one rounds to zero.
 The table is `_donor_pool` in `review/build_questions.py`. Every set's
 passages, population and familiarity, are one pool, so a donor can come from
 any set the table allows. Each `no` row draws from its own RNG (seed
-20261030, tradition, edition, condition, sample, citation), so no other row,
-set, or build order can move it.
+20261030, tradition, edition, condition, sample, citation), so no other set
+or build order can move it. A set quotes each donor once (issue #116): when
+two of its rows draw the same donor, the first in citation order keeps it and
+the other draws again from its own RNG, skipping every donor the set's first
+draws took, so only the repeated row changes.
 
 A `no` row is its own prompt template filled with the donor passage
 (`prompt_for` in `build_questions.py`). The donor is never pasted between the

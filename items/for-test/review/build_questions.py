@@ -783,18 +783,25 @@ def _english_hadith_pool() -> tuple[dict, ...]:
     return tuple(pool)
 
 
-def _english_hadith_donor(row: dict) -> dict:
-    """This English-Qur'an row's donor. Seeded by the row, like the Arabic hadith donor."""
+def _english_hadith_donor(row: dict, quoted: frozenset[str] | set[str] = frozenset()) -> dict:
+    """This English-Qur'an row's donor. Seeded by the row, like the Arabic hadith donor.
+
+    A matn its set already quotes (``quoted``) is skipped for the row's next draw (#116)."""
     pool = _english_hadith_pool()
     rng = random.Random(f"{HADITH_SEED}|en|{row['condition']}|{row['sample']}|{row['citation']}")
-    return pool[rng.randrange(len(pool))]
+    for _ in range(1000):
+        donor = pool[rng.randrange(len(pool))]
+        if donor["expected"]["text"] not in quoted:
+            return donor
+    raise SystemExit(f"no English hadith donor not already quoted in its set for {row['citation']}")
 
 
-def _hadith_donor(row: dict) -> dict:
+def _hadith_donor(row: dict, quoted: frozenset[str] | set[str] = frozenset()) -> dict:
     """This row's hadith donor, from an RNG seeded by the row alone (condition, sample, citation).
 
-    No other row, edition or tradition can move it. A candidate on DONOR_SKIP, or one that shares
-    Qur'an wording, is skipped for the row's next draw.
+    No other row, edition or tradition can move it, except an earlier row in its set that drew the
+    same matn. A candidate on DONOR_SKIP, one that shares Qur'an wording, or one its set already
+    quotes (``quoted``, #116) is skipped for the row's next draw.
     """
     pool = _hadith_pool()
     unknown = set(DONOR_SKIP) - {d["citation"] for d in pool}
@@ -803,9 +810,34 @@ def _hadith_donor(row: dict) -> dict:
     rng = random.Random(f"{HADITH_SEED}|{row['condition']}|{row['sample']}|{row['citation']}")
     for _ in range(1000):
         donor = pool[rng.randrange(len(pool))]
-        if donor["citation"] not in DONOR_SKIP and quran_overlap(donor["expected"]["text"]) is None:
+        if (donor["citation"] not in DONOR_SKIP and donor["expected"]["text"] not in quoted
+                and quran_overlap(donor["expected"]["text"]) is None):
             return donor
-    raise SystemExit(f"no hadith donor free of Qur'an wording for {row['citation']}")
+    raise SystemExit(f"no hadith donor free of Qur'an wording and not already quoted in its set for {row['citation']}")
+
+
+def _verify_donor(row: dict, donors: list[dict], quoted: frozenset[str] | set[str]) -> tuple[dict, str]:
+    """A verify "no" row's donor and the text its prompt quotes, never one of the ``quoted`` texts.
+
+    Each branch draws from an RNG seeded by the row alone. A quoted text is skipped and the same
+    RNG draws again, so with nothing quoted this is the row's first draw.
+    """
+    if _script(row["payload"]) == "ar":
+        donor = _hadith_donor(row, quoted)
+        return donor, donor["expected"]["text"]
+    if row["tradition"] == "Islam" and row["condition"] == "en_ask_en_answer":
+        donor = _english_hadith_donor(row, quoted)
+        return donor, donor["expected"]["text"]
+    pool = _donor_pool(row, donors)
+    if all(prompt_text(d["expected"]["text"]) in quoted for d in pool):
+        raise SystemExit(f"every verify_source donor for {row['tradition']} {row['citation']} is already quoted in its set")
+    seed = "|".join([str(HADITH_SEED), row["tradition"], _asked_version(row),
+                     row["condition"], row["sample"], row["citation"]])
+    rng = random.Random(seed)
+    donor = rng.choice(pool)
+    while prompt_text(donor["expected"]["text"]) in quoted:
+        donor = rng.choice(pool)
+    return donor, prompt_text(donor["expected"]["text"])
 
 
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
@@ -814,8 +846,12 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     The donor follows METHODOLOGY.md's table (``_donor_pool``). An Arabic passage (the Qur'an) has the
     hadith collections as its same-script neighbours, so its donor is a hadith matn that shares no
     Qur'an wording (issue #75); the English Qur'an's donor is an English hadith. Every donor comes
-    from an RNG seeded by its row alone, over a pool in a fixed order, so no other row, set or build
+    from an RNG seeded by its row alone, over a pool in a fixed order, so no other set or build
     order can move it and one run of ``main`` reproduces every file (issue #91).
+
+    A set quotes each donor at most once (issue #116). Every row first takes its own first draw. In
+    citation order, the first row to draw a text keeps it; a later row that drew the same text draws
+    again from its own RNG, skipping every text the set's first draws took, so only that row changes.
     """
     donors = verify_donors(by_name)
     for rows in by_name.values():
@@ -825,18 +861,15 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
                 groups.setdefault((row["condition"], row["sample"]), []).append(row)
         for group in groups.values():
             group.sort(key=lambda r: r["citation"])
-            for row in group[: len(group) // 2]:
-                if _script(row["payload"]) == "ar":
-                    donor = _hadith_donor(row)
-                    text = donor["expected"]["text"]
-                elif row["tradition"] == "Islam" and row["condition"] == "en_ask_en_answer":
-                    donor = _english_hadith_donor(row)
-                    text = donor["expected"]["text"]
-                else:
-                    seed = "|".join([str(HADITH_SEED), row["tradition"], _asked_version(row),
-                                     row["condition"], row["sample"], row["citation"]])
-                    donor = random.Random(seed).choice(_donor_pool(row, donors))
-                    text = prompt_text(donor["expected"]["text"])
+            negatives = group[: len(group) // 2]
+            first = [_verify_donor(row, donors, frozenset()) for row in negatives]
+            quoted = {text for _, text in first}
+            kept: set[str] = set()
+            for row, (donor, text) in zip(negatives, first):
+                if text in kept:
+                    donor, text = _verify_donor(row, donors, quoted)
+                    quoted.add(text)
+                kept.add(text)
                 row["expected"] = {
                     "answer": "no",
                     "true_tradition": donor["tradition"],
