@@ -1,39 +1,41 @@
 """Two findings that a single accuracy number hides.
 
-Reads finished ``scores.jsonl`` files joined to the saved answers. Writes
-``runs/paper/findings.md`` and ``runs/paper/takeaway.pdf``.
+Reads finished ``scores.jsonl`` files under one run dir, joined to the saved answers. Writes
+``runs/paper/findings.md`` and ``runs/paper/takeaway.pdf``. Stops when an answer row in the
+run dir has no population question, unless --allow-partial.
 
-    python3 items/for-test/facct_findings.py
+    uv --project pipelines run python items/for-test/facct_findings.py --run-dir runs/rerun-2026-11-03
 """
 
 from __future__ import annotations
 
-import json
 import re
 import unicodedata
 from collections import defaultdict
 from pathlib import Path
+from typing import Annotated
 
-ROOT = Path(__file__).resolve().parents[2]
-RUNS = ROOT / "runs"
-OUT = RUNS / "paper" / "findings.md"
+import typer
+from paper_join import REPO, check_coverage, model_files, partial_note, population_questions, resolve_run_dir
+from paper_join import rows as _rows
+
+ROOT = REPO
+OUT = ROOT / "runs" / "paper" / "findings.md"
 
 
-def _rows(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+def _answers(run_dir: Path) -> dict[tuple[str, str], dict]:
+    return {
+        (model, row["question_id"]): row
+        for model, path in model_files(run_dir, "answers.jsonl")
+        for row in _rows(path)
+    }
 
 
-def _load() -> list[dict]:
-    answers = {}
-    for path in RUNS.glob("*/base/**/answers.jsonl"):
-        model = path.relative_to(RUNS).parts[0]
-        for row in _rows(path):
-            answers[(model, row["question_id"])] = row
+def _load(run_dir: Path) -> list[dict]:
+    answers = _answers(run_dir)
     joined = []
-    for path in RUNS.glob("*/base/**/scores.jsonl"):
-        rel = path.relative_to(RUNS)
-        model = rel.parts[0]
-        folder = "/".join(rel.parts[2:-1])
+    for model, path in model_files(run_dir, "scores.jsonl"):
+        folder = "/".join(path.relative_to(run_dir).parts[2:-1])
         for score in _rows(path):
             answer = answers.get((model, score["question_id"]))
             if not answer:
@@ -115,15 +117,7 @@ def _negative_kind(question: dict) -> str:
     return negative_kind(src.get("language"), asked, true)
 
 
-def _instrument(rows: list[dict]) -> list[str]:
-    questions = {}
-    for path in (ROOT / "items" / "for-test").rglob("questions.jsonl"):
-        if "population" not in path.parts:
-            continue
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                row = json.loads(line)
-                questions[row["id"]] = row
+def _instrument(rows: list[dict], questions: dict[str, dict]) -> list[str]:
     tally: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
     for row in rows:
         if row["task"] != "verify_source" or row["expected_yn"] != "no":
@@ -244,19 +238,14 @@ def _near(rows: list[dict]) -> list[str]:
     return lines
 
 
-def _digits(rows: list[dict]) -> list[str]:
+def _digits(run_dir: Path) -> list[str]:
     """Wrong cites that are the right citation once Arabic digits are folded."""
     # Re-read answers; the joined rows do not carry the raw answer.
-    answers = {}
-    for path in RUNS.glob("*/base/**/answers.jsonl"):
-        model = path.relative_to(RUNS).parts[0]
-        for row in _rows(path):
-            answers[(model, row["question_id"])] = row
+    answers = _answers(run_dir)
     rescued = defaultdict(int)
     still = 0
     samples = []
-    for path in RUNS.glob("*/base/**/scores.jsonl"):
-        model = path.relative_to(RUNS).parts[0]
+    for model, path in model_files(run_dir, "scores.jsonl"):
         for score in _rows(path):
             if score.get("task") != "cite_passage":
                 continue
@@ -297,13 +286,9 @@ def _digits(rows: list[dict]) -> list[str]:
     return lines
 
 
-def _canon() -> list[str]:
+def _canon(run_dir: Path) -> list[str]:
     """Verify `yes` on a passage that belongs to another tradition."""
-    answers = {}
-    for path in RUNS.glob("*/base/**/answers.jsonl"):
-        model = path.relative_to(RUNS).parts[0]
-        for row in _rows(path):
-            answers[(model, row["question_id"])] = row
+    answers = _answers(run_dir)
     lines = [
         "## Another canon, accepted as this one",
         "",
@@ -312,8 +297,7 @@ def _canon() -> list[str]:
         "",
     ]
     found = 0
-    for path in sorted(RUNS.glob("*/base/**/scores.jsonl")):
-        model = path.relative_to(RUNS).parts[0]
+    for model, path in model_files(run_dir, "scores.jsonl"):
         for score in _rows(path):
             metrics = score.get("metrics") or {}
             if score.get("task") != "verify_source":
@@ -506,25 +490,34 @@ def _story() -> list[str]:
     ]
 
 
-def main() -> None:
-    rows = _load()
+def main(
+    run_dir: Annotated[str, typer.Option(help="run root holding <model>/base/**, such as runs/rerun-2026-11-03")],
+    allow_partial: Annotated[
+        bool, typer.Option(help="write the findings even when some answer rows have no question")
+    ] = False,
+) -> None:
+    runs = resolve_run_dir(run_dir)
+    questions = population_questions()
+    matched, total = check_coverage(runs, questions, allow_partial)
+    rows = _load(runs)
     if not rows:
-        raise SystemExit("no scores.jsonl under runs/")
+        raise SystemExit(f"no scores.jsonl under {runs}/<model>/base/")
+    shown = runs.relative_to(ROOT) if runs.is_relative_to(ROOT) else runs
     text = "\n".join(
         [
             "# Findings",
             "",
-            f"From {len(rows)} scored answers in finished files. "
-            "A file still being collected is not here.",
+            f"From {len(rows)} scored answers in finished files in `{shown}`. "
+            f"A file still being collected is not here.{partial_note(matched, total)}",
             "",
             *_takeaway(),
             *_story(),
             *_verify(rows),
-            *_instrument(rows),
+            *_instrument(rows, questions),
             *_dissociation(rows),
             *_near(rows),
-            *_digits(rows),
-            *_canon(),
+            *_digits(runs),
+            *_canon(runs),
         ]
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -536,4 +529,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
