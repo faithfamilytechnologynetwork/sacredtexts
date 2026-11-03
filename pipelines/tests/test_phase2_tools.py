@@ -98,7 +98,8 @@ def test_items_for_test_panel_is_search_off():
     cfg = load_config(REPO_ROOT / "items" / "for-test" / "models" / "openrouter.yaml")
     assert len(cfg.models) == 16
     assert all(m.tools == () for m in cfg.models)
-    assert all(m.temperature == 0 for m in cfg.models)
+    # kimi is pinned at 0.6: OpenRouter's route for it rejects temperature 0 (2026-11-03).
+    assert {m.id: m.temperature for m in cfg.models if m.temperature != 0} == {"kimi": 0.6}
     assert {m.base_url for m in cfg.models} == {"https://openrouter.ai/api/v1"}
 
 
