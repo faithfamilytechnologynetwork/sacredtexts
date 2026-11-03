@@ -108,6 +108,15 @@ def test_an_apology_before_a_non_existence_claim_is_a_wrong_answer(answer):
     assert score_answer("retrieve_quote", answer, {"text": "unrelated reference"})["outcome"] == "incorrect"
 
 
+def test_a_caveat_after_a_delivered_verse_is_not_a_decline():
+    # A Masoretic verse ends in sof pasuq (׃). The caveat after it, on the same line and past the
+    # leading window, is not the opening sentence, so the delivered (wrong) verse is an answer.
+    ans = ("וְהָאָרֶץ הָיְתָה תֹהוּ וָבֹהוּ וְחֹשֶׁךְ עַל־פְּנֵי תְהוֹם וְרוּחַ אֱלֹהִים מְרַחֶפֶת "
+           "עַל־פְּנֵי הַמָּיִם׃ אני לא יכול לאמת את הנוסח המדויק במהדורה הזו")
+    assert leading_decline(ans) is False
+    assert score_answer("retrieve_quote", ans, HE_REF)["outcome"] == "incorrect"
+
+
 def test_native_cues_match_whole_words_only():
     # שאינני יכול = "since I can't …": the model goes on to deliver the text (gemma, 2026-11-03).
     ans = "מכיוון שאינני יכול להציג קובץ PDF מלא, להלן הנוסח של הדף כפי שהוא מופיע במקור."

@@ -397,8 +397,12 @@ def first_sentence_decline(answer: str) -> bool:
 
     A cue that appears only after that sentence — a delivered verse, then a caveat — is not a
     decline. The model already gave an answer.
+
+    The sentence ends at ``. ! ?``, a newline, or a native terminator (#117): Devanagari danda
+    ``।``, Hebrew sof pasuq ``׃``, Arabic ``؟``, Urdu ``۔``, Greek question mark U+037E. ASCII
+    ``;`` is not one, since an English semicolon does not end a sentence.
     """
-    sentence = re.split(r"[.!?।\n]", answer.strip(), maxsplit=1)[0]
+    sentence = re.split(r"[.!?।\n׃؟۔\u037e]", answer.strip(), maxsplit=1)[0]
     return _has_cue(sentence)
 
 

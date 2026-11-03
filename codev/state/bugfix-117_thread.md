@@ -85,3 +85,16 @@ Merged origin/main twice per architect (#85 b8b63bf, #111 1d9812c) before any co
   `refused`. Highest token_f1 among the rerun movers is 0.48.
 - Side note (not mine): in the main checkout, `test_regenerating_original_run_reproduces_digest`
   fails because the local `texts/standardized/Sunni Islam/musnad-ahmad…` dir predates #74's trim.
+
+## PR #123 + CMAP (2026-11-03)
+
+- Full suite on the tree merged with origin/main (00de30f): 1029 passed, 4 skipped. PR #123 opened.
+- First consult attempt didn't review: no project was auto-detected ("Multiple projects found"). Re-ran with
+  `--issue 117 --project-id bugfix-117`.
+- Gemini: APPROVE, no issues.
+- Codex: COMMENT. `first_sentence_decline` split only on `[.!?।\n]`, so a native terminator wasn't a
+  sentence end. Probe over 65,878 cells (committed + archive + rerun), current splitter vs extended:
+  - adding `׃ ؟ ۔` and U+037E changes zero outcomes on either path, so the registry is unchanged
+  - adding ASCII `;` flips one committed English-path cell, refused→incorrect, so it stays out
+  Adopted the native terminators. Guard test: a Masoretic verse ending in sof pasuq, then a native caveat
+  past the window, is `incorrect` (was `refused` with the old splitter). Suite: 1030 passed, 4 skipped.
