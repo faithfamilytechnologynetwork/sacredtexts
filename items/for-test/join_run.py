@@ -1,7 +1,11 @@
 """Collect and score the population questions for one model.
 
 Each question file lands in the matching folder under ``runs/<model>/base/``.
-The folder is created when that file is collected. ``base`` is temperature 0
+The folder is created when that file is collected. ``--run-dir`` moves the whole
+run elsewhere: answers under ``<run-dir>/<model>/base/`` and the usage card at
+``<run-dir>/<model>/model.json``, seeded from the committed ``runs/<model>/model.json``
+when it is missing. A ``--run-dir`` run never writes into ``runs/<model>/``; pointing
+it at ``runs`` itself, or inside a committed model folder, is refused. ``base`` is temperature 0
 and search off, the panel in ``models/openrouter.yaml``. A file that already
 has answers is resumed: finished question-and-model pairs are skipped. After
 a clean collect, the same folder gets ``scores.jsonl``, ``summary.json``, and
@@ -15,6 +19,7 @@ later adds the remaining passages to the same file.
     python items/for-test/join_run.py --model haiku
     python items/for-test/join_run.py --model haiku --tradition islam
     python items/for-test/join_run.py --model haiku --only sikhism/native/population
+    python items/for-test/join_run.py --model haiku --run-dir runs/rerun-2026-11-03
 """
 
 from __future__ import annotations
@@ -40,14 +45,56 @@ from sacredbench.config import load_config  # noqa: E402
 from sacredbench.generate import Question, load_questions  # noqa: E402
 
 PYTHON = REPO / ".venv" / "bin" / "python"
+RUNS = REPO / "runs"
+# Top-level runs/ names the viewer reserves (apps/viewer/vite/runsEndpoint.ts SKIP_TOP).
+RESERVED_RUN_NAMES = frozenset({"panel", "paper", "archive"})
 
 
 _USAGE_LOCK = threading.Lock()
 TEST_PASSAGES = 3
 
 
-def _card_path(model_id: str) -> Path:
-    return REPO / "runs" / model_id / "model.json"
+def resolve_run_dir(arg: str | None) -> Path:
+    """Where this run writes. None is today's ``runs/``. A relative path is taken from the repo root.
+
+    An explicit run dir may not be ``runs/`` itself or sit inside a committed model folder
+    (``runs/<id>/`` with a ``base/``), so a rerun can never write into the committed archive.
+    """
+    if arg is None:
+        return RUNS
+    run_dir = Path(arg)
+    if not run_dir.is_absolute():
+        run_dir = REPO / run_dir
+    run_dir = run_dir.resolve()
+    runs = RUNS.resolve()
+    if run_dir == runs:
+        raise SystemExit("--run-dir must not be runs/ itself; leave it out to write the committed archive")
+    if run_dir.is_relative_to(runs):
+        top = run_dir.relative_to(runs).parts[0]
+        if (runs / top / "base").exists() or (runs / top / "model.json").exists():
+            raise SystemExit(f"--run-dir {run_dir} is inside the committed model folder runs/{top}/")
+        if top in RESERVED_RUN_NAMES:
+            raise SystemExit(f"--run-dir runs/{top} is reserved; the viewer does not list it as a run")
+    return run_dir
+
+
+def _card_path(model_id: str, run_dir: Path) -> Path:
+    return run_dir / model_id / "model.json"
+
+
+def seed_card(model_id: str, run_dir: Path) -> Path | None:
+    """Copy the committed card's prices into a new run dir, without its collected totals."""
+    dest = _card_path(model_id, run_dir)
+    if dest.exists():
+        return dest
+    committed = _card_path(model_id, RUNS)
+    if dest == committed or not committed.exists():
+        return None
+    card = json.loads(committed.read_text(encoding="utf-8"))
+    card.pop("collected", None)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    _write_card(dest, card)
+    return dest
 
 
 def _prices(card: dict) -> tuple[float, float]:
@@ -70,9 +117,9 @@ def _write_card(path: Path, card: dict) -> None:
     tmp.replace(path)
 
 
-def reconcile_usage(model_id: str) -> dict | None:
+def reconcile_usage(model_id: str, run_dir: Path) -> dict | None:
     """Rebuild collected totals from the answer files. Safe after a stopped run."""
-    path = _card_path(model_id)
+    path = _card_path(model_id, run_dir)
     if not path.exists():
         return None
     with _USAGE_LOCK:
@@ -97,9 +144,9 @@ def reconcile_usage(model_id: str) -> dict | None:
         return card["collected"]
 
 
-def add_usage(model_id: str, row: dict) -> dict | None:
+def add_usage(model_id: str, row: dict, run_dir: Path) -> dict | None:
     """Add one saved answer's tokens to model.json."""
-    path = _card_path(model_id)
+    path = _card_path(model_id, run_dir)
     if not path.exists():
         return None
     usage = row.get("usage") or {}
@@ -133,9 +180,9 @@ def load_dotenv() -> None:
             os.environ[name] = value
 
 
-def out_dir(model: str, questions: Path) -> Path:
+def out_dir(model: str, questions: Path, run_dir: Path) -> Path:
     rel = questions.parent.relative_to(ROOT)
-    return REPO / "runs" / model / "base" / rel
+    return run_dir / model / "base" / rel
 
 
 def asked_citation(q: Question) -> str:
@@ -209,7 +256,14 @@ def main() -> None:
         default=[],
         help="collect only question files whose path contains this fragment; repeatable",
     )
+    parser.add_argument(
+        "--run-dir",
+        default=None,
+        help="write under <run-dir>/<model>/ instead of runs/<model>/ (relative to the repo root), "
+        "such as runs/rerun-2026-11-03",
+    )
     args = parser.parse_args()
+    run_dir = resolve_run_dir(args.run_dir)
     files = list(RUNNABLE)
     missing = [p for p in files if not p.exists()]
     if missing:
@@ -239,7 +293,9 @@ def main() -> None:
             raise SystemExit("--concurrency must be at least 1")
         cfg = replace(cfg, concurrency=args.concurrency)
     cfg = replace(cfg, models=tuple(picked))
-    reconcile_usage(args.model)
+    if run_dir != RUNS:
+        seed_card(args.model, run_dir)
+    reconcile_usage(args.model, run_dir)
     py = PYTHON if PYTHON.exists() else Path(sys.executable)
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO / "pipelines")
@@ -255,17 +311,18 @@ def main() -> None:
                 continue
         else:
             todo = all_qs[: args.head] if args.head else all_qs
-        dest = out_dir(args.model, questions)
+        dest = out_dir(args.model, questions, run_dir)
         dest.mkdir(parents=True, exist_ok=True)
         answers = dest / "answers.jsonl"
         rel = questions.parent.relative_to(ROOT)
         saved, *_ = _existing(answers)
         pending = sum(1 for q in todo if (q.id, args.model) not in saved)
-        print(f"collect {rel} -> {answers.relative_to(REPO)} ({len(todo)} questions, {pending} to call)")
+        shown = answers.relative_to(REPO) if answers.is_relative_to(REPO) else answers
+        print(f"collect {rel} -> {shown} ({len(todo)} questions, {pending} to call)")
         bar = tqdm(total=pending, desc=str(rel), unit="call", leave=True, disable=pending == 0)
 
         def on_saved(row, _bar=bar, _model=args.model) -> None:
-            totals = add_usage(_model, row)
+            totals = add_usage(_model, row, run_dir)
             _bar.update(1)
             if totals:
                 _bar.set_postfix(usd=f"{totals['cost_usd']:.4f}", refresh=False)
@@ -279,12 +336,12 @@ def main() -> None:
             )
         except Stopped as stop:
             bar.close()
-            reconcile_usage(args.model)
+            reconcile_usage(args.model, run_dir)
             print(f"\n{stop}", file=sys.stderr)
             os._exit(130)
         finally:
             bar.close()
-            reconcile_usage(args.model)
+            reconcile_usage(args.model, run_dir)
         print(f"  collected {done}, pending {failed}")
         if failed:
             for msg in messages:
