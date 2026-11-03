@@ -54,3 +54,9 @@ Fix scope: ~20 LOC in score.py + tests. Fits BUGFIX.
 - Regression proof: against the HEAD `score.py` (scratch copy on PYTHONPATH), 37 new assertions fail;
   all pass with the fix.
 - Full suite: 912 passed, 2 skipped, 9 failed — exactly the #97 `_DaemonPool._initializer` set (test_collect.py ×6, test_phase2_tools.py ×3), **#97, pre-existing**.
+
+## PR (2026-11-03)
+
+- PR #100 opened (Fixes #95). porch `fix` → `porch done` is blocked by the tests check, which fails
+  ONLY on the 9 #97 tests (**#97, pre-existing**; fix is PR #99, still open). Holding at `fix`:
+  once #99 lands, merge origin/main, re-run `porch done bugfix-95`, then record `--pr 100`.
