@@ -10,8 +10,9 @@ Greek New Testament (Scrivener 1894). Each native passage is an English prompt
 and a native-language prompt. Judaism is the same 30 in Aramaic (both prompts)
 and in English. Islam is the Uthmani Qur'an in both prompt languages, plus the
 Saheeh International English edition. Sikhism and Buddhism are the native edition
-only. Hinduism is Sanskrit and Besant's English. Christianity, Judaism, Islam,
-and Hinduism are 360 population questions. Sikhism and Buddhism are 240.
+only, and Buddhism's Pali is asked with the English prompt only (#113). Hinduism is
+Sanskrit and Besant's English. Christianity, Judaism, Islam, and Hinduism are 360
+population questions. Sikhism is 240 and Buddhism is 120.
 The familiarity panels are different lengths on purpose (Islam 8, Christianity 4,
 Hinduism 4, Buddhism 4, Sikhism 3, Judaism 1). Compare traditions on the population sample of 30.
 Do not pad or cut the familiar lists to make those counts match.

@@ -834,10 +834,11 @@ def _verify_donor(row: dict, donors: list[dict], quoted: frozenset[str] | set[st
     seed = "|".join([str(HADITH_SEED), row["tradition"], _asked_version(row),
                      row["condition"], row["sample"], row["citation"]])
     rng = random.Random(seed)
-    donor = rng.choice(pool)
-    while prompt_text(donor["expected"]["text"]) in quoted:
+    for _ in range(1000):
         donor = rng.choice(pool)
-    return donor, prompt_text(donor["expected"]["text"])
+        if prompt_text(donor["expected"]["text"]) not in quoted:
+            return donor, prompt_text(donor["expected"]["text"])
+    raise SystemExit(f"no verify_source donor not already quoted in its set for {row['tradition']} {row['citation']}")
 
 
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:

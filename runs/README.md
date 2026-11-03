@@ -53,7 +53,7 @@ Each of those has `population/` (and `familiarity/`, not in the run). A native e
 
 Snapshot while collection is still running, 2 November 2026. Saved answer cells: **29,197 of 32,562 (89.7%)**. That target is the original plan plus the English Book of Mormon and encyclicals (240 questions each, every model). The original six-tradition plan alone is **26,558 of 28,722 (92.5%)**. The two English sets are **2,639 of 3,840 (68.7%)**.
 
-A full model is 2,040 cells (1,800 + 240). It was 2,160 before the Pali-language prompt file was dropped (#113), and the snapshot counts here are against 2,160. A limited model is 1,938 (1,698 + 240). Limited means Buddhism is the first 9 questions of each Buddhism file. Finished at that target: argon, deepseek-v4-pro, gemini-flash, gemma-31b, haiku, kimi, luna, opus, sonnet, terra. Still short: astra 1,313, beam 1,935, fable 1,553, gpt-oss-20b 1,438, qwen3-32b 815, sol 1,653.
+A full model is 2,040 cells (1,800 + 240). It was 2,160 before the Pali-language prompt file was dropped (#113); the limited-model figure and the snapshot counts here are against that. A limited model was 1,938 (1,698 + 240). Limited means Buddhism is the first 9 questions of each Buddhism file. Finished at that target: argon, deepseek-v4-pro, gemini-flash, gemma-31b, haiku, kimi, luna, opus, sonnet, terra. Still short: astra 1,313, beam 1,935, fable 1,553, gpt-oss-20b 1,438, qwen3-32b 815, sol 1,653.
 
 To rebuild the figures, the LaTeX tables, the claim tests and the findings from one run, name its folder with `--run-dir`:
 
