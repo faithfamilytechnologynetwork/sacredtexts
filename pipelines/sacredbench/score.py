@@ -659,8 +659,10 @@ _NON_WORD_LEAD = re.compile(r"[^\w]*")
 # #95): a model may answer a Pali cell in Punjabi, or a Hebrew cell in Syriac.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "ar": (("نعم",), ("لا",)),                    # Arabic
-    "he": (("כן", "הן"), ("לא", "אין", "לאו")),  # Hebrew, incl. Mishnaic הן (yes), stand-alone אין, לאו
-    "arc": (("כן", "הן", "הין"), ("לא", "אין", "לאו")),  # Aramaic (Hebrew script), incl. הין (yes)
+    "he": (("כן", "הן"), ("לא", "לאו")),  # Hebrew, incl. Mishnaic הן (yes) and לאו (no)
+    # Aramaic (Hebrew script), incl. הין and Talmudic אִין (yes, issue #128). The Talmud cells are tagged
+    # "he", but a non-Latin word is read on every cell, so a stand-alone אין is "yes" there too.
+    "arc": (("כן", "הן", "הין", "אין"), ("לא", "לאו")),
     "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι", "οὐχί", "οὔ")),  # Greek, as the prompt asks
     "pa": (("ਹਾਂ", "ਹਾਂ ਜੀ"), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi, including the polite ਹਾਂ ਜੀ
     # Devanagari: Hindi हाँ / Sanskrit आम् (yes); न, नहि, नास्ति, and the Pali reply नो हेतं ("not so").

@@ -137,7 +137,7 @@ def test_parse_yes_no_native_negation_particle_is_not_a_verdict(ans, lang):
     ("ਹਾਂ।", "pa", "yes"), ("ਨਹੀਂ।", "pa", "no"), ("ਹਾਂ ।", "pa", "yes"),
     ("हाँ।", "sa", "yes"), ("नहीं।", "sa", "no"), ("हां॥", "sa", "yes"),
     ("न", "sa", "no"), ("न (No)", "sa", "no"), ("नहि", "sa", "no"),
-    ("כֵּן", "he", "yes"), ("לֹא", "he", "no"), ("אין", "he", "no"), ("לָאו", "arc", "no"),
+    ("כֵּן", "he", "yes"), ("לֹא", "he", "no"), ("אִין", "he", "yes"), ("לָאו", "arc", "no"),
     ("Οὐχί.", "grc", "no"), ("Οὔ", "grc", "no"),
     # Greek, as the Greek prompt asks (ναι ή όχι) — added in PR #78 round 2
     ("Ναι", "grc", "yes"), ("ναι.", "grc", "yes"), ("Ναί, είναι από το Ευαγγέλιο", "grc", "yes"),
