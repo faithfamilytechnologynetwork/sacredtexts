@@ -73,3 +73,18 @@ has a numbered sibling (`1 John …`) in its answer (checked), so no number here
 - original-2026-10-21: 2 credited (Talmud daf), 19 gain `segment_match` only; #118 moves none
 - cite_passage accuracy, rerun (old→new): christianity .598→.811, judaism .064→.270, sikhism
   .004→.108, islam .872→.893, buddhism .699→.708, hinduism .911→.917; coverage unchanged.
+
+## PR phase — CMAP round 1 (PR #122)
+
+gemini APPROVE, claude APPROVE, codex REQUEST_CHANGES. Codex: (1) "Dhammapada 74 or Dhammapada 184"
+(example offered as an alternative) is credited; (2) "John 1:1 or 1 John 8:41" with example
+"John 8:41" drops `1 John 8:41` as an echo. (2) is real: the echo was a `search` inside the
+candidate span, so a numbered-book namesake matched. Fixed with a `(?<!\d )` lookbehind on the echo
+pattern + test. (1) is kept as the architect specified: the generator always takes the example from
+a *different* entry, so naming it can never raise the hit rate the anti-hedge guards; 0 of the credited
+cells (69 archive, 56 rerun) offer it as an alternative (all disclaim it: "न कि 10:36", "in the form
+34:46"). Pinned by a test and noted in score.py SCOPE. Claude's notes folded: `segment_match` now
+uses the canonicalized example; the `example_citation` parameter renamed `example` (it shadowed the
+function); the daf/Ang extractor switch (`_NUM_CITE` can't see a non-daf colon rival) is in SCOPE.
+Follow-ups (not here): carry the exemplar in the question row instead of re-parsing the prompt;
+surface `segment_match` in the viewer/analysis.

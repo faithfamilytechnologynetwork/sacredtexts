@@ -170,25 +170,27 @@ def _drop_segment(text: str, unit: str) -> str:
     return _tables().segment_rx.sub(lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text)
 
 
-def score_citation(answer: str, expected_citation: str, example_citation: str | None = None) -> dict:
+def score_citation(answer: str, expected_citation: str, example: str | None = None) -> dict:
     """``cite_passage`` metrics: ``correct`` and ``n_candidates``, plus ``segment_match`` for a
     segment-indexed citation. ``correct`` is the existing matcher's verdict OR the equivalence
-    verdict; ``n_candidates`` changes only on a cell the equivalence credits. ``example_citation``
-    (the prompt's form example, #118) is never counted as a candidate."""
-    correct, n = _single_citation_correct(answer, expected_citation, example_citation)
+    verdict; ``n_candidates`` changes only on a cell the equivalence credits. ``example`` (the
+    prompt's form example, #118) is not counted as a candidate beside another citation."""
+    correct, n = _single_citation_correct(answer, expected_citation, example)
     metrics = {"correct": correct, "n_candidates": n}
     text = canonical_citation_text(answer, expected_citation)
+    if example is not None:
+        example = canonical_citation_text(example, expected_citation)
     unit = _conventional_unit(expected_citation)
     if unit is not None:
-        full, _ = _single_citation_correct(text, expected_citation, example_citation)
+        full, _ = _single_citation_correct(text, expected_citation, example)
         metrics["segment_match"] = int(correct or full)
         if HEADLINE_DROPS_SEGMENT:
             text = _drop_segment(text, unit)
-            if example_citation is not None:
-                example_citation = _drop_segment(canonical_citation_text(example_citation, expected_citation), unit)
+            if example is not None:
+                example = _drop_segment(example, unit)
             expected_citation = unit
     if not correct:
-        credited, n = _single_citation_correct(text, expected_citation, example_citation)
+        credited, n = _single_citation_correct(text, expected_citation, example)
         if credited:
             metrics.update(correct=1, n_candidates=n)
     return metrics

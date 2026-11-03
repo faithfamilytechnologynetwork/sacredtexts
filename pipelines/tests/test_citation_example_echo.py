@@ -105,6 +105,17 @@ def test_two_real_citations_are_still_a_hedge():
     assert (scored["correct"], scored["n_candidates"]) == (0, 2)
 
 
+def test_a_numbered_book_is_not_an_echo_of_its_namesake():
+    scored = _cite("John 1:1 or 1 John 8:41", "John 1:1", "John 8:41")
+    assert (scored["correct"], scored["n_candidates"]) == (0, 2)
+
+
+def test_the_example_offered_as_an_alternative_is_still_dropped():
+    # The example is a different entry by construction, so offering it cannot raise the hit rate
+    # the anti-hedge guards; disclaimers and alternatives are not told apart (score.py SCOPE).
+    assert _cite("Dhammapada 74 or Dhammapada 184", "Dhammapada 74", "Dhammapada 184")["outcome"] == "correct"
+
+
 def test_score_file_reads_the_example_from_the_question_prompt(tmp_path):
     row = {
         "question_id": "q1", "model_id": "m1", "task": "cite_passage", "question_set_digest": "d",

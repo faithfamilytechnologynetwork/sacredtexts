@@ -70,6 +70,11 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
   word. Native-script numerals (Arabic-Indic, Devanagari, Gurmukhi …) ARE read as ASCII in the
   citation path (``fold_citation_digits``, #111); ``normalize()`` itself does not fold them.
   Native-script labels and Hebrew letter-numerals are rewritten by ``citations.py`` (#112).
+- a Talmud / GGS citation scored at the daf / Ang (#112) has a colon-free expected, so its
+  extractor is ``_NUM_CITE`` and a colon-shaped rival that is not a daf / Ang citation (a
+  Mishnah "Bekhorot 1:1", a verse) is not counted as a candidate; unrealized in the committed runs.
+- the prompt's form example is dropped from the candidates beside another citation (#118)
+  whether it is disclaimed or offered as an alternative ("Dhammapada 74 or Dhammapada 184").
 """
 
 from __future__ import annotations
@@ -893,7 +898,7 @@ def example_citation(prompt: str) -> str | None:
 
 
 def _single_citation_correct(
-    answer: str, expected_citation: str, example_citation: str | None = None
+    answer: str, expected_citation: str, example: str | None = None
 ) -> tuple[int, int]:
     """Returns (correct, n_candidates). A multi-candidate answer scores 0; otherwise
     the single candidate must EQUAL ground truth (boundary-aware, not containment).
@@ -901,18 +906,19 @@ def _single_citation_correct(
     Spans that all assert the EXPECTED citation count as ONE candidate however many
     times the model repeats it ("It is Jude 1:3. Jude 1:3 warns…") — repetition is
     not a hedge; only distinct OTHER citations are. Nor is echoing the prompt's form
-    example (``example_citation``, "Dhammapada 74, not Dhammapada 184") beside another
-    citation (#118); an answer whose only citation is the example keeps it, a wrong locus."""
+    ``example`` ("Dhammapada 74, not Dhammapada 184") beside another citation (#118); an
+    answer whose only citation is the example keeps it, a wrong locus. The example is a
+    different entry by construction (``generate.py``), so naming it can never buy credit."""
     expected_citation = fold_citation_digits(expected_citation)  # both sides (#111); all ASCII today
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
     boundary = re.compile(r"(?<!\w)" + re.escape(ne) + r"(?!\w)")
     matching = {c for c in cands if boundary.search(c)}
     others = cands - matching
-    if example_citation is not None:
-        echoes = [
-            re.compile(r"(?<!\w)" + re.escape(x) + r"(?!\w)")
-            for x in _citation_candidates(example_citation, expected_citation)
+    if example is not None:
+        echoes = [  # not after a number: "1 john 8 41" is another book, not an echo of "john 8 41"
+            re.compile(r"(?<!\w)(?<!\d )" + re.escape(x) + r"(?!\w)")
+            for x in _citation_candidates(example, expected_citation)
         ]
         kept = {c for c in others if not any(e.search(c) for e in echoes)}
         if matching or kept:  # an answer whose only citation IS the example still named a locus
