@@ -5,8 +5,10 @@
 //
 // It exposes:
 //   listRuns(runsDir)      — the run index: [{id, mtimeMs, generatedAt?}] for each subdir
-//                            with a readable summary.json, newest first BY RECENCY (not
-//                            mtime alone — see listRuns / recency.ts, Issue #7).
+//                            with a readable summary.json, plus the virtual panel runs
+//                            (`panel` over runs/<model>/base, and <name> over each named
+//                            panel folder runs/<name>/<model>/base), newest first BY RECENCY
+//                            (not mtime alone — see listRuns / recency.ts, Issue #7).
 //   resolveRunFile(dir,rel)— confined single-file resolution (realpath + symlink reject).
 //   createRunsHandler(dir) — a Connect middleware mounting both at /runs (dev server).
 //
@@ -59,6 +61,70 @@ function readGeneratedAt(summaryPath: string): string | undefined {
 export const PANEL_RUN_ID = "panel";
 
 const SKIP_TOP = new Set(["paper", "archive", PANEL_RUN_ID]);
+
+function hasOwnSummary(dir: string): boolean {
+  return fs.existsSync(path.join(dir, "summary.json"));
+}
+
+function isRealDir(p: string): boolean {
+  try {
+    const st = fs.lstatSync(p);
+    return st.isDirectory() && !st.isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+function childDirs(dir: string): string[] {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((e) => !e.isSymbolicLink() && e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+}
+
+/** A named panel folder: a top-level runs/<name>/ with no summary.json and no base/ of its
+ * own, holding model folders laid out like runs/ itself (<model>/base/**\/summary.json). It is
+ * a virtual run with id <name>, beside the default `panel` run. A rerun written with
+ * `join_run.py --run-dir runs/<name>` lands in exactly this shape. */
+function isNamedPanelDir(root: string, name: string): boolean {
+  if (SKIP_TOP.has(name) || name.includes("/") || name.includes("\\")) return false;
+  const dir = path.join(root, name);
+  if (!isRealDir(dir) || hasOwnSummary(dir) || fs.existsSync(path.join(dir, "base"))) return false;
+  return childDirs(dir).some((model) => {
+    const base = path.join(dir, model, "base");
+    return isRealDir(base) && nestedSummaries(base).length > 0;
+  });
+}
+
+/** Every virtual panel run id under `runsDir`: the named panel folders. The default `panel`
+ * run is added by the caller when buildPanel finds files for it. */
+export function namedPanelIds(runsDir: string): string[] {
+  let root: string;
+  try {
+    root = fs.realpathSync(runsDir);
+  } catch {
+    return [];
+  }
+  return childDirs(root).filter((name) => isNamedPanelDir(root, name));
+}
+
+/** Whether `id` is served as a virtual panel run (the default `panel` or a named one). */
+export function isPanelRunId(runsDir: string, id: string): boolean {
+  if (id === PANEL_RUN_ID) return true;
+  let root: string;
+  try {
+    root = fs.realpathSync(runsDir);
+  } catch {
+    return false;
+  }
+  return isNamedPanelDir(root, id);
+}
 
 interface CountBucket {
   n: number;
@@ -268,9 +334,17 @@ function addVerify(summaryPath: string, into: Record<string, Record<"yes" | "no"
 }
 
 function questionsForSummary(runsDir: string, summaryPath: string): string | null {
-  const rel = path.relative(runsDir, summaryPath);
+  let rootDir = runsDir;
+  try {
+    rootDir = fs.realpathSync(runsDir); // summary paths come from the canonical root
+  } catch {
+    /* keep the given path */
+  }
+  const rel = path.relative(rootDir, summaryPath);
   const parts = rel.split(path.sep);
-  const base = parts.indexOf("base");
+  // runs/<model>/base/... (panel) or runs/<name>/<model>/base/... (named panel): the
+  // items/for-test path is whatever follows base, at any prefix depth.
+  const base = parts.indexOf("base", 1);
   if (base < 0 || base === parts.length - 1) return null;
   const rest = parts.slice(base + 1, -1);
   const q = path.resolve(runsDir, "..", "items", "for-test", ...rest, "questions.jsonl");
@@ -290,8 +364,10 @@ interface PanelBuild {
 
 /** Merge every nested per-file summary under model directories into one summary the
  * viewer already knows how to render: models, by_tradition, usage. Rates are recomputed
- * from summed counts. */
-export function buildPanel(runsDir: string): PanelBuild | null {
+ * from summed counts. `id` picks the model directories: the default `panel` takes each
+ * top-level runs/<model>/ (never a named panel folder); a named panel id takes each
+ * runs/<id>/<model>/. */
+export function buildPanel(runsDir: string, id: string = PANEL_RUN_ID): PanelBuild | null {
   let root: string;
   try {
     root = fs.realpathSync(runsDir);
@@ -305,11 +381,21 @@ export function buildPanel(runsDir: string): PanelBuild | null {
     return null;
   }
   const files: string[] = [];
-  for (const e of entries) {
-    if (e.isSymbolicLink() || !e.isDirectory() || SKIP_TOP.has(e.name)) continue;
-    const dir = path.join(root, e.name);
-    if (fs.existsSync(path.join(dir, "summary.json"))) continue;
-    files.push(...nestedSummaries(dir));
+  if (id === PANEL_RUN_ID) {
+    for (const e of entries) {
+      if (e.isSymbolicLink() || !e.isDirectory() || SKIP_TOP.has(e.name)) continue;
+      const dir = path.join(root, e.name);
+      if (hasOwnSummary(dir) || isNamedPanelDir(root, e.name)) continue;
+      files.push(...nestedSummaries(dir));
+    }
+  } else {
+    if (!isNamedPanelDir(root, id)) return null;
+    const panelDir = path.join(root, id);
+    for (const model of childDirs(panelDir)) {
+      const dir = path.join(panelDir, model);
+      if (hasOwnSummary(dir)) continue;
+      files.push(...nestedSummaries(dir));
+    }
   }
   if (files.length === 0) return null;
 
@@ -327,7 +413,7 @@ export function buildPanel(runsDir: string): PanelBuild | null {
     let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, unknown>;
-      newestMtime = Math.max(newestMtime, fs.statSync(path.dirname(file)).mtimeMs);
+      newestMtime = Math.max(newestMtime, fs.statSync(file).mtimeMs);
     } catch {
       continue;
     }
@@ -479,8 +565,12 @@ export function collectGaps(runsDir: string): GapFile[] {
     }
     if (answersStat.isSymbolicLink() || !answersStat.isFile()) return;
     const rel = path.relative(root, dir);
-    const model = rel.split(path.sep)[0];
-    if (!model || SKIP_TOP.has(model)) return;
+    const relParts = rel.split(path.sep);
+    const top = relParts[0];
+    if (!top || SKIP_TOP.has(top)) return;
+    // runs/<model>/base/... or, in a named panel folder, runs/<name>/<model>/base/...
+    const baseAt = relParts.indexOf("base", 1);
+    const model = baseAt > 0 ? relParts[baseAt - 1]! : top;
     const questionsPath = questionsForSummary(runsDir, path.join(dir, "summary.json"));
     const roster = readJsonl(questionsPath);
     const answers = readJsonl(answersPath);
@@ -639,13 +729,22 @@ export function listRuns(runsDir: string): RunIndexEntry[] {
         runRecencyMs({ generatedAt: a.generatedAt, runId: a.id, mtimeMs: a.mtimeMs }) ||
       (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
-  const panel = buildPanel(runsDir);
-  if (panel && !out.some((r) => r.id === PANEL_RUN_ID)) {
+  // Virtual panel runs: the default `panel` plus one per named panel folder. Each is dated by
+  // its newest per-file summary (generated_at, then that file's mtime), so the newest panel is
+  // the home default.
+  let added = false;
+  for (const id of [PANEL_RUN_ID, ...namedPanelIds(runsDir)]) {
+    if (out.some((r) => r.id === id)) continue;
+    const panel = buildPanel(runsDir, id);
+    if (!panel) continue;
     out.push({
-      id: PANEL_RUN_ID,
+      id,
       mtimeMs: panel.mtimeMs,
       generatedAt: typeof panel.summary.generated_at === "string" ? panel.summary.generated_at : undefined,
     });
+    added = true;
+  }
+  if (added) {
     out.sort(
       (a, b) =>
         runRecencyMs({ generatedAt: b.generatedAt, runId: b.id, mtimeMs: b.mtimeMs }) -
@@ -687,6 +786,9 @@ export function resolveRunFile(runsDir: string, rel: string): string | null {
   return cur;
 }
 
+/** The artifacts a virtual panel run serves (the four the client fetches per run). */
+const VIRTUAL_ARTIFACTS = new Set(["summary.json", "scores.jsonl", "answers.jsonl", "questions.jsonl"]);
+
 type ReqLike = Pick<IncomingMessage, "url">;
 type ResLike = Pick<ServerResponse, "statusCode" | "setHeader" | "end">;
 
@@ -719,14 +821,22 @@ export function createRunsHandler(runsDir: string) {
 
     // Single-file request, confined.
     const rel = decoded.replace(/^\/+/, "");
-    if (rel.startsWith(`${PANEL_RUN_ID}/`)) {
-      const panel = buildPanel(runsDir);
+    const slash = rel.indexOf("/");
+    const head = slash < 0 ? rel : rel.slice(0, slash);
+    const name = slash < 0 ? "" : rel.slice(slash + 1);
+    // The default panel answers only its four artifacts. A named panel folder is also a real
+    // directory, so any other path under it (a model.json, one file's answers) is served as a
+    // confined file below.
+    const virtual =
+      slash > 0 &&
+      (head === PANEL_RUN_ID || (VIRTUAL_ARTIFACTS.has(name) && isPanelRunId(runsDir, head)));
+    if (virtual) {
+      const panel = buildPanel(runsDir, head);
       if (!panel) {
         res.statusCode = 404;
         res.end("not found");
         return;
       }
-      const name = rel.slice(PANEL_RUN_ID.length + 1);
       if (name === "summary.json") {
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(panel.summary));
