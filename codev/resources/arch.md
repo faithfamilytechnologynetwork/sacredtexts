@@ -91,7 +91,9 @@ round-trip that proves no invention/reordering.
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
   beside it (for `verify_source`, `refused ⟺ parsed is None`). A decline is detected by cue phrases
   in the leading 60 characters or the opening sentence. There are English cues and a narrow
-  native-script set (Hebrew, Gurmukhi, Devanagari, Arabic, modern Greek; issue #117). The native set
+  native-script set (Hebrew, Gurmukhi, Devanagari, Arabic, modern Greek; issue #117). Native-language
+  declines are not limited to the native-prompt arms: 21% of the #117 movers are on English-prompt
+  arms, where the model still answers in the edition's language. The native set
   matches whole words only, never includes a phrase that occurs in scripture (two single Talmud
   occurrences excepted), and leaves out bare apologies, which also open non-existence claims. The
   Spec-48 assertion frames are English, so a native-language decline followed by a reconstruction

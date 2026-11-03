@@ -212,9 +212,14 @@ def test_rebaselined_headline_accuracy_and_coverage(run):
 
 @pytest.mark.parametrize("run", list(REFUSED_COUNTS))
 def test_refused_set_matches_preregistration(run):
-    """The matcher reproduces the hand-frozen refused set EXACTLY — per-model counts and the
-    (model_id, question_id) membership (via SHA). Guards against the matcher drifting from the
-    pre-registered ground truth (over- or under-matching declines)."""
+    """The committed ``scores.jsonl``, read as stored and not re-scored, hold exactly the hand-frozen
+    refused set: per-model counts and the (model_id, question_id) membership (via SHA).
+
+    This pins the committed bytes, not the current matcher. The matcher is checked by
+    ``test_outcomes.test_spec48_classifier_reproduces_committed_refusals`` and by the #117 oracle in
+    ``test_native_refusal_cues.py``. A later cue change that moves a committed cell is registered in
+    ``testdata/native_decline_movers.tsv`` (#117; it lists no cell in these two runs) rather than
+    re-pinned here."""
     import hashlib
 
     scores = _load_scores(run)

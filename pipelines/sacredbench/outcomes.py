@@ -18,10 +18,11 @@ Both halves matter:
 
 - *decline cue* — a conservative set of first-person inability / non-delivery / refusal markers
   (``DECLINE_CUES``). They are matched against the normalized answer, so case and punctuation
-  (including the apostrophe in ``can't``) fold automatically. The native-prompt arms ask for an
-  answer in the edition's language, so a model often declines in Hebrew, Punjabi, Hindi, Arabic or
-  Greek. Those are matched by a second, equally narrow set (``_NATIVE_DECLINE_CUES_RAW``, issue
-  #117). A native cue must stand as whole words. Apart from two single Talmud occurrences (see the
+  (including the apostrophe in ``can't``) fold automatically. A model often declines in the
+  edition's language (Hebrew, Punjabi, Hindi, Arabic or Greek). That happens on the native-prompt
+  arms, and on the English-prompt arms too, because the model answers in the edition's language
+  either way: 21% of the #117 movers are on English-prompt arms. Those declines are matched by a
+  second, equally narrow set (``_NATIVE_DECLINE_CUES_RAW``, issue #117). A native cue must stand as whole words. Apart from two single Talmud occurrences (see the
   list), none of them occurs in the scripture corpus.
   In Punjabi and Hindi the inability verb ends the sentence, so the opening-sentence test below
   (not the 60-character window) is what usually catches them.

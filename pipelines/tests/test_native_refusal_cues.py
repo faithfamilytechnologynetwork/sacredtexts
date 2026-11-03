@@ -1,7 +1,9 @@
 """Issue #117: a decline written in the edition's language is a refusal, not a wrong answer.
 
-The native-prompt arms ask for an answer in Hebrew, Punjabi, Hindi, Arabic or Greek, so a model
-declines in that language too. Before #117 the decline cues were English, and these cells were
+A model often declines in the edition's language: Hebrew, Punjabi, Hindi, Arabic or Greek. That
+happens on the native-prompt arms, which ask for that language, and on the English-prompt arms as
+well (163 of the 792 registered movers), because the model answers in the edition's language
+either way. Before #117 the decline cues were English, and these cells were
 scored `incorrect`. ``outcomes._NATIVE_DECLINE_CUES_RAW`` adds a narrow native set. It is matched
 as whole words, in the same leading window / opening sentence as the English cues, and under the
 same Spec-48 assertion gate.
