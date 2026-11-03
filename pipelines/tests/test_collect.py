@@ -254,5 +254,8 @@ def test_carry_forward_never_overwrites_and_refuses_a_foreign_file(tmp_path, mon
     collect(qs, _config("m"), new)
     assert collect_mod.carry_forward(qs, _config("m"), new, old) == 0  # the cell is already answered
     assert len(_rows(new)) == 1
+    # a different max_tokens could have truncated the old answer: it is called, not carried
+    shorter = RunConfig(models=(ModelSpec(id="m", provider="anthropic", model="m-m", max_tokens=64),), concurrency=1)
+    assert collect_mod.carry_forward(qs, shorter, tmp_path / "fresh.jsonl", old) == 0
     with pytest.raises(CollectError, match="refusing to carry"):
         collect_mod.carry_forward([_q("z")], _config("m"), new, old)

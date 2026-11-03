@@ -78,8 +78,10 @@ byte for byte, and the model id still has the same provider, slug,
 temperature, search setting, and max tokens. Every other question is called.
 A copied row keeps its answer and times, takes the new question (so it is
 scored against the new `expected`), and names its source in `carried_from`.
-`model.json` counts only the new calls. `--carry-from runs` copies from the
-committed `runs/<model>/` folders.
+`model.json` counts only the new calls. The token usage in `summary.json`
+still counts a copied row, so read the spend of the new run from
+`model.json`. `--carry-from runs` copies from the committed `runs/<model>/`
+folders.
 
 `score`, `analyze`, and `facct` are free. They can run on a partial answers
 file. They do not call a model.
