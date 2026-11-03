@@ -22,3 +22,9 @@
   compare of both endpoint versions); viewer check-types + 222 vitest pass.
 - Left alone: LeaderboardTable's "Combined from every finished file…" note still shows only for
   id `panel` (cosmetic; the client has no virtual-panel marker).
+
+## Review folds (architect, 2026-11-03)
+- `.codev/checks/test.sh` now registers `items` -> `uv --project pipelines run --with tqdm pytest items/for-test`; dispatcher passes (viewer 222, items 13).
+- `seed_card` fails fast (SystemExit naming the missing committed card) instead of returning None.
+- READMEs say virtual panels key standings on bare model id, newest panel wins + becomes home default, `exp-` opts out.
+- Follow-ups left for later (architect): cost.py roll-up of rerun cards; a virtual-panel marker for the leaderboard caveat.

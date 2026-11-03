@@ -82,14 +82,17 @@ def _card_path(model_id: str, run_dir: Path) -> Path:
     return run_dir / model_id / "model.json"
 
 
-def seed_card(model_id: str, run_dir: Path) -> Path | None:
-    """Copy the committed card's prices into a new run dir, without its collected totals."""
+def seed_card(model_id: str, run_dir: Path) -> Path:
+    """Copy the committed card's prices into a new run dir, without its collected totals.
+
+    Fails when there is no committed card: without prices the run would track zero cost.
+    """
     dest = _card_path(model_id, run_dir)
     if dest.exists():
         return dest
     committed = _card_path(model_id, RUNS)
-    if dest == committed or not committed.exists():
-        return None
+    if not committed.exists():
+        raise SystemExit(f"no usage card {committed} to copy into {dest}; run check_models.py first")
     card = json.loads(committed.read_text(encoding="utf-8"))
     card.pop("collected", None)
     dest.parent.mkdir(parents=True, exist_ok=True)

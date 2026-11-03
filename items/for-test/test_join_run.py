@@ -50,6 +50,13 @@ def test_run_dir_refuses_the_committed_archive(arg):
         join_run.resolve_run_dir(arg)
 
 
+def test_seed_card_fails_without_a_committed_card(tmp_path, monkeypatch):
+    monkeypatch.setattr(join_run, "RUNS", tmp_path / "runs")
+    with pytest.raises(SystemExit, match="model.json"):
+        join_run.seed_card("haiku", tmp_path / "rerun")
+    assert not (tmp_path / "rerun").exists()
+
+
 def test_seed_and_reconcile_write_only_under_the_run_dir(tmp_path, monkeypatch):
     committed = tmp_path / "runs"
     (committed / "haiku").mkdir(parents=True)

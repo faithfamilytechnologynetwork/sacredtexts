@@ -17,6 +17,7 @@ test_cmd_for() {
   case "$1" in
     pipelines)   echo "uv --project pipelines run pytest pipelines" ;;
     apps/viewer) echo "pnpm -C apps/viewer test" ;;
+    items)       echo "uv --project pipelines run --with tqdm pytest items/for-test" ;;
     *)           echo "" ;;
   esac
 }
@@ -32,7 +33,7 @@ changed=$(git diff --name-only "${base}...HEAD" 2>/dev/null)
 # file:line pointer guard (pipelines/tests/test_code_walkthrough.py) must run when the doc
 # changes, even if no pipeline code did.
 touched=$(printf '%s\n' "$changed" \
-  | grep -oE '^(apps/[^/]+|pipelines|runs|texts|configs|CODE_WALKTHROUGH\.md)' \
+  | grep -oE '^(apps/[^/]+|pipelines|items|runs|texts|configs|CODE_WALKTHROUGH\.md)' \
   | sed -E 's#^(runs|texts|configs|CODE_WALKTHROUGH\.md)$#pipelines#' | sort -u)
 
 # fixtures/ holds cross-language shared fixtures (e.g. the failure-kind parity cases) asserted by

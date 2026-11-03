@@ -28,8 +28,9 @@ Two kinds of virtual run are built on the fly from per-file summaries (`vite/run
   `runs/rerun-2026-11-03/`). Its models stay out of `panel`.
 
 Each is dated by its newest per-file summary (`generated_at`, else that file's mtime), so the
-home page opens the newest panel. Standings keep each model's most recent result across all
-of them.
+home page opens the newest panel. Per-file summaries carry no `panel` block, so standings key
+virtual panels on the bare model id: an in-flight rerun replaces each model's row (newest
+wins) and becomes the home default. Name the folder `exp-…` to keep a rerun out of both.
 
 `src/lib/localResults.ts` fetches and joins these (`loadRun` for a full run,
 `loadSummary` for just the per-model rollup the standings view needs); `src/lib/leaderboard.ts`
