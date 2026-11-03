@@ -909,6 +909,13 @@ def example_citation(prompt: str) -> str | None:
     return None
 
 
+# An echo of the prompt's example is not one when a book ordinal precedes it: "1 John", "First
+# John", "II John" are different books from "John" (fixed-width lookbehinds over normalized text).
+_NOT_AFTER_BOOK_ORDINAL = r"(?<!\d )" + "".join(
+    rf"(?<!\b{o} )" for o in ("first", "second", "third", "i", "ii", "iii")
+)
+
+
 def _single_citation_correct(
     answer: str, expected_citation: str, example: str | None = None
 ) -> tuple[int, int]:
@@ -919,8 +926,9 @@ def _single_citation_correct(
     times the model repeats it ("It is Jude 1:3. Jude 1:3 warns…") — repetition is
     not a hedge; only distinct OTHER citations are. Nor is echoing the prompt's form
     ``example`` ("Dhammapada 74, not Dhammapada 184") beside another citation (#118); an
-    answer whose only citation is the example keeps it, a wrong locus. The example is a
-    different entry by construction (``generate.py``), so naming it can never buy credit."""
+    answer whose only citation is the example keeps it, a wrong locus. ``generate.py`` takes
+    the example from a different entry of the SAME work, so it is never the answer (naming
+    it can never buy credit) and it is always in the expected's own notation."""
     expected_citation = fold_citation_digits(expected_citation)  # both sides (#111); all ASCII today
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
@@ -928,8 +936,8 @@ def _single_citation_correct(
     matching = {c for c in cands if boundary.search(c)}
     others = cands - matching
     if example is not None:
-        echoes = [  # not after a number: "1 john 8 41" is another book, not an echo of "john 8 41"
-            re.compile(r"(?<!\w)(?<!\d )" + re.escape(x) + r"(?!\w)")
+        echoes = [  # "1 john 8 41", "first john", "ii john" are other books, not echoes of "john 8 41"
+            re.compile(r"(?<!\w)" + _NOT_AFTER_BOOK_ORDINAL + re.escape(x) + r"(?!\w)")
             for x in _citation_candidates(example, expected_citation)
         ]
         kept = {c for c in others if not any(e.search(c) for e in echoes)}
@@ -1194,6 +1202,7 @@ def score_file(
     per_text: dict[tuple[str, str, str], dict] = {}  # (model_id, text_label, task) -> {n, correct, refused}
     per_prompt: dict[tuple[str, str, str], dict] = {}  # (model_id, prompt kind, task)
     per_verify: dict[tuple[str, str], dict] = {}  # (model_id, "yes"|"no")
+    per_segment: dict[tuple[str, str], dict] = {}  # (model_id, text_label) -> {correct, segment_match} (#112)
     usage: dict[str, dict] = {}  # model_id -> {calls, in, out, model, served_by{host:count}}
     with open(scores_path, "w", encoding="utf-8") as out:
         for d in rows:
@@ -1270,6 +1279,12 @@ def score_file(
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
                 _count_kind(xacc, metrics["outcome"], kind)
+                if metrics["correct"] and "segment_match" in metrics:  # a Talmud / GGS cite cell (#112)
+                    sacc = per_segment.setdefault(
+                        (d["model_id"], TEXT_KEY_SEP.join(tkey)), {"correct": 0, "segment_match": 0}
+                    )
+                    sacc["correct"] += 1
+                    sacc["segment_match"] += metrics["segment_match"]
             prompt = _PROMPT_KIND.get(src.get("condition"))
             if prompt:
                 pacc = per_prompt.setdefault(
@@ -1442,6 +1457,18 @@ def score_file(
     # (test_tutorial_run.py). The judge never joins the deterministic headline.
     if judge_provenance is not None:
         summary["judge"] = judge_provenance
+    # Citation granularity provenance (#112), a sibling of `evaluators`: True when the cite_passage
+    # headline scores Talmud at daf+amud and the Guru Granth Sahib at the Ang (the one switch,
+    # citations.HEADLINE_DROPS_SEGMENT). `segment_match`, per model x text where such cells were
+    # scored: the correct cells and how many also match at the full segment / line, so the stricter
+    # count for that text is by_text correct - segment_match.correct + segment_match.segment_match.
+    from . import citations  # lazy: citations imports this module
+
+    summary["headline_drops_segment"] = citations.HEADLINE_DROPS_SEGMENT
+    if per_segment:
+        summary["segment_match"] = {}
+        for (model_id, text_label), sacc in sorted(per_segment.items()):
+            summary["segment_match"].setdefault(model_id, {})[text_label] = sacc
     # Additive run timestamp (Issue #7 pipeline half): a committed, mtime-independent
     # recency signal. The current viewer ignores it; it never affects scoring.
     summary["generated_at"] = datetime.now(timezone.utc).isoformat()

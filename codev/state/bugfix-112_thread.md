@@ -100,3 +100,18 @@ already `_NUM_CITE` pre-#112 (shape quirk), and counting colon spans there would
 same-passage Mishnah cross-reference (`bekhorot 4a:3` + `bekhorot 1:1`). (b) Codex repeats the
 "example offered as an alternative" point. That is a policy call against the architect's #118
 direction, so it is escalated, not changed.
+
+## PR approved (architect integration review) + four pre-merge fixes
+
+Architect kept the "example offered as an alternative" choice (codex point declined: never the
+answer, 0/125 credited cells, pinned). Pre-merge fixes: (1) the echo lookbehind also skips word /
+Roman book ordinals (`First|Second|Third|I|II|III`), so `John 1:1 or First John 3:16` with example
+`John 3:16` stays a hedge; 8 of 9 ordinal cases fail without it, no oracle moved. (2) Documented
+that the example is a same-work entry by construction, which is why the Ang rivals path never
+consults it. (3) `summary.json` gains `headline_drops_segment` (beside `evaluators`) and a per
+model x text `segment_match` aggregate `{correct, segment_match}` over correct Talmud/GGS cells, so
+the stricter count is reachable without per-cell JSON. (4) arch.md §score.py carries the #112/#118
+rules. Merged #121 and #123 (conflict in `test_original_run_regression.py`: #117's refused-outcome
+rewrite of row 457 and my 21 cite rows don't overlap; both registries now apply).
+Follow-ups the architect filed: viewer display of `segment_match`; key granularity on `source.work`
+rather than the label string.

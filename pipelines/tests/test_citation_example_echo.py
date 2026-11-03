@@ -105,9 +105,14 @@ def test_two_real_citations_are_still_a_hedge():
     assert (scored["correct"], scored["n_candidates"]) == (0, 2)
 
 
-def test_a_numbered_book_is_not_an_echo_of_its_namesake():
-    scored = _cite("John 1:1 or 1 John 8:41", "John 1:1", "John 8:41")
+@pytest.mark.parametrize("ordinal", ["1", "First", "Second", "Third", "I", "II", "III", "first", "ii"])
+def test_a_numbered_book_is_not_an_echo_of_its_namesake(ordinal):
+    scored = _cite(f"John 1:1 or {ordinal} John 3:16", "John 1:1", "John 3:16")
     assert (scored["correct"], scored["n_candidates"]) == (0, 2)
+
+
+def test_the_plain_namesake_is_still_an_echo():
+    assert _cite("John 1:1, not John 3:16", "John 1:1", "John 3:16")["outcome"] == "correct"
 
 
 def test_the_example_offered_as_an_alternative_is_still_dropped():

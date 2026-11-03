@@ -21,7 +21,7 @@ import pytest
 import yaml
 
 from sacredbench import citations
-from sacredbench.score import _single_citation_correct, normalize, score_answer
+from sacredbench.score import _single_citation_correct, normalize, score_answer, score_file
 
 REPO = Path(__file__).resolve().parents[2]
 RUNS = REPO / "runs"
@@ -134,6 +134,35 @@ def test_two_different_citations_are_still_a_hedge(answer, citation):
     assert _cite(answer, citation)["outcome"] == "incorrect"
     # the rewritten answer holds two distinct citations (n_candidates is only replaced on credit)
     assert _single_citation_correct(citations.canonical_citation_text(answer, citation), citation) == (0, 2)
+
+
+def test_summary_records_the_switch_and_aggregates_segment_match(tmp_path, monkeypatch):
+    talmud = {"work": "Babylonian Talmud", "version": "William Davidson", "language": "arc"}
+    exodus = {"work": "Tanakh", "version": "Masoretic Text", "language": "he"}
+    cells = [
+        ("Eruvin 18a", "Eruvin 18a:15", talmud),  # correct at the daf, segment_match 0
+        ("Eruvin 18a:15", "Eruvin 18a:15", talmud),  # correct, segment_match 1
+        ("Eruvin 18b", "Eruvin 18a:15", talmud),  # incorrect: not counted
+        ("Exodus 28:43", "Exodus 28:43", exodus),  # not segment-indexed: not counted
+    ]
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text("".join(
+        json.dumps({
+            "question_id": f"q{i}", "model_id": "m1", "task": "cite_passage", "question_set_digest": "d",
+            "answer": answer, "question": {"expected": {"citation": citation}, "source": source},
+        }) + "\n"
+        for i, (answer, citation, source) in enumerate(cells)
+    ), encoding="utf-8")
+    summary = score_file(answers, tmp_path / "scores.jsonl")
+    assert summary["headline_drops_segment"] is True
+    assert summary["segment_match"] == {
+        "m1": {"\u0000".join(talmud.values()): {"correct": 2, "segment_match": 1}},
+    }
+    assert summary["models"]["m1"]["cite_passage"]["correct"] == 3
+    monkeypatch.setattr(citations, "HEADLINE_DROPS_SEGMENT", False)
+    strict = score_file(answers, tmp_path / "scores.jsonl")
+    assert strict["headline_drops_segment"] is False
+    assert strict["segment_match"]["m1"]["\u0000".join(talmud.values())] == {"correct": 1, "segment_match": 1}
 
 
 @pytest.mark.parametrize("answer", ["Ang 1297:15 or John 1:1", "ਅੰਗ ੧੨੯੭:੧੫ ਜਾਂ John 1:1", "John 1:1 / Ang 1297"])

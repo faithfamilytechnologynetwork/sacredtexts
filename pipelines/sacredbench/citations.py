@@ -191,7 +191,9 @@ def score_citation(answer: str, expected_citation: str, example: str | None = No
                 example = _drop_segment(example, unit)
             if _shape_rx(expected_citation) is not _shape_rx(unit):
                 # "Ang 1297:28" loses its colon at the Ang, but the colon citations the full
-                # citation's extractor counted ("… or John 1:1") are still rivals.
+                # citation's extractor counted ("… or John 1:1") are still rivals. The example
+                # need not be consulted here: it is an entry of the same work by construction
+                # (generate.py), so it is an "Ang N:M" and _drop_segment has already taken its colon.
                 rivals = _citation_candidates(text, expected_citation)
             expected_citation = unit
     if not correct:
