@@ -20,3 +20,15 @@
 - **Fix scope (<300 LOC):** a small shared helper in `items/for-test/` (resolve required `--run-dir`, population
   question index, per-model answer-row coverage, abort unless `--allow-partial`), wired into both scripts with
   Typer CLIs; header names the run dir and the partial count; test in `items/for-test/`.
+
+## Fix (2026-11-02)
+- `items/for-test/paper_join.py` (new): `resolve_run_dir` (required; must be a dir holding `<model>/base/**/answers.jsonl`),
+  `model_files`, `population_questions`, `check_coverage` (per-model matched/total answer rows → `SystemExit` with the
+  table unless `--allow-partial`), `partial_note`. Both scripts now take Typer `--run-dir` (required) + `--allow-partial`.
+- `claim_tests.py` counts `n_cells` after the join and names the run dir in the header.
+- **Verified on the real path:** archive vs #98's question files → both scripts abort with "8976 of 30688", per model
+  (qwen3-32b 400/908, the rest ~572/~1,938–2,160). Archive vs today's question files → pre-fix and post-fix output
+  byte-identical except the header (run dir named) and the 3 `_digits` sample lines (files are now read in sorted
+  order, not filesystem order — deterministic now). `takeaway.pdf` byte-identical.
+- Committed `runs/paper/*.md` predate the latest collections (27,264 vs 29,470 cells today); not regenerated here.
+- Follow-up candidate (not this fix): `paper_figures.py` also globs `runs/*/base/**` with no `--run-dir`.
