@@ -80,12 +80,13 @@ round-trip that proves no invention/reordering.
   Spec 15; graders are named + selectable via `score --evaluator`, a paid/separate-pass grader
   expressible for #21; + exact/token-F1 reported); `verify_source` → the **leading-stance** yes/no
   equals expected (English on every cell; a native word must stand alone — any non-Latin one is read
-  on every cell, a Latin-script one like Pali `na` only on its own language's cell, #76/#95,
-  witnessed by `test_cross_language_verdict_rebaseline.py`); `cite_passage` → the single extracted
-  citation must equal ground truth (a
-  multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape; every Unicode
-  decimal digit is read as ASCII — `٣٤:٤٦` = `34:46` — via `score.fold_citation_digits`, citation
-  path only, #111, witnessed by `test_citation_digit_fold.py`). Every
+  on every cell, a Latin-script one like Pali `na` only on its own language's cell, #76/#95, and a
+  native `Answer:` label (`الجواب:`, `उत्तर:`) is stripped on every cell, #115; witnessed by
+  `test_cross_language_verdict_rebaseline.py` + `test_native_verdict_tokens_rebaseline.py`);
+  `cite_passage` → the single extracted citation must equal ground truth (a multi-candidate hedge
+  scores 0; extractor chosen by the ground-truth citation shape; every Unicode decimal digit is
+  read as ASCII — `٣٤:٤٦` = `34:46` — via `score.fold_citation_digits`, citation path only, #111,
+  witnessed by `test_citation_digit_fold.py`). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
   beside it (for `verify_source`, `refused ⟺ parsed is None`). A decline is detected by cue phrases
