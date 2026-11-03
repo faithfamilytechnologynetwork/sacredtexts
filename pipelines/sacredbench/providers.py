@@ -220,7 +220,9 @@ def _anthropic(model: ModelSpec, prompt: str) -> tuple[str, dict]:
     # text blocks only — a web-search response also carries server_tool_use /
     # web_search_tool_result blocks, which are not the answer.
     text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
-    return text, _anthropic_usage(resp)
+    usage = _anthropic_usage(resp)
+    usage["finish_reason"] = stop
+    return text, usage
 
 
 def _openai(model: ModelSpec, prompt: str) -> tuple[str, dict]:
@@ -274,6 +276,11 @@ def _openai(model: ModelSpec, prompt: str) -> tuple[str, dict]:
     provider = getattr(resp, "provider", None)
     if provider:
         usage["provider"] = provider
+    # Recorded, not enforced (#93): a 'length' cell is still scored, since a repetition loop that
+    # runs out the budget is the model failing the question. Analysis can flag truncated cells.
+    finish = getattr(choices[0], "finish_reason", None)
+    if finish:
+        usage["finish_reason"] = finish
     return text, usage
 
 
@@ -378,6 +385,7 @@ def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tup
         )
     text = choice.message.content or ""
     usage = _openrouter_usage(resp, choice)
+    usage["finish_reason"] = choice.finish_reason
     _assert_native_arm(model.model, usage)  # mechanical nativeness gate — fail loud if not native
     return text, usage
 
@@ -400,14 +408,14 @@ def _gemini(model: ModelSpec, prompt: str) -> tuple[str, dict]:
         contents=prompt,
         config=types.GenerateContentConfig(**cfg_kwargs),
     )
+    cands = getattr(resp, "candidates", None) or []
+    fr = getattr(cands[0], "finish_reason", None) if cands else None
+    fr_name = getattr(fr, "name", str(fr)) if fr is not None else None
     if search_on:
         # Only a STOP finish carries a real answer. A truncated/blocked grounded turn
         # (MAX_TOKENS, SAFETY, RECITATION, …) must not be committed as a partial quote; fail
-        # loud so the cell stays pending. Scoped to the search arm so the search-off path is
-        # byte-identical to prior behaviour (no committed run uses the native non-search path).
-        cands = getattr(resp, "candidates", None) or []
-        fr = getattr(cands[0], "finish_reason", None) if cands else None
-        fr_name = getattr(fr, "name", str(fr))
+        # loud so the cell stays pending. Scoped to the search arm; the search-off arm only
+        # records the finish reason (#93).
         if fr_name != "STOP":
             raise ProviderError(
                 f"{model.id}: incomplete grounded turn (finish_reason={fr_name}) — not "
@@ -416,6 +424,8 @@ def _gemini(model: ModelSpec, prompt: str) -> tuple[str, dict]:
             )
     text = getattr(resp, "text", None) or ""
     usage = _gemini_usage(resp)
+    if fr_name:
+        usage["finish_reason"] = fr_name
     if search_on:
         usage.update(_gemini_search_provenance(resp))
     return text, usage
