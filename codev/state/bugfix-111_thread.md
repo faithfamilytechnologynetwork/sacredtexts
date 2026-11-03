@@ -31,3 +31,16 @@ architect, not changed.
 span extents are byte-identical to today and folding can only merge candidates (n never grows);
 fold the answer for the final `bounded_contains` (an ASCII expected that matched before still
 matches — boundary chars unchanged in `\w`-ness). ⇒ `old correct ⇒ new correct` structurally.
+
+## Fix (2026-11-02)
+
+- Architect (mid-flight): keep the fold in ONE helper #112 can call → `score.fold_citation_digits`.
+- Implemented as designed above: candidates folded after extraction; final `bounded_contains` on the
+  folded answer. Expected citations are all ASCII (0 of 7,364 committed cite cells are not).
+- Oracle (`test_citation_digit_fold.py` + `testdata/citation_digit_fold_movers.tsv`): 414 committed
+  movers = 396 incorrect→correct + 18 incorrect→incorrect with a smaller `n_candidates`
+  (e.g. `١٠:٣ (or 10:3)` used to be two candidates). Zero correct cells move.
+- **Surprise:** `runs/astra/base/hinduism/native/population/prompt-english/answers.jsonl` holds 28
+  question ids twice (collected twice, ~1s apart, sometimes different answers — `15:16` vs
+  `١٥:١٦`). Movers are pinned by (folder, row, qid) for that reason. Data left as is; flagged.
+- Regression: 11 of 21 tests fail with the fold turned into a no-op; full gate 990 passed.
