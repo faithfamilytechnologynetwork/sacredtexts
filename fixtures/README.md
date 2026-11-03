@@ -15,7 +15,7 @@ suites load:
 - `pipelines/tests/test_failure_kind.py` splats each case's fields straight into
   `classify_failure(**…)`.
 - `apps/viewer/src/lib/failureKind.test.ts` maps the snake_case fields to the TS camelCase input
-  (`token_f1`→`tokenF1`, `contains_reference`→`containsReference`, `n_candidates`→`nCandidates`,
+  (`token_f1`→`tokenF1`, optional `token_f1_base`→`tokenF1Base`, `contains_reference`→`containsReference`, `n_candidates`→`nCandidates`,
   `missing: false`) and calls `classifyFailure`.
 
 Every branch of the classifier has a case; add one when a branch is added. All strings are

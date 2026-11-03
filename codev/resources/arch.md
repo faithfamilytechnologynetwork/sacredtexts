@@ -86,7 +86,11 @@ round-trip that proves no invention/reordering.
   multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
-  beside it (for `verify_source`, `refused ⟺ parsed is None`). A deliberate contract change is a
+  beside it (for `verify_source`, `refused ⟺ parsed is None`). `score_file` also labels every cell
+  with its `failure_kind` (issue #96) and reports `minor`/`major` (a split of `incorrect`) + a `kinds`
+  map per model × task and per model × text in the summary; a near copy splits into `diacritic_only` /
+  `edition_variant` / `near_copy` by base-letter token edits. Never an input to `correct`; `scores.jsonl`
+  carries no kind. A deliberate contract change is a
   sanctioned, oracle-witnessed rebaseline, not a forbidden re-score. **Arabic orthography
   (Uthmani↔Imla'i) is folded in the CONTAINMENT path only (Spec 52):** the text-retrieval
   `contains_reference` — and `outcomes.classify_refusal`, the FAccT counterfactual and the probes —

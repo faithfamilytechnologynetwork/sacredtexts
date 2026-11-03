@@ -184,6 +184,21 @@ describe("localResults lib", () => {
   });
 });
 
+describe("joinResults — failure kind uses the base-letter overlap (issue #96)", () => {
+  it("labels a diacritics-only miss diacritic_only from token_f1_base, as the summary does", () => {
+    const scores = parseJsonl<ScoreRow>(
+      '{"question_id":"q1","model_id":"m","task":"retrieve_quote","metrics":{"token_f1":0.0,"token_f1_base":1.0,"normalized":0,"contains_reference":0,"correct":0,"outcome":"incorrect"}}',
+    );
+    const answers = parseJsonl<AnswerRow>(
+      JSON.stringify({
+        question_id: "q1", model_id: "m", task: "retrieve_quote", answer: "dhamma pubbangama manosettha",
+        question: { prompt: "p", expected: { text: "dhammā pubbaṅgamā manoseṭṭhā" }, source: { tradition: ["X"] } },
+      }),
+    );
+    expect(joinResults(scores, answers)[0]?.failure).toBe("diacritic_only");
+  });
+});
+
 describe("loadSummary (standings reads only summary.json)", () => {
   it("parses a single summary.json without needing the other three artifacts", async () => {
     const base = "/runs/x";

@@ -5,7 +5,11 @@ does not change ``correct``. It is the same reading the viewer uses
 (``apps/viewer/src/lib/failureKind.ts``):
 
 - retrieve_quote / complete_unit, incorrect: other script, omission, near copy
-  (token F1 ≥ 0.85), paraphrase (0.4 ≤ F1 < 0.85), or wrong passage.
+  (token F1 ≥ 0.85), paraphrase (0.4 ≤ F1 < 0.85), or wrong passage. A near copy
+  is split by the token edit distance between the base-letter texts (issue #96):
+  diacritic_only (0 — the same text once vowel signs, accents and pointing are
+  dropped), edition_variant (1–2 tokens — movable nu, plene/defective spelling,
+  one changed word), or near_copy (the rest).
 - retrieve_quote / complete_unit, correct and contained but not normalized:
   addition, when the answer continues at least eight tokens past the reference.
   Containment still scores that cell correct.
@@ -22,6 +26,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from collections import Counter
 from pathlib import Path
 
@@ -29,6 +34,8 @@ PARAPHRASE_F1 = 0.4
 # At or above this overlap the answer is a near copy the scorer failed to fold, not a rewrite.
 NEAR_COPY_F1 = 0.85
 ADDITION_EXTRA_TOKENS = 8
+# Inside the near-copy gate, at most this many base-letter token edits is an edition variant.
+EDITION_VARIANT_TOKENS = 2
 
 # Everything that is not a Unicode letter/number/space folds to a space. Underscore is NOT a
 # letter or number, so it folds too — this matches the viewer's `/[^\p{L}\p{N}\s]/u` exactly
@@ -39,7 +46,9 @@ _WS_RE = re.compile(r"\s+")
 
 # A minor kind stays on the passage that was asked for. A major kind replaces it:
 # another passage, another place, another script, a false yes/no, or no place at all.
-MINOR_KINDS = frozenset({"paraphrase", "omission", "addition", "near_copy"})
+MINOR_KINDS = frozenset({"paraphrase", "omission", "addition", "diacritic_only", "edition_variant", "near_copy"})
+# The three-way split of a near copy (issue #96). A reader that wants the old single bucket uses this.
+NEAR_COPY_FAMILY = frozenset({"diacritic_only", "edition_variant", "near_copy"})
 MAJOR_KINDS = frozenset({
     "wrong_passage",
     "other_script",
@@ -60,6 +69,8 @@ def severity(kind: str | None) -> str | None:
 
 
 KINDS = (
+    "diacritic_only",
+    "edition_variant",
     "near_copy",
     "paraphrase",
     "wrong_passage",
@@ -80,6 +91,41 @@ def _normalize(text: str) -> str:
 def tokens(text: str) -> list[str]:
     n = _normalize(text)
     return n.split(" ") if n else []
+
+
+# Deleted before the base-letter comparison, as score.normalize() deletes them: Arabic tatweel,
+# the Qur'anic annotation block, and the zero-width joiners inside Indic conjuncts.
+_BASE_DROP = frozenset("\u0640\u200c\u200d") | frozenset(chr(c) for c in range(0x06D6, 0x06EE))
+
+
+def base_tokens(text: str) -> list[str]:
+    """Tokens with every combining mark removed (vowel signs, accents, Hebrew/Arabic pointing),
+    Arabic alef-wasla read as alef and Greek final sigma as sigma. Agrees with ``score.base_letters``
+    on every committed near-copy cell; it is built from this module's normalizer so the viewer can
+    mirror it exactly."""
+    text = unicodedata.normalize("NFKD", text).replace("\u0671", "\u0627")
+    text = "".join(c for c in text if c not in _BASE_DROP and not unicodedata.category(c).startswith("M"))
+    return [t.replace("\u03c2", "\u03c3") for t in tokens(text)]
+
+
+def _token_distance(a: list[str], b: list[str]) -> int:
+    """Levenshtein distance over tokens (insert, delete, substitute one word)."""
+    prev = list(range(len(b) + 1))
+    for i, x in enumerate(a, 1):
+        cur = [i]
+        for j, y in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (x != y)))
+        prev = cur
+    return prev[-1]
+
+
+def _near_copy_kind(answer: str, expected: str) -> str:
+    d = _token_distance(base_tokens(answer), base_tokens(expected))
+    if d == 0:
+        return "diacritic_only"
+    if d <= EDITION_VARIANT_TOKENS:
+        return "edition_variant"
+    return "near_copy"
 
 
 def _script(text: str) -> str | None:
@@ -162,7 +208,7 @@ def classify_failure(
         # only pass token_f1 keep the strict overlap.
         f1 = token_f1_base if token_f1_base is not None else (token_f1 or 0)
         if f1 >= NEAR_COPY_F1:
-            return "near_copy"
+            return _near_copy_kind(answer, expected)
         if f1 >= paraphrase_f1:
             return "paraphrase"
         return "wrong_passage"
@@ -333,7 +379,8 @@ def analysis_markdown(
         "",
         f"Severity: {severities or 'none'}.",
         "",
-        "Minor stays on the passage that was asked (near copy, paraphrase, omission, addition).",
+        "Minor stays on the passage that was asked (diacritic only, edition variant, near copy, paraphrase,",
+        "omission, addition).",
         "Major replaces it (wrong passage, other script, wrong locus, wrong verdict, no citation, hedge).",
         "",
         "### Kinds",

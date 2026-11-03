@@ -124,7 +124,7 @@ export function ExplorerPage() {
             answered but declined to give the text (excluded from accuracy);{" "}
             <span className="font-medium">wrong</span> = it answered but scored incorrect. On a wrong
             answer the second badge says whether the miss is minor (still the passage that was
-            asked for: near copy, paraphrase, omission) or major (the object is replaced: wrong passage,
+            asked for: diacritic only, edition variant, near copy, paraphrase, omission) or major (the object is replaced: wrong passage,
             other script, wrong locus, hedge, no citation, wrong verdict).{" "}
             <span className="font-medium">addition</span> is a correct quote that continues past the
             reference — still counted correct. Per-metric <code>n/a</code> means the task emits no

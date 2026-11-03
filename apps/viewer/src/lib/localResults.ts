@@ -245,6 +245,7 @@ function withFailure(
       answer: row.answer,
       expected: row.expected,
       tokenF1: row.token_f1,
+      tokenF1Base: numOrNull(metrics, "token_f1_base"),
       normalized: row.normalized,
       containsReference: numOrNull(metrics, "contains_reference"),
       nCandidates: numOrNull(metrics, "n_candidates"),

@@ -30,6 +30,11 @@ Metrics emitted per answer:
                   ``_with_outcome`` and ``outcomes.classify_refusal``. Accuracy is then
                   ``correct/(correct+incorrect)`` and ``score_file`` reports ``coverage`` beside it.
 
+``score_file`` also labels every cell with its failure kind (``failure_kind.classify_failure``;
+issue #96) and reports, per model × task and per model × text, ``minor``/``major`` (a split of
+``incorrect``: every incorrect cell has exactly one kind) and a ``kinds`` count map (which also holds
+``addition``, the one kind on a correct cell). The kind never changes ``correct`` or ``outcome``.
+
 For the text-retrieval tasks the reported sub-metrics and the headline are set by the SELECTED
 graders (``graders.py``, chosen via ``score --evaluator``; default ``strict`` + ``containment``).
 
@@ -69,6 +74,9 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+
+from .failure_kind import KINDS, classify_failure, severity
+from .failure_kind import expected_text as _kind_reference  # score_file has an `expected_text` param
 
 
 class ScoreError(Exception):
@@ -970,6 +978,9 @@ def _outcome_cell(acc: dict, submetric_keys: tuple[str, ...]) -> dict:
     Submetric averages are taken over the GRADED cells (correct+incorrect), never ``n`` — a refusal
     is not graded, so it must not dilute the diagnostic averages. ``missing`` (roster cells that
     produced no answer) is added by the caller and stays distinct from ``refused`` (answered, declined).
+
+    An accumulator that counts failure kinds (model × task, model × text) adds ``minor``/``major`` (a
+    split of ``incorrect``) and ``kinds`` (count per kind, in taxonomy order, zeros omitted).
     """
     n = acc["n"]
     refused = acc.get("refused", 0)
@@ -981,12 +992,40 @@ def _outcome_cell(acc: dict, submetric_keys: tuple[str, ...]) -> dict:
         "coverage": round(graded / n, 4) if n else None,
         "correct": correct,
         "incorrect": graded - correct,
-        "refused": refused,
-        "refused_rate": round(refused / n, 4) if n else None,
     }
+    if "kinds" in acc:  # failure kinds (issue #96): minor + major == incorrect
+        cell["minor"], cell["major"] = acc["minor"], acc["major"]
+    cell["refused"] = refused
+    cell["refused_rate"] = round(refused / n, 4) if n else None
+    if "kinds" in acc:
+        cell["kinds"] = {k: acc["kinds"][k] for k in KINDS if acc["kinds"][k]}
     for sm in submetric_keys:
         cell[sm] = round(acc[sm] / graded, 4) if graded else None
     return cell
+
+
+def _zero_acc() -> dict:
+    """An outcome accumulator that also counts failure kinds (issue #96)."""
+    return {"n": 0, "correct": 0, "refused": 0, "minor": 0, "major": 0, "kinds": Counter()}
+
+
+def _count_kind(acc: dict, outcome: str, kind: str | None) -> None:
+    if kind:
+        acc["kinds"][kind] += 1
+    if outcome == "incorrect":
+        sev = severity(kind)
+        if sev is None:
+            raise ScoreError(f"incorrect cell has no failure kind (kind={kind!r}); the taxonomy must be total")
+        acc[sev] += 1
+
+
+def _sum_acc(accs: list[dict]) -> dict:
+    total = _zero_acc()
+    for a in accs:
+        for k in ("n", "correct", "refused", "minor", "major"):
+            total[k] += a[k]
+        total["kinds"].update(a["kinds"])
+    return total
 
 
 def score_file(
@@ -1107,12 +1146,21 @@ def score_file(
             sm_keys = _task_submetrics(d["task"])
             acc = per_cell.setdefault(
                 (d["model_id"], d["task"]),
-                {"n": 0, "correct": 0, "refused": 0, **{k: 0 for k in sm_keys}},
+                {**_zero_acc(), **{k: 0 for k in sm_keys}},
             )
             refused = metrics.get("outcome") == "refused"
             acc["n"] += 1
             acc["correct"] += metrics["correct"]
             acc["refused"] += int(refused)
+            # the failure kind (issue #96): a label on the scored cell, never an input to it
+            kind = classify_failure(
+                task=d["task"], correct=metrics["correct"] == 1, refused=refused, answer=d["answer"],
+                expected=_kind_reference(d["question"]["expected"]),
+                token_f1=metrics.get("token_f1"), normalized=metrics.get("normalized"),
+                contains_reference=metrics.get("contains_reference"),
+                n_candidates=metrics.get("n_candidates"), token_f1_base=metrics.get("token_f1_base"),
+            )
+            _count_kind(acc, metrics["outcome"], kind)
             # submetrics accumulate over GRADED cells only (refusals are never graded, so they must
             # not dilute the diagnostic averages); the per-cell values are still emitted on refused rows.
             if not refused:
@@ -1143,12 +1191,11 @@ def score_file(
             # now that per-tradition balance no longer holds (9 of 17 texts are hadith collections).
             tkey = text_key(src)
             if tkey is not None:
-                xacc = per_text.setdefault(
-                    (d["model_id"], TEXT_KEY_SEP.join(tkey), d["task"]), {"n": 0, "correct": 0, "refused": 0}
-                )
+                xacc = per_text.setdefault((d["model_id"], TEXT_KEY_SEP.join(tkey), d["task"]), _zero_acc())
                 xacc["n"] += 1
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
+                _count_kind(xacc, metrics["outcome"], kind)
             prompt = _PROMPT_KIND.get(src.get("condition"))
             if prompt:
                 pacc = per_prompt.setdefault(
@@ -1175,7 +1222,7 @@ def score_file(
         # a fully-missing (expected-but-unanswered) cell gets the same three-outcome schema via a
         # zero accumulator (accuracy/coverage/refused_rate → None, counts → 0), so summary consumers
         # see one shape; `missing` below stays distinct from `refused` (answered-then-declined).
-        cell = _outcome_cell(acc or {"n": 0, "correct": 0, "refused": 0}, _task_submetrics(task))
+        cell = _outcome_cell(acc or _zero_acc(), _task_submetrics(task))
         if (model_id, task) in expected:
             cell["expected_n"] = expected[(model_id, task)]
             cell["missing"] = max(expected[(model_id, task)] - cell["n"], 0)
@@ -1183,14 +1230,7 @@ def score_file(
     # _overall from RAW counts (not a lossy round(accuracy*n) reconstruction)
     for model_id in summary["models"]:
         cells = [acc for (m, _), acc in per_cell.items() if m == model_id]
-        ov = _outcome_cell(
-            {
-                "n": sum(c["n"] for c in cells),
-                "correct": sum(c["correct"] for c in cells),
-                "refused": sum(c["refused"] for c in cells),
-            },
-            (),
-        )
+        ov = _outcome_cell(_sum_acc(cells), ())
         exp_total = sum(v for (m, _), v in expected.items() if m == model_id)
         if exp_total:
             ov["expected_n"] = exp_total
@@ -1257,22 +1297,15 @@ def score_file(
     expected_text = expected_text or {}
     all_text_cells = set(per_text) | set(expected_text)
     for (model_id, text_label, task) in sorted(all_text_cells):
-        cell = _outcome_cell(per_text.get((model_id, text_label, task)) or {"n": 0, "correct": 0, "refused": 0}, ())
+        cell = _outcome_cell(per_text.get((model_id, text_label, task)) or _zero_acc(), ())
         if (model_id, text_label, task) in expected_text:
             cell["expected_n"] = expected_text[(model_id, text_label, task)]
             cell["missing"] = max(expected_text[(model_id, text_label, task)] - cell["n"], 0)
         summary["by_text"].setdefault(model_id, {}).setdefault(text_label, {})[task] = cell
     for model_id, texts in summary["by_text"].items():
         for text_label, tasks in texts.items():
-            raw = [per_text.get((model_id, text_label, t), {"n": 0, "correct": 0, "refused": 0}) for t in tasks]
-            ov = _outcome_cell(
-                {
-                    "n": sum(c["n"] for c in raw),
-                    "correct": sum(c["correct"] for c in raw),
-                    "refused": sum(c["refused"] for c in raw),
-                },
-                (),
-            )
+            raw = [per_text.get((model_id, text_label, t), _zero_acc()) for t in tasks]
+            ov = _outcome_cell(_sum_acc(raw), ())
             exp_total = sum(v for (m, tl, _), v in expected_text.items() if m == model_id and tl == text_label)
             if exp_total:
                 ov["expected_n"] = exp_total
@@ -1356,12 +1389,21 @@ def _cell_str(c: dict | None) -> str:
     if c.get("coverage") is not None:
         s += f" cov {c['coverage']:.0%}"
     if "correct" in c:  # scored cell: spec requires correct/incorrect/refused in summary.md
-        s += f" (n={c['n']}; c/i/r {c['correct']}/{c['incorrect']}/{c['refused']})"
+        s += f" (n={c['n']}; c/i/r {c['correct']}/{c['incorrect']}/{c['refused']}{_severity_str(c)})"
     else:
         s += f" (n={c['n']})"
     if c.get("missing"):
         s += f" −{c['missing']}"
     return s
+
+
+def _severity_str(c: dict) -> str:
+    """The minor/major split of ``incorrect`` (issue #96), when the cell counts failure kinds."""
+    return f"; minor/major {c['minor']}/{c['major']}" if "minor" in c else ""
+
+
+def _kinds_str(kinds: dict) -> str:
+    return ", ".join(f"{k} {v}" for k, v in kinds.items()) or "—"
 
 
 def summary_markdown(summary: dict) -> str:
@@ -1381,7 +1423,7 @@ def summary_markdown(summary: dict) -> str:
         if ov.get("coverage") is not None:
             overall += f" cov {ov['coverage']:.0%}"
         if "correct" in ov:
-            overall += f" (c/i/r {ov['correct']}/{ov['incorrect']}/{ov['refused']})"
+            overall += f" (c/i/r {ov['correct']}/{ov['incorrect']}/{ov['refused']}{_severity_str(ov)})"
         if ov.get("missing"):
             overall += f" −{ov['missing']}"
         row.append(overall)
@@ -1390,8 +1432,27 @@ def summary_markdown(summary: dict) -> str:
         "",
         "_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). "
         "accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; "
-        "refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused)._",
+        "refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). "
+        "minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._",
     ]
+    kind_rows = [
+        f"| {model_id} | {task} | {c['incorrect']} | {c['minor']} | {c['major']} | {_kinds_str(c['kinds'])} |"
+        for model_id, cells in sorted(models.items())
+        for task, c in sorted(cells.items())
+        if task != "_overall" and c.get("kinds")
+    ]
+    if kind_rows:
+        lines += [
+            "",
+            "### Failure kinds (per task)",
+            "| model | task | incorrect | minor | major | kinds |",
+            "|" + "---|" * 6,
+            *kind_rows,
+            "",
+            "_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — "
+            "only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition "
+            "or spelling), near_copy (more). addition is a correct quote that runs past the reference._",
+        ]
 
     by_trad = summary.get("by_tradition") or {}
     if by_trad:
@@ -1415,7 +1476,8 @@ def summary_markdown(summary: dict) -> str:
         lines += ["", "### By text (one text = one work · version · language)"]
         for model_id in sorted(by_text):
             lines += ["", f"**{model_id}**",
-                      "| text | n | accuracy | coverage | refused | missing |", "|" + "---|" * 6]
+                      "| text | n | accuracy | coverage | refused | missing | minor | major | kinds |",
+                      "|" + "---|" * 9]
             for key in sorted(by_text[model_id]):
                 ov = by_text[model_id][key]["_overall"]
                 acc = "n/a" if ov["accuracy"] is None else f"{ov['accuracy']:.0%}"
@@ -1423,7 +1485,7 @@ def summary_markdown(summary: dict) -> str:
                 miss = ov.get("missing") or 0
                 lines.append(
                     f"| {_text_label_display(key)} | {ov['n']} | {acc} | {cov} | {ov['refused']} "
-                    f"| {miss if miss else '—'} |"
+                    f"| {miss if miss else '—'} | {ov['minor']} | {ov['major']} | {_kinds_str(ov['kinds'])} |"
                 )
 
     panel = summary.get("panel") or {}

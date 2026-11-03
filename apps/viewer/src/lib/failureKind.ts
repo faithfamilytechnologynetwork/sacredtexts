@@ -6,7 +6,11 @@
 //   retrieve_quote / complete_unit (incorrect)
 //     other_script   the answer is not in the reference's script (often English prose)
 //     omission       the answer is a shorter span contained in the reference
-//     near_copy      token overlap ≥ 0.85: the scorer did not fold a close copy
+//     near_copy      token overlap ≥ 0.85: the scorer did not fold a close copy. Split by
+//                    the token edit distance between the base-letter texts (issue #96):
+//       diacritic_only   0 — the same text once vowel signs, accents and pointing go
+//       edition_variant  1–2 tokens — movable nu, plene/defective, one changed word
+//       near_copy        more than 2
 //     paraphrase     token overlap in [0.4, 0.85): a rewrite, not a near copy
 //     wrong_passage  everything else (a different span, or too little overlap to call)
 //   retrieve_quote / complete_unit (correct, contained, not exact)
@@ -25,6 +29,8 @@ export type FailureKind =
   | "paraphrase"
   | "wrong_passage"
   | "other_script"
+  | "diacritic_only"
+  | "edition_variant"
   | "near_copy"
   | "omission"
   | "addition"
@@ -37,6 +43,8 @@ export const FAILURE_KINDS: readonly FailureKind[] = [
   "paraphrase",
   "wrong_passage",
   "other_script",
+  "diacritic_only",
+  "edition_variant",
   "near_copy",
   "omission",
   "addition",
@@ -47,7 +55,9 @@ export const FAILURE_KINDS: readonly FailureKind[] = [
 ];
 
 /** A minor kind stays on the passage that was asked for. A major kind replaces it. */
-const MINOR: ReadonlySet<FailureKind> = new Set(["paraphrase", "omission", "addition", "near_copy"]);
+const MINOR: ReadonlySet<FailureKind> = new Set([
+  "paraphrase", "omission", "addition", "diacritic_only", "edition_variant", "near_copy",
+]);
 
 export function failureSeverity(kind: FailureKind | null): "minor" | "major" | null {
   if (!kind) return null;
@@ -59,6 +69,8 @@ export const FAILURE_KIND_LABEL: Record<FailureKind, string> = {
   paraphrase: "paraphrase",
   wrong_passage: "wrong passage",
   other_script: "other script",
+  diacritic_only: "diacritic only",
+  edition_variant: "edition variant",
   near_copy: "near copy",
   omission: "omission",
   addition: "addition",
@@ -73,6 +85,8 @@ const PARAPHRASE_F1 = 0.4;
 const NEAR_COPY_F1 = 0.85;
 /** Extra tokens past the reference before a contained answer is called an addition. */
 const ADDITION_EXTRA_TOKENS = 8;
+/** Inside the near-copy gate, at most this many base-letter token edits is an edition variant. */
+const EDITION_VARIANT_TOKENS = 2;
 
 export interface FailureInput {
   task: string;
@@ -82,6 +96,8 @@ export interface FailureInput {
   answer: string;
   expected: string;
   tokenF1: number | null;
+  /** The overlap with vowel signs and accents removed; preferred over tokenF1 when present. */
+  tokenF1Base?: number | null;
   normalized: number | null;
   containsReference: number | null;
   nCandidates: number | null;
@@ -98,6 +114,41 @@ function normalize(s: string): string {
 function tokenList(s: string): string[] {
   const n = normalize(s);
   return n ? n.split(" ") : [];
+}
+
+/** Deleted before the base-letter comparison, as the scorer deletes them: Arabic tatweel, the
+ * Qur'anic annotation block, and the zero-width joiners inside Indic conjuncts. */
+const BASE_DROP = /[\u0640\u06D6-\u06ED\u200C\u200D]/gu;
+
+/** Tokens with every combining mark removed, alef-wasla read as alef and final sigma as sigma —
+ * the pipeline's base_tokens (failure_kind.py), byte for byte. */
+function baseTokens(s: string): string[] {
+  const bare = s
+    .normalize("NFKD")
+    .replace(/\u0671/g, "\u0627")
+    .replace(BASE_DROP, "")
+    .replace(/\p{M}/gu, "");
+  return tokenList(bare).map((t) => t.replace(/\u03C2/g, "\u03C3"));
+}
+
+/** Levenshtein distance over tokens (insert, delete, substitute one word). */
+function tokenDistance(a: string[], b: string[]): number {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur.push(Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1)));
+    }
+    prev = cur;
+  }
+  return prev[b.length]!;
+}
+
+function nearCopyKind(answer: string, expected: string): FailureKind {
+  const d = tokenDistance(baseTokens(answer), baseTokens(expected));
+  if (d === 0) return "diacritic_only";
+  if (d <= EDITION_VARIANT_TOKENS) return "edition_variant";
+  return "near_copy";
 }
 
 type Script = "hebrew" | "arabic" | "greek" | "latin";
@@ -153,8 +204,8 @@ function textRetrievalKind(input: FailureInput): FailureKind | null {
   const answerScript = primaryScript(input.answer);
   if (expectedScript && answerScript && expectedScript !== answerScript) return "other_script";
   if (isOmission(input.answer, input.expected)) return "omission";
-  const f1 = input.tokenF1 ?? 0;
-  if (f1 >= NEAR_COPY_F1) return "near_copy";
+  const f1 = input.tokenF1Base ?? input.tokenF1 ?? 0;
+  if (f1 >= NEAR_COPY_F1) return nearCopyKind(input.answer, input.expected);
   if (f1 >= PARAPHRASE_F1) return "paraphrase";
   return "wrong_passage";
 }
