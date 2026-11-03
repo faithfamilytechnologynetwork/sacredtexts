@@ -41,3 +41,35 @@ Greek abbreviations (`Γαλ.`, `Ῥωμαν.`); prose answers ("chapter 10 vers
 
 **Coordination:** #111 (bugfix-111) has not landed. I build the alias data, the canonicaliser module, and its
 tests first, and wire it into `_single_citation_correct` only after #111 merges.
+
+## Fix (2026-11-02/03)
+
+**Decisions from the architect (data):** (1) granularity default CONFIRMED (Talmud daf+amud, GGS
+Ang, `segment_match` sub-field), kept as one switch `citations.HEADLINE_DROPS_SEGMENT`. (2) #118
+(prompt example echo) added to this PR as a separate commit. (3) `original-2026-10-21` byte-for-byte
+guard: option A — keep committed scores, pin the 21 moved rows by identity (FAccT card frozen, #74).
+(4) #118 refinement: drop the echo only when another citation exists; an echo-only answer stays
+`wrong_locus` (removed a 319/419-cell `wrong_locus → no_citation` shift).
+
+**Data location:** `pipelines/sacredbench/citation_aliases.yaml` (package data next to the code, not
+`texts/raw/<tradition>/`): the Greek NT and Masoretic sets are tradition "Christianity", which has
+no raw dir, and a package-relative path keeps scoring independent of the repo layout.
+
+**Shape quirk found:** `_shape_rx` routes Talmud citations (`23b:3`) to `_NUM_CITE`, since its colon
+test is `\d\s*:\s*\d` and the amud letter breaks it, so legacy Talmud candidates are daf-without-amud
+(`megillah 23`). That's harmless to correctness (the final `bounded_contains` decides), but it means
+the #118 example has to be turned into candidates with the SAME extractor (`_citation_candidates(example,
+expected)`), not compared as raw text.
+
+**Pre-existing, not fixed (follow-up):** the boundary match credits `1 John 3:16` for an expected
+`John 3:16` (the candidate span contains `john 3 16`); the alias layer inherits this for
+`Α΄ Ἰωάννου`. `John` IS an expected book (Greek set), but no credited cell in the rerun or archive
+has a numbered sibling (`1 John …`) in its answer (checked), so no number here depends on it.
+
+**Numbers** (after #111; rerun = `runs/rerun-2026-11-03`, archive = committed `runs/<model>/base`):
+- #112 notation: rerun 319, archive 298 (= 203 label-only + 86 Hebrew numerals/amud + 9 surah names)
+- #112 granularity: rerun 347 (Talmud 265, GGS 82), archive 355 (Talmud 285, GGS 70)
+- #118: rerun 56 credited (sonnet 40, haiku 12, luna 4) + 15 hedge→wrong_locus; archive 69 + 13
+- original-2026-10-21: 2 credited (Talmud daf), 19 gain `segment_match` only; #118 moves none
+- cite_passage accuracy, rerun (old→new): christianity .598→.811, judaism .064→.270, sikhism
+  .004→.108, islam .872→.893, buddhism .699→.708, hinduism .911→.917; coverage unchanged.
