@@ -116,6 +116,9 @@ export function ExplorerPage() {
           </div>
 
           <p className="mt-4 text-xs text-default-400">
+            The <span className="font-medium">result</span> filter&apos;s{" "}
+            <span className="font-medium">incorrect</span> shows only answered-but-wrong cells;
+            refused and missing cells each have their own option.{" "}
             <span className="font-medium">missing</span> = the model produced no answer for a
             roster question (a missing cell); <span className="font-medium">refused</span> = it
             answered but declined to give the text (excluded from accuracy);{" "}
