@@ -35,6 +35,19 @@ export function benchmarkRuns(runs: RunRef[]): RunRef[] {
 }
 
 /**
+ * The run a page opens: `requested` (a `?run=` value) when it names a known run — experiment runs
+ * included, they stay openable — else the DEFAULT, the most-recent benchmark (non-`exp-*`) run, so
+ * a one-off A/B snapshot never becomes the default view; `runs[0]` only if every run is an
+ * experiment run. `runs` must be newest-first (as `fetchRunIndex` returns them). Shared by the
+ * leaderboard home and the `/errors` picker so both open the same run by default.
+ */
+export function selectRunId(runs: RunRef[], requested?: string): string | undefined {
+  if (runs.length === 0) return undefined;
+  if (requested && runs.some((r) => r.id === requested)) return requested;
+  return (benchmarkRuns(runs)[0] ?? runs[0]!).id;
+}
+
+/**
  * Fetch and parse the run index, distinguishing empty (no runs) from a genuine fetch/parse
  * failure. A 200 HTML body — a production static host with no `/runs` endpoint serving the
  * SPA shell for an unknown path — is treated as "no runs" (the empty state), never a crash.
