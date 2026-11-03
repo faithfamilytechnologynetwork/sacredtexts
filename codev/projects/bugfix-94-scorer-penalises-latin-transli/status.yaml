@@ -1,7 +1,7 @@
 id: bugfix-94
 title: scorer-penalises-latin-transli
 protocol: bugfix
-phase: investigate
+phase: fix
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T00:53:10.581Z'
-updated_at: '2026-11-03T00:53:10.582Z'
+updated_at: '2026-11-03T00:58:13.370Z'
