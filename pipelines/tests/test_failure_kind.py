@@ -148,3 +148,21 @@ def test_citation_and_verdict():
     assert classify_failure(task="cite_passage", n_candidates=1, **base) == "wrong_locus"
     assert classify_failure(task="cite_passage", n_candidates=0, **base) == "no_citation"
     assert classify_failure(task="verify_source", n_candidates=None, **base) == "wrong_verdict"
+
+
+@pytest.mark.parametrize("text", [
+    "ٱلْحَمْدُ لِلَّـهِ رَبِّ ٱلْعَـٰلَمِينَ ۝",  # Arabic: pointing, alef-wasla, tatweel, annotation mark
+    "בְּרֵאשִׁית בָּרָא־אֱלֹהִים",  # Hebrew: pointing, maqaf
+    "Ἐν ἀρχῇ ἦν ὁ λόγος ΛΟΓΟΣ",  # Greek: accents, breathings, final sigma
+    "dhammā pubbaṅgamā manoseṭṭhā",  # Pali: length and dot-below marks
+    "कर्मण्येवाधिकारस्ते मा फलेषु",  # Devanagari: vowel signs, virama
+    "ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ",  # Gurmukhi: vowel signs
+    "Yoḥanan said: café, naïve!",  # Latin: accents and punctuation
+])
+def test_base_tokens_agree_with_score_base_letters(text):
+    """Issue #96: the near-copy split's base letters (mirrored byte for byte in the viewer) are the
+    scorer's ``base_letters`` on every script the corpus carries."""
+    from sacredbench.failure_kind import base_tokens
+    from sacredbench.score import base_letters
+
+    assert base_tokens(text) == base_letters(text).split()

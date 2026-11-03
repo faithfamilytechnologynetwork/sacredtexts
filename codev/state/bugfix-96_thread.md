@@ -37,3 +37,7 @@ parallel field; the taxonomy already exists in `failure_kind.py` / `failureKind.
 - 01:09Z architect: #99 (fix for #97) on main → merged origin/main (fa7cccc). Gate `bash .codev/checks/test.sh`
   on Python 3.11: pipelines 889 passed / 2 skipped, viewer 233/233 — fully green, no #97 failures left.
 - Priority (owner): #96 must be in the same final scoring pass as #94/#95 before the rerun is scored.
+- CMAP on PR #105: gemini APPROVE, codex APPROVE, claude APPROVE (all HIGH). Folded Claude's nits:
+  base_tokens↔score.base_letters agreement test (7 scripts), analysis_markdown minor-kind prose.
+  Kept the by-text `ov['minor']` read unguarded on purpose: summary_markdown only renders a fresh
+  score_file summary, which always carries it — a missing key should fail loud.
