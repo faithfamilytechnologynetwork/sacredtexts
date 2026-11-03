@@ -72,3 +72,15 @@ oracle fail (3 failed); with it, all 8 pass.
 
 **Full suite:** 873 passed, 2 skipped, 9 failed. All 9 are `_DaemonPool._initializer` on
 Python 3.14 (test_collect.py / test_phase2_tools.py): #97, pre-existing on main, not this fix.
+
+## PR #104
+
+Merged origin/main (#99 landed): porch tests-check green on Python 3.11. CMAP needed
+`--issue 94` (bare `consult --type pr` aborts with "Multiple projects found" in this repo).
+gemini=APPROVE, codex=APPROVE, claude=APPROVE. Claude independently re-derived the 167-cell
+mover set (set-equal to the tsv, 0 regressions, archive guards non-vacuous: they re-score
+400/252/132 English cells through `score_file`). Open architect decision, noted in the PR body:
+committed `scores.jsonl`/`summary.*` and `runs/paper/*` still carry pre-#94 numbers (viewer,
+standings and facct_findings read those; paper_figures/analyze_run re-score), so the choice is
+rebaseline vs regenerate-figures-only before the FAccT cut. Skipped nits: rebasing `base_letters`
+on `fold_latin_marks` (NFKD vs NFD could move token_f1_base), and a shared word-boundary helper.
