@@ -7,8 +7,10 @@ current_plan_phase: null
 gates:
   pr:
     status: pending
+    requested_at: '2026-11-03T02:56:45.838Z'
 iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T02:39:19.950Z'
-updated_at: '2026-11-03T02:51:08.449Z'
+updated_at: '2026-11-03T02:56:45.839Z'
+pr_ready_for_human: true
