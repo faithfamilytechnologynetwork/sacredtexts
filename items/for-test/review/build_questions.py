@@ -2,7 +2,8 @@
 
 Each file has a uniform population sample of 30 and a separate familiarity
 panel (every citation in well_known.yaml). Sikh citations are Ang N:k in
-reading order. Within each sample, half of the verify_source rows quote a
+reading order; a Sikh cite_passage row asks for and expects the Ang only, because
+line numbering within an Ang is not standardised (issue #135). Within each sample, half of the verify_source rows quote a
 different work and expect "no". An Arabic passage's "no" quotes the matn of a
 hadith that shares no text with the Qur'an (issue #75).
 
@@ -66,6 +67,19 @@ EN = {
     "cite_passage": 'Where in {version} can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.',
     "verify_source": 'Is the following text from {version}? "{text}" Answer Yes or No.',
 }
+
+# Issue #135 (Jasbir Singh): the Sri Guru Granth Sahib has no standard line numbering within an Ang,
+# so cite_passage asks for and expects the Ang (page) only. retrieve_quote keeps "Ang N:k", and so
+# does every row's source citation: the line index is what names the pankti being asked about.
+SGGS_EN = {
+    **EN,
+    "cite_passage": 'Where in {version} can I find this quote? "{text}" Answer with the page (Ang) only, in the same form as: {example}.',
+}
+
+
+def sggs_ang(citation: str) -> str:
+    """``Ang 306`` for the pankti ``Ang 306:13``."""
+    return citation.partition(":")[0]
 
 
 # English display names the model sees in a prompt. Each names the work as well as
@@ -157,12 +171,20 @@ def split_words(text: str) -> tuple[str, str]:
     return split_quote(text)
 
 
-def rows_for(items, *, tradition, version, native_tmpl, english_version=None, english_native_tmpl=None):
+def rows_for(
+    items, *, tradition, version, native_tmpl, english_version=None, english_native_tmpl=None,
+    english_tmpl=EN, cited_as=None,
+):
+    """``cited_as`` maps a passage's citation to the one its cite_passage row asks for and expects
+    (the Guru Granth Sahib's Ang, #135). The form example is a different cited citation, never the
+    answer, even where two passages share an Ang."""
+    cited_as = cited_as or (lambda citation: citation)
     citations = [passage.citation for passage, _, _, _ in items]
     out = []
     for passage, sample, native, english in items:
         head, rest = split_words(native)
-        example = next(c for c in citations if c != passage.citation)
+        cited = cited_as(passage.citation)
+        example = next(cited_as(c) for c in citations if cited_as(c) != cited)
         fields = {
             "citation": passage.citation, "version": edition_name(version),
             "head": prompt_text(head), "text": prompt_text(native), "example": example,
@@ -170,7 +192,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         expected = {
             "retrieve_quote": {"text": native},
             "complete_unit": {"text": rest, "full_text": native},
-            "cite_passage": {"citation": passage.citation},
+            "cite_passage": {"citation": cited},
             "verify_source": {
                 "answer": "yes", "true_tradition": tradition,
                 "true_version": version, "true_citation": passage.citation,
@@ -190,7 +212,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             # language to answer in. The native call is only the native-language question.
             out.append({
                 **base, "task": task, "condition": "ask_english",
-                **prompt_for(EN[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
+                **prompt_for(english_tmpl[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
                 "expected": expected[task],
             })
             out.append({
@@ -208,7 +230,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
         expected_e = {
             "retrieve_quote": {"text": english},
             "complete_unit": {"text": rest_e, "full_text": english},
-            "cite_passage": {"citation": passage.citation},
+            "cite_passage": {"citation": cited},
             "verify_source": {
                 "answer": "yes", "true_tradition": tradition,
                 "true_version": english_version, "true_citation": passage.citation,
@@ -220,7 +242,7 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             # One English question. The edition name is already in that line.
             out.append({
                 **base, "task": task, "condition": "en_ask_en_answer",
-                "english_version": english_version, **prompt_for(EN[task], fields_e), "expected": expected_e[task],
+                "english_version": english_version, **prompt_for(english_tmpl[task], fields_e), "expected": expected_e[task],
             })
     return out
 
@@ -288,12 +310,15 @@ def sikhism() -> list[dict]:
     pa = {
         "retrieve_quote": "{citation} ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
         "complete_unit": 'ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਇਹ ਟੋਟਾ ਪੂਰਾ ਕਰੋ: "{head}" ਸਿਰਫ਼ ਬਾਕੀ ਸ਼ਬਦ ਲਿਖੋ।',
-        "cite_passage": 'ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚ ਕਿੱਥੇ ਹੈ? "{text}" ਸਿਰਫ਼ ਹਵਾਲਾ ਲਿਖੋ, ਇਸ ਰੂਪ ਵਿਚ: {example}.',
+        "cite_passage": 'ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚ ਕਿੱਥੇ ਹੈ? "{text}" ਸਿਰਫ਼ ਅੰਗ (ਪੰਨਾ) ਲਿਖੋ, ਇਸ ਰੂਪ ਵਿਚ: {example}.',
         "verify_source": 'ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਹੈ? "{text}" ਹਾਂ ਜਾਂ ਨਹੀਂ।',
     }
     items = [(p, "population", text[p.citation], None) for p in drawn]
     items += [(p, "familiarity", text[p.citation], None) for p in famous]
-    return rows_for(items, tradition="Sikhism", version="Shabad OS (SGPC Shabadaarth)", native_tmpl=pa)
+    return rows_for(
+        items, tradition="Sikhism", version="Shabad OS (SGPC Shabadaarth)", native_tmpl=pa,
+        english_tmpl=SGGS_EN, cited_as=sggs_ang,
+    )
 
 
 def judaism() -> list[dict]:

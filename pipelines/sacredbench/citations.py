@@ -13,6 +13,10 @@ Guru Granth Sahib citation is the Ang (page), but the expected citations also ca
 segment / the line. With :data:`HEADLINE_DROPS_SEGMENT` on, those citations are scored at the
 conventional unit and the full-granularity verdict is reported as ``segment_match``.
 
+Since #135 a Guru Granth Sahib cite row asks for and expects the bare Ang (``Ang 315``), because line
+numbering within an Ang is not standardised. A line the model volunteers (``Ang 315:9``) is dropped,
+``Page 315`` is the Ang, and ``segment_match`` is None (no line to match).
+
 :func:`score_citation` is credit-only: the headline is the existing matcher's verdict OR the
 equivalence verdict, so a cell that scored correct before still does.
 """
@@ -27,12 +31,20 @@ from pathlib import Path
 
 import yaml
 
-from .score import _citation_candidates, _shape_rx, _single_citation_correct, fold_citation_digits, strip_script_marks
+from .score import (
+    _COLON_CITE,
+    _citation_candidates,
+    _shape_rx,
+    _single_citation_correct,
+    fold_citation_digits,
+    strip_script_marks,
+)
 
 ALIASES_PATH = Path(__file__).with_name("citation_aliases.yaml")
 
 # The #112 owner-decision switch. False scores Talmud and Guru Granth Sahib citations at the
-# expected's full segment / line granularity again; segment_match is reported either way.
+# expected's full segment / line granularity again; segment_match is reported either way. A bare-Ang
+# expected (#135) has no line, so the switch does not apply to it.
 HEADLINE_DROPS_SEGMENT = True
 
 _HEBREW_VALUES = dict(zip(
@@ -49,6 +61,7 @@ _DAF_CITATION = re.compile(r"\d+[ab]:\d+$")
 _VERSE_CITATION = re.compile(r"\d+:\d+$")
 _BARE_VERSE = re.compile(r"\d+:\d+")
 _SEGMENTED = re.compile(r"(.+?) (\d+[ab]?):\d+")
+_BARE_ANG = re.compile(r"Ang \d+")
 
 
 def _fold(text: str) -> str:
@@ -170,11 +183,35 @@ def _drop_segment(text: str, unit: str) -> str:
     return _tables().segment_rx.sub(lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text)
 
 
+# The cite prompt asks for the "page (Ang)" (#135), so a bare-Ang answer may call it a page.
+_PAGE_RX = re.compile(f"{_START}(?:{_alternation(_fold(w) for w in ('page', 'ਪੰਨਾ'))}){_END}")
+
+
+def _score_at_ang(answer: str, expected_citation: str, example: str | None) -> dict:
+    """``cite_passage`` against a bare Ang (#135). The answer is rewritten into the expected's
+    notation and every ``Ang N:k`` in it loses its line, so ``ਅੰਗ ੩੧੫:੯`` is ``Ang 315``. The colon
+    citations left (``… or John 1:1``) are rivals, as on the ``Ang N:k`` path. The headline is this
+    verdict alone: on the raw answer the no-colon extractor skips every ``Ang N:k`` span, so the
+    containment fallback would credit a hedge. There is no line to match: ``segment_match`` is None."""
+    text = _PAGE_RX.sub("ang", canonical_citation_text(answer, expected_citation))
+    text = _drop_segment(text, expected_citation)
+    if example is not None:
+        example = _drop_segment(canonical_citation_text(example, expected_citation), expected_citation)
+    rivals = {m[0] for m in _COLON_CITE.finditer(text)}
+    correct, n = _single_citation_correct(text, expected_citation, example)
+    if rivals:
+        correct, n = 0, n + len(rivals)
+    return {"correct": correct, "n_candidates": n, "segment_match": None}
+
+
 def score_citation(answer: str, expected_citation: str, example: str | None = None) -> dict:
     """``cite_passage`` metrics: ``correct`` and ``n_candidates``, plus ``segment_match`` for a
     segment-indexed citation. ``correct`` is the existing matcher's verdict OR the equivalence
     verdict; ``n_candidates`` changes only on a cell the equivalence credits. ``example`` (the
-    prompt's form example, #118) is not counted as a candidate beside another citation."""
+    prompt's form example, #118) is not counted as a candidate beside another citation. A bare-Ang
+    expected (#135) is scored by :func:`_score_at_ang` instead."""
+    if _BARE_ANG.fullmatch(expected_citation):
+        return _score_at_ang(answer, expected_citation, example)
     correct, n = _single_citation_correct(answer, expected_citation, example)
     metrics = {"correct": correct, "n_candidates": n}
     text = canonical_citation_text(answer, expected_citation)

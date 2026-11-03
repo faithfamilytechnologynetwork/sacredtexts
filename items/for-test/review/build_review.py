@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, edition_name
+from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, SGGS_EN, edition_name
 
 OUT = Path(__file__).resolve().parent
 
@@ -206,10 +206,11 @@ def judaism() -> tuple[str, str]:
 
 def sikhism() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("sikhism", "native"))
+    rows.append("- cite_passage asks for and expects the Ang only: line numbering within an Ang is not standardised (#135).")
     native = {
         "retrieve_quote": "{citation} ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
         "complete_unit": "ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਇਹ ਟੋਟਾ ਪੂਰਾ ਕਰੋ: \"{head}\" ਸਿਰਫ਼ ਬਾਕੀ ਸ਼ਬਦ ਲਿਖੋ।",
-        "cite_passage": "ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚ ਕਿੱਥੇ ਹੈ? \"{text}\" ਸਿਰਫ਼ ਹਵਾਲਾ ਲਿਖੋ।",
+        "cite_passage": "ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚ ਕਿੱਥੇ ਹੈ? \"{text}\" ਸਿਰਫ਼ ਅੰਗ (ਪੰਨਾ) ਲਿਖੋ।",
         "verify_source": "ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਹੈ? \"{text}\" ਹਾਂ ਜਾਂ ਨਹੀਂ।",
     }
     name = edition_name("Shabad OS (SGPC Shabadaarth)")
@@ -222,7 +223,7 @@ def sikhism() -> tuple[str, str]:
         rows=rows,
         source="texts/raw/Sikhism/sggs_shabados.json",
         size=size,
-        english_prompts=EN,
+        english_prompts=SGGS_EN,
         english_suffix=f"Answer in the language of {name}.",
     )
 

@@ -1,0 +1,145 @@
+"""Issue #135: a Guru Granth Sahib citation is asked for and expected at the Ang only.
+
+Jasbir Singh (working-group chat, 2026-11-03): the Sri Guru Granth Sahib has no standard line
+numbering within an Ang, so asking for ``Ang N:k`` and comparing ``k`` is meaningless. The Sikh
+cite_passage rows now ask for the "page (Ang)", with an ``Ang 306`` form example, and expect
+``Ang N``. retrieve_quote keeps ``Ang N:k``: the line index names the pankti asked about.
+
+Scoring a bare Ang (``citations._score_at_ang``): ``Ang 315``, ``ਅੰਗ ੩੧੫``, ``Ang 315:9`` (a line
+the model volunteers) and ``Page 315`` are all Ang 315; a different Ang is not, and a second
+citation is still a hedge. ``segment_match`` is None: there is no line to match.
+
+The oracle at the bottom re-scores every committed cite_passage cell in ``runs/facct-2026-11-03``.
+No cell moves: not one of the non-Sikh cells, and not one Sikh cell either, scored against its
+committed ``Ang N:k`` expected or against the new ``Ang N``. Read-only.
+"""
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+
+import pytest
+
+from sacredbench import citations
+from sacredbench.score import score_answer, score_file
+
+REPO = Path(__file__).resolve().parents[2]
+RUN = REPO / "runs" / "facct-2026-11-03"
+SIKH = REPO / "items" / "for-test" / "sikhism"
+PROMPT = (
+    'Where in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib can I find this quote? "…" '
+    "Answer with the page (Ang) only, in the same form as: Ang 306."
+)
+
+
+def _cite(answer: str, citation: str = "Ang 315", prompt: str | None = PROMPT) -> dict:
+    return score_answer("cite_passage", answer, {"citation": citation}, prompt=prompt)
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["Ang 315", "ਅੰਗ ੩੧੫", "Ang 315:9", "ਅੰਗ ੩੧੫:੯", "Page 315", "page 315.", "ਪੰਨਾ ੩੧੫", "Ang 315, Ang 315:9"],
+)
+def test_the_ang_is_the_citation(answer):
+    assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
+
+
+@pytest.mark.parametrize("answer", ["Ang 316", "ਅੰਗ ੩੧੬", "Ang 3150", "Ang 31:5", "Page 316", "webpage 315", "315"])
+def test_a_different_ang_is_wrong(answer):
+    assert _cite(answer)["outcome"] == "incorrect"
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["Ang 315:9 or Ang 316:2", "Ang 315:9 or John 1:1", "Ang 315 or John 1:1", "ਅੰਗ ੩੧੫ ਜਾਂ ਅੰਗ ੩੧੬", "Page 315 or Ang 316"],
+)
+def test_a_second_citation_is_still_a_hedge(answer):
+    # Before #135 the first two scored correct: the no-colon extractor skips "Ang N:k", so the answer had
+    # no candidates and the containment fallback credited it.
+    scored = _cite(answer)
+    assert (scored["outcome"], scored["n_candidates"]) == ("incorrect", 2)
+
+
+def test_echoing_the_form_example_is_not_a_hedge():
+    assert _cite("Ang 315 (not Ang 306)")["outcome"] == "correct"
+    assert _cite("Ang 306")["outcome"] == "incorrect"  # the example alone is a wrong locus
+
+
+def test_the_granularity_switch_does_not_apply_to_a_bare_ang(monkeypatch):
+    monkeypatch.setattr(citations, "HEADLINE_DROPS_SEGMENT", False)
+    assert _cite("Ang 315:9")["outcome"] == "correct"  # no line in the expected to hold it to
+    assert _cite("Ang 1297:15", "Ang 1297:28")["outcome"] == "incorrect"  # an Ang:k expected still is
+
+
+def test_an_ang_k_expected_is_scored_as_before():
+    assert _cite("Ang 1297:15", "Ang 1297:28") == {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}
+
+
+def test_summary_leaves_a_bare_ang_out_of_segment_match(tmp_path):
+    source = {"work": "Sri Guru Granth Sahib", "version": "Shabad OS (SGPC Shabadaarth)", "language": "pa"}
+    cells = [("ਅੰਗ ੩੧੫:੯", "Ang 315"), ("Ang 1297:15", "Ang 1297:28")]
+    answers = tmp_path / "answers.jsonl"
+    answers.write_text("".join(
+        json.dumps({
+            "question_id": f"q{i}", "model_id": "m1", "task": "cite_passage", "question_set_digest": "d",
+            "answer": answer, "question": {"expected": {"citation": citation}, "source": source, "prompt": PROMPT},
+        }) + "\n"
+        for i, (answer, citation) in enumerate(cells)
+    ), encoding="utf-8")
+    summary = score_file(answers, tmp_path / "scores.jsonl")
+    assert summary["models"]["m1"]["cite_passage"]["correct"] == 2
+    assert summary["segment_match"] == {"m1": {"\u0000".join(source.values()): {"correct": 1, "segment_match": 0}}}
+
+
+# --- the committed Sikh question files ----------------------------------------------------------
+
+
+def _sikh_rows() -> list[dict]:
+    paths = sorted(SIKH.rglob("questions.jsonl"))
+    assert len(paths) == 4
+    return [json.loads(line) for path in paths for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def test_sikh_cite_rows_ask_for_and_expect_the_ang():
+    cite = [q for q in _sikh_rows() if q["task"] == "cite_passage"]
+    assert len(cite) == 66  # 30 population + 3 familiarity passages, two prompt arms each
+    for q in cite:
+        ang = q["expected"]["citation"]
+        assert re.fullmatch(r"Ang \d+", ang), q["id"]
+        assert q["source"]["citation"].partition(":")[0] == ang  # the passage keeps its pankti
+        example = re.search(r": (Ang \S+?)\.(?:\n|$)", q["prompt"])[1]
+        assert re.fullmatch(r"Ang \d+", example) and example != ang, q["id"]
+        assert "page (Ang)" in q["prompt"] or "ਅੰਗ (ਪੰਨਾ)" in q["prompt"], q["id"]
+
+
+def test_sikh_retrieval_rows_keep_the_line():
+    for q in _sikh_rows():
+        if q["task"] == "retrieve_quote":
+            assert re.search(r"Ang \d+:\d+", q["prompt"]), q["id"]
+
+
+# --- oracle over the committed facct-2026-11-03 run ---------------------------------------------
+
+
+def test_no_committed_cite_cell_moves():
+    score_files = sorted(RUN.glob("*/base/**/scores.jsonl"))
+    if not score_files:
+        pytest.skip("runs/ evidence not present")
+    n = {"other": 0, "sikh": 0}
+    for scores in score_files:
+        answers = [json.loads(l) for l in scores.with_name("answers.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+        committed = [json.loads(l) for l in scores.read_text(encoding="utf-8").splitlines() if l.strip()]
+        for row, score in zip(answers, committed, strict=True):
+            if row["task"] != "cite_passage":
+                continue
+            question, key = row["question"], (scores.relative_to(RUN).as_posix(), row["question_id"])
+            expected = question["expected"]["citation"]
+            assert score_answer("cite_passage", row["answer"], {"citation": expected}, prompt=question["prompt"]) == score["metrics"], key
+            if "sikhism" not in scores.parts:
+                n["other"] += 1
+                continue
+            n["sikh"] += 1
+            at_ang = score_answer("cite_passage", row["answer"], {"citation": expected.partition(":")[0]}, prompt=question["prompt"])
+            assert at_ang["outcome"] == score["metrics"]["outcome"], key  # the #112 Ang credit already held
+    assert n == {"other": 7200, "sikh": 960}

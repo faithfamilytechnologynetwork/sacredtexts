@@ -57,7 +57,8 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
                                    A citation in the text's own notation counts (``Πράξεις
                                    24:1``, ``שמות כח:מג``); Talmud is scored at daf+amud and the
                                    Guru Granth Sahib at the Ang, with ``segment_match`` beside it
-                                   (``citations.py``, #112)
+                                   (``citations.py``, #112); a Sikh row now expects the bare Ang
+                                   (#135), and its ``segment_match`` is None
 
 (``identify_version`` and ``identify_source`` were retired in Spec 26: the question set is
 original-language-only, so there are never ≥2 editions of one work for ``identify_version``, and
@@ -1290,7 +1291,8 @@ def score_file(
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
                 _count_kind(xacc, metrics["outcome"], kind)
-                if metrics["correct"] and "segment_match" in metrics:  # a Talmud / GGS cite cell (#112)
+                # a Talmud / GGS Ang:k cite cell (#112); a bare-Ang cell's None has no line (#135)
+                if metrics["correct"] and metrics.get("segment_match") is not None:
                     sacc = per_segment.setdefault(
                         (d["model_id"], TEXT_KEY_SEP.join(tkey)), {"correct": 0, "segment_match": 0}
                     )
