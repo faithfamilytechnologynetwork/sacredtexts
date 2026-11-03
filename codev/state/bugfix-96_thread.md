@@ -34,3 +34,6 @@ parallel field; the taxonomy already exists in `failure_kind.py` / `failureKind.
 - Regression: `test_summary_failure_kinds.py` + new fixture cases — 10 fail on base code, all pass.
 - **#97, pre-existing**: 9 failures in test_collect.py / test_phase2_tools.py (`_DaemonPool._initializer`
   on Python 3.14) fail on origin/main too; architect: don't patch, merge main once #97 lands.
+- 01:09Z architect: #99 (fix for #97) on main → merged origin/main (fa7cccc). Gate `bash .codev/checks/test.sh`
+  on Python 3.11: pipelines 889 passed / 2 skipped, viewer 233/233 — fully green, no #97 failures left.
+- Priority (owner): #96 must be in the same final scoring pass as #94/#95 before the rerun is scored.
