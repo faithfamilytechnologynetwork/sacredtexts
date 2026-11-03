@@ -5,7 +5,7 @@
 - Language: Gurmukhi (Sant Bhasha)
 - Raw file: `texts/raw/Sikhism/sggs_shabados.json`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
-- Size: 264 questions. Population sample: 30 passages. Familiarity panel: 3 passages. Report those two separately.
+- Size: 254 questions. Population sample: 30 passages. Familiarity panel: 3 passages. Report those two separately.
 
 ## Passages to check
 
@@ -43,12 +43,13 @@
 - `Ang 262:31` (familiarity)
 - `Ang 8:33` (familiarity)
 - cite_passage asks for and expects the Ang only: line numbering within an Ang is not standardised (#135).
+- retrieve_quote asks for the first or last pankti of the passage's Ang, for the same reason.
 
 These citations are the question file. Population and familiarity are separate samples.
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? Reply with the exact text of that edition and nothing else.
+- `retrieve_quote`: What is the {edge} pankti of {ang} in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? Reply with the exact text of that edition and nothing else.
 - `complete_unit`: Complete this quotation from the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib: "{head}" Reply with only the remaining words.
 - `cite_passage`: Where in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib can I find this quote? "{text}" Answer with the page (Ang) only, in the same form as: {example}.
 - `verify_source`: Is the following text from the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? "{text}" Answer Yes or No.
@@ -59,7 +60,7 @@ Each English prompt has a second line: `Answer in the language of the Shabad OS 
 
 A native speaker should correct these before a run.
 
-- `retrieve_quote`: {citation} ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।
+- `retrieve_quote`: ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਦੇ {ang} ਦੀ {edge} ਪੰਕਤੀ ਦਾ ਪਾਠ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।
 - `complete_unit`: ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਇਹ ਟੋਟਾ ਪੂਰਾ ਕਰੋ: "{head}" ਸਿਰਫ਼ ਬਾਕੀ ਸ਼ਬਦ ਲਿਖੋ।
 - `cite_passage`: ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚ ਕਿੱਥੇ ਹੈ? "{text}" ਸਿਰਫ਼ ਅੰਗ (ਪੰਨਾ) ਲਿਖੋ।
 - `verify_source`: ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਹੈ? "{text}" ਹਾਂ ਜਾਂ ਨਹੀਂ।
