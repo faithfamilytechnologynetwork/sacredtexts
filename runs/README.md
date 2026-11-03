@@ -55,7 +55,15 @@ Snapshot while collection is still running, 2 November 2026. Saved answer cells:
 
 A full model is 2,160 cells (1,920 + 240). A limited model is 1,938 (1,698 + 240). Limited means Buddhism is the first 9 questions of each Buddhism file. Finished at that target: argon, deepseek-v4-pro, gemini-flash, gemma-31b, haiku, kimi, luna, opus, sonnet, terra. Still short: astra 1,313, beam 1,935, fable 1,553, gpt-oss-20b 1,438, qwen3-32b 815, sol 1,653.
 
-`python3 items/for-test/paper_figures.py` rewrites the figures and the LaTeX tables from the answer files. A dash has not been run. An asterisk is a tradition that has been started and not finished. Accuracy is correct / (correct + incorrect). Refusals are excluded.
+To rebuild the figures, the LaTeX tables, the claim tests and the findings from one run, name its folder with `--run-dir`:
+
+```bash
+uv --project pipelines run python items/for-test/paper_figures.py --run-dir runs/rerun-2026-11-03
+uv --project pipelines run python items/for-test/claim_tests.py --run-dir runs/rerun-2026-11-03
+uv --project pipelines run python items/for-test/facct_findings.py --run-dir runs/rerun-2026-11-03
+```
+
+Each script reads only `<run-dir>/<model>/base/` and writes to `runs/paper/`. It stops if an answer has no question in the current question files. `--allow-partial` writes anyway and says what it left out. The table below came from `--run-dir runs`, the run on this page. A dash has not been run. An asterisk is a tradition that has been started and not finished. Accuracy is correct / (correct + incorrect). Refusals are excluded.
 
 ## Correct so far
 

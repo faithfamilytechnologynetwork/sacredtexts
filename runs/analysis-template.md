@@ -57,7 +57,7 @@ For a finished folder, this section is generated inside that folder's `facct.md`
 
 ## Figure and tables
 
-`python3 items/for-test/paper_figures.py` writes `runs/paper/models-by-tradition.pdf` and two `booktabs` tables, `models-by-tradition.tex` and `models-by-task.tex`. Drop the PDF in the paper and `\input` the tables. A dash is not run. An asterisk is a partial tradition. Re-run the script when more answers land. The numbers follow the card: accuracy is correct divided by correct plus incorrect.
+`uv --project pipelines run python items/for-test/paper_figures.py --run-dir runs/rerun-2026-11-03` writes `runs/paper/models-by-tradition.pdf` and two `booktabs` tables, `models-by-tradition.tex` and `models-by-task.tex`. Drop the PDF in the paper and `\input` the tables. A dash is not run. An asterisk is a partial tradition. It reads only that run dir and stops if an answer has no question in the current question files. `claim_tests.py` and `facct_findings.py` take the same `--run-dir` and write `runs/paper/claim-tests.md` and `runs/paper/findings.md`. Re-run the scripts when more answers land. The numbers follow the card: accuracy is correct divided by correct plus incorrect.
 
 ## What this card is not
 
