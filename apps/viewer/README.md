@@ -19,6 +19,19 @@ A run lives in `runs/<id>/` and the viewer loads four artifacts
 - `questions.jsonl` — the authoritative question roster, so a model's **un-answered**
   questions show as missing cells.
 
+Two kinds of virtual run are built on the fly from per-file summaries (`vite/runsEndpoint.ts`):
+
+- `panel` rolls up every `runs/<model>/base/**/summary.json`.
+- `<name>` rolls up a named panel folder: a top-level `runs/<name>/` with no `summary.json`
+  of its own whose children are model folders, `runs/<name>/<model>/base/**/summary.json`
+  (what `items/for-test/join_run.py --run-dir runs/<name>` writes, e.g.
+  `runs/rerun-2026-11-03/`). Its models stay out of `panel`.
+
+Each is dated by its newest per-file summary (`generated_at`, else that file's mtime), so the
+home page opens the newest panel. Per-file summaries carry no `panel` block, so standings key
+virtual panels on the bare model id: an in-flight rerun replaces each model's row (newest
+wins) and becomes the home default. Name the folder `exp-…` to keep a rerun out of both.
+
 `src/lib/localResults.ts` fetches and joins these (`loadRun` for a full run,
 `loadSummary` for just the per-model rollup the standings view needs); `src/lib/leaderboard.ts`
 derives the leaderboard ranking/columns/token totals, `src/lib/explorer.ts` the per-question
@@ -67,7 +80,7 @@ pnpm -C apps/viewer dev          # then open the printed URL
 `pnpm build:pages` builds the SPA and then bakes the run data into `dist/runs/`. It runs
 `scripts/bake-runs.ts`, which asks the dev endpoint for every URL the viewer can request and
 writes each answer to disk: the run index, the gap list, every run's four artifacts, and the
-synthetic `panel` run. The baked files are byte-identical to what `pnpm dev` serves
+virtual panel runs (`panel` and each named panel folder). The baked files are byte-identical to what `pnpm dev` serves
 (`vite/bakeRuns.test.ts` checks every URL against the real `runs/`).
 
 Deploy from the repo root, on `main`, after a one-time `npx wrangler login` by the account
