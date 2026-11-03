@@ -105,7 +105,13 @@ round-trip that proves no invention/reordering.
   pre-registered under-credit residual classes, both deferred to **#60** and pinned in
   `test_orthography_rebaseline.py`: the hamza-seat `ءَا↔آ` letter gap (`HAMZA_ALEF_RESIDUAL`) and a
   verse-number-gluing tokenisation gap (`VERSE_NUMBER_RESIDUAL`, a trailing U+06DD + Arabic-Indic
-  digits breaking the final word boundary). (verify_source is hardened —
+  digits breaking the final word boundary). **English transliteration marks fold in the headline
+  only (#94):** on a cell with `source.language == "en"`, `score_answer` compares
+  `fold_latin_marks(normalize(…))` on both sides for `normalized`, and passes `fold_latin=True` to
+  `fold_aware_contains`, so Saheeh's `Allāh` and Besant's `Pârtha` accept `Allah`/`Partha`. No
+  other language folds (in romanized Pali the macron is the orthography, #50), the default
+  `fold_aware_contains` call-sites do not fold, and `normalize()`/`token_f1`/`cite_passage` are
+  unchanged. Witnessed by `test_latin_diacritic_fold.py` (167 registered 2026-11-02 cells). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised
