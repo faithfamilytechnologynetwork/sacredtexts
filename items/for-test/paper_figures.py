@@ -1,13 +1,17 @@
 """Paper figure and LaTeX tables: accuracy by model and tradition.
 
-Scores whatever answers are on disk. A tradition with no answers is a dash.
+Scores the answers in one run dir. A tradition with no answers is a dash.
 A tradition that has been started and not finished is marked partial. Writes:
 
     runs/paper/models-by-tradition.pdf
     runs/paper/models-by-tradition.tex
     runs/paper/models-by-task.tex
 
-    python3 items/for-test/paper_figures.py
+    uv --project pipelines run python items/for-test/paper_figures.py --run-dir runs/rerun-2026-11-03
+
+Reads <run-dir>/<model>/base/** only. The partial mark compares against the population
+question files, so the script stops when an answer row in the run dir has no population
+question, unless --allow-partial.
 """
 
 from __future__ import annotations
@@ -16,13 +20,15 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Annotated
 
+import typer
 import yaml
+from paper_join import check_coverage, model_files, partial_note, population_questions, resolve_run_dir
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[1]
-RUNS = REPO / "runs"
-OUT = RUNS / "paper"
+OUT = REPO / "runs" / "paper"
 sys.path.insert(0, str(REPO / "pipelines"))
 
 from cost import PANEL, RUNNABLE  # noqa: E402
@@ -88,8 +94,11 @@ def _expected() -> dict[tuple[str, str], int]:
     return counts
 
 
-def _collect(models: list[str]) -> tuple[dict, dict]:
-    """Return (tradition cells, task cells). Each cell is correct, incorrect, refused."""
+def _collect(models: list[str], run_dir: Path, questions: dict[str, dict]) -> tuple[dict, dict, dict, dict]:
+    """Return (tradition, task, condition, grade) cells. Each cell is correct, incorrect, refused.
+
+    A row with no population question is left out; it is there only under --allow-partial.
+    """
     by_trad = {(m, t): {"correct": 0, "incorrect": 0, "refused": 0, "n": 0} for m in models for t in TRADITIONS}
     by_kind = {
         (m, t, k): {"correct": 0, "incorrect": 0, "refused": 0, "n": 0}
@@ -104,50 +113,50 @@ def _collect(models: list[str]) -> tuple[dict, dict]:
         for m in models for tradition in TRADITIONS for t in TEXT_TASKS
     }
     seen = {(m, t): 0 for m in models for t in TRADITIONS}
-    for model in models:
-        base = RUNS / model / "base"
-        if not base.is_dir():
+    for model, path in model_files(run_dir, "answers.jsonl"):
+        if model not in models:
+            raise SystemExit(f"{model} in {run_dir} is not on the panel in {PANEL}; every table would leave it out")
+        folder = path.relative_to(run_dir).parts[2]
+        tradition = _tradition_of(folder)
+        if tradition not in TRADITIONS:
             continue
-        for path in base.rglob("answers.jsonl"):
-            folder = path.relative_to(base).parts[0]
-            tradition = _tradition_of(folder)
-            if tradition not in TRADITIONS:
+        seen[(model, tradition)] += 1
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
                 continue
-            seen[(model, tradition)] += 1
-            for line in path.read_text(encoding="utf-8").splitlines():
-                if not line.strip():
-                    continue
-                row = json.loads(line)
-                question = row.get("question") or {}
-                task = row.get("task") or ""
-                language = (question.get("source") or {}).get("language")
-                metrics = score_answer(task, row.get("answer") or "", question.get("expected") or {}, language=language)
-                outcome = metrics.get("outcome") or "incorrect"
-                by_trad[(model, tradition)][outcome] += 1
-                by_trad[(model, tradition)]["n"] += 1
-                kind = _kind(path.as_posix())
-                if kind is not None:
-                    by_kind[(model, tradition, kind)][outcome] += 1
-                    by_kind[(model, tradition, kind)]["n"] += 1
-                if task in TASKS:
-                    cell = by_task[(model, tradition, task)]
-                    cell[outcome] += 1
-                    cell["n"] += 1
-                if task in TEXT_TASKS:
-                    grade = by_grade[(model, tradition, task)]
-                    grade["n"] += 1
-                    f1 = metrics.get("token_f1")
-                    if outcome == "correct":
-                        grade["correct"] += 1
-                    elif outcome == "refused":
-                        grade["refused"] += 1
-                    elif f1 is not None and float(f1) >= MINOR_F1:
-                        grade["minor"] += 1
-                    else:
-                        grade["major"] += 1
-                    if f1 is not None and outcome != "refused":
-                        grade["f1"] += float(f1)
-                        grade["f1n"] += 1
+            row = json.loads(line)
+            if row["question_id"] not in questions:
+                continue
+            question = row.get("question") or {}
+            task = row.get("task") or ""
+            language = (question.get("source") or {}).get("language")
+            metrics = score_answer(task, row.get("answer") or "", question.get("expected") or {}, language=language)
+            outcome = metrics.get("outcome") or "incorrect"
+            by_trad[(model, tradition)][outcome] += 1
+            by_trad[(model, tradition)]["n"] += 1
+            kind = _kind(path.as_posix())
+            if kind is not None:
+                by_kind[(model, tradition, kind)][outcome] += 1
+                by_kind[(model, tradition, kind)]["n"] += 1
+            if task in TASKS:
+                cell = by_task[(model, tradition, task)]
+                cell[outcome] += 1
+                cell["n"] += 1
+            if task in TEXT_TASKS:
+                grade = by_grade[(model, tradition, task)]
+                grade["n"] += 1
+                f1 = metrics.get("token_f1")
+                if outcome == "correct":
+                    grade["correct"] += 1
+                elif outcome == "refused":
+                    grade["refused"] += 1
+                elif f1 is not None and float(f1) >= MINOR_F1:
+                    grade["minor"] += 1
+                else:
+                    grade["major"] += 1
+                if f1 is not None and outcome != "refused":
+                    grade["f1"] += float(f1)
+                    grade["f1n"] += 1
     return by_trad, by_task, by_kind, by_grade
 
 
@@ -170,7 +179,7 @@ def _cell_tex(cell: dict, expected: int) -> str:
     return f"{100 * acc:.1f}{mark}"
 
 
-def write_tex(models: list[str], by_trad: dict, by_task: dict, expected: dict[str, int]) -> None:
+def write_tex(models: list[str], by_trad: dict, by_task: dict, expected: dict[str, int], source: str) -> None:
     header = " & ".join(rf"\textbf{{{t}}}" for t in TRADITIONS)
     rows = []
     for model in models:
@@ -180,7 +189,7 @@ def write_tex(models: list[str], by_trad: dict, by_task: dict, expected: dict[st
     cols = "l" + "r" * len(TRADITIONS)
     (OUT / "models-by-tradition.tex").write_text(
         "\n".join([
-            "% Accuracy, percent. A dash has not been run. An asterisk is a partial tradition.",
+            f"% Accuracy, percent. A dash has not been run. An asterisk is a partial tradition.{source}",
             "\\begin{table}[t]",
             "\\centering",
             "\\caption{Accuracy by tradition. Accuracy is correct divided by correct plus incorrect. "
@@ -214,7 +223,7 @@ def write_tex(models: list[str], by_trad: dict, by_task: dict, expected: dict[st
         task_rows.append("% no scored model yet")
     (OUT / "models-by-task.tex").write_text(
         "\n".join([
-            "% Accuracy by task, percent, across every tradition scored so far.",
+            f"% Accuracy by task, percent, across every tradition scored so far.{source}",
             "\\begin{table}[t]",
             "\\centering",
             "\\caption{Accuracy by task, on the answers collected so far. "
@@ -550,15 +559,13 @@ def _pdf_errors(models: list[str], by_grade: dict) -> bytes:
     return _pdf_bytes(page_w, page_h, pages)
 
 
-def write_early() -> None:
+def write_early(run_dir: Path, source: str) -> None:
     """Roll up finished summary.json files. A partial file is not included."""
     from collections import defaultdict
 
     bucket: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0, 0, 0])))
-    for path in (RUNS).glob("*/base/**/summary.json"):
-        rel = path.relative_to(RUNS)
-        model = rel.parts[0]
-        tradition = rel.parts[2]
+    for model, path in model_files(run_dir, "summary.json"):
+        tradition = path.relative_to(run_dir).parts[2]
         summary = json.loads(path.read_text(encoding="utf-8"))
         block = (summary.get("models") or {}).get(model) or {}
         for task, cell in block.items():
@@ -573,7 +580,7 @@ def write_early() -> None:
         "",
         "Finished population files only, from each folder's `summary.json`. "
         "Accuracy is correct / (correct + incorrect). Coverage is (correct + incorrect) / n. "
-        "A tradition still being collected is omitted.",
+        f"A tradition still being collected is omitted.{source}",
         "",
         "| model | tradition | task | n | accuracy | coverage | refused |",
         "|---|---|---|---:|---:|---:|---:|",
@@ -599,25 +606,34 @@ def write_early() -> None:
     (OUT / "early-outcomes.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
+def main(
+    run_dir: Annotated[str, typer.Option(help="run root holding <model>/base/**, such as runs/rerun-2026-11-03")],
+    allow_partial: Annotated[
+        bool, typer.Option(help="write the figures even when some answer rows have no question")
+    ] = False,
+) -> None:
+    runs = resolve_run_dir(run_dir)
+    questions = population_questions()
+    matched, total = check_coverage(runs, questions, allow_partial)
     models = _models()
     expected = _expected()
-    by_trad, by_task, by_kind, by_grade = _collect(models)
-    write_tex(models, by_trad, by_task, expected)
+    by_trad, by_task, by_kind, by_grade = _collect(models, runs, questions)
+    shown = runs.relative_to(REPO) if runs.is_relative_to(REPO) else runs
+    source = f" From {shown}.{partial_note(matched, total)}"
+    OUT.mkdir(parents=True, exist_ok=True)
+    write_tex(models, by_trad, by_task, expected, source)
     (OUT / "models-by-tradition.pdf").write_bytes(_pdf(models, by_trad, expected))
     (OUT / "models-by-condition.pdf").write_bytes(_pdf_conditions(models, by_kind, _expected_kind()))
-    print(OUT.relative_to(REPO) / "models-by-condition.pdf")
     (OUT / "models-by-task.pdf").write_bytes(_pdf_tasks(models, by_task, expected))
     (OUT / "models-by-error.pdf").write_bytes(_pdf_errors(models, by_grade))
-    print(OUT.relative_to(REPO) / "models-by-task.pdf")
-    print(OUT.relative_to(REPO) / "models-by-error.pdf")
-    print(OUT.relative_to(REPO) / "models-by-tradition.pdf")
-    print(OUT.relative_to(REPO) / "models-by-tradition.tex")
-    print(OUT.relative_to(REPO) / "models-by-task.tex")
-    write_early()
-    print(OUT.relative_to(REPO) / "early-outcomes.md")
+    write_early(runs, source)
+    for name in (
+        "models-by-condition.pdf", "models-by-task.pdf", "models-by-error.pdf", "models-by-tradition.pdf",
+        "models-by-tradition.tex", "models-by-task.tex", "early-outcomes.md",
+    ):
+        path = OUT / name
+        print(path.relative_to(REPO) if path.is_relative_to(REPO) else path)
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
