@@ -240,7 +240,8 @@ describe("named panel runs (runs/<name>/<model>/base/**)", () => {
     );
     // Not named panels: a real run with its own summary, and a folder with no model/base.
     fs.mkdirSync(path.join(runs, "real-run", "haiku", "base", "islam"), { recursive: true });
-    fs.writeFileSync(path.join(runs, "real-run", "summary.json"), '{"models":{}}');
+    // Dated before the rerun. Undated, it sorts by mtime and beats the rerun once the clock passes the rerun's date.
+    fs.writeFileSync(path.join(runs, "real-run", "summary.json"), '{"models":{},"generated_at":"2026-11-02T00:00:00+00:00"}');
     fs.writeFileSync(path.join(runs, "real-run", "haiku", "base", "islam", "summary.json"), summary("haiku", 5, 5));
     fs.mkdirSync(path.join(runs, "empty-rerun", "haiku"), { recursive: true });
   });
