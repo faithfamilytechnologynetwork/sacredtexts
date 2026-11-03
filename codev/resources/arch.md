@@ -110,7 +110,10 @@ round-trip that proves no invention/reordering.
   (the raw `_NUM_CITE` matcher skips `Ang N:k` spans and its containment fallback would credit a
   hedge). A candidate is an Ang (`Ang`/`ਅੰਗ`, or a page label `Page`/`ਪੰਨਾ` unless it directly follows
   an Ang, where it is a qualifier; any `:k` line dropped) or a colon citation of another work;
-  line/pankti/Mehl/raag qualifiers are not candidates, so English and Gurmukhi score alike. The form
+  line/pankti/Mehl/raag qualifiers are not candidates, so English and Gurmukhi score alike, and a bare
+  `N:k` with no work name restating a named Ang is that Ang's line, not a rival (`Ang 1402 (…, 1402:3)`).
+  A danda may follow the number (`ਅੰਗ ੩੧੦।`), a thousands comma is dropped (`Ang 1,402`), and `p.`/`pg.`/
+  `Page No.` are page labels; the accepted limits are listed in `_score_at_ang`'s docstring. The form
   example's Ang is dropped only as a disclaimed echo (`not Ang 306`, `(Ang 306)`, `ਨਹੀਂ`), because one
   example (`Ang 306`) is shown on 64 of the 66 rows. These cells carry `segment_match: null` and are
   left out of the `segment_match` aggregate; `HEADLINE_DROPS_SEGMENT` does not apply.

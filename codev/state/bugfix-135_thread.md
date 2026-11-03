@@ -70,3 +70,9 @@ Architect post-merge review of #136. Fixed in `_score_at_ang`:
   rival (`Ang 1402 (…, 1402:3)` → correct). P3 known limits noted in the `_score_at_ang` docstring: `Ang 1402, Page 1403`
   → correct; `Ang 1402 or 1403` → correct (bare second number not a candidate); a far-away disclaimed echo is a rival.
   Oracle + movers table unchanged (1 registered mover).
+- PR #138 consult round (architect, 18:49Z): P1 a danda right after the number hid the Ang (`ਅੰਗ ੩੧੦।`, live in the
+  re-collect) → shared `_TOKEN_END` admits ।/॥/੶ (still rejects `ang 3150`, `ang 1402ਵਾਂ`). P2 oracle pins
+  `AT_ANG_N_ONLY = 27` (outcome same, n_candidates differs; 28 at 47a4b6a, minus one beam cell the danda fix now reads)
+  and is form-aware: Ang:k-shaped run → movers + n-only pinned; bare-Ang run (post re-collect) → identity only; a mix
+  fails. Simulated both shapes + a mix outside pytest. P2 docs: bare-N:k rule in arch-critical/arch.md. P3 taken:
+  thousands comma, example==target guard, `p.`/`pg.`/`Page No.`; the rest documented in the docstring.

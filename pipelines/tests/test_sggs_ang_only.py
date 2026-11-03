@@ -11,7 +11,8 @@ citation is still a hedge. ``segment_match`` is None: there is no line to match.
 
 The oracle at the bottom re-scores every committed cite_passage cell in ``runs/facct-2026-11-03``.
 No non-Sikh cell moves, and no Sikh cell scored against its committed ``Ang N:k`` expected. Against the
-new ``Ang N``, exactly the cells in ``AT_ANG_MOVERS`` move. Read-only.
+new ``Ang N``, exactly the cells in ``AT_ANG_MOVERS`` move and ``AT_ANG_N_ONLY`` cells change
+``n_candidates``. Once the run is re-collected with bare-Ang expecteds, identity is the whole check. Read-only.
 """
 from __future__ import annotations
 
@@ -39,20 +40,29 @@ def _cite(answer: str, citation: str = "Ang 315", prompt: str | None = PROMPT) -
 
 @pytest.mark.parametrize(
     "answer",
-    ["Ang 315", "ਅੰਗ ੩੧੫", "Ang 315:9", "ਅੰਗ ੩੧੫:੯", "Page 315", "page 315.", "ਪੰਨਾ ੩੧੫", "Ang 315, Ang 315:9"],
+    [
+        "Ang 315", "ਅੰਗ ੩੧੫", "Ang 315:9", "ਅੰਗ ੩੧੫:੯", "Page 315", "page 315.", "ਪੰਨਾ ੩੧੫", "Ang 315, Ang 315:9",
+        # a danda right after the number (#138 consult P1): "ਅੰਗ ੩੧੦।" is in the live re-collect
+        "ਅੰਗ ੩੧੫।", "ਅੰਗ ੩੧੫॥", "Ang 315।", "ਅੰਗ ੩੧੫:੯।", "ਪੰਨਾ ੩੧੫।",
+    ],
 )
 def test_the_ang_is_the_citation(answer):
     assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
 
 
-@pytest.mark.parametrize("answer", ["Ang 316", "ਅੰਗ ੩੧੬", "Ang 3150", "Ang 31:5", "Page 316", "webpage 315", "315"])
+@pytest.mark.parametrize(
+    "answer", ["Ang 316", "ਅੰਗ ੩੧੬", "ਅੰਗ ੩੧੬।", "Ang 3150", "ਅੰਗ ੩੧੫ਵਾਂ", "Ang 31:5", "Page 316", "webpage 315", "315"]
+)
 def test_a_different_ang_is_wrong(answer):
     assert _cite(answer)["outcome"] == "incorrect"
 
 
 @pytest.mark.parametrize(
     "answer",
-    ["Ang 315:9 or Ang 316:2", "Ang 315:9 or John 1:1", "Ang 315 or John 1:1", "ਅੰਗ ੩੧੫ ਜਾਂ ਅੰਗ ੩੧੬", "Page 315 or Ang 316"],
+    [
+        "Ang 315:9 or Ang 316:2", "Ang 315:9 or John 1:1", "Ang 315 or John 1:1", "ਅੰਗ ੩੧੫ ਜਾਂ ਅੰਗ ੩੧੬", "Page 315 or Ang 316",
+        "ਅੰਗ ੩੧੫। ਜਾਂ ਅੰਗ ੩੧੬।",
+    ],
 )
 def test_a_second_citation_is_still_a_hedge(answer):
     # Before #135 the first two scored correct: the no-colon extractor skips "Ang N:k", so the answer had
@@ -132,7 +142,10 @@ def test_a_page_after_an_ang_is_a_qualifier_and_elsewhere_an_ang(answer, outcome
 
 @pytest.mark.parametrize(
     "answer",
-    ["Ang 315 (not Ang 306)", "Ang 315, not Ang 306", "Ang 315 (Ang 306)", "ਅੰਗ ੩੧੫, ਨਹੀਂ ਅੰਗ ੩੦੬", "ਅੰਗ ੩੧੫, ਅੰਗ ੩੦੬ ਨਹੀਂ"],
+    [
+        "Ang 315 (not Ang 306)", "Ang 315, not Ang 306", "Ang 315 (Ang 306)", "ਅੰਗ ੩੧੫, ਨਹੀਂ ਅੰਗ ੩੦੬", "ਅੰਗ ੩੧੫, ਅੰਗ ੩੦੬ ਨਹੀਂ",
+        "ਅੰਗ ੩੧੫, ਅੰਗ ੩੦੬ ਨਹੀਂ।",
+    ],
 )
 def test_a_disclaimed_echo_of_the_form_example_is_not_a_hedge(answer):
     assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
@@ -164,11 +177,25 @@ def test_the_form_example_offered_beside_the_ang_is_a_hedge(answer):
         ("Ang 1402 (page 1402 of the SGGS)", "correct", 1),
         ("Sri Guru Granth Sahib, Ang 1402", "correct", 1),
         ("It is not Ang 1402; it is Ang 306.", "incorrect", 2),
+        # #138 consult P3: thousands commas and abbreviated page labels
+        ("Ang 1,402", "correct", 1),
+        ("Ang 1,402:3", "correct", 1),
+        ("p. 1402", "correct", 1),
+        ("pg. 1402", "correct", 1),
+        ("Page No. 1402", "correct", 1),
+        ("Ang 1402, p. 2", "correct", 1),
+        ("p. 1402 or Ang 1403", "incorrect", 2),
     ],
 )
 def test_a_bare_line_of_a_named_ang_is_not_a_rival(answer, outcome, n):
     scored = _cite(answer, "Ang 1402")
     assert (scored["outcome"], scored["n_candidates"]) == (outcome, n)
+
+
+def test_an_example_equal_to_the_answer_is_never_disclaimed_away():
+    # Impossible today (the example is always another Ang), but an echo rule must not delete the answer.
+    prompt = 'Where? "…" Answer with the page (Ang) only, in the same form as: Ang 1402.'
+    assert _cite("(Ang 1402)", "Ang 1402", prompt)["outcome"] == "correct"
 
 
 def test_the_form_example_alone_is_a_wrong_locus():
@@ -239,14 +266,21 @@ def test_sikh_retrieval_rows_keep_the_line():
 AT_ANG_MOVERS = {
     ("sonnet/base/sikhism/native/population/prompt-native/scores.jsonl", "abcc56181441ec5d"): ("correct", "incorrect"),
 }
+# Cells whose outcome holds at the bare Ang but whose n_candidates differs. failure_kind reads n_candidates
+# (hedge / wrong_locus / no_citation), so a regex change that moves a published label must show up here.
+AT_ANG_N_ONLY = 27
 
 
 def test_no_committed_cite_cell_moves():
+    """Every committed cite cell rescores to its committed metrics. A Sikh cell whose committed expected
+    still carries a line (the pre-#135 run) is also rescored at the bare Ang: exactly AT_ANG_MOVERS move
+    and AT_ANG_N_ONLY change n_candidates. Once the run is re-collected with bare-Ang expecteds, the
+    identity check is the whole check. The run is one shape or the other, never a mix."""
     score_files = sorted(RUN.glob("*/base/**/scores.jsonl"))
     if not score_files:
         pytest.skip("runs/ evidence not present")
-    n = {"other": 0, "sikh": 0}
-    moved = {}
+    n = {"other": 0, "sikh_line": 0, "sikh_ang": 0}
+    moved, n_only = {}, 0
     for scores in score_files:
         answers = [json.loads(l) for l in scores.with_name("answers.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
         committed = [json.loads(l) for l in scores.read_text(encoding="utf-8").splitlines() if l.strip()]
@@ -260,9 +294,17 @@ def test_no_committed_cite_cell_moves():
             if "sikhism" not in scores.parts:
                 n["other"] += 1
                 continue
-            n["sikh"] += 1
+            if ":" not in expected:
+                n["sikh_ang"] += 1  # already a bare-Ang expected: the identity check above is the check
+                continue
+            n["sikh_line"] += 1
             at_ang = score_answer("cite_passage", row["answer"], {"citation": expected.partition(":")[0]}, prompt=question["prompt"])
             if at_ang["outcome"] != score["metrics"]["outcome"]:
                 moved[key] = (score["metrics"]["outcome"], at_ang["outcome"])
-    assert n == {"other": 7200, "sikh": 960}
-    assert moved == AT_ANG_MOVERS
+            elif at_ang["n_candidates"] != score["metrics"]["n_candidates"]:
+                n_only += 1
+    assert n["other"] == 7200 and n["sikh_line"] + n["sikh_ang"] == 960, n
+    assert n["sikh_line"] in (0, 960), n
+    if n["sikh_line"]:
+        assert moved == AT_ANG_MOVERS
+        assert n_only == AT_ANG_N_ONLY
