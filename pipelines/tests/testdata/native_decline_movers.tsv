@@ -4,6 +4,9 @@
 # field changes. The committed scores.jsonl are not rewritten (final-contract item; see the issue).
 # A cell is (folder, 0-based row in answers.jsonl, question_id): a committed file can hold one
 # question twice, so the question id alone is not unique.
+# The Devanagari avagraha fold removed 5 Hindi cells from this list: each declines, then quotes the
+# verse with चाचारो-style spelling. The quote now counts as contained, so the cell scores correct and
+# the decline cue no longer moves it (listed in devanagari_avagraha_movers.tsv). 787 rows.
 # run folder (under runs/)	row	question_id	task
 archive/original-2026-10-21	457	complete_unit-76c67f70129d	complete_unit
 argon/base/hinduism/native/population/prompt-native	5	1ae5f15eda5e4caf	retrieve_quote
@@ -342,7 +345,6 @@ haiku/base/hinduism/native/population/prompt-native	99	df29acde165dc335	retrieve
 haiku/base/hinduism/native/population/prompt-native	102	7f221882c4e2a1eb	retrieve_quote
 haiku/base/hinduism/native/population/prompt-native	107	3f2a344f6c1d074f	retrieve_quote
 haiku/base/hinduism/native/population/prompt-native	109	ccd77db67543147a	retrieve_quote
-haiku/base/hinduism/native/population/prompt-native	112	d51410b669603764	complete_unit
 haiku/base/hinduism/native/population/prompt-native	115	692c4ab9f0477f67	retrieve_quote
 haiku/base/hinduism/native/population/prompt-native	117	ca16120ee5f411fb	complete_unit
 haiku/base/hinduism/native/population/prompt-native	118	0bc5421559ca5662	retrieve_quote
@@ -475,9 +477,7 @@ luna/base/sikhism/native/population/prompt-native	75	4320ea8f57f65496	retrieve_q
 opus/base/hinduism/native/population/prompt-english	49	a9e2c4713adb92c6	retrieve_quote
 opus/base/hinduism/native/population/prompt-english	108	e415d78a401ff932	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	18	32cd505062ff41ad	retrieve_quote
-opus/base/hinduism/native/population/prompt-native	22	1f1e3b5b2522f37c	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	25	52af64df3f156c07	retrieve_quote
-opus/base/hinduism/native/population/prompt-native	34	dbf199341684cb78	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	43	9d378b4fb46281b5	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	47	607d83ed90a75396	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	49	f0740d821df9f94f	retrieve_quote
@@ -486,7 +486,6 @@ opus/base/hinduism/native/population/prompt-native	71	6df7fc1da0115d53	retrieve_
 opus/base/hinduism/native/population/prompt-native	85	f0bd9f456de056c3	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	89	e56a65cf9bed7c20	cite_passage
 opus/base/hinduism/native/population/prompt-native	98	df29acde165dc335	retrieve_quote
-opus/base/hinduism/native/population/prompt-native	102	7f221882c4e2a1eb	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	105	3f2a344f6c1d074f	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	109	ccd77db67543147a	retrieve_quote
 opus/base/hinduism/native/population/prompt-native	114	692c4ab9f0477f67	retrieve_quote
@@ -709,7 +708,6 @@ sol/base/sikhism/native/population/prompt-native	109	5b577c5856eeabed	complete_u
 sol/base/sikhism/native/population/prompt-native	110	fa5ba02ce037aef2	retrieve_quote
 sol/base/sikhism/native/population/prompt-native	112	8231174181113069	complete_unit
 sol/base/sikhism/native/population/prompt-native	116	afbb20e7fe9f9c93	retrieve_quote
-sonnet/base/hinduism/native/population/prompt-native	24	1f1e3b5b2522f37c	retrieve_quote
 sonnet/base/judaism/native/population/prompt-native	1	137020288504da7a	complete_unit
 sonnet/base/judaism/native/population/prompt-native	3	9d6bb6bebbfe31d9	retrieve_quote
 sonnet/base/judaism/native/population/prompt-native	6	ff070d1b957bfd58	retrieve_quote

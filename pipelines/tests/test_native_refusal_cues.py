@@ -2,7 +2,7 @@
 
 A model often declines in the edition's language: Hebrew, Punjabi, Hindi, Arabic or Greek. That
 happens on the native-prompt arms, which ask for that language, and on the English-prompt arms as
-well (163 of the 792 registered movers), because the model answers in the edition's language
+well (163 of the 787 registered movers), because the model answers in the edition's language
 either way. Before #117 the decline cues were English, and these cells were
 scored `incorrect`. ``outcomes._NATIVE_DECLINE_CUES_RAW`` adds a narrow native set. It is matched
 as whole words, in the same leading window / opening sentence as the English cues, and under the
@@ -200,7 +200,7 @@ def test_registered_mover_counts():
     assert by_kind == {
         ("judaism", "retrieve_quote"): 255, ("judaism", "complete_unit"): 36, ("judaism", "cite_passage"): 37,
         ("sikhism", "retrieve_quote"): 254, ("sikhism", "complete_unit"): 34, ("sikhism", "cite_passage"): 30,
-        ("hinduism", "retrieve_quote"): 112, ("hinduism", "complete_unit"): 6, ("hinduism", "cite_passage"): 12,
+        ("hinduism", "retrieve_quote"): 108, ("hinduism", "complete_unit"): 5, ("hinduism", "cite_passage"): 12,
         ("christianity", "retrieve_quote"): 9, ("christianity", "complete_unit"): 3,
         ("islam", "retrieve_quote"): 1, ("islam", "complete_unit"): 1, ("islam", "cite_passage"): 1,
         ("archive/original-2026-10-21", "complete_unit"): 1,

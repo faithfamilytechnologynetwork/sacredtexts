@@ -325,6 +325,10 @@ _AYAH_NUMBER = re.compile(r"\u06DD\s*[0-9\u0660-\u0669\u06F0-\u06F9]*")
 # ``… ਰਾਤਿ ॥੧॥ ਰਹਾਉ ॥`` has a stray number inside the quotation. A number that follows a
 # word (ਮਹਲਾ ੫) is not a counter and stays.
 _GURMUKHI_VERSE_COUNTER = re.compile(r"[\u0964\u0965]+(?:\s*[\u0A66-\u0A6F0-9]+\s*[\u0964\u0965]+)+")
+# DEVANAGARI SIGN AVAGRAHA. Gita Press prints ``चाऽऽचारो`` for च + आचारो; most printings write
+# ``चाचारो``, and a single ``ऽ`` (``तेऽपि``) is also often dropped. It sits inside a word, so
+# removing it never joins two words.
+_AVAGRAHA = "\u093d"
 _MADDAH = "\u0653"  # ARABIC MADDAH ABOVE, the mark NFKD splits off alef-madda آ
 
 
@@ -571,6 +575,10 @@ def fold_aware_contains(answer: str, expected: str, *, fold_latin: bool = False)
         # The printed verse counter is not part of the quotation. One more OR: still a superset.
         stripped = _GURMUKHI_VERSE_COUNTER.sub(" ", answer)
         return stripped != answer and bounded_contains(stripped, expected)
+    if any("\u0900" <= c <= "\u097f" for c in expected):  # Devanagari reference only
+        # The avagraha is a spelling convention, not a word: ignore it on both sides. One more OR.
+        bare = expected.replace(_AVAGRAHA, "")
+        return bool(normalize(bare)) and bounded_contains(answer.replace(_AVAGRAHA, ""), bare)
     if not any(_is_arabic_letter(c) for c in expected):
         return False                                 # non-Arabic refs get only today's behaviour
     pattern = _fold_containment_pattern(expected)
