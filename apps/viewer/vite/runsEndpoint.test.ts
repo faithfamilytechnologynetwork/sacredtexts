@@ -180,6 +180,133 @@ describe("runsEndpoint listRuns", () => {
   });
 });
 
+describe("named panel runs (runs/<name>/<model>/base/**)", () => {
+  let root: string;
+  let runs: string;
+  const cell = (correct: number, incorrect: number) => ({
+    n: correct + incorrect,
+    accuracy: correct / (correct + incorrect),
+    coverage: 1,
+    correct,
+    incorrect,
+    refused: 0,
+    refused_rate: 0,
+  });
+  const summary = (model: string, correct: number, incorrect: number, generatedAt?: string) =>
+    JSON.stringify({
+      models: { [model]: { retrieve_quote: cell(correct, incorrect), _overall: cell(correct, incorrect) } },
+      by_tradition: { [model]: { Islam: { retrieve_quote: cell(correct, incorrect) } } },
+      ...(generatedAt ? { generated_at: generatedAt } : {}),
+    });
+  const get = (url: string) => {
+    const res = fakeRes();
+    createRunsHandler(runs)({ url }, res);
+    return res as { statusCode: number; body: unknown };
+  };
+
+  beforeAll(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "named-panel-"));
+    runs = path.join(root, "runs");
+    // The committed archive: runs/haiku/base/... (the default panel).
+    const old = path.join(runs, "haiku", "base", "islam", "native", "population", "prompt-native");
+    fs.mkdirSync(old, { recursive: true });
+    fs.writeFileSync(path.join(old, "summary.json"), summary("haiku", 1, 9, "2026-11-01T00:00:00+00:00"));
+    fs.writeFileSync(path.join(old, "scores.jsonl"), '{"question_id":"old-q"}\n');
+    fs.writeFileSync(path.join(runs, "haiku", "model.json"), '{"panel_id":"haiku"}');
+    // The rerun: runs/rerun-2026-11-03/<model>/base/..., two models, no summary of its own.
+    for (const [model, correct] of [["haiku", 8], ["opus", 9]] as const) {
+      const dir = path.join(runs, "rerun-2026-11-03", model, "base", "islam", "native", "population", "prompt-native");
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, "summary.json"), summary(model, correct, 10 - correct, "2026-11-03T12:00:00+00:00"));
+      fs.writeFileSync(path.join(dir, "scores.jsonl"), `{"question_id":"q-native","model_id":"${model}"}\n`);
+    }
+    fs.writeFileSync(path.join(runs, "rerun-2026-11-03", "haiku", "model.json"), '{"panel_id":"haiku","rerun":true}');
+    // An unfinished file in the rerun: answers, no summary, one roster row unsaved.
+    const open = path.join(runs, "rerun-2026-11-03", "haiku", "base", "islam", "english", "population");
+    fs.mkdirSync(open, { recursive: true });
+    fs.writeFileSync(path.join(open, "answers.jsonl"), '{"question_id":"q-e1","answer":"text"}\n');
+    // The roster, resolved from the segments after base whatever the prefix depth.
+    const items = path.join(root, "items", "for-test", "islam");
+    fs.mkdirSync(path.join(items, "native", "population", "prompt-native"), { recursive: true });
+    fs.writeFileSync(
+      path.join(items, "native", "population", "prompt-native", "questions.jsonl"),
+      '{"id":"q-native","task":"retrieve_quote","source":{"tradition":["Islam"],"citation":"1:1"}}\n',
+    );
+    fs.mkdirSync(path.join(items, "english", "population"), { recursive: true });
+    fs.writeFileSync(
+      path.join(items, "english", "population", "questions.jsonl"),
+      '{"id":"q-e1","task":"retrieve_quote","source":{"tradition":["Islam"],"citation":"1:1"}}\n' +
+        '{"id":"q-e2","task":"retrieve_quote","source":{"tradition":["Islam"],"citation":"1:2"}}\n',
+    );
+    // Not named panels: a real run with its own summary, and a folder with no model/base.
+    fs.mkdirSync(path.join(runs, "real-run", "haiku", "base", "islam"), { recursive: true });
+    fs.writeFileSync(path.join(runs, "real-run", "summary.json"), '{"models":{}}');
+    fs.writeFileSync(path.join(runs, "real-run", "haiku", "base", "islam", "summary.json"), summary("haiku", 5, 5));
+    fs.mkdirSync(path.join(runs, "empty-rerun", "haiku"), { recursive: true });
+  });
+
+  afterAll(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("lists runs/<name>/ as run <name>, newest panel first, beside the default panel", () => {
+    const index = listRuns(runs);
+    const ids = index.map((r) => r.id);
+    expect(ids[0]).toBe("rerun-2026-11-03");
+    expect(ids).toEqual(expect.arrayContaining(["panel", "real-run"]));
+    expect(ids).not.toContain("haiku");
+    expect(ids).not.toContain("empty-rerun");
+    const rerun = index.find((r) => r.id === "rerun-2026-11-03")!;
+    expect(rerun.generatedAt).toBe("2026-11-03T12:00:00+00:00");
+    const newest = Math.max(
+      ...["haiku", "opus"].map(
+        (m) =>
+          fs.statSync(
+            path.join(runs, "rerun-2026-11-03", m, "base", "islam", "native", "population", "prompt-native", "summary.json"),
+          ).mtimeMs,
+      ),
+    );
+    expect(rerun.mtimeMs).toBe(newest);
+  });
+
+  it("rolls up only that folder's models, and keeps them out of the default panel", () => {
+    const rerun = JSON.parse(String(get("/rerun-2026-11-03/summary.json").body)) as {
+      models: Record<string, { _overall: { n: number; correct: number } }>;
+    };
+    expect(Object.keys(rerun.models).sort()).toEqual(["haiku", "opus"]);
+    expect(rerun.models.haiku!._overall).toMatchObject({ n: 10, correct: 8 });
+    const panel = JSON.parse(String(get("/panel/summary.json").body)) as {
+      models: Record<string, { _overall: { n: number; correct: number } }>;
+    };
+    expect(Object.keys(panel.models)).toEqual(["haiku"]);
+    expect(panel.models.haiku!._overall).toMatchObject({ n: 10, correct: 1 });
+    expect(String(get("/panel/scores.jsonl").body)).not.toContain("q-native");
+    expect(String(get("/rerun-2026-11-03/scores.jsonl").body)).toContain("q-native");
+  });
+
+  it("serves the roster from items/for-test via the segments after base", () => {
+    expect(String(get("/rerun-2026-11-03/questions.jsonl").body)).toContain('"id":"q-native"');
+  });
+
+  it("still serves other files under the folder as confined files", () => {
+    expect(String(get("/rerun-2026-11-03/haiku/model.json").body)).toContain('"rerun":true');
+    expect(get("/rerun-2026-11-03/nope.json").statusCode).toBe(404);
+    expect(get("/panel/haiku/model.json").statusCode).toBe(404);
+  });
+
+  it("reports a rerun gap under the model id, with the folder in its path", () => {
+    const gaps = collectGaps(runs);
+    const gap = gaps.find((g) => g.file.startsWith("rerun-2026-11-03"));
+    expect(gap).toMatchObject({
+      model: "haiku",
+      file: path.join("rerun-2026-11-03", "haiku", "base", "islam", "english", "population"),
+      questions: 2,
+      saved: 1,
+    });
+    expect(gap!.missing.map((m) => m.id)).toEqual(["q-e2"]);
+  });
+});
+
 describe("runsEndpoint resolveRunFile confinement", () => {
   it("resolves a normal file within the root", () => {
     const f = resolveRunFile(tmp, "run-a/summary.json");

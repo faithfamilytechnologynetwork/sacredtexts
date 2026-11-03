@@ -146,3 +146,56 @@ def test_digest_stamped_into_rows(tmp_path, monkeypatch):
     collect(qs, _config("good"), answers)
     row = _rows(answers)[0]
     assert row["question_set_digest"] == question_set_digest(qs)
+
+
+# --- #97: _DaemonPool must not reach into ThreadPoolExecutor's version-specific internals -------
+
+def test_daemon_pool_runs_work_on_daemon_threads():
+    """The issue's scenario: on 3.14 the old copy of CPython 3.11's ``_adjust_thread_count``
+    raised AttributeError on ``_initializer`` at the first submit. Work must run, and on daemon
+    threads (so Ctrl+C never waits out an HTTP timeout)."""
+    import threading
+
+    pool = collect_mod._DaemonPool(max_workers=2, thread_name_prefix="t97")
+    try:
+        futures = [pool.submit(lambda: threading.current_thread().daemon) for _ in range(4)]
+        assert [f.result(timeout=5) for f in futures] == [True] * 4
+    finally:
+        pool.shutdown(wait=True)
+
+
+def test_daemon_pool_surfaces_a_worker_spawn_failure(monkeypatch):
+    """Spawning runs on a helper thread; a failure there must still raise out of submit
+    (fail fast) rather than leave a queued cell that no worker will ever run."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    def cannot_spawn(self):
+        raise RuntimeError("can't start new thread")
+
+    monkeypatch.setattr(ThreadPoolExecutor, "_adjust_thread_count", cannot_spawn)
+    pool = collect_mod._DaemonPool(max_workers=1)
+    try:
+        with pytest.raises(RuntimeError, match="can't start new thread"):
+            pool.submit(lambda: None)
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
+def test_collect_reads_no_private_threadpool_internals():
+    """Version-independent pin (CI runs 3.11, where the old code happened to work): collect.py
+    must not import ``concurrent.futures.thread`` or touch the worker wiring CPython 3.14
+    removed/re-signed (``_initializer``, ``_initargs``, ``_worker``, ``_threads_queues``)."""
+    import ast
+    from pathlib import Path
+
+    tree = ast.parse(Path(collect_mod.__file__).read_text(encoding="utf-8"))
+    private_imports = [
+        n.module for n in ast.walk(tree)
+        if isinstance(n, ast.ImportFrom) and n.module == "concurrent.futures.thread"
+    ]
+    private_attrs = sorted({
+        n.attr for n in ast.walk(tree)
+        if isinstance(n, ast.Attribute)
+        and n.attr in {"_initializer", "_initargs", "_worker", "_threads_queues"}
+    })
+    assert private_imports == [] and private_attrs == []
