@@ -55,6 +55,25 @@ verses. That is not a second sample of 30, and the Old Testament verses are
 not also asked from the Septuagint. The licensed Greek Orthodox TLG files
 are still not in the repo.
 
+The Masoretic wording comes from the Open Scriptures Hebrew Bible copy of the
+Westminster Leningrad Codex. That file tags every word for grammar and
+carries its editors' notes. Four rules turn a verse into the text a reader
+sees (issue #85, `wlc_text` in `review/build_christian_original.py`):
+
+1. The "/" between the parts of a word is deleted: `וְ/הָיוּ֩` is `וְהָיוּ֩`.
+2. Where the written form (Ketiv) and the read form (Qere) differ, the verse
+   has the read form, with its vowels. A word read but not written is added;
+   a word written but not read is left out. A printed Tanakh is read this
+   way, and on the 2026-11-02 run more answers gave the Qere than the Ketiv.
+3. Every other note is dropped. Those are the editors' remarks, in English,
+   such as "BHS has been faithful to the Leningrad Codex…" inside Isaiah 49:7.
+4. The paragraph markers ס and פ after a verse are dropped.
+
+Maqaf, sof pasuq, paseq, the vowels and the cantillation marks stay as they
+are. The build stops if a verse still has a Latin letter or a "/". Before
+#85 the text kept all four, so a model that wrote the verse correctly could
+not match it.
+
 Judaism's Aramaic edition and its English edition are the same 30 citations.
 The Aramaic edition is two calls: an English prompt and a native-language
 prompt. The English edition is one call. Islam is the same shape: the Uthmani
