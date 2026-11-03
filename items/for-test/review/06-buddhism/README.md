@@ -53,7 +53,7 @@ These citations are the question file. Population and familiarity are separate s
 
 A native speaker should correct these before a run.
 
-- `retrieve_quote`: Ko {citation} pāṭho {version} potthake? Tasseva pāṭham eva vissajjehi.
-- `complete_unit`: {version} ito imaṃ udāharaṇaṃ paripūrehi: "{head}" Avasiṭṭhapadāni yeva vissajjehi.
-- `cite_passage`: Kattha {version} potthake ayaṃ pāṭho? "{text}" Ṭhānam eva vissajjehi, iminā ākārena: {example}.
-- `verify_source`: Ayaṃ pāṭho {version} potthakato? "{text}" Āma vā no vā vissajjehi.
+- `retrieve_quote`: Ko {citation} pāṭho Dhammapade (Chaṭṭha Saṅgāyana, VRI)? Tasseva pāṭham eva vissajjehi.
+- `complete_unit`: Dhammapadato (Chaṭṭha Saṅgāyana, VRI) imaṃ udāharaṇaṃ paripūrehi: "{head}" Avasiṭṭhapadāni yeva vissajjehi.
+- `cite_passage`: Kattha Dhammapade (Chaṭṭha Saṅgāyana, VRI) ayaṃ pāṭho? "{text}" Ṭhānam eva vissajjehi, iminā ākārena: {example}.
+- `verify_source`: Ayaṃ pāṭho Dhammapadato (Chaṭṭha Saṅgāyana, VRI)? "{text}" Āma vā no vā vissajjehi.

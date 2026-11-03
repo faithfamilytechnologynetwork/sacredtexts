@@ -274,5 +274,6 @@
       }
     }
   ],
-  "notice": "New Revised Standard Version Bible, copyright © 1989 National Council of the Churches of Christ in the United States of America. Used by permission. All rights reserved worldwide."
+  "notice": "Scripture quotations are from the New Revised Standard Version Bible, copyright © 1989 National Council of the Churches of Christ in the United States of America. Used by permission. All rights reserved worldwide.",
+  "provenance": "https://bible.oremus.org/?version=nrsv&passage={citation}"
 }

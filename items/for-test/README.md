@@ -78,7 +78,7 @@ A cite prompt shows one other citation from the same edition, so the answer has 
 
 ## How a prompt is built
 
-The edition is named inside the prompt. The model call has no language field.
+The edition and its work are named inside the prompt. The model call has no language field. Every set is rebuilt by one command, in `METHODOLOGY.md`.
 
 **English edition, already English** (the NRSV file). One line. It names that edition and asks for the answer in English.
 
@@ -91,12 +91,12 @@ What is the text of Exodus 28:43 in the New Revised Standard Version (NRSV)? Rep
 **Native edition, two calls** (Islam, Sikhism, and the Aramaic half of Judaism). The same question is not stacked in one prompt. `prompt-english/` is the English question plus one line saying which language to answer in. `prompt-native/` is only the question in the text's language. Those native lines are drafts for a native speaker.
 
 ```
-What is the text of 34:54 in the Uthmani (QUL) edition? Reply with the exact text of that edition and nothing else.
-Answer in the language of the Uthmani (QUL) edition.
+What is the text of Ang 306:13 in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? Reply with the exact text of that edition and nothing else.
+Answer in the language of the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib.
 ```
 
 ```
-ما نص 34:54 من القرآن في طبعة عثماني (QUL)؟ أجب بنص تلك الطبعة فقط.
+Ang 306:13 ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।
 ```
 
 **English edition of a non-English work** (Judaism). One English line, the same shape as Christianity. It names the English edition. It does not repeat the question in Hebrew, and it does not warn that the translation can differ.

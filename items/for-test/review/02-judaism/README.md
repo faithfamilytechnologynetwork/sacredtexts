@@ -1,7 +1,7 @@
 # Judaism
 
-- Canonical edition named in the question: **Talmud Bavli, William Davidson Edition - Aramaic**
-- English edition: **William Davidson Edition - English (same citations, a separate file)**
+- Canonical edition named in the question: **the William Davidson Aramaic edition of the Babylonian Talmud**
+- English edition: **the William Davidson English edition of the Babylonian Talmud (same citations, a separate file)**
 - Language: Aramaic / Hebrew
 - Raw file: `texts/raw/Judaism/Talmud Bavli/`
 - Tasks: retrieve_quote, complete_unit, cite_passage, verify_source
@@ -46,10 +46,12 @@ These citations are the question file. Population and familiarity are separate s
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in Talmud Bavli, William Davidson Edition - Aramaic? Reply with the exact text of that edition and nothing else.
-- `complete_unit`: Please complete this quote from Talmud Bavli, William Davidson Edition - Aramaic: "{head}" Reply with only the remaining words.
-- `cite_passage`: Where in Talmud Bavli, William Davidson Edition - Aramaic can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
-- `verify_source`: Is the following text from Talmud Bavli, William Davidson Edition - Aramaic? "{text}" Answer Yes or No.
+- `retrieve_quote`: What is the text of {citation} in the William Davidson Aramaic edition of the Babylonian Talmud? Reply with the exact text of that edition and nothing else.
+- `complete_unit`: Complete this quotation from the William Davidson Aramaic edition of the Babylonian Talmud: "{head}" Reply with only the remaining words.
+- `cite_passage`: Where in the William Davidson Aramaic edition of the Babylonian Talmud can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
+- `verify_source`: Is the following text from the William Davidson Aramaic edition of the Babylonian Talmud? "{text}" Answer Yes or No.
+
+Each English prompt has a second line: `Answer in the language of the William Davidson Aramaic edition of the Babylonian Talmud.`
 
 ## Prompts in the text's language (draft)
 

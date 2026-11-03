@@ -62,7 +62,16 @@ text as two calls, and Saheeh International as one English call, on the same
 citations. Sikhism is the native edition only, also as two calls. This corpus
 has no English Guru Granth Sahib.
 
-The prompt names the edition. A native edition is not asked in both languages
+The prompt names the work as well as the edition: "the 2013 edition of the
+Book of Mormon", "the William Davidson Aramaic edition of the Babylonian
+Talmud", "the Vatican English text of the encyclical Fides et Ratio (John Paul
+II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
+edition?") left the model guessing which work was meant, and that cost 16-28
+points on `verify_source` for the traditions it hit (issue #90). The names are
+`_EDITION_DISPLAY` in `review/build_questions.py`; a new edition without one
+stops the build. The Sanskrit and Pali prompts name the Gita and the
+Dhammapada in their own language, as the Hebrew, Punjabi and Arabic ones
+already did. A native edition is not asked in both languages
 inside one prompt. The native-language lines are drafts for a native speaker.
 The model call has no language field. OpenRouter does not add one.
 
@@ -97,10 +106,15 @@ familiarity list of one passage stays `yes`, because half of one rounds to zero.
 | NRSV | Book of Mormon, 2013 edition | Another English scripture |
 | Masoretic text | Aramaic Talmud | The other Hebrew-Aramaic work |
 | Qur'an | A hadith from the six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | Same script and same tradition as the Qur'an, a different work. The question is a real "Qur'an or hadith?" judgement, not an alphabet test (issue #75) |
-| Greek New Testament, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada | A passage from another tradition | No second work in that language. The script differs, so these `no` items are easier |
+| Greek New Testament, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada | Another tradition's native-language passage in a different script, never an English edition | No second work in that language. The script differs, so these `no` items are easier |
+| English Gita (Besant) | Another tradition's English edition | The English works this corpus holds |
+| Book of Mormon / encyclicals | The other one of the pair | The two modern supplemental categories |
 
-The English Gita already uses other English works. The modern supplemental
-pair swaps the Book of Mormon and the encyclicals.
+The table is `_donor_pool` in `review/build_questions.py`. Every set's
+passages, population and familiarity, are one pool, so a donor can come from
+any set the table allows. Each `no` row draws from its own RNG (seed
+20261030, tradition, edition, condition, sample, citation), so no other row,
+set, or build order can move it.
 
 The hadith donor is chosen by the script of the quoted passage, not by the
 tradition: an Arabic passage gets a hadith, so an English Qur'an edition, if
@@ -154,6 +168,36 @@ fair "Qur'an or hadith?" question:
 The Qur'an `no` donors were re-drawn twice while these rules were settled
 (PR #78 rounds 2 and 3). The skip list then re-drew two rows. Nothing had been
 collected from any earlier draw.
+
+## Rebuilding the question sets
+
+One command rebuilds every `questions.jsonl` under this folder, population
+and familiarity, every tradition, and the `passages.json` beside each set
+whose builder writes one:
+
+```
+uv --project pipelines run python items/for-test/review/build_questions.py
+```
+
+Run it twice and the files are byte-identical. It builds every set's `yes`
+rows first, then draws every `no` row from one pool by the table above, then
+writes. The other `review/build_*.py` scripts are called from it and are not
+run on their own. `pipelines/tests/test_question_sets_rebuild.py` rebuilds
+every set offline and checks it against the committed files.
+
+Most wording is read from `texts/raw/` and `well_known.yaml`. Three texts are
+fetched over the network and the build stops if a fetch fails: the NRSV
+(oremus), the Westminster Leningrad Codex, and Scrivener's Greek New
+Testament. The last two are fetched at a pinned commit. Each set's
+`passages.json` records the source in `provenance`. The question ids are the
+hash of the prompt, so any wording or donor change gives a new id.
+
+The sets before issue #91 could not be rebuilt this way: the `no` donors had
+been moved after the build by a separate pass (`retarget_verify.py`, now
+removed), and two builders read each other's output files. The rebuild kept
+every passage, citation and expected answer. It re-drew the `no` donors to
+the table above and re-worded the prompts that did not name their work, so
+every question id outside Islam changed.
 
 ## What to report
 

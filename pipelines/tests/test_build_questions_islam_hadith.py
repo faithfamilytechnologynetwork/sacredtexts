@@ -274,21 +274,18 @@ def _verify_row(tradition, citation, passage, *, condition="ask_english", sample
     }
 
 
-def _quote_row(tradition, citation, text):
-    return {
-        "tradition": tradition, "citation": citation, "sample": "population", "version": "w", "work": "W",
-        "task": "retrieve_quote", "condition": "ask_english", "prompt": "", "expected": {"text": text},
-    }
-
-
 def test_script_gate_english_quran_edition_gets_no_hadith(bq):
     english = "In the name of God, the Lord of Mercy, the Giver of Mercy, praise belongs to God, Lord of the Worlds"
-    islam = [_verify_row("Islam", "1:1", english), _verify_row("Islam", "1:2", english)]
-    other = [_quote_row("Christianity", "John 3:16", "For God so loved the world that he gave his only Son")]
-    bq.add_verify_negatives({"islam": islam, "christianity": other})
+    islam = [
+        dict(_verify_row("Islam", c, english, condition="en_ask_en_answer"), english_version=bq.QURAN_EN_VERSION)
+        for c in ("1:1", "1:2")
+    ]
+    bq.add_verify_negatives({"islam": islam})
     flipped = _no_rows(islam)
     assert len(flipped) == 1
-    assert flipped[0]["expected"]["true_tradition"] == "Christianity"   # same script, not a hadith
+    donor = flipped[0]["expected"]
+    assert donor["true_tradition"] == "Islam" and "Arabic" not in donor["true_version"]   # an English hadith
+    assert bq._script(bq._quoted_passage(flipped[0]["prompt"])) == "lat"
 
 
 def test_empty_same_tradition_only_pool_fails_fast(bq):
@@ -337,7 +334,8 @@ def test_donor_skip_list_redraws_only_its_own_rows(bq, monkeypatch):
 def test_other_traditions_cannot_move_islam_donors(bq):
     alone = [(r["condition"], r["sample"], r["citation"], r["expected"]["true_citation"]) for r in _no_rows(_islam_built(bq))]
     islam = bq.islam()
-    bq.add_verify_negatives({"judaism": bq.judaism(), "islam": islam, "sikhism": bq.sikhism()})
+    # Judaism's donors (the Masoretic text, the NRSV) are not in this pool; Sikhism's (another script) are.
+    bq.add_verify_negatives({"islam": islam, "sikhism": bq.sikhism()})
     together = [(r["condition"], r["sample"], r["citation"], r["expected"]["true_citation"]) for r in _no_rows(islam)]
     assert together == alone
 

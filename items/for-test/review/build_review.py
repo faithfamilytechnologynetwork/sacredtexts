@@ -242,15 +242,18 @@ def judaism() -> tuple[str, str]:
         "cite_passage": "היכן בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית, נמצא הטקסט הזה? \"{text}\" ענה בציון המקום בלבד.",
         "verify_source": "האם הטקסט הבא מן התלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? \"{text}\" ענה כן או לא.",
     }
+    name = edition_name("William Davidson Edition - Aramaic")
     return "02-judaism", page(
         title="Judaism",
-        version="Talmud Bavli, William Davidson Edition - Aramaic",
-        english_version="William Davidson Edition - English (same citations, a separate file)",
+        version=name,
+        english_version=f"{edition_name('William Davidson Edition - English')} (same citations, a separate file)",
         language="Aramaic / Hebrew",
         native_prompts=native,
         rows=rows,
         source="texts/raw/Judaism/Talmud Bavli/",
         size=size,
+        english_prompts=EN,
+        english_suffix=f"Answer in the language of {name}.",
     )
 
 
@@ -262,15 +265,18 @@ def sikhism() -> tuple[str, str]:
         "cite_passage": "ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚ ਕਿੱਥੇ ਹੈ? \"{text}\" ਸਿਰਫ਼ ਹਵਾਲਾ ਲਿਖੋ।",
         "verify_source": "ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਹੈ? \"{text}\" ਹਾਂ ਜਾਂ ਨਹੀਂ।",
     }
+    name = edition_name("Shabad OS (SGPC Shabadaarth)")
     return "04-sikhism", page(
         title="Sikhism",
-        version="Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth)",
+        version=name,
         english_version="none in this corpus",
         language="Gurmukhi (Sant Bhasha)",
         native_prompts=native,
         rows=rows,
         source="texts/raw/Sikhism/sggs_shabados.json",
         size=size,
+        english_prompts=EN,
+        english_suffix=f"Answer in the language of {name}.",
     )
 
 
