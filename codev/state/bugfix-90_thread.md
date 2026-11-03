@@ -104,3 +104,15 @@ pipelines/tests. runs/ untouched (architect: collection in flight on main; re-co
 - Non-blocking, noted: Masoretic/Greek still bypass edition_name() — their catalogue `version` IS the display
   string (build_christian_original MASORETIC/GREEK), pre-existing; NRSV no longer bypasses it.
 - Regeneration: two runs byte-identical (62 files). Every expected/source unchanged; donors unchanged.
+
+## PR phase — CMAP (2026-11-03)
+
+- First CMAP attempt returned "Multiple projects found" for all three (porch state has many projects); re-ran with
+  `--issue 90 --output …`. Verdicts at e30a681: gemini APPROVE, codex APPROVE, claude APPROVE (all HIGH, no key issues).
+- claude's checks: 0 citation/source/answer changes vs main; round 2 alone = 78 ids, 0 donor moves. It flagged that
+  build_questions imports `parse_yes_no` / `fold_aware_contains` from sacredbench.score, which #95 rewrote — a standing
+  coupling for the Islam sets (hadith pool 4,204 both ways, so no drift). Merged origin/main again (45 commits) and re-ran
+  the gate; the rebuild test is the guard.
+- Id accounting: 1,724 ids changed vs main; 310 of them with an identical prompt (stale ids main's builders could not
+  reproduce). PR body corrected.
+- Open for the owner (non-blocking): Sanskrit/Pali native lines need a speaker's sign-off before collection.
