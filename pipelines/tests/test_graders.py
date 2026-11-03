@@ -55,11 +55,11 @@ def test_headline_is_or_over_selected_verdicts():
     # strict only: normalized==0 ⇒ incorrect, and NO contains_reference key emitted
     strict = score_answer("retrieve_quote", wrapped, exp, resolve_evaluators(["strict"]))
     assert strict["correct"] == 0 and "contains_reference" not in strict
-    assert set(strict) == {"exact", "normalized", "token_f1", "token_f1_base", "correct", "outcome", "near_miss"}
+    assert set(strict) == {"exact", "normalized", "token_f1", "token_f1_base", "correct", "outcome"}
     # containment only: correct via containment, no exact/normalized
     cont = score_answer("retrieve_quote", wrapped, exp, resolve_evaluators(["containment"]))
     assert cont["correct"] == 1 and set(cont) == {
-        "token_f1", "token_f1_base", "contains_reference", "correct", "outcome", "near_miss",
+        "token_f1", "token_f1_base", "contains_reference", "correct", "outcome",
     }
 
 

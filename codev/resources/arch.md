@@ -79,11 +79,7 @@ round-trip that proves no invention/reordering.
   multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
-  beside it (for `verify_source`, `refused ⟺ parsed is None`). Text-retrieval rows also carry
-  `near_miss` after `outcome` (issue #96): 1 iff the cell is **incorrect** and near-verbatim
-  (`token_f1 ≥ 0.9`, or `base_letters(expected)` word-bounded in `base_letters(answer)`) — a reported
-  tier of `incorrect` (count + `near_miss_share` beside `incorrect` in each text-retrieval summary
-  cell), never read by `correct`/`outcome`/accuracy. A deliberate contract change is a
+  beside it (for `verify_source`, `refused ⟺ parsed is None`). A deliberate contract change is a
   sanctioned, oracle-witnessed rebaseline, not a forbidden re-score. **Arabic orthography
   (Uthmani↔Imla'i) is folded in the CONTAINMENT path only (Spec 52):** the text-retrieval
   `contains_reference` — and `outcomes.classify_refusal`, the FAccT counterfactual and the probes —

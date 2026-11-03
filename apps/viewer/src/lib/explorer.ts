@@ -26,9 +26,8 @@ export interface ExplorerFilters {
   task?: string;
   tradition?: string;
   /** Restrict to one outcome: correct, incorrect (answered and scored wrong — failure mode
-   * `wrong`, excluding refused and missing), near_miss (the near-verbatim tier of incorrect,
-   * issue #96), refused (answered but declined), or missing. */
-  correct?: "correct" | "incorrect" | "near_miss" | "refused" | "missing";
+   * `wrong`, excluding refused and missing), refused (answered but declined), or missing. */
+  correct?: "correct" | "incorrect" | "refused" | "missing";
   /** Restrict failures to one mode (missing / refused / wrong); composes with the others by AND. */
   mode?: FailureMode;
   /** Restrict to one task-specific failure kind (paraphrase, wrong passage, addition, …). */
@@ -47,7 +46,6 @@ export function filterQuestions(results: QuestionResult[], f: ExplorerFilters): 
     if (f.tradition && !r.tradition.includes(f.tradition)) return false;
     if (f.correct === "correct" && !r.correct) return false;
     if (f.correct === "incorrect" && failureMode(r) !== "wrong") return false;
-    if (f.correct === "near_miss" && !(failureMode(r) === "wrong" && r.near_miss)) return false;
     if (f.correct === "refused" && failureMode(r) !== "refused") return false;
     if (f.correct === "missing" && !r.missing) return false;
     if (f.mode && failureMode(r) !== f.mode) return false;
@@ -77,8 +75,6 @@ export interface QuestionStats {
   wrong: number;
   refused: number;
   missing: number;
-  /** Wrong cells that are near-verbatim (another edition or orthography of the right text). */
-  nearMiss: number;
   /** Wrong or added cells that stay on the passage asked for. */
   minor: number;
   /** Wrong cells that replace the passage, the citation, or the witness. */
@@ -89,16 +85,13 @@ export interface QuestionStats {
  * Spec 15 outcome categories; a cell is exactly one of correct/wrong/refused/missing). */
 export function questionStats(results: QuestionResult[]): QuestionStats {
   const stats: QuestionStats = {
-    total: results.length, correct: 0, wrong: 0, refused: 0, missing: 0, nearMiss: 0, minor: 0, major: 0,
+    total: results.length, correct: 0, wrong: 0, refused: 0, missing: 0, minor: 0, major: 0,
   };
   for (const r of results) {
     if (r.correct) stats.correct++;
     else if (r.missing) stats.missing++;
     else if (r.refused) stats.refused++;
-    else {
-      stats.wrong++;
-      if (r.near_miss) stats.nearMiss++;
-    }
+    else stats.wrong++;
     const severity = failureSeverity(r.failure);
     if (severity === "minor") stats.minor++;
     else if (severity === "major") stats.major++;

@@ -78,8 +78,6 @@ export interface ScoreMetrics {
   normalized?: number;
   token_f1?: number;
   contains_reference?: number;
-  /** Issue #96: 1 on an incorrect text-retrieval cell that is near-verbatim. */
-  near_miss?: number;
   [k: string]: unknown;
 }
 
@@ -129,9 +127,6 @@ export interface QuestionResult {
   exact: number | null;
   normalized: number | null;
   token_f1: number | null;
-  /** An incorrect answer that is near-verbatim — the right text in another edition or
-   * orthography (`metrics.near_miss`, issue #96). Still counted incorrect. */
-  near_miss: boolean;
   /** How an incorrect answer failed, or `addition` on a correct quote that runs past the span. */
   failure: FailureKind | null;
 }
@@ -273,7 +268,6 @@ function answeredResult(s: ScoreRow | undefined, a: AnswerRow, fallbackTask: str
       exact: metricOrNull(s?.metrics, "exact"),
       normalized: metricOrNull(s?.metrics, "normalized"),
       token_f1: metricOrNull(s?.metrics, "token_f1"),
-      near_miss: s?.metrics.near_miss === 1,
     },
     s?.metrics,
   );
@@ -294,7 +288,6 @@ function missingResult(model_id: string, q: QuestionRow): QuestionResult {
     exact: null,
     normalized: null,
     token_f1: null,
-    near_miss: false,
     failure: null,
   };
 }
@@ -356,7 +349,6 @@ export function joinResults(
         exact: metricOrNull(s.metrics, "exact"),
         normalized: metricOrNull(s.metrics, "normalized"),
         token_f1: metricOrNull(s.metrics, "token_f1"),
-        near_miss: s.metrics.near_miss === 1,
         // No roster means no answer/expected text on this back-compat path, so the script- and
         // span-based kinds (other_script, omission) are unreachable and a cell could flip
         // minor<->major vs the pipeline. Leave it unlabeled rather than classify from "".

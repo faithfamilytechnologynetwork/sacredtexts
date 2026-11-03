@@ -76,7 +76,7 @@ export function ExplorerFilters({
             onChange({
               ...value,
               correct:
-                v === "correct" || v === "incorrect" || v === "near_miss" || v === "refused" || v === "missing"
+                v === "correct" || v === "incorrect" || v === "refused" || v === "missing"
                   ? v
                   : undefined,
             });
@@ -85,7 +85,6 @@ export function ExplorerFilters({
           <option value={ALL}>all</option>
           <option value="correct">correct</option>
           <option value="incorrect">incorrect</option>
-          <option value="near_miss">incorrect · near miss</option>
           <option value="refused">refused</option>
           <option value="missing">missing</option>
         </select>

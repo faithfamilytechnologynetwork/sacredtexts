@@ -18,25 +18,12 @@ function q(partial: Partial<QuestionResult>): QuestionResult {
     exact: 0,
     normalized: 1,
     token_f1: 0.5,
-    near_miss: false,
     failure: null,
     ...partial,
   };
 }
 
 describe("QuestionList", () => {
-  it("badges a near-verbatim wrong answer as a near miss (issue #96), and only that one", () => {
-    render(
-      <QuestionList
-        results={[
-          q({ question_id: "near", near_miss: true, answer: "near answer" }),
-          q({ question_id: "far", near_miss: false, answer: "far answer" }),
-        ]}
-      />,
-    );
-    expect(screen.getAllByText("near miss")).toHaveLength(1);
-  });
-
   it("shows prompt, expected, actual answer, and the three metrics for an answered question", () => {
     render(<QuestionList results={[q({ question_id: "a", correct: false })]} />);
     expect(screen.getByText("the prompt")).toBeInTheDocument();

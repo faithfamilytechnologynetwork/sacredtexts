@@ -50,7 +50,6 @@ const explorerRoute = createRoute({
     correct:
       search.correct === "correct" ||
       search.correct === "incorrect" ||
-      search.correct === "near_miss" ||
       search.correct === "refused" ||
       search.correct === "missing"
         ? search.correct

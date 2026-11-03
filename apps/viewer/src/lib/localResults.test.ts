@@ -184,29 +184,6 @@ describe("localResults lib", () => {
   });
 });
 
-describe("joinResults — near_miss (issue #96)", () => {
-  it("reads metrics.near_miss into the result; absent or 0 is false", () => {
-    const scores = parseJsonl<ScoreRow>(
-      [
-        '{"question_id":"q1","model_id":"m","task":"retrieve_quote","metrics":{"correct":0,"outcome":"incorrect","near_miss":1}}',
-        '{"question_id":"q2","model_id":"m","task":"retrieve_quote","metrics":{"correct":0,"outcome":"incorrect","near_miss":0}}',
-        '{"question_id":"q3","model_id":"m","task":"retrieve_quote","metrics":{"correct":0,"outcome":"incorrect"}}',
-      ].join("\n"),
-    );
-    const answers = parseJsonl<AnswerRow>(
-      ["q1", "q2", "q3"]
-        .map((id) =>
-          JSON.stringify({
-            question_id: id, model_id: "m", task: "retrieve_quote", answer: "a",
-            question: { prompt: "p", expected: { text: "e" }, source: { tradition: ["X"] } },
-          }),
-        )
-        .join("\n"),
-    );
-    expect(joinResults(scores, answers).map((r) => r.near_miss)).toEqual([true, false, false]);
-  });
-});
-
 describe("loadSummary (standings reads only summary.json)", () => {
   it("parses a single summary.json without needing the other three artifacts", async () => {
     const base = "/runs/x";

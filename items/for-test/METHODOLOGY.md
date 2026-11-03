@@ -183,13 +183,6 @@ change, or only the marks?
 A low strict score and a high base score is a spelling miss, not a theological
 miss. A low score on both is a change of words.
 
-`near_miss` marks an incorrect cell that is near-verbatim: `token_f1` is at
-least 0.9, or the reference appears word for word once vowel signs and accents
-are dropped. That is usually the right text in another edition or spelling
-(`ἔθηκε` for `ἔθηκεν`, `Asvattha` for `Ashvattha`). It stays incorrect. Each
-summary gives the count beside `incorrect`, per task and per text, so a score
-reads as "X% wrong, of which Y% near-verbatim".
-
 Hinduism is the same 30 citations in both editions. The 16-word floor is
 applied to Annie Besant's English, because only 16 Sanskrit verses reach 16
 words. Buddhism is 30 Pali verses of at least 16 words. This corpus has no

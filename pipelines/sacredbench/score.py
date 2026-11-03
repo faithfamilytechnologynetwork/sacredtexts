@@ -26,11 +26,6 @@ Metrics emitted per answer:
                   ``refused`` (``correct`` forced 0) and EXCLUDED from accuracy; see
                   ``_with_outcome`` and ``outcomes.classify_refusal``. Accuracy is then
                   ``correct/(correct+incorrect)`` and ``score_file`` reports ``coverage`` beside it.
-- ``near_miss``   (retrieve_quote / complete_unit ONLY, after ``outcome``; issue #96) a tier of
-                  ``incorrect``: 1 iff the cell is incorrect AND near-verbatim — ``token_f1 >= 0.9``
-                  or the base-letter reference is word-bounded inside the base-letter answer (another
-                  edition/orthography of the right text, not the wrong text). 0 on correct/refused
-                  cells. A diagnostic only: ``correct``/``outcome``/accuracy never read it.
 
 For the text-retrieval tasks the reported sub-metrics and the headline are set by the SELECTED
 graders (``graders.py``, chosen via ``score --evaluator``; default ``strict`` + ``containment``).
@@ -599,20 +594,6 @@ def token_f1_base(answer: str, expected: str) -> float:
     return _f1(base_letters(answer).split(), base_letters(expected).split())
 
 
-# An incorrect text-retrieval cell at or above this token F1 is near-verbatim (issue #96).
-NEAR_MISS_F1 = 0.9
-
-
-def is_near_verbatim(answer: str, expected: str, f1: float) -> bool:
-    """The right text in another edition or orthography: ``f1`` (the emitted ``token_f1``) is at
-    least :data:`NEAR_MISS_F1`, or the base-letter reference appears word-bounded in the base-letter
-    answer (equality included). Feeds only the reported ``near_miss`` tier, never ``correct``."""
-    if f1 >= NEAR_MISS_F1:
-        return True
-    be = base_letters(expected)
-    return bool(be) and re.search(r"(?<!\w)" + re.escape(be) + r"(?!\w)", base_letters(answer)) is not None
-
-
 _YES_NO_LEADING = re.compile(r"[^\w]*(yes|no)\b", re.IGNORECASE)
 _SENTENCE_END = re.compile(r"[.!?\n]")
 _LEADING_CHARS = 60  # the leading window: first sentence or this many chars, whichever is shorter
@@ -878,11 +859,7 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
-        metrics = _with_outcome(metrics, task, answer, expected)
-        metrics["near_miss"] = int(
-            metrics["outcome"] == "incorrect" and is_near_verbatim(answer, target, computed["token_f1"])
-        )
-        return metrics
+        return _with_outcome(metrics, task, answer, expected)
     if task == "verify_source":
         parsed = parse_yes_no(answer, language)
         correct = int(parsed == expected["answer"])
@@ -941,27 +918,20 @@ def _outcome_cell(acc: dict, submetric_keys: tuple[str, ...]) -> dict:
     Submetric averages are taken over the GRADED cells (correct+incorrect), never ``n`` — a refusal
     is not graded, so it must not dilute the diagnostic averages. ``missing`` (roster cells that
     produced no answer) is added by the caller and stays distinct from ``refused`` (answered, declined).
-
-    A text-retrieval accumulator also carries ``near_miss`` (issue #96); the cell then reports it and
-    ``near_miss_share = near_miss/incorrect`` (``None`` when nothing was incorrect).
     """
     n = acc["n"]
     refused = acc.get("refused", 0)
     correct = acc["correct"]
     graded = n - refused
-    incorrect = graded - correct
     cell = {
         "n": n,
         "accuracy": round(correct / graded, 4) if graded else None,
         "coverage": round(graded / n, 4) if n else None,
         "correct": correct,
-        "incorrect": incorrect,
+        "incorrect": graded - correct,
+        "refused": refused,
+        "refused_rate": round(refused / n, 4) if n else None,
     }
-    if "near_miss" in acc:  # text-retrieval cells only (issue #96): a tier of `incorrect`, not of n
-        cell["near_miss"] = acc["near_miss"]
-        cell["near_miss_share"] = round(acc["near_miss"] / incorrect, 4) if incorrect else None
-    cell["refused"] = refused
-    cell["refused_rate"] = round(refused / n, 4) if n else None
     for sm in submetric_keys:
         cell[sm] = round(acc[sm] / graded, 4) if graded else None
     return cell
@@ -1054,13 +1024,6 @@ def score_file(
             return text_submetrics
         return _SUBMETRICS.get(task, ())  # () for verify_source / cite_passage (no fixed submetrics)
 
-    def _zero(task: str) -> dict:
-        # text-retrieval accumulators also count the near-verbatim tier of `incorrect` (issue #96)
-        z = {"n": 0, "correct": 0, "refused": 0}
-        if task in ("retrieve_quote", "complete_unit"):
-            z["near_miss"] = 0
-        return z
-
     scores_path.parent.mkdir(parents=True, exist_ok=True)
     per_cell: dict[tuple[str, str], dict] = {}  # (model_id, task) -> accumulators
     per_trad: dict[tuple[str, str, str], dict] = {}  # (model_id, tradition, task) -> {n, correct}
@@ -1092,14 +1055,12 @@ def score_file(
             sm_keys = _task_submetrics(d["task"])
             acc = per_cell.setdefault(
                 (d["model_id"], d["task"]),
-                {**_zero(d["task"]), **{k: 0 for k in sm_keys}},
+                {"n": 0, "correct": 0, "refused": 0, **{k: 0 for k in sm_keys}},
             )
             refused = metrics.get("outcome") == "refused"
             acc["n"] += 1
             acc["correct"] += metrics["correct"]
             acc["refused"] += int(refused)
-            if "near_miss" in acc:
-                acc["near_miss"] += metrics["near_miss"]
             # submetrics accumulate over GRADED cells only (refusals are never graded, so they must
             # not dilute the diagnostic averages); the per-cell values are still emitted on refused rows.
             if not refused:
@@ -1131,13 +1092,11 @@ def score_file(
             tkey = text_key(src)
             if tkey is not None:
                 xacc = per_text.setdefault(
-                    (d["model_id"], TEXT_KEY_SEP.join(tkey), d["task"]), _zero(d["task"])
+                    (d["model_id"], TEXT_KEY_SEP.join(tkey), d["task"]), {"n": 0, "correct": 0, "refused": 0}
                 )
                 xacc["n"] += 1
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
-                if "near_miss" in xacc:
-                    xacc["near_miss"] += metrics["near_miss"]
             prompt = _PROMPT_KIND.get(src.get("condition"))
             if prompt:
                 pacc = per_prompt.setdefault(
@@ -1164,7 +1123,7 @@ def score_file(
         # a fully-missing (expected-but-unanswered) cell gets the same three-outcome schema via a
         # zero accumulator (accuracy/coverage/refused_rate → None, counts → 0), so summary consumers
         # see one shape; `missing` below stays distinct from `refused` (answered-then-declined).
-        cell = _outcome_cell(acc or _zero(task), _task_submetrics(task))
+        cell = _outcome_cell(acc or {"n": 0, "correct": 0, "refused": 0}, _task_submetrics(task))
         if (model_id, task) in expected:
             cell["expected_n"] = expected[(model_id, task)]
             cell["missing"] = max(expected[(model_id, task)] - cell["n"], 0)
@@ -1246,7 +1205,7 @@ def score_file(
     expected_text = expected_text or {}
     all_text_cells = set(per_text) | set(expected_text)
     for (model_id, text_label, task) in sorted(all_text_cells):
-        cell = _outcome_cell(per_text.get((model_id, text_label, task)) or _zero(task), ())
+        cell = _outcome_cell(per_text.get((model_id, text_label, task)) or {"n": 0, "correct": 0, "refused": 0}, ())
         if (model_id, text_label, task) in expected_text:
             cell["expected_n"] = expected_text[(model_id, text_label, task)]
             cell["missing"] = max(expected_text[(model_id, text_label, task)] - cell["n"], 0)
@@ -1345,20 +1304,12 @@ def _cell_str(c: dict | None) -> str:
     if c.get("coverage") is not None:
         s += f" cov {c['coverage']:.0%}"
     if "correct" in c:  # scored cell: spec requires correct/incorrect/refused in summary.md
-        s += f" (n={c['n']}; c/i/r {c['correct']}/{c['incorrect']}/{c['refused']}{_near_str(c)})"
+        s += f" (n={c['n']}; c/i/r {c['correct']}/{c['incorrect']}/{c['refused']})"
     else:
         s += f" (n={c['n']})"
     if c.get("missing"):
         s += f" −{c['missing']}"
     return s
-
-
-def _near_str(c: dict) -> str:
-    """The near-verbatim tier beside ``incorrect`` on a text-retrieval cell (issue #96)."""
-    if "near_miss" not in c:
-        return ""
-    share = c.get("near_miss_share")
-    return f"; near {c['near_miss']}" + ("" if share is None else f" = {share:.0%} of i")
 
 
 def summary_markdown(summary: dict) -> str:
@@ -1387,10 +1338,7 @@ def summary_markdown(summary: dict) -> str:
         "",
         "_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). "
         "accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; "
-        "refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). "
-        "`near N` (text retrieval) = incorrect cells that are near-verbatim (token-F1 ≥ 0.9 or the "
-        "reference contained once vowel signs/accents are dropped) — another edition or orthography of "
-        "the right text; still counted incorrect._",
+        "refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused)._",
     ]
 
     by_trad = summary.get("by_tradition") or {}
@@ -1415,19 +1363,15 @@ def summary_markdown(summary: dict) -> str:
         lines += ["", "### By text (one text = one work · version · language)"]
         for model_id in sorted(by_text):
             lines += ["", f"**{model_id}**",
-                      "| text | n | accuracy | coverage | refused | missing | near miss / text-retrieval incorrect |",
-                      "|" + "---|" * 7]
+                      "| text | n | accuracy | coverage | refused | missing |", "|" + "---|" * 6]
             for key in sorted(by_text[model_id]):
                 ov = by_text[model_id][key]["_overall"]
                 acc = "n/a" if ov["accuracy"] is None else f"{ov['accuracy']:.0%}"
                 cov = "n/a" if ov.get("coverage") is None else f"{ov['coverage']:.0%}"
                 miss = ov.get("missing") or 0
-                tr = [c for c in by_text[model_id][key].values() if "near_miss" in c]
-                near, wrong = sum(c["near_miss"] for c in tr), sum(c["incorrect"] for c in tr)
-                near_col = "—" if not tr else f"{near}/{wrong}" + (f" ({near / wrong:.0%})" if wrong else "")
                 lines.append(
                     f"| {_text_label_display(key)} | {ov['n']} | {acc} | {cov} | {ov['refused']} "
-                    f"| {miss if miss else '—'} | {near_col} |"
+                    f"| {miss if miss else '—'} |"
                 )
 
     panel = summary.get("panel") or {}

@@ -60,11 +60,6 @@ export function QuestionList({ results }: { results: QuestionResult[] }) {
                 {failureSeverity(r.failure)} · {FAILURE_KIND_LABEL[r.failure]}
               </span>
             )}
-            {r.near_miss && !r.correct && (
-              <span className="rounded border border-primary-300 bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-800">
-                near miss
-              </span>
-            )}
             <span className="font-mono">{r.question_id}</span>
             <span>·</span>
             <span>{r.task}</span>
