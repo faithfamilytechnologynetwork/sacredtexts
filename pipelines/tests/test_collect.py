@@ -199,3 +199,63 @@ def test_collect_reads_no_private_threadpool_internals():
         and n.attr in {"_initializer", "_initargs", "_worker", "_threads_queues"}
     })
     assert private_imports == [] and private_attrs == []
+
+
+# --- #85: carry an unchanged question's answer into a rebuilt question set ----------------------
+
+def _changed(q: Question, **fields) -> Question:
+    from dataclasses import replace
+    return replace(q, **fields)
+
+
+def test_carry_forward_copies_only_byte_identical_prompts(tmp_path, monkeypatch):
+    """A rebuild changed one expected text (same prompt, same id) and one prompt (new id). The first
+    answer is carried and re-stamped; the second, and a cell whose identity changed, are called."""
+    from sacredbench.generate import question_set_digest
+
+    old_qs = [_q("a"), _q("b"), _q("c")]
+    old = tmp_path / "old" / "answers.jsonl"
+    monkeypatch.setattr(collect_mod, "complete", _fake(set()))
+    collect(old_qs, _config("m", "n"), old)
+    new_qs = [
+        _changed(old_qs[0], expected={"text": "fixed"}),      # same id + prompt -> carried
+        _changed(old_qs[1], id="b2", prompt="new prompt"),    # new prompt -> called
+        _changed(old_qs[2], prompt="same id, edited prompt"),  # id kept, prompt differs -> called
+    ]
+    new = tmp_path / "new" / "answers.jsonl"
+    # model "n" now points at a different slug: its old answers must not be carried
+    config = RunConfig(
+        models=(ModelSpec(id="m", provider="anthropic", model="m-m"),
+                ModelSpec(id="n", provider="anthropic", model="other")),
+        concurrency=1,
+    )
+    assert collect_mod.carry_forward(new_qs, config, new, old) == 1
+    carried = _rows(new)[0]
+    assert (carried["question_id"], carried["model_id"]) == ("a", "m")
+    assert carried["answer"] == "ans:prompt for a"
+    assert carried["question"]["expected"] == {"text": "fixed"}  # scored against the new expected
+    assert carried["question_set_digest"] == question_set_digest(new_qs)
+    assert carried["carried_from"] == {
+        "answers": "../old/answers.jsonl", "question_set_digest": question_set_digest(old_qs),
+    }
+
+    calls = []
+    monkeypatch.setattr(collect_mod, "complete", lambda m, p, retries=2: (calls.append((m.id, p)), ("x", {}, 1))[1])
+    done, failed, _ = collect(new_qs, config, new)
+    assert (done, failed) == (5, 0) and ("m", "prompt for a") not in calls
+    assert len(_rows(new)) == 6
+
+
+def test_carry_forward_never_overwrites_and_refuses_a_foreign_file(tmp_path, monkeypatch):
+    qs = [_q("a")]
+    monkeypatch.setattr(collect_mod, "complete", _fake(set()))
+    old, new = tmp_path / "old.jsonl", tmp_path / "new.jsonl"
+    collect(qs, _config("m"), old)
+    collect(qs, _config("m"), new)
+    assert collect_mod.carry_forward(qs, _config("m"), new, old) == 0  # the cell is already answered
+    assert len(_rows(new)) == 1
+    # a different max_tokens could have truncated the old answer: it is called, not carried
+    shorter = RunConfig(models=(ModelSpec(id="m", provider="anthropic", model="m-m", max_tokens=64),), concurrency=1)
+    assert collect_mod.carry_forward(qs, shorter, tmp_path / "fresh.jsonl", old) == 0
+    with pytest.raises(CollectError, match="refusing to carry"):
+        collect_mod.carry_forward([_q("z")], _config("m"), new, old)
