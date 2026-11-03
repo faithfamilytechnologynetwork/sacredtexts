@@ -17,3 +17,10 @@ Change (minimal, no other UI):
 
 No porch project (plain task). Verify: `pnpm -C apps/viewer test` + `check-types`. The viewer has
 no lint script.
+
+## Scope change (architect, 2026-11-03T00:20Z) — five-way
+The owner widened the filter to all / correct / incorrect / refused / missing. `refused` ⇒
+`failureMode(r) === 'refused'` (answered but declined); `incorrect` stays scored-wrong only;
+`missing` is unchanged. Added the option, the `?correct=refused` validator value, the helper
+sentence ("refused and missing cells each have their own option"), and a test that `refused`
+returns only refused cells. Pushed to the same PR (#89).

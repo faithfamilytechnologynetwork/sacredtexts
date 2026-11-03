@@ -71,12 +71,21 @@ describe("explorer — filters compose", () => {
     expect(filterQuestions(results, { tradition: "Roman Catholic" }).map((r) => r.question_id)).toEqual(["c", "d"]);
   });
 
-  it("filters by correct / incorrect / missing", () => {
+  it("filters by correct / incorrect / refused / missing", () => {
     expect(filterQuestions(results, { correct: "correct" }).map((r) => r.question_id)).toEqual(["a"]);
     // incorrect = answered and scored wrong (b/d) — excludes missing c and refused e
     expect(filterQuestions(results, { correct: "incorrect" }).map((r) => r.question_id)).toEqual(["b", "d"]);
+    // refused = only the refused cell
+    expect(filterQuestions(results, { correct: "refused" }).map((r) => r.question_id)).toEqual(["e"]);
     // missing = only the missing cell
     expect(filterQuestions(results, { correct: "missing" }).map((r) => r.question_id)).toEqual(["c"]);
+  });
+
+  it("'refused' returns only refused cells", () => {
+    const got = filterQuestions(results, { correct: "refused" });
+    expect(got.length).toBeGreaterThan(0);
+    expect(got.every((r) => r.refused && !r.missing && !r.correct)).toBe(true);
+    expect(got).toHaveLength(results.filter((r) => failureMode(r) === "refused").length);
   });
 
   it("'incorrect' excludes missing and refused cells", () => {

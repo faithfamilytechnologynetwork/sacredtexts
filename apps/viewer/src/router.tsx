@@ -48,7 +48,10 @@ const explorerRoute = createRoute({
     task: typeof search.task === "string" && search.task ? search.task : undefined,
     tradition: typeof search.tradition === "string" && search.tradition ? search.tradition : undefined,
     correct:
-      search.correct === "correct" || search.correct === "incorrect" || search.correct === "missing"
+      search.correct === "correct" ||
+      search.correct === "incorrect" ||
+      search.correct === "refused" ||
+      search.correct === "missing"
         ? search.correct
         : undefined,
     mode:
