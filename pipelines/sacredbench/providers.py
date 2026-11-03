@@ -385,7 +385,7 @@ def _openai_openrouter_search(client: Any, model: ModelSpec, prompt: str) -> tup
         )
     text = choice.message.content or ""
     usage = _openrouter_usage(resp, choice)
-    usage["finish_reason"] = choice.finish_reason
+    usage["finish_reason"] = choice.finish_reason  # always "stop" here (guarded above); key-shape only
     _assert_native_arm(model.model, usage)  # mechanical nativeness gate — fail loud if not native
     return text, usage
 

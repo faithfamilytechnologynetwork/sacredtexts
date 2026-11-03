@@ -64,3 +64,16 @@ Evidence comment posted on #93 for the paper to cite.
 - arch.md providers bullet: replaced the "latent trap" note with the record-don't-enforce policy.
 - Full pipelines pytest: 870 passed, 2 skipped, 9 failed. All 9 are #97 (`_DaemonPool._initializer`
   on Python 3.14, test_collect.py ×6 / test_phase2_tools.py ×3), pre-existing on origin/main.
+
+## 2026-11-03 — PR #103 + CMAP
+
+- PR #103 opened. CMAP: gemini APPROVE, codex COMMENT (stale Gemini search-off test name and
+  docstring, fixed in b08c56a), claude APPROVE (non-blocking items: the OpenRouter-search
+  `finish_reason` is always "stop", now commented; PR body refreshed).
+- After merging origin/main (#99, Python 3.11) the full suite is green: 882 passed, 2 skipped,
+  0 failed.
+- Caveat for the paper: the 1–4% truncation figures are from the `usage.out >= max_tokens` proxy
+  over the committed runs, which predate `usage.finish_reason`. Runs collected after this PR carry
+  the field directly.
+- First `consult` attempt failed with "Multiple projects found" (the merge brought in bugfix-97's
+  project dir). Re-ran with `--issue 93 --project-id bugfix-93`.
