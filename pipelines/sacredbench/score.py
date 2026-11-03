@@ -70,9 +70,9 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
   word. Native-script numerals (Arabic-Indic, Devanagari, Gurmukhi …) ARE read as ASCII in the
   citation path (``fold_citation_digits``, #111); ``normalize()`` itself does not fold them.
   Native-script labels and Hebrew letter-numerals are rewritten by ``citations.py`` (#112).
-- a Talmud / GGS citation scored at the daf / Ang (#112) has a colon-free expected, so its
-  extractor is ``_NUM_CITE`` and a colon-shaped rival that is not a daf / Ang citation (a
-  Mishnah "Bekhorot 1:1", a verse) is not counted as a candidate; unrealized in the committed runs.
+- a Talmud citation's extractor is ``_NUM_CITE`` (the amud letter defeats the colon test), so a
+  colon-shaped rival beside it (a Mishnah "Bekhorot 1:1", a verse) is not counted, as before #112.
+  A GGS citation scored at the Ang keeps its colon rivals (``citations.score_citation``).
 - the prompt's form example is dropped from the candidates beside another citation (#118)
   whether it is disclaimed or offered as an alternative ("Dhammapada 74 or Dhammapada 184").
 """

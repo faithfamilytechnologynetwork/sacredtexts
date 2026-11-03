@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-from .score import _single_citation_correct, fold_citation_digits, strip_script_marks
+from .score import _citation_candidates, _shape_rx, _single_citation_correct, fold_citation_digits, strip_script_marks
 
 ALIASES_PATH = Path(__file__).with_name("citation_aliases.yaml")
 
@@ -181,6 +181,7 @@ def score_citation(answer: str, expected_citation: str, example: str | None = No
     if example is not None:
         example = canonical_citation_text(example, expected_citation)
     unit = _conventional_unit(expected_citation)
+    rivals: set[str] = set()
     if unit is not None:
         full, _ = _single_citation_correct(text, expected_citation, example)
         metrics["segment_match"] = int(correct or full)
@@ -188,9 +189,13 @@ def score_citation(answer: str, expected_citation: str, example: str | None = No
             text = _drop_segment(text, unit)
             if example is not None:
                 example = _drop_segment(example, unit)
+            if _shape_rx(expected_citation) is not _shape_rx(unit):
+                # "Ang 1297:28" loses its colon at the Ang, but the colon citations the full
+                # citation's extractor counted ("… or John 1:1") are still rivals.
+                rivals = _citation_candidates(text, expected_citation)
             expected_citation = unit
     if not correct:
         credited, n = _single_citation_correct(text, expected_citation, example)
-        if credited:
+        if credited and not rivals:
             metrics.update(correct=1, n_candidates=n)
     return metrics

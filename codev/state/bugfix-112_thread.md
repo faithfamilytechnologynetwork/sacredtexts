@@ -88,3 +88,15 @@ uses the canonicalized example; the `example_citation` parameter renamed `exampl
 function); the daf/Ang extractor switch (`_NUM_CITE` can't see a non-daf colon rival) is in SCOPE.
 Follow-ups (not here): carry the exemplar in the question row instead of re-parsing the prompt;
 surface `segment_match` in the viewer/analysis.
+
+## PR phase — codex round 2
+
+Codex still REQUEST_CHANGES. (a) New concrete case: `Ang 1297:15 or John 1:1` vs `Ang 1297:28` was
+credited, because dropping to the Ang switched the extractor to `_NUM_CITE`, which can't see the
+colon rival. For GGS that was weaker than the old matcher (its `_COLON_CITE` counted it), so
+`score_citation` now keeps the colon candidates of the full citation's shape as rivals when the
+shape changes. It moves 0 of 16,633 committed + rerun cells. Talmud is untouched: its extractor was
+already `_NUM_CITE` pre-#112 (shape quirk), and counting colon spans there would un-credit a
+same-passage Mishnah cross-reference (`bekhorot 4a:3` + `bekhorot 1:1`). (b) Codex repeats the
+"example offered as an alternative" point. That is a policy call against the architect's #118
+direction, so it is escalated, not changed.

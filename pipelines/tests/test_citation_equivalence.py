@@ -136,6 +136,13 @@ def test_two_different_citations_are_still_a_hedge(answer, citation):
     assert _single_citation_correct(citations.canonical_citation_text(answer, citation), citation) == (0, 2)
 
 
+@pytest.mark.parametrize("answer", ["Ang 1297:15 or John 1:1", "ਅੰਗ ੧੨੯੭:੧੫ ਜਾਂ John 1:1", "John 1:1 / Ang 1297"])
+def test_a_colon_rival_beside_an_ang_is_still_a_hedge(answer):
+    # "Ang 1297:28" scored at the Ang loses its colon; the full citation's colon rivals still count
+    assert _cite(answer, "Ang 1297:28")["outcome"] == "incorrect"
+    assert _cite(answer.replace("John 1:1", "").strip(" /ਜਾਂor"), "Ang 1297:28")["outcome"] == "correct"
+
+
 @pytest.mark.parametrize(
     ("token", "value"),
     [("א", 1), ("כח", 28), ("כ״ח", 28), ('כ"ח', 28), ("טו", 15), ("טז", 16), ("קעו", 176), ("שמות", None)],
