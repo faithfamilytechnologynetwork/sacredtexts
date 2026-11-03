@@ -10,7 +10,10 @@ What is pinned:
 - each English prompt names the work, not a bare catalogue version ("from 2013 edition?", #90), and the
   Sanskrit and Pali prompts name it in their own language instead of splicing in the English name;
 - every committed "no" row quotes the donor METHODOLOGY.md's table names for that edition (this is what
-  retarget_verify.py used to apply after the build), and each set flips half its verify rows.
+  retarget_verify.py used to apply after the build), and each set flips half its verify rows;
+- every prompt that quotes a passage quotes exactly one, and a verify prompt's passage is the one its
+  expected answer names: its own for "yes", the donor for "no" (PR #98: a splice between the first two
+  quotation marks left five encyclical "no" rows with a donor glued onto the encyclical's tail).
 """
 from __future__ import annotations
 
@@ -231,3 +234,55 @@ def test_each_set_flips_half_its_verify_rows():
 def test_question_ids_are_unique():
     ids = [row["id"] for rows in _committed().values() for row in rows]
     assert len(ids) == len(set(ids))
+
+
+# --- PR #98: each prompt quotes one passage, and a "no" row quotes exactly its donor -----------------
+
+_QUOTING_TASKS = ("complete_unit", "cite_passage", "verify_source")
+
+
+def _in_prompt(text: str) -> str:
+    """An English passage as it is quoted inside a prompt: its own quotation marks become ' (restated)."""
+    return text.replace('"', "'").replace("\u201c", "'").replace("\u201d", "'")
+
+
+def test_every_quoting_prompt_quotes_exactly_one_passage():
+    for path, rows in _committed().items():
+        for row in rows:
+            if row["task"] in _QUOTING_TASKS:
+                assert row["prompt"].count('"') == 2, (path.relative_to(_ITEMS), row["id"], row["prompt"][:120])
+
+
+def test_every_verify_passage_is_the_one_its_expected_answer_names(builders):
+    bq, _ = builders
+    committed = _committed()
+    passages: dict[tuple[str, str, str], str] = {}
+    for rows in committed.values():
+        for row in rows:
+            if row["task"] == "retrieve_quote":
+                s = row["source"]
+                passages[(s["tradition"][0], s["version"], s["citation"])] = row["expected"]["text"]
+    for donor in (*bq._hadith_pool(), *bq._english_hadith_pool()):  # the hadith donors are not question rows
+        passages[(donor["tradition"], donor["version"], donor["citation"])] = donor["expected"]["text"]
+    checked = 0
+    for path, rows in committed.items():
+        for row in rows:
+            if row["task"] != "verify_source":
+                continue
+            e, prompt = row["expected"], row["prompt"]
+            quoted = prompt[prompt.find('"') + 1:prompt.rfind('"')]  # everything the quotation marks enclose
+            text = passages[(e["true_tradition"], e["true_version"], e["true_citation"])]
+            assert quoted in (text, _in_prompt(text)), (path.relative_to(_ITEMS), row["id"], e["answer"], e["true_citation"])
+            checked += 1
+    assert checked == sum(1 for rows in committed.values() for r in rows if r["task"] == "verify_source")
+
+
+def test_a_no_row_is_its_template_rendered_around_the_donor(builders):
+    bq, _ = builders
+    row = bq.prompt_for(bq.EN["verify_source"], {"version": "the 2013 edition of the Book of Mormon", "text": "own"}, "\nX")
+    assert row["prompt"] == 'Is the following text from the 2013 edition of the Book of Mormon? "own" Answer Yes or No.\nX'
+    assert row["render"]("donor") == 'Is the following text from the 2013 edition of the Book of Mormon? "donor" Answer Yes or No.\nX'
+    with pytest.raises(SystemExit, match="straight double quote"):
+        row["render"]('a passage that "quotes" something')
+    with pytest.raises(SystemExit, match="straight double quote"):
+        bq.prompt_for(bq.EN["verify_source"], {"version": "v", "text": 'it says "this"'})

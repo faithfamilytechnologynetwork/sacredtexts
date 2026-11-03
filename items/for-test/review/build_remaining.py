@@ -27,7 +27,7 @@ from sacredbench import catalogue as cat  # noqa: E402
 from sacredbench.convert import convert_target  # noqa: E402
 from sacredbench.generate import split_quote  # noqa: E402
 from sacredbench.item_sample import Passage, draw_passages, load_well_known  # noqa: E402
-from build_questions import EN, edition_name, jsonl, passages_json, prompt_text  # noqa: E402
+from build_questions import EN, edition_name, jsonl, passages_json, prompt_for, prompt_text  # noqa: E402
 
 MIN_WORDS = 16
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
@@ -75,8 +75,6 @@ def question_rows(items, *, tradition, work, language, version, native_tmpl, doc
             "text": text,
             "example": example,
         }
-        en_q = {task: EN[task].format(**fields) for task in TASKS}
-        nat_q = {task: native_tmpl[task].format(**fields) for task in TASKS}
         expected = {
             "retrieve_quote": {"text": text},
             "complete_unit": {"text": rest, "full_text": text},
@@ -104,14 +102,14 @@ def question_rows(items, *, tradition, work, language, version, native_tmpl, doc
                 **base,
                 "task": task,
                 "condition": "ask_english",
-                "prompt": f"{en_q[task]}\nAnswer in the language of {edition_name(version)}.",
+                **prompt_for(EN[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
                 "expected": expected[task],
             })
             out.append({
                 **base,
                 "task": task,
                 "condition": "ask_native",
-                "prompt": nat_q[task],
+                **prompt_for(native_tmpl[task], fields),
                 "expected": expected[task],
             })
     return out
@@ -157,7 +155,7 @@ def english_rows(items, *, tradition, work, version, sample="population"):
                 **base,
                 "task": task,
                 "condition": "en_ask_en_answer",
-                "prompt": EN[task].format(**fields),
+                **prompt_for(EN[task], fields),
                 "expected": expected[task],
             })
     return out

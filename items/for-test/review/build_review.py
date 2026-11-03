@@ -2,7 +2,9 @@
 
 The pages list the citations actually drawn. They do not keep a second,
 hand-picked list. The Islam page prints the prompt templates build_questions.py
-uses, so the page cannot drift from the questions (PR #78).
+uses, so the page cannot drift from the questions (PR #78). It writes only the
+review pages: every questions.jsonl and passages.json (with its notice and
+provenance) is written by build_questions.py, the one rebuild command (PR #98).
 
 Run with the pipelines environment from the repo root:
 ``uv --project pipelines run python items/for-test/review/build_review.py``.
@@ -74,7 +76,6 @@ def main() -> None:
         sikhism(),
     ]
     write_index(religions)
-    write_passages()
     for folder, body in religions:
         path = OUT / folder
         path.mkdir(parents=True, exist_ok=True)
@@ -130,62 +131,6 @@ def write_index(religions: list[tuple[str, str]]) -> None:
     (OUT / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def write_passages() -> None:
-    """Write passages.json beside each questions.jsonl. The question file is the only store."""
-    root = OUT.parent
-    notices = {
-        "Christianity": "New Revised Standard Version Bible, copyright © 1989 National Council of the Churches of Christ in the United States of America. Used by permission. All rights reserved worldwide.",
-        "Judaism": "William Davidson Edition on Sefaria, CC-BY-NC.",
-        "Islam": "Saheeh International English translation of the Qur'an, via the Quranic Universal Library, for the English files. The Arabic files are the Uthmani Qur'an from the same library. The same citations, not a second draw.",
-        "Hinduism": "Sanskrit from Stotra Samhita (Gita Press text). English from Annie Besant, 1922. The same citations, not a second draw.",
-        "Buddhism": "Pali from the Chaṭṭha Saṅgāyana (Vipassana Research Institute). No English edition is in the corpus.",
-    }
-    edition_notices = (
-        ("Masoretic", "Masoretic text from the Westminster Leningrad Codex, via the Open Scriptures Hebrew Bible. The same 30 Christian population citations that are Hebrew Bible verses, not a second draw. Daniel 2 is Aramaic in this text."),
-        ("Greek New Testament", "Greek New Testament, Scrivener 1894 Textus Receptus. The same 30 Christian population citations that are New Testament verses, not a second draw. Public-domain text."),
-    )
-    paths = sorted(root.glob("*/*/*/questions.jsonl")) + sorted(root.glob("*/*/*/*/questions.jsonl"))
-    seen = set()
-    for path in paths:
-        # One passages.json per sample. The two prompt-language files share it.
-        sample_dir = path.parent.parent if path.parent.name.startswith("prompt-") else path.parent
-        if sample_dir in seen:
-            continue
-        seen.add(sample_dir)
-        path = next(p for p in paths if (p.parent.parent if p.parent.name.startswith("prompt-") else p.parent) == sample_dir)
-        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        passages = []
-        for row in rows:
-            if row["task"] != "retrieve_quote":
-                continue
-            source = row["source"]
-            kind = "english" if source["language"] == "en" else "native"
-            item = {
-                "tradition": source["tradition"][0],
-                "citation": source["citation"],
-                "sample": source["sample"],
-                "version": source["version"],
-                "text": {kind: row["expected"]["text"]},
-            }
-            passages.append(item)
-        tradition = passages[0]["tradition"] if passages else ""
-        payload = {
-            "tradition": tradition,
-            "sample": sample_dir.name,
-            "run": sample_dir.name == "population",
-            "passages": passages,
-        }
-        version = passages[0]["version"] if passages else ""
-        edition_notice = next((text for key, text in edition_notices if key in version), None)
-        if edition_notice:
-            payload["notice"] = edition_notice
-        elif tradition in notices:
-            payload["notice"] = notices[tradition]
-        dest = sample_dir / "passages.json"
-        dest.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(dest.relative_to(root), len(passages))
-
-
 def christianity() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("christianity", "english"))
     size += (
@@ -205,13 +150,14 @@ def christianity() -> tuple[str, str]:
     )
     return "01-christianity", page(
         title="Christianity",
-        version="NRSV",
+        version=edition_name("NRSV"),
         english_version="NRSV (same edition; the text is already English)",
         language="English",
         native_prompts=None,
         rows=rows,
         source="texts/raw/Protestant Christian/nrsv.json (gitignored; not in the public repo)",
         size=size,
+        english_prompts=EN,
     )
 
 
@@ -301,14 +247,9 @@ def page(
     english_prompts=None, english_suffix=None, native_note=None,
 ) -> str:
     """One review page. ``english_prompts`` / ``english_suffix`` are the live build_questions
-    templates and the second line of each English prompt; a page that does not pass them keeps the
-    older wording below. ``native_note`` replaces the "draft" label once a speaker has signed off."""
-    english = english_prompts or {
-        "retrieve_quote": "What is the text of {citation} in {version}? Reply with the exact text of that edition and nothing else.",
-        "complete_unit": "Please complete this quote from {version}: \"{head}\" Reply with only the remaining words.",
-        "cite_passage": "Where in {version} can I find this quote? \"{text}\" Answer with the citation only, in the same form as: {example}.",
-        "verify_source": "Is the following text from {version}? \"{text}\" Answer Yes or No.",
-    }
+    templates and the second line of each English prompt; a page that does not pass them prints the
+    shared English templates. ``native_note`` replaces the "draft" label once a speaker has signed off."""
+    english = english_prompts or EN
     out = [
         f"# {title}",
         "",

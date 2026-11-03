@@ -116,6 +116,14 @@ any set the table allows. Each `no` row draws from its own RNG (seed
 20261030, tradition, edition, condition, sample, citation), so no other row,
 set, or build order can move it.
 
+A `no` row is its own prompt template filled with the donor passage
+(`prompt_for` in `build_questions.py`). The donor is never pasted between the
+prompt's quotation marks, because a passage can contain quotation marks of its
+own. Every prompt quotes exactly one passage. Inside an English prompt, a
+passage's own quotation marks become `'`; the expected answer keeps the
+original text. A passage that would put a straight `"` inside a prompt stops
+the build.
+
 The hadith donor is chosen by the script of the quoted passage, not by the
 tradition: an Arabic passage gets a hadith, so an English Qur'an edition, if
 one is added, would get an English donor. Four rules keep the hadith item a
@@ -182,8 +190,11 @@ uv --project pipelines run python items/for-test/review/build_questions.py
 Run it twice and the files are byte-identical. It builds every set's `yes`
 rows first, then draws every `no` row from one pool by the table above, then
 writes. The other `review/build_*.py` scripts are called from it and are not
-run on their own. `pipelines/tests/test_question_sets_rebuild.py` rebuilds
-every set offline and checks it against the committed files.
+run on their own; `review/build_review.py` writes only the review pages.
+`pipelines/tests/test_question_sets_rebuild.py` rebuilds every set offline
+and checks it against the committed files. It also checks that each `verify_source`
+prompt quotes the passage its expected answer names: its own passage for
+`yes`, the donor for `no`.
 
 Most wording is read from `texts/raw/` and `well_known.yaml`. Three texts are
 fetched over the network and the build stops if a fetch fails: the NRSV

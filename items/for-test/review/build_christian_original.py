@@ -19,7 +19,7 @@ import re
 import urllib.request
 from pathlib import Path
 
-from build_questions import EN, jsonl, passages_json
+from build_questions import EN, jsonl, passages_json, prompt_for
 from sacredbench.generate import split_quote
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,13 +100,13 @@ def _rows(passages: list[dict], native_tmpl: dict[str, str], sample: str) -> lis
                 },
             }[task]
             prompts = (
-                ("ask_english", f"{EN[task].format(**fields)}\nAnswer in the language of {p['version']}."),
-                ("ask_native", native_tmpl[task].format(**fields)),
+                ("ask_english", prompt_for(EN[task], fields, f"\nAnswer in the language of {p['version']}.")),
+                ("ask_native", prompt_for(native_tmpl[task], fields)),
             )
             for condition, prompt in prompts:
                 out.append({
                     "tradition": "Christianity", "task": task, "condition": condition, "sample": sample,
-                    "prompt": prompt, "expected": expected, "citation": p["citation"],
+                    **prompt, "expected": expected, "citation": p["citation"],
                     "version": p["version"], "language": p["language"],
                 })
     return out

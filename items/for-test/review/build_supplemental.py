@@ -22,7 +22,7 @@ from sacredbench import catalogue as cat  # noqa: E402
 from sacredbench.convert import convert_target  # noqa: E402
 from sacredbench.generate import split_quote  # noqa: E402
 from sacredbench.item_sample import Passage, draw_passages  # noqa: E402
-from build_questions import EN, edition_name, jsonl, passages_json  # noqa: E402
+from build_questions import EN, edition_name, jsonl, passages_json, prompt_for, prompt_text  # noqa: E402
 
 MIN_WORDS = 16
 N = 30
@@ -74,7 +74,10 @@ def rows_for(items, *, tradition, document_type):
         head, rest = split_quote(text)
         example = next(c for c in citations if c != passage.citation)
         named = edition_name(passage.version, passage.work)
-        fields = {"citation": passage.citation, "version": named, "head": head, "text": text, "example": example}
+        # Encyclical paragraphs quote scripture and other documents. Inside the prompt their quotation
+        # marks become ', as in every other English set, so the prompt quotes one passage (PR #98).
+        fields = {"citation": passage.citation, "version": named, "head": prompt_text(head),
+                  "text": prompt_text(text), "example": example}
         expected = {
             "retrieve_quote": {"text": text},
             "complete_unit": {"text": rest, "full_text": text},
@@ -98,7 +101,7 @@ def rows_for(items, *, tradition, document_type):
         for task in TASKS:
             if task == "complete_unit" and not rest.strip():
                 continue
-            out.append({**base, "task": task, "condition": "en_ask_en_answer", "prompt": EN[task].format(**fields), "expected": expected[task]})
+            out.append({**base, "task": task, "condition": "en_ask_en_answer", **prompt_for(EN[task], fields), "expected": expected[task]})
     return out
 
 

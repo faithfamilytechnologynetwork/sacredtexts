@@ -83,6 +83,7 @@ _EDITION_DISPLAY = {
     "Annie Besant (1922)": "the Annie Besant (1922) translation of the Bhagavad Gita",
     "Chaṭṭha Saṅgāyana (VRI)": "the Chaṭṭha Saṅgāyana (VRI) edition of the Dhammapada",
     "2013 edition": "the 2013 edition of the Book of Mormon",
+    "NRSV": "the New Revised Standard Version (NRSV)",
 }
 # Each encyclical is its own work, with the version "Vatican English text (<pope>, <date>)".
 _ENCYCLICAL_VERSION = re.compile(r"Vatican English text \((.+)\)")
@@ -95,6 +96,26 @@ def prompt_text(text: str) -> str:
     the prompt ends the quotation at the first one, so a ``no`` item keeps the
     real ayah in the question."""
     return text.replace('"', "'").replace("“", "'").replace("”", "'")
+
+
+def prompt_for(template: str, fields: dict, suffix: str = "") -> dict:
+    """A row's prompt, the passage it quotes, and how to quote a different passage instead.
+
+    ``payload`` is the passage that fills the template's ``"{text}"``, and ``render`` rebuilds the
+    whole prompt around any passage. That is how a verify "no" row quotes its donor
+    (``add_verify_negatives``). Nothing searches a prompt for its quotation marks, because a passage
+    can contain them (PR #98: five encyclical "no" rows came out with a Book of Mormon donor spliced
+    onto the tail of the encyclical). A passage or an opening with a straight double quote fails here,
+    so every prompt quotes exactly one passage; English builders pass their text through ``prompt_text``.
+    """
+    def render(payload: str) -> str:
+        if '"' in payload:
+            raise SystemExit(f"a quoted passage contains a straight double quote: {payload[:80]!r}")
+        return template.format(**{**fields, "text": payload}) + suffix
+
+    if '"' in fields.get("head", ""):
+        raise SystemExit(f"a quoted opening contains a straight double quote: {fields['head'][:80]!r}")
+    return {"prompt": render(fields["text"]), "payload": fields["text"], "render": render}
 
 
 def edition_name(version: str, work: str | None = None) -> str:
@@ -146,8 +167,6 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             "citation": passage.citation, "version": edition_name(version),
             "head": prompt_text(head), "text": prompt_text(native), "example": example,
         }
-        en_q = {k: EN[k].format(**fields) for k in TASKS}
-        nat_q = {k: native_tmpl[k].format(**fields) for k in TASKS}
         expected = {
             "retrieve_quote": {"text": native},
             "complete_unit": {"text": rest, "full_text": native},
@@ -171,12 +190,12 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             # language to answer in. The native call is only the native-language question.
             out.append({
                 **base, "task": task, "condition": "ask_english",
-                "prompt": f"{en_q[task]}\nAnswer in the language of {edition_name(version)}.",
+                **prompt_for(EN[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
                 "expected": expected[task],
             })
             out.append({
                 **base, "task": task, "condition": "ask_native",
-                "prompt": nat_q[task],
+                **prompt_for(native_tmpl[task], fields),
                 "expected": expected[task],
             })
         if english is None:
@@ -186,8 +205,6 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             "citation": passage.citation, "version": edition_name(english_version),
             "head": prompt_text(head_e), "text": prompt_text(english), "example": example,
         }
-        en_q2 = {k: EN[k].format(**fields_e) for k in TASKS}
-        nat_q2 = {k: english_native_tmpl[k].format(**fields_e) for k in TASKS}
         expected_e = {
             "retrieve_quote": {"text": english},
             "complete_unit": {"text": rest_e, "full_text": english},
@@ -201,10 +218,9 @@ def rows_for(items, *, tradition, version, native_tmpl, english_version=None, en
             if task == "complete_unit" and not rest_e.strip():
                 continue
             # One English question. The edition name is already in that line.
-            prompt = en_q2[task]
             out.append({
                 **base, "task": task, "condition": "en_ask_en_answer",
-                "english_version": english_version, "prompt": prompt, "expected": expected_e[task],
+                "english_version": english_version, **prompt_for(EN[task], fields_e), "expected": expected_e[task],
             })
     return out
 
@@ -387,7 +403,7 @@ def christianity() -> list[dict]:
     drawn = population_draw(ordinary, famous, seed=20261030)
     panel = list(drawn) + list(famous)
     verses = {p.citation: fetch_nrsv(p.citation) for p in panel}
-    version = "the New Revised Standard Version (NRSV)"
+    version = edition_name("NRSV")
     citations = [p.citation for p in panel]
     rows = []
     for passage in panel:
@@ -401,19 +417,20 @@ def christianity() -> list[dict]:
             "stratum": "famous" if sample == "familiarity" else "ordinary",
             "version": "NRSV", "condition": "en_ask_en_answer", "copyright": NOTICE,
         }
-        specs = [
-            ("retrieve_quote", f"What is the text of {passage.citation} in {version}? Reply with the exact text of that edition and nothing else.", {"text": text}),
-            ("complete_unit", f'Please complete this quote from {version}: "{head}" Reply with only the remaining words.', {"text": rest, "full_text": text}),
-            ("cite_passage", f'Where in {version} can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.', {"citation": passage.citation}),
-            ("verify_source", f'Is the following text from {version}? "{text}" Answer Yes or No.', {
+        fields = {"citation": passage.citation, "version": version, "head": head, "text": text, "example": example}
+        expected = {
+            "retrieve_quote": {"text": text},
+            "complete_unit": {"text": rest, "full_text": text},
+            "cite_passage": {"citation": passage.citation},
+            "verify_source": {
                 "answer": "yes", "true_tradition": "Christianity", "true_version": "NRSV",
                 "true_language": "en", "true_citation": passage.citation,
-            }),
-        ]
-        for task, prompt, expected in specs:
+            },
+        }
+        for task in TASKS:
             if task == "complete_unit" and not rest.strip():
                 continue
-            rows.append({**base, "task": task, "prompt": prompt, "expected": expected})
+            rows.append({**base, "task": task, **prompt_for(EN[task], fields), "expected": expected[task]})
     return rows
 
 
@@ -477,7 +494,7 @@ def _donor_pool(row: dict, donors: list[dict]) -> list[dict]:
     else:
         # Greek NT, Guru Granth Sahib, Sanskrit Gita, Pali Dhammapada: no second work in that
         # language, so another tradition's native passage in a different script, never English.
-        script = _script(_quoted_passage(row["prompt"]))
+        script = _script(row["payload"])
         rule = lambda d: _is_native(d) and _script(d["expected"]["text"]) != script
     pool = [d for d in donors if d["tradition"] != row["tradition"] and rule(d)]
     if not pool:
@@ -791,15 +808,6 @@ def _hadith_donor(row: dict) -> dict:
     raise SystemExit(f"no hadith donor free of Qur'an wording for {row['citation']}")
 
 
-def _quoted_passage(prompt: str) -> str:
-    """The passage a verify_source prompt quotes: the text between its first two double quotes."""
-    a = prompt.find('"')
-    b = prompt.find('"', a + 1)
-    if a == -1 or b == -1:
-        raise SystemExit(f"no quoted passage in: {prompt[:80]}")
-    return prompt[a + 1:b]
-
-
 def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
     """Half of each set's verify_source rows, per condition and sample, quote a different work.
 
@@ -818,7 +826,7 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
         for group in groups.values():
             group.sort(key=lambda r: r["citation"])
             for row in group[: len(group) // 2]:
-                if _script(_quoted_passage(row["prompt"])) == "ar":
+                if _script(row["payload"]) == "ar":
                     donor = _hadith_donor(row)
                     text = donor["expected"]["text"]
                 elif row["tradition"] == "Islam" and row["condition"] == "en_ask_en_answer":
@@ -835,13 +843,8 @@ def add_verify_negatives(by_name: dict[str, list[dict]]) -> None:
                     "true_version": donor["version"],
                     "true_citation": donor["citation"],
                 }
-                lines = row["prompt"].split("\n")
-                for i, line in enumerate(lines):
-                    a = line.find('"')
-                    b = line.find('"', a + 1) if a != -1 else -1
-                    if a != -1 and b != -1:
-                        lines[i] = line[: a + 1] + text + line[b:]
-                row["prompt"] = "\n".join(lines)
+                # The same template, rendered around the donor (PR #98): never a splice between quote marks.
+                row["prompt"], row["payload"] = row["render"](text), text
 
 
 _RUN_META = {

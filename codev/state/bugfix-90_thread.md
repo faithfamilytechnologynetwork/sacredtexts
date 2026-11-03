@@ -77,3 +77,30 @@ pipelines/tests. runs/ untouched (architect: collection in flight on main; re-co
 - `porch check` fails ONLY on 9 pre-existing tests (test_collect 6, test_phase2_tools 3), all
   `_DaemonPool._initializer` on Python 3.14. They are #97, pre-existing (they fail on origin/main 7cff2fd). Per the
   architect: don't patch `_DaemonPool` here; open the PR anyway, and merge origin/main once #97 lands to get a clean gate.
+
+## PR #98 review round 1 (architect, REQUEST CHANGES — codex HIGH, verified)
+
+- Defect: `add_verify_negatives` spliced the donor between the FIRST TWO `"` of the prompt, but
+  `build_supplemental` put raw encyclical paragraphs (which quote scripture) in the prompt. Five encyclical
+  "no" rows (f6bd72ed9fce646c, 93c934b166b43d3f, 69df5e45e1d7619e, 212fd4dff3a522f2, 0c3bfc0970dba070) carried
+  the BoM donor glued onto the encyclical's tail. My byte-identical rebuild test locked them in — it pins
+  reproducibility, not correctness. Lesson: a reproduction test needs a correctness oracle beside it.
+- Fix (structural): `prompt_for(template, fields, suffix)` in build_questions returns
+  {prompt, payload, render}; every builder uses it; a "no" row is `render(donor_text)`. Nothing parses quote
+  marks any more (`_quoted_passage` deleted; `_donor_pool` reads `row["payload"]`). A straight `"` in a
+  payload or opening fails the build. Supplemental now passes text through `prompt_text` like every other
+  English set, so encyclical yes-prompts with quotes changed too (44 encyclical rows in all).
+- New tests (fail on the old tip: count 8/14 != 2; payload check flags exactly those 5 ids):
+  every quoting prompt has exactly one `"…"`; every verify payload == the passage named by
+  expected.true_* (its own for yes, the donor for no; hadith looked up in the hadith pools); render unit test.
+- build_review.py no longer writes passages.json (write_passages removed) — build_questions is the one writer.
+- .codev/checks/test.sh: main's #92 had already added an `items` lane (pytest items/for-test only), so an
+  items-only change still skipped test_question_sets_rebuild.py. Added a both-lanes mapping for items/**
+  (like fixtures/), instead of re-mapping items -> pipelines, which would have dropped main's items lane.
+- Merged origin/main (0b79afe: #99 fixes #97 by pinning pipelines/.python-version to 3.11; also #92).
+- NRSV complete_unit wording fixed ("Please complete this quote" -> "Complete this quotation", the shared EN
+  template); christianity() now uses EN + edition_name("NRSV") (added to _EDITION_DISPLAY). Review page 01
+  regenerated. 34 Christianity English complete_unit rows reworded; nothing else moved.
+- Non-blocking, noted: Masoretic/Greek still bypass edition_name() — their catalogue `version` IS the display
+  string (build_christian_original MASORETIC/GREEK), pre-existing; NRSV no longer bypasses it.
+- Regeneration: two runs byte-identical (62 files). Every expected/source unchanged; donors unchanged.
