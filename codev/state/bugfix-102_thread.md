@@ -32,3 +32,14 @@
   order, not filesystem order — deterministic now). `takeaway.pdf` byte-identical.
 - Committed `runs/paper/*.md` predate the latest collections (27,264 vs 29,470 cells today); not regenerated here.
 - Follow-up candidate (not this fix): `paper_figures.py` also globs `runs/*/base/**` with no `--run-dir`.
+
+## PR #106 + CMAP (2026-11-03)
+- `porch done --help` is NOT a help call — porch ran `done` and fired the `pr` gate before CMAP. Told the architect to hold.
+- First consult attempt failed ("Multiple projects found") — builder consults need `--issue 102 --project-id bugfix-102`.
+- CMAP: gemini APPROVE; codex COMMENT (only nit: thread commit used `[Bugfix 102]` not `[Bugfix #102]`); claude APPROVE.
+- Folded from claude: parametrized the `--allow-partial` test over both scripts — which exposed a real crash
+  (`facct_findings` printed `OUT.relative_to(ROOT)`, a ValueError for any out-of-repo output path; fixed), and a
+  docstring recording why answer rows are the coverage denominator (scores ⊆ answers).
+- Not folded (kept minimal): memoizing `_answers` (answers parsed 4× per facct run), renaming the `ROOT = REPO` alias.
+- Follow-up for the architect: `paper_figures.py` has no `--run-dir`, and `runs/README.md:58` /
+  `runs/analysis-template.md:60` document only the unscoped invocation.

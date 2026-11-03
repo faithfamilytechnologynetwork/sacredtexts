@@ -62,12 +62,17 @@ def test_run_dir_without_answers_is_refused(script, tmp_path):
         script.main(run_dir=str(tmp_path / "missing"))
 
 
-def test_allow_partial_writes_the_report_and_says_what_was_left_out(tmp_path, monkeypatch):
-    out = tmp_path / "paper" / "claim-tests.md"
-    monkeypatch.setattr(claim_tests, "OUT", out)
-    claim_tests.main(run_dir=str(_run(tmp_path, [STALE_ID])), allow_partial=True)
+@pytest.mark.parametrize(
+    ("script", "counted"),
+    # claim_tests counts joined cells; facct_findings counts every scored answer and drops only in its question-file table.
+    [(claim_tests, "From 2 scored cells across 1 models in "), (facct_findings, "From 3 scored answers in finished files in ")],
+)
+def test_allow_partial_writes_the_report_and_says_what_was_left_out(script, counted, tmp_path, monkeypatch):
+    out = tmp_path / "paper" / "out.md"
+    monkeypatch.setattr(script, "OUT", out)
+    script.main(run_dir=str(_run(tmp_path, [STALE_ID])), allow_partial=True)
     header = out.read_text(encoding="utf-8").splitlines()[2]
-    assert header.startswith("From 2 scored cells across 1 models in ")
+    assert header.startswith(counted)
     assert "1 of 3 answer rows have no question" in header
 
 

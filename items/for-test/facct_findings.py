@@ -524,8 +524,8 @@ def main(
     OUT.write_text(text, encoding="utf-8")
     figure = OUT.parent / "takeaway.pdf"
     figure.write_bytes(_figure(rows))
-    print(OUT.relative_to(ROOT))
-    print(figure.relative_to(ROOT))
+    for path in (OUT, figure):
+        print(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path)
 
 
 if __name__ == "__main__":

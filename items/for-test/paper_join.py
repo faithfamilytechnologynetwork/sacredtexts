@@ -56,7 +56,11 @@ def population_questions() -> dict[str, dict]:
 
 
 def check_coverage(run_dir: Path, questions: dict[str, dict], allow_partial: bool) -> tuple[int, int]:
-    """Matched and total answer rows. Stops unless every row has a question or ``allow_partial`` is set."""
+    """Matched and total answer rows. Stops unless every row has a question or ``allow_partial`` is set.
+
+    Answer rows are the denominator: every score row is scored from an answer row, so full
+    answer coverage is full score coverage too.
+    """
     counts: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     for model, path in model_files(run_dir, "answers.jsonl"):
         for row in rows(path):
