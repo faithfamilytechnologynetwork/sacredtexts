@@ -19,9 +19,7 @@ import signal
 import sys
 import threading
 import time
-import weakref
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from concurrent.futures.thread import _threads_queues, _worker
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,26 +38,28 @@ class Stopped(BaseException):
 
 
 class _DaemonPool(ThreadPoolExecutor):
-    """Worker threads are daemons, so Ctrl+C can exit without waiting out the HTTP timeout."""
+    """Worker threads are daemons, so Ctrl+C can exit without waiting out the HTTP timeout.
+
+    A thread's daemon flag is inherited from the thread that creates it, so the stock
+    ``_adjust_thread_count`` is run from a short-lived daemon thread: the workers it spawns are
+    daemons, with no copy of CPython's version-specific worker wiring (#97: 3.14 removed the
+    ``_initializer``/``_initargs`` attributes an earlier copy read)."""
 
     def _adjust_thread_count(self):
-        if self._idle_semaphore.acquire(timeout=0):
-            return
+        adjust = super()._adjust_thread_count
+        failure: list[BaseException] = []
 
-        def weakref_cb(_, q=self._work_queue):
-            q.put(None)
+        def spawn():
+            try:
+                adjust()
+            except BaseException as e:  # noqa: BLE001 — re-raised on the submitting thread
+                failure.append(e)
 
-        if len(self._threads) < self._max_workers:
-            thread_name = "%s_%d" % (self._thread_name_prefix or self, len(self._threads))
-            worker = threading.Thread(
-                name=thread_name,
-                target=_worker,
-                args=(weakref.ref(self, weakref_cb), self._work_queue, self._initializer, self._initargs),
-            )
-            worker.daemon = True
-            worker.start()
-            self._threads.add(worker)
-            _threads_queues[worker] = self._work_queue
+        spawner = threading.Thread(target=spawn, daemon=True)
+        spawner.start()
+        spawner.join()
+        if failure:
+            raise failure[0]
 
 
 def _panel_fingerprint(m) -> str:
