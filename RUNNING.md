@@ -66,6 +66,23 @@ Resume stops if the question file changed, or if a model id now has a
 different provider, slug, temperature, or search setting. Use a new `--out`
 file in that case.
 
+When a rebuild changed only some questions, write a new run folder and copy
+the unchanged answers from the old one:
+
+```bash
+python items/for-test/join_run.py --model haiku --run-dir runs/rerun-YYYY-MM-DD --carry-from runs/rerun-2026-11-03
+```
+
+An answer is copied only when its question id and its prompt are the same,
+byte for byte, and the model id still has the same provider, slug,
+temperature, search setting, and max tokens. Every other question is called.
+A copied row keeps its answer and times, takes the new question (so it is
+scored against the new `expected`), and names its source in `carried_from`.
+`model.json` counts only the new calls. The token usage in `summary.json`
+still counts a copied row, so read the spend of the new run from
+`model.json`. `--carry-from runs` copies from the committed `runs/<model>/`
+folders.
+
 `score`, `analyze`, and `facct` are free. They can run on a partial answers
 file. They do not call a model.
 
