@@ -23,3 +23,7 @@ Model answers on the 11-02 run favour the Qere: Ezek 23:16 has 16 answers with i
 - `collect.carry_forward()` + `join_run.py --carry-from`: carry iff question id AND prompt byte-identical AND same panel fingerprint + max_tokens; re-stamps digest and embedded question; `carried_from` = relpath + source digest; `model.json` counts only fresh calls. Not wired into the `sacredbench collect` CLI (the panel run goes through join_run).
 - Real-data smoke (read-only from main's `runs/rerun-2026-11-03`, written to scratchpad): carry counts match the table exactly (Masoretic 31 carried / 53 to call; Talmud native 105/15). Rescored carried Masoretic retrieve_quote: opus 0 → 19/21, haiku 0 → 3/21.
 - New tests fail on a HEAD export (9 tests), pass here.
+
+## 2026-11-03 — pr
+
+PR #110. CMAP: gemini=APPROVE, codex=APPROVE, claude=APPROVE (all high confidence). Folded Claude's two non-blocking notes: a test for the `max_tokens` carry guard, and a RUNNING.md line that `summary.json` usage still counts carried rows (spend comes from `model.json`). Left as is: a self-closing `<w type="x-ketiv"/>` would over-delete, but the pinned commit has none (all 16,186 verses render). Still open after merge: live re-collection of the 157 changed prompts before any Masoretic number is cited.
