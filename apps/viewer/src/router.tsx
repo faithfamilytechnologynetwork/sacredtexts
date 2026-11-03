@@ -9,6 +9,7 @@ import { LeaderboardPage } from "./routes/LeaderboardPage";
 import { ExplorerPage } from "./routes/ExplorerPage";
 import { StandingsPage } from "./routes/StandingsPage";
 import { GapsPage } from "./routes/GapsPage";
+import { ErrorsPage } from "./routes/ErrorsPage";
 import { NotFound } from "./routes/NotFound";
 import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
@@ -17,8 +18,9 @@ import { type ExplorerFilters } from "./lib/explorer";
 // router-plugin codegen step, keeps the route tree explicit, and is fully unit-testable
 // with a memory history. The tree is `/` (the leaderboard home, selecting a run via the
 // `?run=<id>` search param), `/run/$runId/model/$modelId` (the error explorer, with its
-// `?task=&tradition=&correct=&mode=&kind=` filter state), `/standings` (the cross-run current
-// standings), plus a catch-all 404.
+// `?task=&tradition=&correct=&mode=&kind=` filter state), `/errors` (a run + model picker in front
+// of the explorer, `?run=<id>`), `/standings` (the cross-run current standings), `/gaps`, plus a
+// catch-all 404.
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -75,7 +77,18 @@ const gapsRoute = createRoute({
   component: GapsPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, explorerRoute, standingsRoute, gapsRoute]);
+// The error-explorer picker: `/errors` lists one run's models as links into the explorer. Same
+// `?run=<id>` validator as the leaderboard home; an unknown id falls back to the same default run.
+const errorsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/errors",
+  component: ErrorsPage,
+  validateSearch: (search: Record<string, unknown>): { run?: string } => ({
+    run: typeof search.run === "string" ? search.run : undefined,
+  }),
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, explorerRoute, standingsRoute, gapsRoute, errorsRoute]);
 
 export function createAppRouter(history?: RouterHistory) {
   return createRouter({

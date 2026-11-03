@@ -33,7 +33,8 @@ virtual panels on the bare model id: an in-flight rerun replaces each model's ro
 wins) and becomes the home default. Name the folder `exp-…` to keep a rerun out of both.
 
 `src/lib/localResults.ts` fetches and joins these (`loadRun` for a full run,
-`loadSummary` for just the per-model rollup the standings view needs); `src/lib/leaderboard.ts`
+`loadSummary` for just the per-model rollup the standings view and the `/errors` picker need);
+`src/lib/runIndex.ts` lists the runs and picks the default one (`selectRunId`); `src/lib/leaderboard.ts`
 derives the leaderboard ranking/columns/token totals, `src/lib/explorer.ts` the per-question
 classification and filters, and `src/lib/aggregate.ts` the cross-run standings rollup.
 
@@ -61,6 +62,10 @@ pnpm -C apps/viewer dev          # then open the printed URL
   answer), and failure kind; the filters live in the URL
   (`?task=&tradition=&correct=&kind=&mode=`, where `mode` is `missing` / `refused` / `wrong` and
   `kind` is a failure kind such as `near_copy` / `other_script` / `wrong_verdict`).
+- **Errors** (`/errors`, linked in the header) is the way into the error explorer without going
+  through the leaderboard: pick a run (the same default as the home page; the choice lives in
+  `?run=<id>`), and it lists that run's models with their accuracy and coverage, each linking to
+  `/run/<id>/model/<model>`.
 - **Standings** (`/standings`, linked in the header) is the cross-run view: one row per
   model showing its **most recent** result across all runs, keyed on the run panel's
   `(provider, model, tools)` identity (a missing `tools` ⇒ `[]`), so search-on/off stay
@@ -96,7 +101,7 @@ production branch.
 
 How the static site works:
 
-- **Deep links** (`/standings`, `/gaps`, `/run/<id>/model/<model>`): Pages serves
+- **Deep links** (`/standings`, `/gaps`, `/errors`, `/run/<id>/model/<model>`): Pages serves
   `index.html` for any path that is not a file, as long as `dist/` has no top-level
   `404.html`. There is no `_redirects` file because wrangler ignores `/* /index.html 200` as
   an infinite loop.

@@ -17,7 +17,11 @@ export function RootLayout() {
             SacredBench
           </Link>
           <nav className="flex items-center gap-4 text-sm">
-            {/* The brand (left) is the leaderboard home; this links to the cross-run view. */}
+            {/* The brand (left) is the leaderboard home. Errors is the picker in front of the
+                error explorer (which needs a run + model); Standings is the cross-run view. */}
+            <Link to="/errors" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
+              Errors
+            </Link>
             <Link to="/gaps" className="text-default-600 [&.active]:font-semibold [&.active]:text-foreground">
               Gaps
             </Link>

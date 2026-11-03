@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { benchmarkRuns, fetchRunIndex, isExperimentRun, type RunRef } from "./runIndex";
+import { benchmarkRuns, fetchRunIndex, isExperimentRun, selectRunId, type RunRef } from "./runIndex";
 
 /** A fetcher that answers `/runs/_index` with a fixed Response; any other URL 404s. */
 function indexFetcher(res: Partial<Response> & { textBody?: string }): typeof fetch {
@@ -120,5 +120,27 @@ describe("experiment-run filtering (#54 review item 10)", () => {
 
   it("benchmarkRuns returns empty when every run is an experiment run", () => {
     expect(benchmarkRuns([ref("exp-a-2026-10-29"), ref("exp-b-2026-10-29")])).toEqual([]);
+  });
+});
+
+describe("selectRunId — the run a page opens (leaderboard home and /errors)", () => {
+  const runs: RunRef[] = [{ id: "exp-newest-2026-10-30" }, { id: "run-b" }, { id: "run-a" }];
+
+  it("defaults to the most-recent benchmark run, skipping a newer experiment run", () => {
+    expect(selectRunId(runs)).toBe("run-b");
+  });
+
+  it("honours a requested id that names a known run, experiment runs included", () => {
+    expect(selectRunId(runs, "run-a")).toBe("run-a");
+    expect(selectRunId(runs, "exp-newest-2026-10-30")).toBe("exp-newest-2026-10-30");
+  });
+
+  it("falls back to the default for an unknown requested id", () => {
+    expect(selectRunId(runs, "/runs/run-a")).toBe("run-b");
+  });
+
+  it("falls back to runs[0] when every run is an experiment run, and undefined when there are none", () => {
+    expect(selectRunId([{ id: "exp-b" }, { id: "exp-a" }])).toBe("exp-b");
+    expect(selectRunId([])).toBeUndefined();
   });
 });
