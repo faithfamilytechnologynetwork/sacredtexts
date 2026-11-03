@@ -3,17 +3,16 @@
   "gemini-flash": {
    "cite_passage": {
     "n": 30,
-    "accuracy": 0.1333,
+    "accuracy": 0.1,
     "coverage": 1.0,
-    "correct": 4,
-    "incorrect": 26,
+    "correct": 3,
+    "incorrect": 27,
     "minor": 0,
-    "major": 26,
+    "major": 27,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_locus": 25,
-     "no_citation": 1
+     "wrong_locus": 27
     }
    },
    "complete_unit": {
@@ -38,22 +37,22 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
     "coverage": 1.0,
     "correct": 0,
-    "incorrect": 30,
+    "incorrect": 25,
     "minor": 0,
-    "major": 30,
+    "major": 25,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 30
+     "wrong_passage": 25
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0328,
-    "token_f1_base": 0.0693,
+    "token_f1": 0.0285,
+    "token_f1_base": 0.0608,
     "contains_reference": 0.0
    },
    "verify_source": {
@@ -69,21 +68,20 @@
     "kinds": {}
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.2833,
+    "n": 115,
+    "accuracy": 0.287,
     "coverage": 1.0,
-    "correct": 34,
-    "incorrect": 86,
+    "correct": 33,
+    "incorrect": 82,
     "minor": 2,
-    "major": 84,
+    "major": 80,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
      "paraphrase": 1,
-     "wrong_passage": 58,
+     "wrong_passage": 53,
      "omission": 1,
-     "wrong_locus": 25,
-     "no_citation": 1
+     "wrong_locus": 27
     }
    }
   }
@@ -93,10 +91,10 @@
    "Sikhism": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.1333,
+     "accuracy": 0.1,
      "coverage": 1.0,
-     "correct": 4,
-     "incorrect": 26,
+     "correct": 3,
+     "incorrect": 27,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -110,11 +108,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -128,11 +126,11 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2833,
+     "n": 115,
+     "accuracy": 0.287,
      "coverage": 1.0,
-     "correct": 34,
-     "incorrect": 86,
+     "correct": 33,
+     "incorrect": 82,
      "refused": 0,
      "refused_rate": 0.0
     }
@@ -144,17 +142,16 @@
    "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.1333,
+     "accuracy": 0.1,
      "coverage": 1.0,
-     "correct": 4,
-     "incorrect": 26,
+     "correct": 3,
+     "incorrect": 27,
      "minor": 0,
-     "major": 26,
+     "major": 27,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_locus": 25,
-      "no_citation": 1
+      "wrong_locus": 27
      }
     },
     "complete_unit": {
@@ -174,17 +171,17 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "minor": 0,
-     "major": 30,
+     "major": 25,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 30
+      "wrong_passage": 25
      }
     },
     "verify_source": {
@@ -200,21 +197,20 @@
      "kinds": {}
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2833,
+     "n": 115,
+     "accuracy": 0.287,
      "coverage": 1.0,
-     "correct": 34,
-     "incorrect": 86,
+     "correct": 33,
+     "incorrect": 82,
      "minor": 2,
-     "major": 84,
+     "major": 80,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
       "paraphrase": 1,
-      "wrong_passage": 58,
+      "wrong_passage": 53,
       "omission": 1,
-      "wrong_locus": 25,
-      "no_citation": 1
+      "wrong_locus": 27
      }
     }
    }
@@ -225,10 +221,10 @@
    "Native prompt": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.1333,
+     "accuracy": 0.1,
      "coverage": 1.0,
-     "correct": 4,
-     "incorrect": 26,
+     "correct": 3,
+     "incorrect": 27,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -242,11 +238,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -260,11 +256,11 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2833,
+     "n": 115,
+     "accuracy": 0.287,
      "coverage": 1.0,
-     "correct": 34,
-     "incorrect": 86,
+     "correct": 33,
+     "incorrect": 82,
      "refused": 0,
      "refused_rate": 0.0
     }
@@ -296,15 +292,15 @@
  "usage": {
   "per_model": {
    "gemini-flash": {
-    "calls": 120,
-    "in": 9843,
-    "out": 28184
+    "calls": 115,
+    "in": 9753,
+    "out": 17709
    }
   },
   "total": {
-   "calls": 120,
-   "in": 9843,
-   "out": 28184
+   "calls": 115,
+   "in": 9753,
+   "out": 17709
   }
  },
  "evaluators": [
@@ -312,13 +308,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "segment_match": {
-  "gemini-flash": {
-   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
-    "correct": 4,
-    "segment_match": 0
-   }
-  }
- },
- "generated_at": "2026-11-03T17:44:19.446645+00:00"
+ "generated_at": "2026-11-03T21:02:00.583951+00:00"
 }

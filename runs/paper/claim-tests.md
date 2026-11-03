@@ -1,6 +1,6 @@
 # Paired claims
 
-From 32637 scored cells across 16 models in `runs/facct-2026-11-03`. A file still being collected contributes only the cells it already has. Accuracy comparisons drop refusals. McNemar is the two-sided exact test on discordant pairs of the same citation. Fisher exact compares two independent answered sets.
+From 32478 scored cells across 16 models in `runs/facct-2026-11-03`. A file still being collected contributes only the cells it already has. Accuracy comparisons drop refusals. McNemar is the two-sided exact test on discordant pairs of the same citation. Fisher exact compares two independent answered sets.
 
 ## Citation, English prompt against native prompt
 
@@ -9,7 +9,6 @@ English-only means the English prompt was correct and the native prompt was not.
 | model | English only | native only | pairs | p |
 |---|---:|---:|---:|---:|
 | deepseek-v4-pro | 18 | 7 | 25 | 0.043 |
-| fable | 13 | 9 | 22 | 0.523 |
 
 ## Quote against cite
 
@@ -17,21 +16,21 @@ Quote-only means the quotation was correct and the citation was not, on the same
 
 | model | quote only | cite only | pairs | p |
 |---|---:|---:|---:|---:|
-| terra | 3 | 175 | 178 | 4.91e-48 |
-| luna | 1 | 161 | 162 | 5.58e-47 |
-| deepseek-v4-pro | 13 | 186 | 199 | 2.21e-40 |
-| kimi | 7 | 164 | 171 | 5.23e-40 |
-| argon | 0 | 127 | 127 | 1.18e-38 |
-| gemini-flash | 6 | 146 | 152 | 5.66e-36 |
-| beam | 5 | 141 | 146 | 1.20e-35 |
+| luna | 1 | 159 | 160 | 2.20e-46 |
+| terra | 3 | 162 | 165 | 3.20e-44 |
+| kimi | 7 | 161 | 168 | 3.69e-39 |
+| deepseek-v4-pro | 13 | 181 | 194 | 5.03e-39 |
+| argon | 0 | 114 | 114 | 9.63e-35 |
+| beam | 5 | 136 | 141 | 3.22e-34 |
+| gemini-flash | 6 | 133 | 139 | 2.70e-32 |
 | gemma-31b | 0 | 102 | 102 | 3.94e-31 |
-| astra | 1 | 85 | 86 | 2.25e-24 |
-| sol | 1 | 85 | 86 | 2.25e-24 |
 | qwen3-32b | 0 | 79 | 79 | 3.31e-24 |
-| opus | 3 | 73 | 76 | 1.94e-18 |
-| haiku | 3 | 67 | 70 | 9.69e-17 |
-| fable | 20 | 105 | 125 | 4.13e-15 |
-| sonnet | 18 | 75 | 93 | 1.92e-09 |
+| astra | 1 | 78 | 79 | 2.65e-22 |
+| sol | 1 | 77 | 78 | 5.23e-22 |
+| opus | 3 | 66 | 69 | 1.86e-16 |
+| haiku | 4 | 66 | 70 | 1.65e-15 |
+| fable | 17 | 90 | 107 | 3.51e-13 |
+| sonnet | 18 | 69 | 87 | 3.32e-08 |
 
 ## Verify, real passage against a fake
 

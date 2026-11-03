@@ -35,22 +35,22 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
     "coverage": 1.0,
     "correct": 0,
-    "incorrect": 30,
+    "incorrect": 25,
     "minor": 0,
-    "major": 30,
+    "major": 25,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 30
+     "wrong_passage": 25
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.008,
-    "token_f1_base": 0.0144,
+    "token_f1": 0.0128,
+    "token_f1_base": 0.0415,
     "contains_reference": 0.0
    },
    "verify_source": {
@@ -68,17 +68,17 @@
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.175,
+    "n": 115,
+    "accuracy": 0.1826,
     "coverage": 1.0,
     "correct": 21,
-    "incorrect": 99,
+    "incorrect": 94,
     "minor": 0,
-    "major": 99,
+    "major": 94,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 60,
+     "wrong_passage": 55,
      "wrong_locus": 30,
      "wrong_verdict": 9
     }
@@ -107,11 +107,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -125,11 +125,11 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
+     "n": 115,
+     "accuracy": 0.1826,
      "coverage": 1.0,
      "correct": 21,
-     "incorrect": 99,
+     "incorrect": 94,
      "refused": 0,
      "refused_rate": 0.0
     }
@@ -168,17 +168,17 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "minor": 0,
-     "major": 30,
+     "major": 25,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 30
+      "wrong_passage": 25
      }
     },
     "verify_source": {
@@ -196,17 +196,17 @@
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
+     "n": 115,
+     "accuracy": 0.1826,
      "coverage": 1.0,
      "correct": 21,
-     "incorrect": 99,
+     "incorrect": 94,
      "minor": 0,
-     "major": 99,
+     "major": 94,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 60,
+      "wrong_passage": 55,
       "wrong_locus": 30,
       "wrong_verdict": 9
      }
@@ -236,11 +236,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -254,11 +254,11 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
+     "n": 115,
+     "accuracy": 0.1826,
      "coverage": 1.0,
      "correct": 21,
-     "incorrect": 99,
+     "incorrect": 94,
      "refused": 0,
      "refused_rate": 0.0
     }
@@ -290,15 +290,15 @@
  "usage": {
   "per_model": {
    "gemma-31b": {
-    "calls": 120,
-    "in": 13769,
-    "out": 5760
+    "calls": 115,
+    "in": 13323,
+    "out": 9422
    }
   },
   "total": {
-   "calls": 120,
-   "in": 13769,
-   "out": 5760
+   "calls": 115,
+   "in": 13323,
+   "out": 9422
   }
  },
  "evaluators": [
@@ -306,5 +306,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:44:38.482425+00:00"
+ "generated_at": "2026-11-03T21:02:19.849111+00:00"
 }

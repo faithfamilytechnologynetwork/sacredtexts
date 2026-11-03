@@ -3,84 +3,84 @@
   "kimi": {
    "cite_passage": {
     "n": 30,
-    "accuracy": 0.0,
+    "accuracy": 0.0333,
     "coverage": 1.0,
-    "correct": 0,
-    "incorrect": 30,
+    "correct": 1,
+    "incorrect": 29,
     "minor": 0,
-    "major": 30,
+    "major": 29,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_locus": 30
+     "wrong_locus": 29
     }
    },
    "complete_unit": {
     "n": 30,
     "accuracy": 0.0,
-    "coverage": 1.0,
+    "coverage": 0.9667,
     "correct": 0,
-    "incorrect": 30,
+    "incorrect": 29,
     "minor": 0,
-    "major": 30,
-    "refused": 0,
-    "refused_rate": 0.0,
+    "major": 29,
+    "refused": 1,
+    "refused_rate": 0.0333,
     "kinds": {
-     "wrong_passage": 30
+     "wrong_passage": 29
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0906,
-    "token_f1_base": 0.0963,
+    "token_f1": 0.0425,
+    "token_f1_base": 0.0628,
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
     "coverage": 1.0,
     "correct": 0,
-    "incorrect": 30,
+    "incorrect": 25,
     "minor": 0,
-    "major": 30,
+    "major": 25,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 30
+     "wrong_passage": 25
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0189,
-    "token_f1_base": 0.0445,
+    "token_f1": 0.0199,
+    "token_f1_base": 0.0507,
     "contains_reference": 0.0
    },
    "verify_source": {
     "n": 30,
-    "accuracy": 0.7,
+    "accuracy": 0.7333,
     "coverage": 1.0,
-    "correct": 21,
-    "incorrect": 9,
+    "correct": 22,
+    "incorrect": 8,
     "minor": 0,
-    "major": 9,
+    "major": 8,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_verdict": 9
+     "wrong_verdict": 8
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.175,
-    "coverage": 1.0,
-    "correct": 21,
-    "incorrect": 99,
+    "n": 115,
+    "accuracy": 0.2018,
+    "coverage": 0.9913,
+    "correct": 23,
+    "incorrect": 91,
     "minor": 0,
-    "major": 99,
-    "refused": 0,
-    "refused_rate": 0.0,
+    "major": 91,
+    "refused": 1,
+    "refused_rate": 0.0087,
     "kinds": {
-     "wrong_passage": 60,
-     "wrong_locus": 30,
-     "wrong_verdict": 9
+     "wrong_passage": 54,
+     "wrong_locus": 29,
+     "wrong_verdict": 8
     }
    }
   }
@@ -90,48 +90,48 @@
    "Sikhism": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0,
+     "accuracy": 0.0333,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 30,
+     "correct": 1,
+     "incorrect": 29,
      "refused": 0,
      "refused_rate": 0.0
     },
     "complete_unit": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 1.0,
+     "coverage": 0.9667,
      "correct": 0,
-     "incorrect": 30,
-     "refused": 0,
-     "refused_rate": 0.0
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.7,
+     "accuracy": 0.7333,
      "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 9,
+     "correct": 22,
+     "incorrect": 8,
      "refused": 0,
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
-     "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 99,
-     "refused": 0,
-     "refused_rate": 0.0
+     "n": 115,
+     "accuracy": 0.2018,
+     "coverage": 0.9913,
+     "correct": 23,
+     "incorrect": 91,
+     "refused": 1,
+     "refused_rate": 0.0087
     }
    }
   }
@@ -141,74 +141,74 @@
    "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0,
+     "accuracy": 0.0333,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 30,
+     "correct": 1,
+     "incorrect": 29,
      "minor": 0,
-     "major": 30,
+     "major": 29,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_locus": 30
+      "wrong_locus": 29
      }
     },
     "complete_unit": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 1.0,
+     "coverage": 0.9667,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 29,
      "minor": 0,
-     "major": 30,
-     "refused": 0,
-     "refused_rate": 0.0,
+     "major": 29,
+     "refused": 1,
+     "refused_rate": 0.0333,
      "kinds": {
-      "wrong_passage": 30
+      "wrong_passage": 29
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "minor": 0,
-     "major": 30,
+     "major": 25,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 30
+      "wrong_passage": 25
      }
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.7,
+     "accuracy": 0.7333,
      "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 9,
+     "correct": 22,
+     "incorrect": 8,
      "minor": 0,
-     "major": 9,
+     "major": 8,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_verdict": 9
+      "wrong_verdict": 8
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
-     "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 99,
+     "n": 115,
+     "accuracy": 0.2018,
+     "coverage": 0.9913,
+     "correct": 23,
+     "incorrect": 91,
      "minor": 0,
-     "major": 99,
-     "refused": 0,
-     "refused_rate": 0.0,
+     "major": 91,
+     "refused": 1,
+     "refused_rate": 0.0087,
      "kinds": {
-      "wrong_passage": 60,
-      "wrong_locus": 30,
-      "wrong_verdict": 9
+      "wrong_passage": 54,
+      "wrong_locus": 29,
+      "wrong_verdict": 8
      }
     }
    }
@@ -219,48 +219,48 @@
    "English prompt": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0,
+     "accuracy": 0.0333,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 30,
+     "correct": 1,
+     "incorrect": 29,
      "refused": 0,
      "refused_rate": 0.0
     },
     "complete_unit": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 1.0,
+     "coverage": 0.9667,
      "correct": 0,
-     "incorrect": 30,
-     "refused": 0,
-     "refused_rate": 0.0
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.7,
+     "accuracy": 0.7333,
      "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 9,
+     "correct": 22,
+     "incorrect": 8,
      "refused": 0,
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.175,
-     "coverage": 1.0,
-     "correct": 21,
-     "incorrect": 99,
-     "refused": 0,
-     "refused_rate": 0.0
+     "n": 115,
+     "accuracy": 0.2018,
+     "coverage": 0.9913,
+     "correct": 23,
+     "incorrect": 91,
+     "refused": 1,
+     "refused_rate": 0.0087
     }
    }
   }
@@ -278,10 +278,10 @@
    },
    "yes": {
     "n": 15,
-    "accuracy": 0.4,
+    "accuracy": 0.4667,
     "coverage": 1.0,
-    "correct": 6,
-    "incorrect": 9,
+    "correct": 7,
+    "incorrect": 8,
     "refused": 0,
     "refused_rate": 0.0
    }
@@ -290,15 +290,15 @@
  "usage": {
   "per_model": {
    "kimi": {
-    "calls": 120,
-    "in": 15453,
-    "out": 19491
+    "calls": 115,
+    "in": 15066,
+    "out": 10910
    }
   },
   "total": {
-   "calls": 120,
-   "in": 15453,
-   "out": 19491
+   "calls": 115,
+   "in": 15066,
+   "out": 10910
   }
  },
  "evaluators": [
@@ -306,5 +306,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:44:29.314109+00:00"
+ "generated_at": "2026-11-03T21:02:10.511060+00:00"
 }

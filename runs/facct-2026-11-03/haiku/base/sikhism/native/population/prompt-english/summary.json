@@ -4,16 +4,15 @@
    "cite_passage": {
     "n": 30,
     "accuracy": 0.0,
-    "coverage": 0.5,
+    "coverage": 0.2333,
     "correct": 0,
-    "incorrect": 15,
+    "incorrect": 7,
     "minor": 0,
-    "major": 15,
-    "refused": 15,
-    "refused_rate": 0.5,
+    "major": 7,
+    "refused": 23,
+    "refused_rate": 0.7667,
     "kinds": {
-     "wrong_locus": 13,
-     "no_citation": 2
+     "wrong_locus": 7
     }
    },
    "complete_unit": {
@@ -37,14 +36,14 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": null,
     "coverage": 0.0,
     "correct": 0,
     "incorrect": 0,
     "minor": 0,
     "major": 0,
-    "refused": 30,
+    "refused": 25,
     "refused_rate": 1.0,
     "kinds": {},
     "exact": null,
@@ -68,20 +67,19 @@
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.1724,
-    "coverage": 0.4833,
+    "n": 115,
+    "accuracy": 0.2,
+    "coverage": 0.4348,
     "correct": 10,
-    "incorrect": 48,
+    "incorrect": 40,
     "minor": 1,
-    "major": 47,
-    "refused": 62,
-    "refused_rate": 0.5167,
+    "major": 39,
+    "refused": 65,
+    "refused_rate": 0.5652,
     "kinds": {
      "paraphrase": 1,
      "wrong_passage": 23,
-     "wrong_locus": 13,
-     "no_citation": 2,
+     "wrong_locus": 7,
      "wrong_verdict": 9
     }
    }
@@ -93,11 +91,11 @@
     "cite_passage": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.5,
+     "coverage": 0.2333,
      "correct": 0,
-     "incorrect": 15,
-     "refused": 15,
-     "refused_rate": 0.5
+     "incorrect": 7,
+     "refused": 23,
+     "refused_rate": 0.7667
     },
     "complete_unit": {
      "n": 30,
@@ -109,12 +107,12 @@
      "refused_rate": 0.2
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": null,
      "coverage": 0.0,
      "correct": 0,
      "incorrect": 0,
-     "refused": 30,
+     "refused": 25,
      "refused_rate": 1.0
     },
     "verify_source": {
@@ -127,13 +125,13 @@
      "refused_rate": 0.3667
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.1724,
-     "coverage": 0.4833,
+     "n": 115,
+     "accuracy": 0.2,
+     "coverage": 0.4348,
      "correct": 10,
-     "incorrect": 48,
-     "refused": 62,
-     "refused_rate": 0.5167
+     "incorrect": 40,
+     "refused": 65,
+     "refused_rate": 0.5652
     }
    }
   }
@@ -144,16 +142,15 @@
     "cite_passage": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.5,
+     "coverage": 0.2333,
      "correct": 0,
-     "incorrect": 15,
+     "incorrect": 7,
      "minor": 0,
-     "major": 15,
-     "refused": 15,
-     "refused_rate": 0.5,
+     "major": 7,
+     "refused": 23,
+     "refused_rate": 0.7667,
      "kinds": {
-      "wrong_locus": 13,
-      "no_citation": 2
+      "wrong_locus": 7
      }
     },
     "complete_unit": {
@@ -172,14 +169,14 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": null,
      "coverage": 0.0,
      "correct": 0,
      "incorrect": 0,
      "minor": 0,
      "major": 0,
-     "refused": 30,
+     "refused": 25,
      "refused_rate": 1.0,
      "kinds": {}
     },
@@ -198,20 +195,19 @@
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.1724,
-     "coverage": 0.4833,
+     "n": 115,
+     "accuracy": 0.2,
+     "coverage": 0.4348,
      "correct": 10,
-     "incorrect": 48,
+     "incorrect": 40,
      "minor": 1,
-     "major": 47,
-     "refused": 62,
-     "refused_rate": 0.5167,
+     "major": 39,
+     "refused": 65,
+     "refused_rate": 0.5652,
      "kinds": {
       "paraphrase": 1,
       "wrong_passage": 23,
-      "wrong_locus": 13,
-      "no_citation": 2,
+      "wrong_locus": 7,
       "wrong_verdict": 9
      }
     }
@@ -224,11 +220,11 @@
     "cite_passage": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.5,
+     "coverage": 0.2333,
      "correct": 0,
-     "incorrect": 15,
-     "refused": 15,
-     "refused_rate": 0.5
+     "incorrect": 7,
+     "refused": 23,
+     "refused_rate": 0.7667
     },
     "complete_unit": {
      "n": 30,
@@ -240,12 +236,12 @@
      "refused_rate": 0.2
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": null,
      "coverage": 0.0,
      "correct": 0,
      "incorrect": 0,
-     "refused": 30,
+     "refused": 25,
      "refused_rate": 1.0
     },
     "verify_source": {
@@ -258,13 +254,13 @@
      "refused_rate": 0.3667
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.1724,
-     "coverage": 0.4833,
+     "n": 115,
+     "accuracy": 0.2,
+     "coverage": 0.4348,
      "correct": 10,
-     "incorrect": 48,
-     "refused": 62,
-     "refused_rate": 0.5167
+     "incorrect": 40,
+     "refused": 65,
+     "refused_rate": 0.5652
     }
    }
   }
@@ -294,15 +290,15 @@
  "usage": {
   "per_model": {
    "haiku": {
-    "calls": 120,
-    "in": 25427,
-    "out": 19079
+    "calls": 115,
+    "in": 24900,
+    "out": 18896
    }
   },
   "total": {
-   "calls": 120,
-   "in": 25427,
-   "out": 19079
+   "calls": 115,
+   "in": 24900,
+   "out": 18896
   }
  },
  "evaluators": [
@@ -310,5 +306,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:43:51.987372+00:00"
+ "generated_at": "2026-11-03T21:01:32.248538+00:00"
 }

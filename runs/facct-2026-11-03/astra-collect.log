@@ -1,6 +1,3 @@
-carry christianity/english/population: 117 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/christianity/english/population/answers.jsonl
-collect christianity/english/population -> runs/facct-2026-11-03/astra/base/christianity/english/population/answers.jsonl (120 questions, 3 to call)
-christianity/english/population:   0%|          | 0/3 [00:00<?, ?call/s]christianity/english/population:  33%|███▎      | 1/3 [00:01<00:03,  1.81s/call]christianity/english/population:  67%|██████▋   | 2/3 [00:02<00:00,  1.16call/s, usd=0.0014]christianity/english/population: 100%|██████████| 3/3 [00:02<00:00,  1.38call/s, usd=0.0031]christianity/english/population: 100%|██████████| 3/3 [00:02<00:00,  1.17call/s, usd=0.0048]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -34,11 +31,6 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 6,864 | 5,789 |
 | **total** | 120 | 6,864 | 5,789 |
 
-  collected 3, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.md
-carry christianity/native/masoretic/population/prompt-english: 83 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl
-collect christianity/native/masoretic/population/prompt-english -> runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl (84 questions, 1 to call)
-christianity/native/masoretic/population/prompt-english:   0%|          | 0/1 [00:00<?, ?call/s]christianity/native/masoretic/population/prompt-english: 100%|██████████| 1/1 [00:01<00:00,  1.59s/call]christianity/native/masoretic/population/prompt-english: 100%|██████████| 1/1 [00:01<00:00,  1.59s/call, usd=0.0063]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -75,11 +67,6 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 84 | 11,723 | 18,344 |
 | **total** | 84 | 11,723 | 18,344 |
 
-  collected 1, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.md
-carry christianity/native/masoretic/population/prompt-native: 82 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl
-collect christianity/native/masoretic/population/prompt-native -> runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl (84 questions, 2 to call)
-christianity/native/masoretic/population/prompt-native:   0%|          | 0/2 [00:00<?, ?call/s]christianity/native/masoretic/population/prompt-native:  50%|█████     | 1/2 [00:01<00:01,  1.91s/call]christianity/native/masoretic/population/prompt-native: 100%|██████████| 2/2 [00:02<00:00,  1.09s/call, usd=0.0085]christianity/native/masoretic/population/prompt-native: 100%|██████████| 2/2 [00:02<00:00,  1.21s/call, usd=0.0108]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -184,24 +171,11 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 36 | 3,840 | 4,468 |
 | **total** | 36 | 3,840 | 4,468 |
 
-  collected 2, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.md
-carry christianity/native/greek/population/prompt-english: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl
-collect christianity/native/greek/population/prompt-english -> runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl (36 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/summary.md
-carry christianity/native/greek/population/prompt-native: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl
-collect christianity/native/greek/population/prompt-native -> runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl (36 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/summary.md
-carry judaism/native/population/prompt-english: 117 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/judaism/native/population/prompt-english/answers.jsonl
-collect judaism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/answers.jsonl (120 questions, 3 to call)
-judaism/native/population/prompt-english:   0%|          | 0/3 [00:00<?, ?call/s]judaism/native/population/prompt-english:  33%|███▎      | 1/3 [00:01<00:03,  1.60s/call]judaism/native/population/prompt-english:  67%|██████▋   | 2/3 [00:02<00:01,  1.12s/call, usd=0.0145]judaism/native/population/prompt-english: 100%|██████████| 3/3 [00:03<00:00,  1.05call/s, usd=0.0183]judaism/native/population/prompt-english: 100%|██████████| 3/3 [00:03<00:00,  1.05s/call, usd=0.0222]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| astra | 73% cov 100% (n=30; c/i/r 22/8/0; minor/major 0/8) | 37% cov 100% (n=30; c/i/r 11/19/0; minor/major 16/3) | 8% cov 40% (n=30; c/i/r 1/11/18; minor/major 2/9) | 90% cov 100% (n=30; c/i/r 27/3/0; minor/major 0/3) | **60%** cov 85% (c/i/r 61/41/18; minor/major 18/23) |
+| astra | 73% cov 100% (n=30; c/i/r 22/8/0; minor/major 0/8) | 37% cov 100% (n=30; c/i/r 11/19/0; minor/major 16/3) | 8% cov 40% (n=30; c/i/r 1/11/18; minor/major 2/9) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **63%** cov 85% (c/i/r 64/38/18; minor/major 18/20) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
@@ -211,21 +185,20 @@ _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). a
 | astra | cite_passage | 8 | 0 | 8 | no_citation 8 |
 | astra | complete_unit | 19 | 16 | 3 | edition_variant 6, near_copy 1, paraphrase 5, wrong_passage 3, omission 4, addition 1 |
 | astra | retrieve_quote | 11 | 2 | 9 | near_copy 1, paraphrase 1, wrong_passage 9 |
-| astra | verify_source | 3 | 0 | 3 | wrong_verdict 3 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
 
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| astra | Judaism | 73% cov 100% (n=30; c/i/r 22/8/0) | 37% cov 100% (n=30; c/i/r 11/19/0) | 8% cov 40% (n=30; c/i/r 1/11/18) | 90% cov 100% (n=30; c/i/r 27/3/0) | **60%** cov 85% (n=120; c/i/r 61/41/18) |
+| astra | Judaism | 73% cov 100% (n=30; c/i/r 22/8/0) | 37% cov 100% (n=30; c/i/r 11/19/0) | 8% cov 40% (n=30; c/i/r 1/11/18) | 100% cov 100% (n=30; c/i/r 30/0/0) | **63%** cov 85% (n=120; c/i/r 64/38/18) |
 
 ### By text (one text = one work · version · language)
 
 **astra**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 60% | 85% | 18 | — | 18 | 23 | edition_variant 6, near_copy 2, paraphrase 6, wrong_passage 12, omission 4, addition 1, no_citation 8, wrong_verdict 3 |
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 63% | 85% | 18 | — | 18 | 20 | edition_variant 6, near_copy 2, paraphrase 6, wrong_passage 12, omission 4, addition 1, no_citation 8 |
 
 ### Token usage
 | model_id | calls | in | out |
@@ -233,12 +206,34 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 12,908 | 50,642 |
 | **total** | 120 | 12,908 | 50,642 |
 
-  collected 3, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.md
-carry judaism/native/population/prompt-native: 115 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/judaism/native/population/prompt-native/answers.jsonl
-collect judaism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/answers.jsonl (120 questions, 5 to call)
-judaism/native/population/prompt-native:   0%|          | 0/5 [00:00<?, ?call/s]judaism/native/population/prompt-native:  20%|██        | 1/5 [00:01<00:06,  1.63s/call]judaism/native/population/prompt-native:  40%|████      | 2/5 [00:02<00:03,  1.12s/call, usd=0.0249]judaism/native/population/prompt-native:  80%|████████  | 4/5 [00:03<00:00,  1.55call/s, usd=0.0294]judaism/native/population/prompt-native: 100%|██████████| 5/5 [00:04<00:00,  1.01call/s, usd=0.0321]judaism/native/population/prompt-native: 100%|██████████| 5/5 [00:04<00:00,  1.03call/s, usd=0.0389]
-wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.md
+carry christianity/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/christianity/english/population/answers.jsonl
+collect christianity/english/population -> runs/facct-2026-11-03/astra/base/christianity/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/english/population/summary.md
+carry christianity/native/masoretic/population/prompt-english: 84 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl
+collect christianity/native/masoretic/population/prompt-english -> runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl (84 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-english/summary.md
+carry christianity/native/masoretic/population/prompt-native: 84 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl
+collect christianity/native/masoretic/population/prompt-native -> runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl (84 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/masoretic/population/prompt-native/summary.md
+carry christianity/native/greek/population/prompt-english: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl
+collect christianity/native/greek/population/prompt-english -> runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-english/summary.md
+carry christianity/native/greek/population/prompt-native: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl
+collect christianity/native/greek/population/prompt-native -> runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/christianity/native/greek/population/prompt-native/summary.md
+carry judaism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/judaism/native/population/prompt-english/answers.jsonl
+collect judaism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-english/summary.md
+carry judaism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/judaism/native/population/prompt-native/answers.jsonl
+collect judaism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.mdwrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
@@ -273,11 +268,6 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 11,478 | 53,336 |
 | **total** | 120 | 11,478 | 53,336 |
 
-  collected 5, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/native/population/prompt-native/summary.md
-carry judaism/english/population: 115 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/judaism/english/population/answers.jsonl
-collect judaism/english/population -> runs/facct-2026-11-03/astra/base/judaism/english/population/answers.jsonl (120 questions, 5 to call)
-judaism/english/population:   0%|          | 0/5 [00:00<?, ?call/s]judaism/english/population:  20%|██        | 1/5 [00:06<00:24,  6.11s/call]judaism/english/population:  40%|████      | 2/5 [00:06<00:08,  2.78s/call, usd=0.0493]judaism/english/population:  60%|██████    | 3/5 [00:08<00:04,  2.26s/call, usd=0.0582]judaism/english/population:  80%|████████  | 4/5 [00:11<00:02,  2.82s/call, usd=0.0681]judaism/english/population: 100%|██████████| 5/5 [00:12<00:00,  1.86s/call, usd=0.0760]judaism/english/population: 100%|██████████| 5/5 [00:12<00:00,  2.41s/call, usd=0.0924]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -405,20 +395,40 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 9,379 | 5,944 |
 | **total** | 120 | 9,379 | 5,944 |
 
+
+carry judaism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/judaism/english/population/answers.jsonl
+collect judaism/english/population -> runs/facct-2026-11-03/astra/base/judaism/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.md
+carry islam/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/islam/native/population/prompt-english/answers.jsonl
+collect islam/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/summary.md
+carry islam/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/islam/native/population/prompt-native/answers.jsonl
+collect islam/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/summary.md
+carry islam/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/islam/english/population/answers.jsonl
+collect islam/english/population -> runs/facct-2026-11-03/astra/base/islam/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/summary.md
+carry sikhism/native/population/prompt-english: 90 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/sikhism/native/population/prompt-english/answers.jsonl
+collect sikhism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/answers.jsonl (115 questions, 25 to call)
+sikhism/native/population/prompt-english:   0%|          | 0/25 [00:00<?, ?call/s]sikhism/native/population/prompt-english:   4%|▍         | 1/25 [00:13<05:29, 13.72s/call]sikhism/native/population/prompt-english:   8%|▊         | 2/25 [00:15<02:38,  6.88s/call, usd=0.0142]sikhism/native/population/prompt-english:  12%|█▏        | 3/25 [00:28<03:33,  9.72s/call, usd=0.0291]sikhism/native/population/prompt-english:  16%|█▌        | 4/25 [00:37<03:16,  9.34s/call, usd=0.0558]sikhism/native/population/prompt-english:  20%|██        | 5/25 [00:48<03:18,  9.93s/call, usd=0.0785]sikhism/native/population/prompt-english:  24%|██▍       | 6/25 [00:50<02:16,  7.21s/call, usd=0.0969]sikhism/native/population/prompt-english:  28%|██▊       | 7/25 [00:51<01:35,  5.32s/call, usd=0.1150]sikhism/native/population/prompt-english:  32%|███▏      | 8/25 [01:00<01:46,  6.24s/call, usd=0.1639]sikhism/native/population/prompt-english:  36%|███▌      | 9/25 [01:19<02:47, 10.45s/call, usd=0.2104]sikhism/native/population/prompt-english:  40%|████      | 10/25 [01:22<02:00,  8.02s/call, usd=0.2437]sikhism/native/population/prompt-english:  44%|████▍     | 11/25 [01:35<02:11,  9.40s/call, usd=0.2765]sikhism/native/population/prompt-english:  48%|████▊     | 12/25 [01:36<01:30,  6.93s/call, usd=0.3204]sikhism/native/population/prompt-english:  52%|█████▏    | 13/25 [01:39<01:10,  5.86s/call, usd=0.3479]sikhism/native/population/prompt-english:  56%|█████▌    | 14/25 [01:54<01:32,  8.42s/call, usd=0.3686]sikhism/native/population/prompt-english:  60%|██████    | 15/25 [01:57<01:09,  6.95s/call, usd=0.3853]sikhism/native/population/prompt-english:  64%|██████▍   | 16/25 [02:10<01:18,  8.73s/call, usd=0.4044]sikhism/native/population/prompt-english:  68%|██████▊   | 17/25 [02:22<01:19,  9.88s/call, usd=0.4539]sikhism/native/population/prompt-english:  76%|███████▌  | 19/25 [02:28<00:39,  6.51s/call, usd=0.4956]sikhism/native/population/prompt-english:  80%|████████  | 20/25 [02:45<00:45,  9.08s/call, usd=0.5234]sikhism/native/population/prompt-english:  84%|████████▍ | 21/25 [02:49<00:31,  7.81s/call, usd=0.5490]sikhism/native/population/prompt-english:  88%|████████▊ | 22/25 [03:06<00:31, 10.48s/call, usd=0.6365]sikhism/native/population/prompt-english:  92%|█████████▏| 23/25 [03:13<00:19,  9.53s/call, usd=0.6565]sikhism/native/population/prompt-english:  96%|█████████▌| 24/25 [03:31<00:11, 11.79s/call, usd=0.7003]sikhism/native/population/prompt-english: 100%|██████████| 25/25 [03:31<00:00,  8.46s/call, usd=0.8082]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| astra | 37% cov 100% (n=30; c/i/r 11/19/0; minor/major 0/19) | 7% cov 93% (n=30; c/i/r 2/26/2; minor/major 8/18) | 0% cov 10% (n=30; c/i/r 0/3/27; minor/major 0/3) | 90% cov 100% (n=30; c/i/r 27/3/0; minor/major 0/3) | **44%** cov 76% (c/i/r 40/51/29; minor/major 8/43) |
+| astra | 27% cov 100% (n=30; c/i/r 8/22/0; minor/major 0/22) | 11% cov 93% (n=30; c/i/r 3/25/2; minor/major 7/18) | 0% cov 20% (n=25; c/i/r 0/5/20; minor/major 0/5) | 90% cov 100% (n=30; c/i/r 27/3/0; minor/major 0/3) | **41%** cov 81% (c/i/r 38/55/22; minor/major 7/48) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| astra | cite_passage | 19 | 0 | 19 | wrong_locus 19 |
-| astra | complete_unit | 26 | 8 | 18 | diacritic_only 1, edition_variant 3, wrong_passage 18, omission 4 |
-| astra | retrieve_quote | 3 | 0 | 3 | wrong_passage 3 |
+| astra | cite_passage | 22 | 0 | 22 | wrong_locus 22 |
+| astra | complete_unit | 25 | 7 | 18 | diacritic_only 1, edition_variant 2, wrong_passage 18, omission 4 |
+| astra | retrieve_quote | 5 | 0 | 5 | wrong_passage 5 |
 | astra | verify_source | 3 | 0 | 3 | wrong_verdict 3 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
@@ -426,35 +436,40 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| astra | Sikhism | 37% cov 100% (n=30; c/i/r 11/19/0) | 7% cov 93% (n=30; c/i/r 2/26/2) | 0% cov 10% (n=30; c/i/r 0/3/27) | 90% cov 100% (n=30; c/i/r 27/3/0) | **44%** cov 76% (n=120; c/i/r 40/51/29) |
+| astra | Sikhism | 27% cov 100% (n=30; c/i/r 8/22/0) | 11% cov 93% (n=30; c/i/r 3/25/2) | 0% cov 20% (n=25; c/i/r 0/5/20) | 90% cov 100% (n=30; c/i/r 27/3/0) | **41%** cov 81% (n=115; c/i/r 38/55/22) |
 
 ### By text (one text = one work · version · language)
 
 **astra**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 44% | 76% | 29 | — | 8 | 43 | diacritic_only 1, edition_variant 3, wrong_passage 21, omission 4, wrong_locus 19, wrong_verdict 3 |
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 115 | 41% | 81% | 22 | — | 7 | 48 | diacritic_only 1, edition_variant 2, wrong_passage 23, omission 4, wrong_locus 22, wrong_verdict 3 |
 
 ### Token usage
 | model_id | calls | in | out |
 |---|---|---|---|
-| astra | 120 | 12,749 | 55,874 |
-| **total** | 120 | 12,749 | 55,874 |
+| astra | 115 | 12,397 | 54,495 |
+| **total** | 115 | 12,397 | 54,495 |
 
+  collected 25, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.md
+carry sikhism/native/population/prompt-native: 90 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/sikhism/native/population/prompt-native/answers.jsonl
+collect sikhism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/answers.jsonl (115 questions, 25 to call)
+sikhism/native/population/prompt-native:   0%|          | 0/25 [00:00<?, ?call/s]sikhism/native/population/prompt-native:   4%|▍         | 1/25 [00:08<03:17,  8.24s/call]sikhism/native/population/prompt-native:   8%|▊         | 2/25 [00:08<01:20,  3.52s/call, usd=0.8205]sikhism/native/population/prompt-native:  12%|█▏        | 3/25 [00:17<02:13,  6.07s/call, usd=0.8297]sikhism/native/population/prompt-native:  16%|█▌        | 4/25 [00:20<01:44,  4.96s/call, usd=0.8467]sikhism/native/population/prompt-native:  20%|██        | 5/25 [00:22<01:12,  3.62s/call, usd=0.8597]sikhism/native/population/prompt-native:  24%|██▍       | 6/25 [00:22<00:49,  2.61s/call, usd=0.8824]sikhism/native/population/prompt-native:  28%|██▊       | 7/25 [00:31<01:20,  4.50s/call, usd=0.8959]sikhism/native/population/prompt-native:  32%|███▏      | 8/25 [00:33<01:03,  3.75s/call, usd=0.9050]sikhism/native/population/prompt-native:  36%|███▌      | 9/25 [00:41<01:24,  5.27s/call, usd=0.9203]sikhism/native/population/prompt-native:  40%|████      | 10/25 [00:42<00:57,  3.82s/call, usd=0.9327]sikhism/native/population/prompt-native:  44%|████▍     | 11/25 [00:44<00:46,  3.29s/call, usd=0.9598]sikhism/native/population/prompt-native:  48%|████▊     | 12/25 [00:49<00:48,  3.75s/call, usd=0.9723]sikhism/native/population/prompt-native:  52%|█████▏    | 13/25 [00:51<00:39,  3.29s/call, usd=0.9984]sikhism/native/population/prompt-native:  56%|█████▌    | 14/25 [00:59<00:52,  4.77s/call, usd=1.0087]sikhism/native/population/prompt-native:  60%|██████    | 15/25 [01:01<00:37,  3.73s/call, usd=1.0283]sikhism/native/population/prompt-native:  64%|██████▍   | 16/25 [01:07<00:41,  4.61s/call, usd=1.0372]sikhism/native/population/prompt-native:  68%|██████▊   | 17/25 [01:10<00:32,  4.05s/call, usd=1.0575]sikhism/native/population/prompt-native:  72%|███████▏  | 18/25 [01:13<00:26,  3.77s/call, usd=1.0705]sikhism/native/population/prompt-native:  76%|███████▌  | 19/25 [01:14<00:17,  2.97s/call, usd=1.0848]sikhism/native/population/prompt-native:  80%|████████  | 20/25 [01:23<00:23,  4.66s/call, usd=1.0934]sikhism/native/population/prompt-native:  84%|████████▍ | 21/25 [01:30<00:21,  5.29s/call, usd=1.1048]sikhism/native/population/prompt-native:  88%|████████▊ | 22/25 [01:36<00:16,  5.49s/call, usd=1.1141]sikhism/native/population/prompt-native:  92%|█████████▏| 23/25 [01:39<00:09,  4.75s/call, usd=1.1440]sikhism/native/population/prompt-native:  96%|█████████▌| 24/25 [01:41<00:04,  4.06s/call, usd=1.1977]sikhism/native/population/prompt-native: 100%|██████████| 25/25 [01:41<00:00,  2.91s/call, usd=1.2090]sikhism/native/population/prompt-native: 100%|██████████| 25/25 [01:41<00:00,  4.07s/call, usd=1.2332]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| astra | 20% cov 100% (n=30; c/i/r 6/24/0; minor/major 0/24) | 5% cov 73% (n=30; c/i/r 1/21/8; minor/major 12/9) | 0% cov 23% (n=30; c/i/r 0/7/23; minor/major 0/7) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **39%** cov 74% (c/i/r 35/54/31; minor/major 12/42) |
+| astra | 27% cov 100% (n=30; c/i/r 8/22/0; minor/major 0/22) | 5% cov 73% (n=30; c/i/r 1/21/8; minor/major 12/9) | 0% cov 16% (n=25; c/i/r 0/4/21; minor/major 0/4) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **43%** cov 75% (c/i/r 37/49/29; minor/major 12/37) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| astra | cite_passage | 24 | 0 | 24 | wrong_locus 24 |
+| astra | cite_passage | 22 | 0 | 22 | wrong_locus 22 |
 | astra | complete_unit | 21 | 12 | 9 | diacritic_only 1, edition_variant 2, paraphrase 4, wrong_passage 9, omission 5 |
-| astra | retrieve_quote | 7 | 0 | 7 | wrong_passage 7 |
+| astra | retrieve_quote | 4 | 0 | 4 | wrong_passage 4 |
 | astra | verify_source | 2 | 0 | 2 | wrong_verdict 2 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
@@ -462,48 +477,48 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| astra | Sikhism | 20% cov 100% (n=30; c/i/r 6/24/0) | 5% cov 73% (n=30; c/i/r 1/21/8) | 0% cov 23% (n=30; c/i/r 0/7/23) | 93% cov 100% (n=30; c/i/r 28/2/0) | **39%** cov 74% (n=120; c/i/r 35/54/31) |
+| astra | Sikhism | 27% cov 100% (n=30; c/i/r 8/22/0) | 5% cov 73% (n=30; c/i/r 1/21/8) | 0% cov 16% (n=25; c/i/r 0/4/21) | 93% cov 100% (n=30; c/i/r 28/2/0) | **43%** cov 75% (n=115; c/i/r 37/49/29) |
 
 ### By text (one text = one work · version · language)
 
 **astra**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 39% | 74% | 31 | — | 12 | 42 | diacritic_only 1, edition_variant 2, paraphrase 4, wrong_passage 16, omission 5, wrong_locus 24, wrong_verdict 2 |
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 115 | 43% | 75% | 29 | — | 12 | 37 | diacritic_only 1, edition_variant 2, paraphrase 4, wrong_passage 13, omission 5, wrong_locus 22, wrong_verdict 2 |
 
 ### Token usage
 | model_id | calls | in | out |
 |---|---|---|---|
-| astra | 120 | 10,290 | 48,352 |
-| **total** | 120 | 10,290 | 48,352 |
+| astra | 115 | 10,191 | 46,069 |
+| **total** | 115 | 10,191 | 46,069 |
 
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| astra | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 70% cov 100% (n=30; c/i/r 21/9/0; minor/major 7/2) | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 13/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **82%** cov 100% (c/i/r 98/22/0; minor/major 20/2) |
+| astra | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 77% cov 100% (n=30; c/i/r 23/7/0; minor/major 5/2) | 67% cov 100% (n=30; c/i/r 20/10/0; minor/major 10/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **86%** cov 100% (c/i/r 103/17/0; minor/major 15/2) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| astra | complete_unit | 9 | 7 | 2 | edition_variant 1, paraphrase 6, wrong_passage 2 |
-| astra | retrieve_quote | 13 | 13 | 0 | edition_variant 4, paraphrase 9 |
+| astra | complete_unit | 7 | 5 | 2 | paraphrase 5, wrong_passage 2 |
+| astra | retrieve_quote | 10 | 10 | 0 | edition_variant 1, paraphrase 9 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
 
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| astra | Hinduism | 100% cov 100% (n=30; c/i/r 30/0/0) | 70% cov 100% (n=30; c/i/r 21/9/0) | 57% cov 100% (n=30; c/i/r 17/13/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | **82%** cov 100% (n=120; c/i/r 98/22/0) |
+| astra | Hinduism | 100% cov 100% (n=30; c/i/r 30/0/0) | 77% cov 100% (n=30; c/i/r 23/7/0) | 67% cov 100% (n=30; c/i/r 20/10/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | **86%** cov 100% (n=120; c/i/r 103/17/0) |
 
 ### By text (one text = one work · version · language)
 
 **astra**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 82% | 100% | 0 | — | 20 | 2 | edition_variant 5, paraphrase 15, wrong_passage 2 |
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 86% | 100% | 0 | — | 15 | 2 | edition_variant 1, paraphrase 14, wrong_passage 2 |
 
 ### Token usage
 | model_id | calls | in | out |
@@ -511,62 +526,33 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 11,832 | 10,609 |
 | **total** | 120 | 11,832 | 10,609 |
 
-  collected 5, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/judaism/english/population/summary.md
-carry islam/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/islam/native/population/prompt-english/answers.jsonl
-collect islam/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-english/summary.md
-carry islam/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/islam/native/population/prompt-native/answers.jsonl
-collect islam/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/native/population/prompt-native/summary.md
-carry islam/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/islam/english/population/answers.jsonl
-collect islam/english/population -> runs/facct-2026-11-03/astra/base/islam/english/population/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/islam/english/population/summary.md
-carry sikhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/sikhism/native/population/prompt-english/answers.jsonl
-collect sikhism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-english/summary.md
-carry sikhism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/sikhism/native/population/prompt-native/answers.jsonl
-collect sikhism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.md
-carry hinduism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/hinduism/native/population/prompt-english/answers.jsonl
-collect hinduism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.md
-carry hinduism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/hinduism/native/population/prompt-native/answers.jsonl
-collect hinduism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.mdwrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.md
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| astra | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 70% cov 100% (n=30; c/i/r 21/9/0; minor/major 7/2) | 53% cov 100% (n=30; c/i/r 16/14/0; minor/major 14/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **81%** cov 100% (c/i/r 97/23/0; minor/major 21/2) |
+| astra | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 77% cov 100% (n=30; c/i/r 23/7/0; minor/major 5/2) | 63% cov 100% (n=30; c/i/r 19/11/0; minor/major 11/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **85%** cov 100% (c/i/r 102/18/0; minor/major 16/2) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| astra | complete_unit | 9 | 7 | 2 | edition_variant 1, paraphrase 6, wrong_passage 2 |
-| astra | retrieve_quote | 14 | 14 | 0 | edition_variant 4, paraphrase 10 |
+| astra | complete_unit | 7 | 5 | 2 | paraphrase 5, wrong_passage 2 |
+| astra | retrieve_quote | 11 | 11 | 0 | edition_variant 1, paraphrase 10 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
 
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| astra | Hinduism | 100% cov 100% (n=30; c/i/r 30/0/0) | 70% cov 100% (n=30; c/i/r 21/9/0) | 53% cov 100% (n=30; c/i/r 16/14/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | **81%** cov 100% (n=120; c/i/r 97/23/0) |
+| astra | Hinduism | 100% cov 100% (n=30; c/i/r 30/0/0) | 77% cov 100% (n=30; c/i/r 23/7/0) | 63% cov 100% (n=30; c/i/r 19/11/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | **85%** cov 100% (n=120; c/i/r 102/18/0) |
 
 ### By text (one text = one work · version · language)
 
 **astra**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 81% | 100% | 0 | — | 21 | 2 | edition_variant 5, paraphrase 16, wrong_passage 2 |
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 85% | 100% | 0 | — | 16 | 2 | edition_variant 1, paraphrase 15, wrong_passage 2 |
 
 ### Token usage
 | model_id | calls | in | out |
@@ -643,18 +629,6 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 13,878 | 18,189 |
 | **total** | 120 | 13,878 | 18,189 |
 
-
-carry hinduism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/hinduism/english/population/answers.jsonl
-collect hinduism/english/population -> runs/facct-2026-11-03/astra/base/hinduism/english/population/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/summary.md
-carry buddhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/buddhism/native/population/prompt-english/answers.jsonl
-collect buddhism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
-  collected 0, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/summary.md
-carry book-of-mormon/english/population: 118 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/book-of-mormon/english/population/answers.jsonl
-collect book-of-mormon/english/population -> runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/answers.jsonl (120 questions, 2 to call)
-book-of-mormon/english/population:   0%|          | 0/2 [00:00<?, ?call/s]book-of-mormon/english/population:  50%|█████     | 1/2 [00:01<00:01,  1.41s/call]book-of-mormon/english/population: 100%|██████████| 2/2 [00:02<00:00,  1.07call/s, usd=0.0947]book-of-mormon/english/population: 100%|██████████| 2/2 [00:02<00:00,  1.01s/call, usd=0.0977]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -690,11 +664,6 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 9,378 | 15,577 |
 | **total** | 120 | 9,378 | 15,577 |
 
-  collected 2, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.md
-carry encyclicals/english/population: 118 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/astra/base/encyclicals/english/population/answers.jsonl
-collect encyclicals/english/population -> runs/facct-2026-11-03/astra/base/encyclicals/english/population/answers.jsonl (120 questions, 2 to call)
-encyclicals/english/population:   0%|          | 0/2 [00:00<?, ?call/s]encyclicals/english/population:  50%|█████     | 1/2 [00:01<00:01,  1.90s/call]encyclicals/english/population: 100%|██████████| 2/2 [00:02<00:00,  1.03s/call, usd=0.0998]encyclicals/english/population: 100%|██████████| 2/2 [00:02<00:00,  1.16s/call, usd=0.1020]
 wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.md
 
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
@@ -756,5 +725,29 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | astra | 120 | 17,288 | 18,939 |
 | **total** | 120 | 17,288 | 18,939 |
 
-  collected 2, pending 0
-/Users/mwk/.cache/uv/builds-v0/.tmpNiAmQo/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.md
+  collected 25, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/sikhism/native/population/prompt-native/summary.md
+carry hinduism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/hinduism/native/population/prompt-english/answers.jsonl
+collect hinduism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-english/summary.md
+carry hinduism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/hinduism/native/population/prompt-native/answers.jsonl
+collect hinduism/native/population/prompt-native -> runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/native/population/prompt-native/summary.md
+carry hinduism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/hinduism/english/population/answers.jsonl
+collect hinduism/english/population -> runs/facct-2026-11-03/astra/base/hinduism/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/hinduism/english/population/summary.md
+carry buddhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/buddhism/native/population/prompt-english/answers.jsonl
+collect buddhism/native/population/prompt-english -> runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/buddhism/native/population/prompt-english/summary.md
+carry book-of-mormon/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/book-of-mormon/english/population/answers.jsonl
+collect book-of-mormon/english/population -> runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/book-of-mormon/english/population/summary.md
+carry encyclicals/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre140/astra/base/encyclicals/english/population/answers.jsonl
+collect encyclicals/english/population -> runs/facct-2026-11-03/astra/base/encyclicals/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpGnxN5o/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/astra/base/encyclicals/english/population/summary.md

@@ -3,16 +3,16 @@
   "fable": {
    "cite_passage": {
     "n": 30,
-    "accuracy": 0.2333,
+    "accuracy": 0.1333,
     "coverage": 1.0,
-    "correct": 7,
-    "incorrect": 23,
+    "correct": 4,
+    "incorrect": 26,
     "minor": 0,
-    "major": 23,
+    "major": 26,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_locus": 23
+     "wrong_locus": 26
     }
    },
    "complete_unit": {
@@ -38,23 +38,24 @@
     "contains_reference": 0.5667
    },
    "retrieve_quote": {
-    "n": 30,
-    "accuracy": 0.125,
-    "coverage": 0.8,
-    "correct": 3,
+    "n": 25,
+    "accuracy": 0.16,
+    "coverage": 1.0,
+    "correct": 4,
     "incorrect": 21,
-    "minor": 0,
-    "major": 21,
-    "refused": 6,
-    "refused_rate": 0.2,
+    "minor": 1,
+    "major": 20,
+    "refused": 0,
+    "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 21
+     "paraphrase": 1,
+     "wrong_passage": 20
     },
     "exact": 0.0,
-    "normalized": 0.0833,
-    "token_f1": 0.1562,
-    "token_f1_base": 0.1791,
-    "contains_reference": 0.125
+    "normalized": 0.12,
+    "token_f1": 0.2339,
+    "token_f1_base": 0.2356,
+    "contains_reference": 0.16
    },
    "verify_source": {
     "n": 30,
@@ -69,21 +70,21 @@
     "kinds": {}
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.5,
-    "coverage": 0.95,
-    "correct": 57,
-    "incorrect": 57,
-    "minor": 10,
-    "major": 47,
-    "refused": 6,
-    "refused_rate": 0.05,
+    "n": 115,
+    "accuracy": 0.4783,
+    "coverage": 1.0,
+    "correct": 55,
+    "incorrect": 60,
+    "minor": 11,
+    "major": 49,
+    "refused": 0,
+    "refused_rate": 0.0,
     "kinds": {
      "edition_variant": 1,
-     "paraphrase": 4,
-     "wrong_passage": 24,
+     "paraphrase": 5,
+     "wrong_passage": 23,
      "omission": 5,
-     "wrong_locus": 23
+     "wrong_locus": 26
     }
    }
   }
@@ -93,10 +94,10 @@
    "Sikhism": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.2333,
+     "accuracy": 0.1333,
      "coverage": 1.0,
-     "correct": 7,
-     "incorrect": 23,
+     "correct": 4,
+     "incorrect": 26,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -110,13 +111,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
-     "accuracy": 0.125,
-     "coverage": 0.8,
-     "correct": 3,
+     "n": 25,
+     "accuracy": 0.16,
+     "coverage": 1.0,
+     "correct": 4,
      "incorrect": 21,
-     "refused": 6,
-     "refused_rate": 0.2
+     "refused": 0,
+     "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
@@ -128,13 +129,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.5,
-     "coverage": 0.95,
-     "correct": 57,
-     "incorrect": 57,
-     "refused": 6,
-     "refused_rate": 0.05
+     "n": 115,
+     "accuracy": 0.4783,
+     "coverage": 1.0,
+     "correct": 55,
+     "incorrect": 60,
+     "refused": 0,
+     "refused_rate": 0.0
     }
    }
   }
@@ -144,16 +145,16 @@
    "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.2333,
+     "accuracy": 0.1333,
      "coverage": 1.0,
-     "correct": 7,
-     "incorrect": 23,
+     "correct": 4,
+     "incorrect": 26,
      "minor": 0,
-     "major": 23,
+     "major": 26,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_locus": 23
+      "wrong_locus": 26
      }
     },
     "complete_unit": {
@@ -174,17 +175,18 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
-     "accuracy": 0.125,
-     "coverage": 0.8,
-     "correct": 3,
+     "n": 25,
+     "accuracy": 0.16,
+     "coverage": 1.0,
+     "correct": 4,
      "incorrect": 21,
-     "minor": 0,
-     "major": 21,
-     "refused": 6,
-     "refused_rate": 0.2,
+     "minor": 1,
+     "major": 20,
+     "refused": 0,
+     "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 21
+      "paraphrase": 1,
+      "wrong_passage": 20
      }
     },
     "verify_source": {
@@ -200,21 +202,21 @@
      "kinds": {}
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.5,
-     "coverage": 0.95,
-     "correct": 57,
-     "incorrect": 57,
-     "minor": 10,
-     "major": 47,
-     "refused": 6,
-     "refused_rate": 0.05,
+     "n": 115,
+     "accuracy": 0.4783,
+     "coverage": 1.0,
+     "correct": 55,
+     "incorrect": 60,
+     "minor": 11,
+     "major": 49,
+     "refused": 0,
+     "refused_rate": 0.0,
      "kinds": {
       "edition_variant": 1,
-      "paraphrase": 4,
-      "wrong_passage": 24,
+      "paraphrase": 5,
+      "wrong_passage": 23,
       "omission": 5,
-      "wrong_locus": 23
+      "wrong_locus": 26
      }
     }
    }
@@ -225,10 +227,10 @@
    "English prompt": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.2333,
+     "accuracy": 0.1333,
      "coverage": 1.0,
-     "correct": 7,
-     "incorrect": 23,
+     "correct": 4,
+     "incorrect": 26,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -242,13 +244,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
-     "accuracy": 0.125,
-     "coverage": 0.8,
-     "correct": 3,
+     "n": 25,
+     "accuracy": 0.16,
+     "coverage": 1.0,
+     "correct": 4,
      "incorrect": 21,
-     "refused": 6,
-     "refused_rate": 0.2
+     "refused": 0,
+     "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
@@ -260,13 +262,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.5,
-     "coverage": 0.95,
-     "correct": 57,
-     "incorrect": 57,
-     "refused": 6,
-     "refused_rate": 0.05
+     "n": 115,
+     "accuracy": 0.4783,
+     "coverage": 1.0,
+     "correct": 55,
+     "incorrect": 60,
+     "refused": 0,
+     "refused_rate": 0.0
     }
    }
   }
@@ -296,15 +298,15 @@
  "usage": {
   "per_model": {
    "fable": {
-    "calls": 120,
-    "in": 25667,
-    "out": 178700
+    "calls": 115,
+    "in": 25130,
+    "out": 136987
    }
   },
   "total": {
-   "calls": 120,
-   "in": 25667,
-   "out": 178700
+   "calls": 115,
+   "in": 25130,
+   "out": 136987
   }
  },
  "evaluators": [
@@ -312,13 +314,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "segment_match": {
-  "fable": {
-   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
-    "correct": 7,
-    "segment_match": 0
-   }
-  }
- },
- "generated_at": "2026-11-03T17:43:34.689792+00:00"
+ "generated_at": "2026-11-03T21:01:14.514380+00:00"
 }

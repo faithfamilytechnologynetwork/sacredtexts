@@ -1,6 +1,6 @@
 # Findings
 
-From 32637 scored answers in finished files in `runs/facct-2026-11-03`. A file still being collected is not here.
+From 32478 scored answers in finished files in `runs/facct-2026-11-03`. A file still being collected is not here.
 
 ## Takeaway
 
@@ -78,11 +78,10 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | deepseek-v4-pro | `islam/english/population` | 23% (7/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `hinduism/english/population` | 24% (7/29, refused 1) | 100% (30/30, refused 0) |
 | gemma-31b | `islam/native/population/prompt-native` | 0% (0/30, refused 0) | 73% (22/30, refused 0) |
-| luna | `hinduism/native/population/prompt-native` | 27% (6/22, refused 8) | 100% (30/30, refused 0) |
 | gemini-flash | `buddhism/native/population/prompt-english` | 30% (9/30, refused 0) | 100% (30/30, refused 0) |
 | deepseek-v4-pro | `hinduism/english/population` | 0% (0/28, refused 2) | 70% (21/30, refused 0) |
 | deepseek-v4-pro | `buddhism/native/population/prompt-english` | 20% (6/30, refused 0) | 90% (27/30, refused 0) |
-| deepseek-v4-pro | `hinduism/native/population/prompt-english` | 30% (9/30, refused 0) | 97% (29/30, refused 0) |
+| luna | `hinduism/native/population/prompt-native` | 32% (7/22, refused 8) | 100% (30/30, refused 0) |
 | luna | `christianity/native/greek/population/prompt-native` | 33% (3/9, refused 0) | 100% (9/9, refused 0) |
 | kimi | `christianity/native/greek/population/prompt-native` | 33% (3/9, refused 0) | 100% (9/9, refused 0) |
 | deepseek-v4-pro | `christianity/native/greek/population/prompt-english` | 33% (3/9, refused 0) | 100% (9/9, refused 0) |
@@ -90,9 +89,9 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | sonnet | `islam/english/population` | 35% (8/23, refused 7) | 100% (30/30, refused 0) |
 | astra | `judaism/native/population/prompt-english` | 8% (1/12, refused 18) | 73% (22/30, refused 0) |
 | haiku | `christianity/english/population` | 22% (2/9, refused 21) | 86% (25/29, refused 1) |
-| kimi | `hinduism/native/population/prompt-native` | 35% (7/20, refused 10) | 97% (29/30, refused 0) |
 | beam | `buddhism/native/population/prompt-english` | 25% (7/28, refused 2) | 87% (26/30, refused 0) |
 | sol | `hinduism/english/population` | 37% (11/30, refused 0) | 97% (29/30, refused 0) |
+| deepseek-v4-pro | `hinduism/native/population/prompt-english` | 37% (11/30, refused 0) | 97% (29/30, refused 0) |
 | gemma-31b | `islam/native/population/prompt-english` | 3% (1/30, refused 0) | 63% (19/30, refused 0) |
 | kimi | `buddhism/native/population/prompt-english` | 34% (10/29, refused 1) | 93% (28/30, refused 0) |
 | haiku | `christianity/native/masoretic/population/prompt-english` | 14% (3/21, refused 0) | 71% (15/21, refused 0) |
@@ -102,60 +101,46 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | luna | `islam/native/population/prompt-native` | 43% (13/30, refused 0) | 100% (30/30, refused 0) |
 | gemma-31b | `islam/english/population` | 0% (0/30, refused 0) | 57% (17/30, refused 0) |
 | argon | `encyclicals/english/population` | 0% (0/2, refused 28) | 57% (17/30, refused 0) |
-| haiku | `hinduism/native/population/prompt-native` | 33% (7/21, refused 9) | 89% (25/28, refused 2) |
 | beam | `christianity/native/greek/population/prompt-english` | 44% (4/9, refused 0) | 100% (9/9, refused 0) |
 | astra | `judaism/native/population/prompt-native` | 11% (2/18, refused 12) | 67% (20/30, refused 0) |
 | kimi | `christianity/native/greek/population/prompt-english` | 33% (3/9, refused 0) | 89% (8/9, refused 0) |
 | haiku | `christianity/native/masoretic/population/prompt-native` | 10% (2/21, refused 0) | 65% (13/20, refused 1) |
 | sol | `judaism/native/population/prompt-english` | 6% (1/17, refused 13) | 60% (18/30, refused 0) |
-| terra | `hinduism/native/population/prompt-english` | 43% (13/30, refused 0) | 97% (29/30, refused 0) |
 | luna | `buddhism/native/population/prompt-english` | 33% (10/30, refused 0) | 87% (26/30, refused 0) |
 | fable | `judaism/english/population` | 0% (0/11, refused 19) | 53% (16/30, refused 0) |
 | luna | `christianity/english/population` | 40% (4/10, refused 20) | 93% (28/30, refused 0) |
 | gemini-flash | `islam/english/population` | 47% (9/19, refused 11) | 100% (30/30, refused 0) |
-| deepseek-v4-pro | `hinduism/native/population/prompt-native` | 47% (14/30, refused 0) | 97% (29/30, refused 0) |
-| opus | `hinduism/native/population/prompt-native` | 50% (15/30, refused 0) | 100% (30/30, refused 0) |
+| haiku | `hinduism/native/population/prompt-native` | 38% (8/21, refused 9) | 89% (25/28, refused 2) |
 | gemini-flash | `encyclicals/english/population` | 0% (0/12, refused 18) | 50% (15/30, refused 0) |
 | astra | `encyclicals/english/population` | 0% (0/1, refused 29) | 50% (15/30, refused 0) |
-| argon | `hinduism/native/population/prompt-english` | 50% (15/30, refused 0) | 100% (30/30, refused 0) |
 | terra | `buddhism/native/population/prompt-english` | 50% (15/30, refused 0) | 97% (29/30, refused 0) |
-| gemini-flash | `hinduism/native/population/prompt-native` | 50% (15/30, refused 0) | 97% (29/30, refused 0) |
+| kimi | `hinduism/native/population/prompt-native` | 50% (10/20, refused 10) | 97% (29/30, refused 0) |
 | terra | `judaism/native/population/prompt-native` | 3% (1/30, refused 0) | 50% (15/30, refused 0) |
-| sonnet | `hinduism/native/population/prompt-english` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
-| sol | `hinduism/native/population/prompt-native` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
-| sol | `hinduism/native/population/prompt-english` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
 | gemini-flash | `judaism/english/population` | 0% (0/2, refused 28) | 47% (14/30, refused 0) |
-| gemini-flash | `hinduism/native/population/prompt-english` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
 | fable | `hinduism/english/population` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
-| astra | `hinduism/native/population/prompt-native` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
-| argon | `hinduism/native/population/prompt-native` | 53% (16/30, refused 0) | 100% (30/30, refused 0) |
 | kimi | `islam/english/population` | 54% (14/26, refused 4) | 100% (30/30, refused 0) |
 | sol | `judaism/native/population/prompt-native` | 5% (1/20, refused 10) | 50% (15/30, refused 0) |
-| beam | `hinduism/native/population/prompt-english` | 52% (15/29, refused 1) | 97% (29/30, refused 0) |
 | terra | `christianity/native/greek/population/prompt-native` | 56% (5/9, refused 0) | 100% (9/9, refused 0) |
 | sonnet | `christianity/native/greek/population/prompt-native` | 56% (5/9, refused 0) | 100% (9/9, refused 0) |
 | sonnet | `christianity/native/greek/population/prompt-english` | 56% (5/9, refused 0) | 100% (9/9, refused 0) |
 | deepseek-v4-pro | `christianity/native/greek/population/prompt-native` | 56% (5/9, refused 0) | 100% (9/9, refused 0) |
-| terra | `hinduism/native/population/prompt-native` | 57% (17/30, refused 0) | 100% (30/30, refused 0) |
+| terra | `hinduism/native/population/prompt-english` | 53% (16/30, refused 0) | 97% (29/30, refused 0) |
 | sonnet | `buddhism/native/population/prompt-english` | 50% (15/30, refused 0) | 7% (2/30, refused 0) |
-| opus | `hinduism/native/population/prompt-english` | 57% (17/30, refused 0) | 100% (30/30, refused 0) |
-| fable | `hinduism/native/population/prompt-english` | 57% (17/30, refused 0) | 100% (30/30, refused 0) |
-| astra | `hinduism/native/population/prompt-english` | 57% (17/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `buddhism/native/population/prompt-english` | 53% (16/30, refused 0) | 97% (29/30, refused 0) |
-| sonnet | `hinduism/native/population/prompt-native` | 50% (15/30, refused 0) | 93% (28/30, refused 0) |
 | luna | `christianity/native/masoretic/population/prompt-native` | 52% (11/21, refused 0) | 95% (20/21, refused 0) |
 | beam | `christianity/native/masoretic/population/prompt-english` | 52% (11/21, refused 0) | 95% (20/21, refused 0) |
-| beam | `hinduism/native/population/prompt-native` | 59% (17/29, refused 1) | 100% (30/30, refused 0) |
-| fable | `hinduism/native/population/prompt-native` | 57% (17/30, refused 0) | 97% (29/30, refused 0) |
+| deepseek-v4-pro | `hinduism/native/population/prompt-native` | 57% (17/30, refused 0) | 97% (29/30, refused 0) |
 | terra | `judaism/native/population/prompt-english` | 0% (0/30, refused 0) | 40% (12/30, refused 0) |
 | terra | `judaism/english/population` | 0% (0/25, refused 5) | 40% (12/30, refused 0) |
 | terra | `encyclicals/english/population` | 0% (0/29, refused 1) | 40% (12/30, refused 0) |
+| opus | `hinduism/native/population/prompt-native` | 60% (18/30, refused 0) | 100% (30/30, refused 0) |
 | kimi | `islam/native/population/prompt-native` | 60% (18/30, refused 0) | 100% (30/30, refused 0) |
 | kimi | `islam/native/population/prompt-english` | 60% (18/30, refused 0) | 100% (30/30, refused 0) |
 | gemma-31b | `christianity/english/population` | 0% (0/30, refused 0) | 40% (12/30, refused 0) |
 | gemini-flash | `judaism/native/population/prompt-native` | 0% (0/30, refused 0) | 40% (12/30, refused 0) |
 | deepseek-v4-pro | `islam/native/population/prompt-native` | 17% (5/30, refused 0) | 57% (17/30, refused 0) |
 | beam | `christianity/english/population` | 60% (18/30, refused 0) | 100% (30/30, refused 0) |
+| argon | `hinduism/native/population/prompt-english` | 60% (18/30, refused 0) | 100% (30/30, refused 0) |
 | opus | `judaism/native/population/prompt-native` | 0% (0/2, refused 28) | 39% (11/28, refused 2) |
 | opus | `hinduism/english/population` | 61% (14/23, refused 7) | 100% (30/30, refused 0) |
 | sonnet | `christianity/native/masoretic/population/prompt-native` | 52% (11/21, refused 0) | 90% (19/21, refused 0) |
@@ -164,15 +149,23 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | argon | `christianity/native/masoretic/population/prompt-native` | 62% (13/21, refused 0) | 100% (21/21, refused 0) |
 | fable | `encyclicals/english/population` | 12% (2/16, refused 14) | 50% (15/30, refused 0) |
 | luna | `islam/english/population` | 63% (12/19, refused 11) | 100% (30/30, refused 0) |
+| gemini-flash | `hinduism/native/population/prompt-native` | 60% (18/30, refused 0) | 97% (29/30, refused 0) |
+| sonnet | `hinduism/native/population/prompt-english` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
+| sol | `sikhism/native/population/prompt-english` | 0% (0/8, refused 17) | 37% (11/30, refused 0) |
+| sol | `hinduism/native/population/prompt-native` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
+| sol | `hinduism/native/population/prompt-english` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
 | qwen3-32b | `islam/native/population/prompt-english` | 0% (0/30, refused 0) | 37% (11/30, refused 0) |
 | gemini-flash | `judaism/native/population/prompt-english` | 0% (0/14, refused 16) | 37% (11/30, refused 0) |
+| gemini-flash | `hinduism/native/population/prompt-english` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
 | beam | `islam/native/population/prompt-native` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
-| astra | `sikhism/native/population/prompt-english` | 0% (0/3, refused 27) | 37% (11/30, refused 0) |
+| astra | `hinduism/native/population/prompt-native` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `judaism/native/population/prompt-native` | 0% (0/15, refused 15) | 37% (11/30, refused 0) |
+| argon | `hinduism/native/population/prompt-native` | 63% (19/30, refused 0) | 100% (30/30, refused 0) |
 | fable | `judaism/native/population/prompt-english` | 4% (1/27, refused 3) | 40% (12/30, refused 0) |
 | beam | `islam/english/population` | 65% (17/26, refused 4) | 100% (30/30, refused 0) |
+| beam | `hinduism/native/population/prompt-english` | 62% (18/29, refused 1) | 97% (29/30, refused 0) |
+| beam | `hinduism/native/population/prompt-native` | 66% (19/29, refused 1) | 100% (30/30, refused 0) |
 | terra | `christianity/native/masoretic/population/prompt-native` | 62% (13/21, refused 0) | 95% (20/21, refused 0) |
-| sol | `sikhism/native/population/prompt-english` | 0% (0/3, refused 27) | 33% (10/30, refused 0) |
 | qwen3-32b | `islam/english/population` | 0% (0/30, refused 0) | 33% (10/30, refused 0) |
 | qwen3-32b | `christianity/native/greek/population/prompt-native` | 0% (0/9, refused 0) | 33% (3/9, refused 0) |
 | luna | `encyclicals/english/population` | 0% (0/28, refused 2) | 33% (10/30, refused 0) |
@@ -181,16 +174,21 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | gemma-31b | `christianity/native/greek/population/prompt-english` | 0% (0/9, refused 0) | 33% (3/9, refused 0) |
 | deepseek-v4-pro | `encyclicals/english/population` | 0% (0/29, refused 1) | 33% (10/30, refused 0) |
 | argon | `book-of-mormon/english/population` | 63% (19/30, refused 0) | 97% (29/30, refused 0) |
+| terra | `hinduism/native/population/prompt-native` | 67% (20/30, refused 0) | 100% (30/30, refused 0) |
 | terra | `christianity/native/greek/population/prompt-english` | 67% (6/9, refused 0) | 100% (9/9, refused 0) |
+| sonnet | `hinduism/native/population/prompt-native` | 60% (18/30, refused 0) | 93% (28/30, refused 0) |
 | opus | `islam/english/population` | 67% (20/30, refused 0) | 100% (30/30, refused 0) |
+| opus | `hinduism/native/population/prompt-english` | 67% (20/30, refused 0) | 100% (30/30, refused 0) |
 | luna | `christianity/native/greek/population/prompt-english` | 67% (6/9, refused 0) | 100% (9/9, refused 0) |
+| fable | `hinduism/native/population/prompt-english` | 67% (20/30, refused 0) | 100% (30/30, refused 0) |
 | deepseek-v4-pro | `christianity/native/masoretic/population/prompt-native` | 67% (14/21, refused 0) | 100% (21/21, refused 0) |
 | beam | `christianity/native/greek/population/prompt-native` | 56% (5/9, refused 0) | 89% (8/9, refused 0) |
+| astra | `hinduism/native/population/prompt-english` | 67% (20/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `christianity/native/greek/population/prompt-english` | 67% (6/9, refused 0) | 100% (9/9, refused 0) |
 | terra | `islam/english/population` | 70% (21/30, refused 0) | 100% (30/30, refused 0) |
-| sol | `sikhism/native/population/prompt-native` | 0% (0/8, refused 22) | 30% (9/30, refused 0) |
 | kimi | `judaism/english/population` | 0% (0/16, refused 14) | 30% (9/30, refused 0) |
 | haiku | `islam/native/population/prompt-native` | 67% (20/30, refused 0) | 97% (29/30, refused 0) |
+| fable | `hinduism/native/population/prompt-native` | 67% (20/30, refused 0) | 97% (29/30, refused 0) |
 | beam | `islam/native/population/prompt-english` | 70% (21/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `judaism/native/population/prompt-english` | 0% (0/17, refused 13) | 30% (9/30, refused 0) |
 | luna | `book-of-mormon/english/population` | 27% (8/30, refused 0) | 57% (17/30, refused 0) |
@@ -201,12 +199,13 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | luna | `judaism/native/population/prompt-english` | 0% (0/25, refused 5) | 27% (8/30, refused 0) |
 | gemma-31b | `hinduism/native/population/prompt-native` | 0% (0/30, refused 0) | 27% (8/30, refused 0) |
 | gemma-31b | `hinduism/native/population/prompt-english` | 0% (0/30, refused 0) | 27% (8/30, refused 0) |
+| astra | `sikhism/native/population/prompt-native` | 0% (0/4, refused 21) | 27% (8/30, refused 0) |
+| astra | `sikhism/native/population/prompt-english` | 0% (0/5, refused 20) | 27% (8/30, refused 0) |
 | terra | `book-of-mormon/english/population` | 47% (14/30, refused 0) | 73% (22/30, refused 0) |
 | terra | `christianity/english/population` | 67% (18/27, refused 3) | 93% (28/30, refused 0) |
 | gemini-flash | `book-of-mormon/english/population` | 61% (17/28, refused 2) | 87% (26/30, refused 0) |
 | gemini-flash | `christianity/native/masoretic/population/prompt-native` | 71% (15/21, refused 0) | 95% (20/21, refused 0) |
 | sonnet | `christianity/native/masoretic/population/prompt-english` | 57% (12/21, refused 0) | 81% (17/21, refused 0) |
-| fable | `sikhism/native/population/prompt-native` | 0% (0/12, refused 18) | 23% (7/30, refused 0) |
 | deepseek-v4-pro | `judaism/native/population/prompt-english` | 0% (0/30, refused 0) | 23% (7/30, refused 0) |
 | beam | `judaism/english/population` | 0% (0/1, refused 29) | 23% (7/30, refused 0) |
 | argon | `islam/english/population` | 77% (23/30, refused 0) | 100% (30/30, refused 0) |
@@ -218,13 +217,12 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | fable | `judaism/native/population/prompt-native` | 5% (1/19, refused 11) | 27% (8/30, refused 0) |
 | gemini-flash | `christianity/english/population` | 79% (23/29, refused 1) | 100% (30/30, refused 0) |
 | deepseek-v4-pro | `judaism/native/population/prompt-native` | 0% (0/22, refused 8) | 21% (6/29, refused 1) |
+| sol | `sikhism/native/population/prompt-native` | 0% (0/1, refused 24) | 20% (6/30, refused 0) |
 | qwen3-32b | `hinduism/native/population/prompt-native` | 0% (0/30, refused 0) | 20% (6/30, refused 0) |
 | luna | `judaism/native/population/prompt-native` | 0% (0/20, refused 10) | 20% (6/30, refused 0) |
 | deepseek-v4-pro | `judaism/english/population` | 0% (0/27, refused 3) | 20% (6/30, refused 0) |
 | deepseek-v4-pro | `islam/native/population/prompt-english` | 77% (23/30, refused 0) | 97% (29/30, refused 0) |
 | deepseek-v4-pro | `book-of-mormon/english/population` | 33% (10/30, refused 0) | 53% (16/30, refused 0) |
-| astra | `sikhism/native/population/prompt-native` | 0% (0/7, refused 23) | 20% (6/30, refused 0) |
-| argon | `sikhism/native/population/prompt-english` | 0% (0/21, refused 9) | 20% (6/30, refused 0) |
 | sol | `christianity/native/masoretic/population/prompt-english` | 81% (17/21, refused 0) | 100% (21/21, refused 0) |
 | kimi | `christianity/native/masoretic/population/prompt-native` | 71% (15/21, refused 0) | 90% (19/21, refused 0) |
 | gemini-flash | `christianity/native/masoretic/population/prompt-english` | 76% (16/21, refused 0) | 95% (20/21, refused 0) |
@@ -233,8 +231,9 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | opus | `buddhism/native/population/prompt-english` | 83% (25/30, refused 0) | 100% (30/30, refused 0) |
 | fable | `islam/english/population` | 83% (25/30, refused 0) | 100% (30/30, refused 0) |
 | astra | `buddhism/native/population/prompt-english` | 83% (25/30, refused 0) | 100% (30/30, refused 0) |
+| terra | `sikhism/native/population/prompt-native` | 0% (0/21, refused 4) | 17% (5/30, refused 0) |
 | kimi | `judaism/native/population/prompt-native` | 0% (0/27, refused 3) | 17% (5/30, refused 0) |
-| argon | `sikhism/native/population/prompt-native` | 0% (0/22, refused 8) | 17% (5/30, refused 0) |
+| fable | `sikhism/native/population/prompt-native` | 14% (3/22, refused 3) | 30% (9/30, refused 0) |
 | kimi | `christianity/english/population` | 77% (17/22, refused 8) | 93% (28/30, refused 0) |
 | opus | `encyclicals/english/population` | 43% (3/7, refused 23) | 59% (17/29, refused 1) |
 | sol | `christianity/native/masoretic/population/prompt-native` | 86% (18/21, refused 0) | 100% (21/21, refused 0) |
@@ -244,12 +243,13 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | argon | `christianity/native/masoretic/population/prompt-english` | 86% (18/21, refused 0) | 100% (21/21, refused 0) |
 | sonnet | `judaism/native/population/prompt-native` | 0% (0/3, refused 27) | 14% (3/21, refused 9) |
 | qwen3-32b | `christianity/native/masoretic/population/prompt-english` | 0% (0/21, refused 0) | 14% (3/21, refused 0) |
-| opus | `sikhism/native/population/prompt-native` | 0% (0/1, refused 29) | 14% (3/21, refused 9) |
 | gemma-31b | `christianity/native/masoretic/population/prompt-native` | 0% (0/21, refused 0) | 14% (3/21, refused 0) |
 | haiku | `book-of-mormon/english/population` | 33% (1/3, refused 27) | 19% (5/26, refused 4) |
-| terra | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 13% (4/30, refused 0) |
+| terra | `sikhism/native/population/prompt-english` | 0% (0/25, refused 0) | 13% (4/30, refused 0) |
 | qwen3-32b | `hinduism/native/population/prompt-english` | 0% (0/30, refused 0) | 13% (4/30, refused 0) |
-| gemini-flash | `sikhism/native/population/prompt-native` | 0% (0/30, refused 0) | 13% (4/30, refused 0) |
+| opus | `sikhism/native/population/prompt-native` | 0% (0/2, refused 23) | 13% (4/30, refused 0) |
+| argon | `sikhism/native/population/prompt-native` | 0% (0/6, refused 19) | 13% (4/30, refused 0) |
+| argon | `sikhism/native/population/prompt-english` | 0% (0/22, refused 3) | 13% (4/30, refused 0) |
 | gemini-flash | `islam/native/population/prompt-english` | 87% (26/30, refused 0) | 100% (30/30, refused 0) |
 | opus | `christianity/native/greek/population/prompt-native` | 89% (8/9, refused 0) | 100% (9/9, refused 0) |
 | gemini-flash | `christianity/native/greek/population/prompt-native` | 89% (8/9, refused 0) | 100% (9/9, refused 0) |
@@ -257,18 +257,18 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | fable | `christianity/native/greek/population/prompt-english` | 89% (8/9, refused 0) | 100% (9/9, refused 0) |
 | astra | `christianity/native/greek/population/prompt-native` | 89% (8/9, refused 0) | 100% (9/9, refused 0) |
 | astra | `christianity/native/greek/population/prompt-english` | 89% (8/9, refused 0) | 100% (9/9, refused 0) |
-| fable | `sikhism/native/population/prompt-english` | 12% (3/24, refused 6) | 23% (7/30, refused 0) |
+| opus | `sikhism/native/population/prompt-english` | 0% (0/19, refused 6) | 10% (3/29, refused 1) |
 | gpt-oss-20b | `islam/english/population` | 0% (0/28, refused 2) | 10% (3/29, refused 1) |
-| terra | `sikhism/native/population/prompt-native` | 0% (0/30, refused 0) | 10% (3/30, refused 0) |
 | luna | `islam/native/population/prompt-english` | 90% (27/30, refused 0) | 100% (30/30, refused 0) |
 | kimi | `judaism/native/population/prompt-english` | 0% (0/28, refused 2) | 10% (3/30, refused 0) |
 | gemma-31b | `hinduism/english/population` | 0% (0/30, refused 0) | 10% (3/30, refused 0) |
-| gemini-flash | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 10% (3/30, refused 0) |
+| gemini-flash | `sikhism/native/population/prompt-native` | 0% (0/25, refused 0) | 10% (3/30, refused 0) |
 | gemini-flash | `islam/native/population/prompt-native` | 90% (27/30, refused 0) | 100% (30/30, refused 0) |
 | astra | `book-of-mormon/english/population` | 90% (27/30, refused 0) | 100% (30/30, refused 0) |
 | fable | `christianity/native/masoretic/population/prompt-native` | 86% (18/21, refused 0) | 95% (20/21, refused 0) |
 | gemma-31b | `christianity/native/masoretic/population/prompt-english` | 0% (0/21, refused 0) | 10% (2/21, refused 0) |
 | opus | `christianity/native/masoretic/population/prompt-english` | 90% (19/21, refused 0) | 100% (21/21, refused 0) |
+| gemini-flash | `sikhism/native/population/prompt-english` | 4% (1/25, refused 0) | 13% (4/30, refused 0) |
 | haiku | `islam/native/population/prompt-english` | 81% (22/27, refused 3) | 90% (27/30, refused 0) |
 | gpt-oss-20b | `islam/native/population/prompt-english` | 0% (0/29, refused 1) | 7% (2/28, refused 2) |
 | fable | `islam/native/population/prompt-english` | 93% (27/29, refused 0) | 100% (30/30, refused 0) |
@@ -281,43 +281,45 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | qwen3-32b | `judaism/native/population/prompt-english` | 0% (0/28, refused 2) | 7% (2/30, refused 0) |
 | qwen3-32b | `judaism/english/population` | 0% (0/30, refused 0) | 7% (2/30, refused 0) |
 | qwen3-32b | `hinduism/english/population` | 0% (0/30, refused 0) | 7% (2/30, refused 0) |
-| luna | `sikhism/native/population/prompt-english` | 0% (0/6, refused 24) | 7% (2/30, refused 0) |
 | gemma-31b | `book-of-mormon/english/population` | 0% (0/30, refused 0) | 7% (2/30, refused 0) |
 | kimi | `book-of-mormon/english/population` | 61% (17/28, refused 2) | 67% (20/30, refused 0) |
-| sonnet | `sikhism/native/population/prompt-native` | 0% (0/5, refused 25) | 6% (1/18, refused 12) |
 | fable | `christianity/native/masoretic/population/prompt-english` | 95% (20/21, refused 0) | 90% (19/21, refused 0) |
 | qwen3-32b | `book-of-mormon/english/population` | 0% (0/30, refused 0) | 3% (1/30, refused 0) |
+| kimi | `sikhism/native/population/prompt-english` | 0% (0/25, refused 0) | 3% (1/30, refused 0) |
 | gpt-oss-20b | `christianity/english/population` | 0% (0/28, refused 2) | 3% (1/30, refused 0) |
 | gemma-31b | `buddhism/native/population/prompt-english` | 0% (0/30, refused 0) | 3% (1/30, refused 0) |
+| deepseek-v4-pro | `sikhism/native/population/prompt-native` | 0% (0/24, refused 1) | 3% (1/30, refused 0) |
+| deepseek-v4-pro | `sikhism/native/population/prompt-english` | 0% (0/25, refused 0) | 3% (1/30, refused 0) |
 | opus | `islam/native/population/prompt-native` | 97% (29/30, refused 0) | 100% (30/30, refused 0) |
 | opus | `christianity/english/population` | 97% (29/30, refused 0) | 100% (30/30, refused 0) |
 | opus | `book-of-mormon/english/population` | 93% (28/30, refused 0) | 90% (27/30, refused 0) |
-| haiku | `hinduism/native/population/prompt-english` | 100% (7/7, refused 23) | 97% (29/30, refused 0) |
+| haiku | `hinduism/native/population/prompt-english` | 100% (9/9, refused 21) | 97% (29/30, refused 0) |
 | fable | `christianity/english/population` | 100% (29/29, refused 1) | 97% (29/30, refused 0) |
 | fable | `buddhism/native/population/prompt-english` | 90% (27/30, refused 0) | 93% (28/30, refused 0) |
 | fable | `book-of-mormon/english/population` | 70% (21/30, refused 0) | 67% (20/30, refused 0) |
 | astra | `islam/native/population/prompt-english` | 97% (29/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `islam/native/population/prompt-english` | 97% (29/30, refused 0) | 100% (30/30, refused 0) |
 | sonnet | `book-of-mormon/english/population` | 35% (6/17, refused 13) | 32% (9/28, refused 2) |
+| fable | `sikhism/native/population/prompt-english` | 16% (4/25, refused 0) | 13% (4/30, refused 0) |
 | terra | `islam/native/population/prompt-native` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | terra | `islam/native/population/prompt-english` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
-| sonnet | `sikhism/native/population/prompt-english` | 0% (0/2, refused 28) | 0% (0/20, refused 10) |
+| sonnet | `sikhism/native/population/prompt-english` | 0% (0/5, refused 20) | 0% (0/23, refused 7) |
 | sonnet | `islam/native/population/prompt-native` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | sonnet | `islam/native/population/prompt-english` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | sol | `islam/native/population/prompt-native` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | sol | `islam/native/population/prompt-english` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | sol | `book-of-mormon/english/population` | 93% (28/30, refused 0) | 93% (28/30, refused 0) |
-| qwen3-32b | `sikhism/native/population/prompt-native` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
-| qwen3-32b | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
+| qwen3-32b | `sikhism/native/population/prompt-native` | 0% (0/25, refused 0) | 0% (0/30, refused 0) |
+| qwen3-32b | `sikhism/native/population/prompt-english` | 0% (0/25, refused 0) | 0% (0/30, refused 0) |
 | qwen3-32b | `encyclicals/english/population` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
 | qwen3-32b | `buddhism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
 | opus | `christianity/native/greek/population/prompt-english` | 100% (9/9, refused 0) | 100% (9/9, refused 0) |
-| luna | `sikhism/native/population/prompt-native` | 0% (0/26, refused 4) | 0% (0/30, refused 0) |
-| kimi | `sikhism/native/population/prompt-native` | 0% (0/28, refused 2) | 0% (0/30, refused 0) |
-| kimi | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
-| haiku | `sikhism/native/population/prompt-native` | 0% (0/15, refused 15) | 0% (0/15, refused 15) |
-| gpt-oss-20b | `sikhism/native/population/prompt-native` | 0% (0/20, refused 10) | 0% (0/30, refused 0) |
-| gpt-oss-20b | `sikhism/native/population/prompt-english` | 0% (0/1, refused 29) | 0% (0/30, refused 0) |
+| luna | `sikhism/native/population/prompt-native` | 0% (0/19, refused 6) | 0% (0/30, refused 0) |
+| luna | `sikhism/native/population/prompt-english` | 0% (0/11, refused 14) | 0% (0/30, refused 0) |
+| kimi | `sikhism/native/population/prompt-native` | 0% (0/22, refused 3) | 0% (0/30, refused 0) |
+| haiku | `sikhism/native/population/prompt-native` | 0% (0/4, refused 21) | 0% (0/18, refused 12) |
+| gpt-oss-20b | `sikhism/native/population/prompt-native` | 0% (0/14, refused 11) | 0% (0/30, refused 0) |
+| gpt-oss-20b | `sikhism/native/population/prompt-english` | 0% (0/5, refused 20) | 0% (0/30, refused 0) |
 | gpt-oss-20b | `judaism/native/population/prompt-native` | 0% (0/20, refused 10) | 0% (0/30, refused 0) |
 | gpt-oss-20b | `islam/native/population/prompt-native` | 0% (0/27, refused 3) | 0% (0/29, refused 1) |
 | gpt-oss-20b | `hinduism/native/population/prompt-native` | 0% (0/7, refused 23) | 0% (0/30, refused 0) |
@@ -329,16 +331,15 @@ Each finished file, retrieve against cite. A wide gap means the model can do one
 | gpt-oss-20b | `christianity/native/greek/population/prompt-english` | 0% (0/9, refused 0) | 0% (0/9, refused 0) |
 | gpt-oss-20b | `buddhism/native/population/prompt-english` | 0% (0/13, refused 17) | 0% (0/30, refused 0) |
 | gpt-oss-20b | `book-of-mormon/english/population` | 0% (0/20, refused 10) | 0% (0/30, refused 0) |
-| gemma-31b | `sikhism/native/population/prompt-native` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
-| gemma-31b | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
+| gemma-31b | `sikhism/native/population/prompt-native` | 0% (0/25, refused 0) | 0% (0/30, refused 0) |
+| gemma-31b | `sikhism/native/population/prompt-english` | 0% (0/25, refused 0) | 0% (0/30, refused 0) |
 | gemma-31b | `judaism/native/population/prompt-native` | 0% (0/28, refused 2) | 0% (0/30, refused 0) |
 | gemma-31b | `judaism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
 | gemma-31b | `judaism/english/population` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
 | gemma-31b | `encyclicals/english/population` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
 | fable | `christianity/native/greek/population/prompt-native` | 100% (9/9, refused 0) | 100% (9/9, refused 0) |
-| deepseek-v4-pro | `sikhism/native/population/prompt-native` | 0% (0/26, refused 4) | 0% (0/30, refused 0) |
-| deepseek-v4-pro | `sikhism/native/population/prompt-english` | 0% (0/30, refused 0) | 0% (0/30, refused 0) |
-| beam | `sikhism/native/population/prompt-native` | 0% (0/4, refused 26) | 0% (0/9, refused 21) |
+| beam | `sikhism/native/population/prompt-native` | 0% (0/5, refused 20) | 0% (0/26, refused 4) |
+| beam | `sikhism/native/population/prompt-english` | 0% (0/2, refused 23) | 0% (0/25, refused 5) |
 | beam | `book-of-mormon/english/population` | 67% (6/9, refused 21) | 67% (20/30, refused 0) |
 | astra | `islam/native/population/prompt-native` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
 | argon | `islam/native/population/prompt-native` | 100% (30/30, refused 0) | 100% (30/30, refused 0) |
@@ -347,33 +348,33 @@ The flip is inside one model, on the same verses. Gemini Flash, Qur'an prompted 
 
 ## Close wording that still scores incorrect
 
-1607 incorrect answers still have token F1 of at least 0.70. The strict score is doing what it was built for: a near miss is not a hit. Most of them are Gemini Flash completions.
+1527 incorrect answers still have token F1 of at least 0.70. The strict score is doing what it was built for: a near miss is not a hit. Most of them are Gemini Flash completions.
 
-- beam, retrieve_quote: 98
-- terra, retrieve_quote: 97
-- gemini-flash, retrieve_quote: 90
-- argon, retrieve_quote: 85
-- argon, complete_unit: 82
-- luna, complete_unit: 80
-- beam, complete_unit: 79
-- kimi, complete_unit: 75
-- terra, complete_unit: 71
+- beam, retrieve_quote: 93
+- terra, retrieve_quote: 91
+- gemini-flash, retrieve_quote: 87
+- argon, retrieve_quote: 79
+- argon, complete_unit: 77
+- beam, complete_unit: 77
+- luna, complete_unit: 77
+- kimi, complete_unit: 73
+- terra, complete_unit: 67
 - kimi, retrieve_quote: 63
-- sol, retrieve_quote: 62
-- gemini-flash, complete_unit: 61
-- deepseek-v4-pro, retrieve_quote: 59
-- opus, complete_unit: 58
-- astra, retrieve_quote: 57
-- astra, complete_unit: 53
-- fable, retrieve_quote: 52
-- deepseek-v4-pro, complete_unit: 47
-- luna, retrieve_quote: 46
-- fable, complete_unit: 44
-- sol, complete_unit: 43
-- sonnet, retrieve_quote: 41
+- deepseek-v4-pro, retrieve_quote: 57
+- gemini-flash, complete_unit: 57
+- sol, retrieve_quote: 56
+- opus, complete_unit: 55
+- astra, retrieve_quote: 51
+- astra, complete_unit: 49
+- fable, retrieve_quote: 48
+- deepseek-v4-pro, complete_unit: 46
+- luna, retrieve_quote: 45
+- fable, complete_unit: 41
 - haiku, complete_unit: 39
-- opus, retrieve_quote: 39
+- sol, complete_unit: 39
+- sonnet, retrieve_quote: 38
 - haiku, retrieve_quote: 37
+- opus, retrieve_quote: 36
 - sonnet, complete_unit: 17
 - qwen3-32b, complete_unit: 12
 - gemma-31b, complete_unit: 6
@@ -384,9 +385,9 @@ The flip is inside one model, on the same verses. Gemini Flash, Qur'an prompted 
 
 ## A right citation in Arabic digits is scored wrong
 
-61 incorrect citations are the right verse once Arabic-Indic digits are read as Western digits. 3074 wrong citations stay wrong after that fold.
+62 incorrect citations are the right verse once Arabic-Indic digits are read as Western digits. 3114 wrong citations stay wrong after that fold.
 
-- sonnet: 42
+- sonnet: 43
 - fable: 5
 - gpt-oss-20b: 5
 - gemma-31b: 3

@@ -3,16 +3,16 @@
   "luna": {
    "cite_passage": {
     "n": 30,
-    "accuracy": 0.0667,
+    "accuracy": 0.0,
     "coverage": 1.0,
-    "correct": 2,
-    "incorrect": 28,
+    "correct": 0,
+    "incorrect": 30,
     "minor": 0,
-    "major": 28,
+    "major": 30,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_locus": 28
+     "wrong_locus": 30
     }
    },
    "complete_unit": {
@@ -36,22 +36,22 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
-    "coverage": 0.2,
+    "coverage": 0.44,
     "correct": 0,
-    "incorrect": 6,
+    "incorrect": 11,
     "minor": 0,
-    "major": 6,
-    "refused": 24,
-    "refused_rate": 0.8,
+    "major": 11,
+    "refused": 14,
+    "refused_rate": 0.56,
     "kinds": {
-     "wrong_passage": 6
+     "wrong_passage": 11
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.013,
-    "token_f1_base": 0.0261,
+    "token_f1": 0.0,
+    "token_f1_base": 0.0,
     "contains_reference": 0.0
    },
    "verify_source": {
@@ -69,19 +69,19 @@
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.2396,
-    "coverage": 0.8,
-    "correct": 23,
-    "incorrect": 73,
+    "n": 115,
+    "accuracy": 0.2079,
+    "coverage": 0.8783,
+    "correct": 21,
+    "incorrect": 80,
     "minor": 2,
-    "major": 71,
-    "refused": 24,
-    "refused_rate": 0.2,
+    "major": 78,
+    "refused": 14,
+    "refused_rate": 0.1217,
     "kinds": {
      "paraphrase": 2,
-     "wrong_passage": 34,
-     "wrong_locus": 28,
+     "wrong_passage": 39,
+     "wrong_locus": 30,
      "wrong_verdict": 9
     }
    }
@@ -92,10 +92,10 @@
    "Sikhism": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0667,
+     "accuracy": 0.0,
      "coverage": 1.0,
-     "correct": 2,
-     "incorrect": 28,
+     "correct": 0,
+     "incorrect": 30,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -109,13 +109,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.2,
+     "coverage": 0.44,
      "correct": 0,
-     "incorrect": 6,
-     "refused": 24,
-     "refused_rate": 0.8
+     "incorrect": 11,
+     "refused": 14,
+     "refused_rate": 0.56
     },
     "verify_source": {
      "n": 30,
@@ -127,13 +127,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2396,
-     "coverage": 0.8,
-     "correct": 23,
-     "incorrect": 73,
-     "refused": 24,
-     "refused_rate": 0.2
+     "n": 115,
+     "accuracy": 0.2079,
+     "coverage": 0.8783,
+     "correct": 21,
+     "incorrect": 80,
+     "refused": 14,
+     "refused_rate": 0.1217
     }
    }
   }
@@ -143,16 +143,16 @@
    "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0667,
+     "accuracy": 0.0,
      "coverage": 1.0,
-     "correct": 2,
-     "incorrect": 28,
+     "correct": 0,
+     "incorrect": 30,
      "minor": 0,
-     "major": 28,
+     "major": 30,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_locus": 28
+      "wrong_locus": 30
      }
     },
     "complete_unit": {
@@ -171,17 +171,17 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.2,
+     "coverage": 0.44,
      "correct": 0,
-     "incorrect": 6,
+     "incorrect": 11,
      "minor": 0,
-     "major": 6,
-     "refused": 24,
-     "refused_rate": 0.8,
+     "major": 11,
+     "refused": 14,
+     "refused_rate": 0.56,
      "kinds": {
-      "wrong_passage": 6
+      "wrong_passage": 11
      }
     },
     "verify_source": {
@@ -199,19 +199,19 @@
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2396,
-     "coverage": 0.8,
-     "correct": 23,
-     "incorrect": 73,
+     "n": 115,
+     "accuracy": 0.2079,
+     "coverage": 0.8783,
+     "correct": 21,
+     "incorrect": 80,
      "minor": 2,
-     "major": 71,
-     "refused": 24,
-     "refused_rate": 0.2,
+     "major": 78,
+     "refused": 14,
+     "refused_rate": 0.1217,
      "kinds": {
       "paraphrase": 2,
-      "wrong_passage": 34,
-      "wrong_locus": 28,
+      "wrong_passage": 39,
+      "wrong_locus": 30,
       "wrong_verdict": 9
      }
     }
@@ -223,10 +223,10 @@
    "English prompt": {
     "cite_passage": {
      "n": 30,
-     "accuracy": 0.0667,
+     "accuracy": 0.0,
      "coverage": 1.0,
-     "correct": 2,
-     "incorrect": 28,
+     "correct": 0,
+     "incorrect": 30,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -240,13 +240,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.2,
+     "coverage": 0.44,
      "correct": 0,
-     "incorrect": 6,
-     "refused": 24,
-     "refused_rate": 0.8
+     "incorrect": 11,
+     "refused": 14,
+     "refused_rate": 0.56
     },
     "verify_source": {
      "n": 30,
@@ -258,13 +258,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2396,
-     "coverage": 0.8,
-     "correct": 23,
-     "incorrect": 73,
-     "refused": 24,
-     "refused_rate": 0.2
+     "n": 115,
+     "accuracy": 0.2079,
+     "coverage": 0.8783,
+     "correct": 21,
+     "incorrect": 80,
+     "refused": 14,
+     "refused_rate": 0.1217
     }
    }
   }
@@ -294,15 +294,15 @@
  "usage": {
   "per_model": {
    "luna": {
-    "calls": 120,
-    "in": 12739,
-    "out": 2317
+    "calls": 115,
+    "in": 12397,
+    "out": 1895
    }
   },
   "total": {
-   "calls": 120,
-   "in": 12739,
-   "out": 2317
+   "calls": 115,
+   "in": 12397,
+   "out": 1895
   }
  },
  "evaluators": [
@@ -310,13 +310,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "segment_match": {
-  "luna": {
-   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
-    "correct": 2,
-    "segment_match": 0
-   }
-  }
- },
- "generated_at": "2026-11-03T17:44:09.750703+00:00"
+ "generated_at": "2026-11-03T21:01:50.773414+00:00"
 }

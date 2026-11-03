@@ -35,22 +35,22 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
     "coverage": 1.0,
     "correct": 0,
-    "incorrect": 30,
+    "incorrect": 25,
     "minor": 0,
-    "major": 30,
+    "major": 25,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 30
+     "wrong_passage": 25
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0102,
-    "token_f1_base": 0.0306,
+    "token_f1": 0.0042,
+    "token_f1_base": 0.0265,
     "contains_reference": 0.0
    },
    "verify_source": {
@@ -68,17 +68,17 @@
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.0891,
-    "coverage": 0.8417,
+    "n": 115,
+    "accuracy": 0.0938,
+    "coverage": 0.8348,
     "correct": 9,
-    "incorrect": 92,
+    "incorrect": 87,
     "minor": 0,
-    "major": 92,
+    "major": 87,
     "refused": 19,
-    "refused_rate": 0.1583,
+    "refused_rate": 0.1652,
     "kinds": {
-     "wrong_passage": 60,
+     "wrong_passage": 55,
      "wrong_locus": 30,
      "wrong_verdict": 2
     }
@@ -107,11 +107,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -125,13 +125,13 @@
      "refused_rate": 0.6333
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.0891,
-     "coverage": 0.8417,
+     "n": 115,
+     "accuracy": 0.0938,
+     "coverage": 0.8348,
      "correct": 9,
-     "incorrect": 92,
+     "incorrect": 87,
      "refused": 19,
-     "refused_rate": 0.1583
+     "refused_rate": 0.1652
     }
    }
   }
@@ -168,17 +168,17 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "minor": 0,
-     "major": 30,
+     "major": 25,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 30
+      "wrong_passage": 25
      }
     },
     "verify_source": {
@@ -196,17 +196,17 @@
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.0891,
-     "coverage": 0.8417,
+     "n": 115,
+     "accuracy": 0.0938,
+     "coverage": 0.8348,
      "correct": 9,
-     "incorrect": 92,
+     "incorrect": 87,
      "minor": 0,
-     "major": 92,
+     "major": 87,
      "refused": 19,
-     "refused_rate": 0.1583,
+     "refused_rate": 0.1652,
      "kinds": {
-      "wrong_passage": 60,
+      "wrong_passage": 55,
       "wrong_locus": 30,
       "wrong_verdict": 2
      }
@@ -236,11 +236,11 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
      "coverage": 1.0,
      "correct": 0,
-     "incorrect": 30,
+     "incorrect": 25,
      "refused": 0,
      "refused_rate": 0.0
     },
@@ -254,13 +254,13 @@
      "refused_rate": 0.6333
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.0891,
-     "coverage": 0.8417,
+     "n": 115,
+     "accuracy": 0.0938,
+     "coverage": 0.8348,
      "correct": 9,
-     "incorrect": 92,
+     "incorrect": 87,
      "refused": 19,
-     "refused_rate": 0.1583
+     "refused_rate": 0.1652
     }
    }
   }
@@ -290,15 +290,15 @@
  "usage": {
   "per_model": {
    "qwen3-32b": {
-    "calls": 120,
-    "in": 18030,
-    "out": 126780
+    "calls": 115,
+    "in": 17596,
+    "out": 67254
    }
   },
   "total": {
-   "calls": 120,
-   "in": 18030,
-   "out": 126780
+   "calls": 115,
+   "in": 17596,
+   "out": 67254
   }
  },
  "evaluators": [
@@ -306,5 +306,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:44:44.551501+00:00"
+ "generated_at": "2026-11-03T21:02:25.891453+00:00"
 }

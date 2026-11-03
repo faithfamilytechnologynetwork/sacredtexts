@@ -14,10 +14,10 @@
     "kinds": {}
    },
    "complete_unit": {
-    "n": 20,
-    "accuracy": 0.4,
+    "n": 21,
+    "accuracy": 0.4286,
     "coverage": 1.0,
-    "correct": 8,
+    "correct": 9,
     "incorrect": 12,
     "minor": 11,
     "major": 1,
@@ -29,10 +29,10 @@
      "wrong_passage": 1
     },
     "exact": 0.0,
-    "normalized": 0.4,
-    "token_f1": 0.9049,
-    "token_f1_base": 0.9049,
-    "contains_reference": 0.4
+    "normalized": 0.4286,
+    "token_f1": 0.9094,
+    "token_f1_base": 0.9094,
+    "contains_reference": 0.4286
    },
    "retrieve_quote": {
     "n": 21,
@@ -69,10 +69,10 @@
     }
    },
    "_overall": {
-    "n": 83,
-    "accuracy": 0.6867,
+    "n": 84,
+    "accuracy": 0.6905,
     "coverage": 1.0,
-    "correct": 57,
+    "correct": 58,
     "incorrect": 26,
     "minor": 23,
     "major": 3,
@@ -100,10 +100,10 @@
      "refused_rate": 0.0
     },
     "complete_unit": {
-     "n": 20,
-     "accuracy": 0.4,
+     "n": 21,
+     "accuracy": 0.4286,
      "coverage": 1.0,
-     "correct": 8,
+     "correct": 9,
      "incorrect": 12,
      "refused": 0,
      "refused_rate": 0.0
@@ -127,10 +127,10 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 83,
-     "accuracy": 0.6867,
+     "n": 84,
+     "accuracy": 0.6905,
      "coverage": 1.0,
-     "correct": 57,
+     "correct": 58,
      "incorrect": 26,
      "refused": 0,
      "refused_rate": 0.0
@@ -220,10 +220,10 @@
      "kinds": {}
     },
     "complete_unit": {
-     "n": 19,
-     "accuracy": 0.3684,
+     "n": 20,
+     "accuracy": 0.4,
      "coverage": 1.0,
-     "correct": 7,
+     "correct": 8,
      "incorrect": 12,
      "minor": 11,
      "major": 1,
@@ -265,10 +265,10 @@
      }
     },
     "_overall": {
-     "n": 79,
-     "accuracy": 0.6835,
+     "n": 80,
+     "accuracy": 0.6875,
      "coverage": 1.0,
-     "correct": 54,
+     "correct": 55,
      "incorrect": 25,
      "minor": 22,
      "major": 3,
@@ -297,10 +297,10 @@
      "refused_rate": 0.0
     },
     "complete_unit": {
-     "n": 20,
-     "accuracy": 0.4,
+     "n": 21,
+     "accuracy": 0.4286,
      "coverage": 1.0,
-     "correct": 8,
+     "correct": 9,
      "incorrect": 12,
      "refused": 0,
      "refused_rate": 0.0
@@ -324,10 +324,10 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 83,
-     "accuracy": 0.6867,
+     "n": 84,
+     "accuracy": 0.6905,
      "coverage": 1.0,
-     "correct": 57,
+     "correct": 58,
      "incorrect": 26,
      "refused": 0,
      "refused_rate": 0.0
@@ -360,15 +360,15 @@
  "usage": {
   "per_model": {
    "beam": {
-    "calls": 83,
-    "in": 15128,
-    "out": 92762
+    "calls": 84,
+    "in": 15264,
+    "out": 95877
    }
   },
   "total": {
-   "calls": 83,
-   "in": 15128,
-   "out": 92762
+   "calls": 84,
+   "in": 15264,
+   "out": 95877
   }
  },
  "evaluators": [
@@ -376,5 +376,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:44:30.887712+00:00"
+ "generated_at": "2026-11-03T21:02:12.094624+00:00"
 }

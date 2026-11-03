@@ -36,22 +36,22 @@
     "contains_reference": 0.0
    },
    "retrieve_quote": {
-    "n": 30,
+    "n": 25,
     "accuracy": 0.0,
-    "coverage": 0.8667,
+    "coverage": 0.76,
     "correct": 0,
-    "incorrect": 26,
+    "incorrect": 19,
     "minor": 0,
-    "major": 26,
-    "refused": 4,
-    "refused_rate": 0.1333,
+    "major": 19,
+    "refused": 6,
+    "refused_rate": 0.24,
     "kinds": {
-     "wrong_passage": 26
+     "wrong_passage": 19
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0168,
-    "token_f1_base": 0.0595,
+    "token_f1": 0.032,
+    "token_f1_base": 0.0678,
     "contains_reference": 0.0
    },
    "verify_source": {
@@ -69,17 +69,17 @@
     }
    },
    "_overall": {
-    "n": 120,
-    "accuracy": 0.2414,
-    "coverage": 0.9667,
+    "n": 115,
+    "accuracy": 0.2569,
+    "coverage": 0.9478,
     "correct": 28,
-    "incorrect": 88,
+    "incorrect": 81,
     "minor": 1,
-    "major": 87,
-    "refused": 4,
-    "refused_rate": 0.0333,
+    "major": 80,
+    "refused": 6,
+    "refused_rate": 0.0522,
     "kinds": {
-     "wrong_passage": 55,
+     "wrong_passage": 48,
      "omission": 1,
      "wrong_locus": 30,
      "wrong_verdict": 2
@@ -109,13 +109,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.8667,
+     "coverage": 0.76,
      "correct": 0,
-     "incorrect": 26,
-     "refused": 4,
-     "refused_rate": 0.1333
+     "incorrect": 19,
+     "refused": 6,
+     "refused_rate": 0.24
     },
     "verify_source": {
      "n": 30,
@@ -127,13 +127,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2414,
-     "coverage": 0.9667,
+     "n": 115,
+     "accuracy": 0.2569,
+     "coverage": 0.9478,
      "correct": 28,
-     "incorrect": 88,
-     "refused": 4,
-     "refused_rate": 0.0333
+     "incorrect": 81,
+     "refused": 6,
+     "refused_rate": 0.0522
     }
    }
   }
@@ -171,17 +171,17 @@
      }
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.8667,
+     "coverage": 0.76,
      "correct": 0,
-     "incorrect": 26,
+     "incorrect": 19,
      "minor": 0,
-     "major": 26,
-     "refused": 4,
-     "refused_rate": 0.1333,
+     "major": 19,
+     "refused": 6,
+     "refused_rate": 0.24,
      "kinds": {
-      "wrong_passage": 26
+      "wrong_passage": 19
      }
     },
     "verify_source": {
@@ -199,17 +199,17 @@
      }
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2414,
-     "coverage": 0.9667,
+     "n": 115,
+     "accuracy": 0.2569,
+     "coverage": 0.9478,
      "correct": 28,
-     "incorrect": 88,
+     "incorrect": 81,
      "minor": 1,
-     "major": 87,
-     "refused": 4,
-     "refused_rate": 0.0333,
+     "major": 80,
+     "refused": 6,
+     "refused_rate": 0.0522,
      "kinds": {
-      "wrong_passage": 55,
+      "wrong_passage": 48,
       "omission": 1,
       "wrong_locus": 30,
       "wrong_verdict": 2
@@ -240,13 +240,13 @@
      "refused_rate": 0.0
     },
     "retrieve_quote": {
-     "n": 30,
+     "n": 25,
      "accuracy": 0.0,
-     "coverage": 0.8667,
+     "coverage": 0.76,
      "correct": 0,
-     "incorrect": 26,
-     "refused": 4,
-     "refused_rate": 0.1333
+     "incorrect": 19,
+     "refused": 6,
+     "refused_rate": 0.24
     },
     "verify_source": {
      "n": 30,
@@ -258,13 +258,13 @@
      "refused_rate": 0.0
     },
     "_overall": {
-     "n": 120,
-     "accuracy": 0.2414,
-     "coverage": 0.9667,
+     "n": 115,
+     "accuracy": 0.2569,
+     "coverage": 0.9478,
      "correct": 28,
-     "incorrect": 88,
-     "refused": 4,
-     "refused_rate": 0.0333
+     "incorrect": 81,
+     "refused": 6,
+     "refused_rate": 0.0522
     }
    }
   }
@@ -294,15 +294,15 @@
  "usage": {
   "per_model": {
    "luna": {
-    "calls": 120,
-    "in": 10290,
-    "out": 6403
+    "calls": 115,
+    "in": 10191,
+    "out": 7543
    }
   },
   "total": {
-   "calls": 120,
-   "in": 10290,
-   "out": 6403
+   "calls": 115,
+   "in": 10191,
+   "out": 7543
   }
  },
  "evaluators": [
@@ -310,5 +310,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T17:44:09.961011+00:00"
+ "generated_at": "2026-11-03T21:01:50.961286+00:00"
 }

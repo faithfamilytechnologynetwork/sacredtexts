@@ -56,9 +56,9 @@
     "cost_usd": 0.00038
   },
   "collected": {
-    "calls": 23,
-    "prompt_tokens": 3223,
-    "completion_tokens": 1395,
-    "cost_usd": 0.10198
+    "calls": 50,
+    "prompt_tokens": 3323,
+    "completion_tokens": 24000,
+    "cost_usd": 1.23323
   }
 }
