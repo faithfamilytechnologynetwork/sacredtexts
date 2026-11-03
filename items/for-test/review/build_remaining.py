@@ -264,6 +264,7 @@ def output_files(sets: dict[str, list[dict]]) -> dict[Path, str]:
             else:
                 prompt = {"ask_english": "prompt-english", "ask_native": "prompt-native"}[condition]
                 folder = ROOT / tradition / "native" / sample / prompt
+                # Every native set has an English-prompt arm; the Dhammapada has no native-prompt arm (#113).
                 if condition == "ask_english":
                     files[folder.parent / "passages.json"] = _passages(group, notice=notice, sample=sample)
             files[folder / "questions.jsonl"] = jsonl(group)
