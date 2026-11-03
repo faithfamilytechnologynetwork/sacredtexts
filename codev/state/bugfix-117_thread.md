@@ -98,3 +98,12 @@ Merged origin/main twice per architect (#85 b8b63bf, #111 1d9812c) before any co
   - adding ASCII `;` flips one committed English-path cell, refused→incorrect, so it stays out
   Adopted the native terminators. Guard test: a Masoretic verse ending in sof pasuq, then a native caveat
   past the window, is `incorrect` (was `refused` with the old splitter). Suite: 1030 passed, 4 skipped.
+- Claude: APPROVE. It independently re-scanned the corpus (only the two Talmud collisions) and re-derived
+  the 792 movers. Disposition of its items:
+  - empty-cue fail-fast: fixed (4b63f5d)
+  - row-index keying: no change; every key includes the question_id, so a shifted row fails loudly
+  - relayed to the architect: the measurement shift (accuracy +1.4pp, coverage −2.7pp), the
+    `ਮਾਫ਼ ਕਰਨਾ, ਮੈਂ` breadth, and the pre-existing `क्षमा करें` asymmetry
+- Merged origin/main at 4c69cda (#121, #115 verify_source tokens). No conflicts; #115's scans are
+  verify_source-only, so they don't overlap this registry. Suite: 1075 passed, 26 skipped. With the main
+  checkout's evidence, all 30 native-cue tests pass.
