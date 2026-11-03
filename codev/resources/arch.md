@@ -86,7 +86,24 @@ round-trip that proves no invention/reordering.
   `cite_passage` → the single extracted citation must equal ground truth (a multi-candidate hedge
   scores 0; extractor chosen by the ground-truth citation shape; every Unicode decimal digit is
   read as ASCII — `٣٤:٤٦` = `34:46` — via `score.fold_citation_digits`, citation path only, #111,
-  witnessed by `test_citation_digit_fold.py`). Every
+  witnessed by `test_citation_digit_fold.py`). **Citation equivalence (#112)**: `citations.py`
+  `score_citation` rewrites the answer into the expected's notation before the same matcher runs —
+  native-script labels from `citation_aliases.yaml` (Greek NT 27, Tanakh 39, Talmud tractates =
+  the committed Sefaria `heTitle`s, `ਅੰਗ`, Dhammapada, 114 surah names; a duplicate alias fails the
+  table build), Hebrew letter-numerals and amud `א/ב` → `a/b`. Talmud is scored at tractate+daf+amud
+  and the Guru Granth Sahib at the Ang, with the full-granularity verdict as `segment_match`; one
+  switch (`citations.HEADLINE_DROPS_SEGMENT`) reverts it, and `summary.json` records it as
+  `headline_drops_segment` beside `evaluators`, with a per model×text `segment_match` aggregate
+  (correct segment-indexed cells and how many also match at the segment). At the Ang the extractor
+  becomes `_NUM_CITE`, so the full citation's colon spans are kept as rivals (a hedge stays a hedge);
+  a Talmud citation was already `_NUM_CITE` before #112 (the amud letter defeats the colon test).
+  **Example echo (#118)**: `score.example_citation(prompt)` reads the prompt's form example (an entry
+  of the same work, never the answer, by construction in `generate.py`); `_single_citation_correct`
+  drops its echo when another candidate exists — disclaimed or offered as an alternative alike — but
+  not after a book ordinal (`1`/`First`/`II … John`), and an example-only answer stays a wrong locus.
+  Both are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
+  not rewritten, and every mover is pinned by identity (`test_citation_equivalence.py`,
+  `test_citation_example_echo.py`, and the 21 registered rows of `test_original_run_regression.py`). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
   beside it (for `verify_source`, `refused ⟺ parsed is None`). A decline is detected by cue phrases

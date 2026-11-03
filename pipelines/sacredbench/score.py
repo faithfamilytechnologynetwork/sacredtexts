@@ -53,7 +53,11 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
                                    NOT read as "no") — closes the #23 PAPER GATE
 - cite_passage                   : the SINGLE extracted citation EQUALS ground truth
                                    (boundary-aware, not containment); a multi-candidate
-                                   hedge scores 0, a repeated correct citation does not
+                                   hedge scores 0, a repeated correct citation does not.
+                                   A citation in the text's own notation counts (``Πράξεις
+                                   24:1``, ``שמות כח:מג``); Talmud is scored at daf+amud and the
+                                   Guru Granth Sahib at the Ang, with ``segment_match`` beside it
+                                   (``citations.py``, #112)
 
 (``identify_version`` and ``identify_source`` were retired in Spec 26: the question set is
 original-language-only, so there are never ≥2 editions of one work for ``identify_version``, and
@@ -65,6 +69,12 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
 - ``cite_passage`` over Arabic ground truth: the span extractors expect a Latin-script leading
   word. Native-script numerals (Arabic-Indic, Devanagari, Gurmukhi …) ARE read as ASCII in the
   citation path (``fold_citation_digits``, #111); ``normalize()`` itself does not fold them.
+  Native-script labels and Hebrew letter-numerals are rewritten by ``citations.py`` (#112).
+- a Talmud citation's extractor is ``_NUM_CITE`` (the amud letter defeats the colon test), so a
+  colon-shaped rival beside it (a Mishnah "Bekhorot 1:1", a verse) is not counted, as before #112.
+  A GGS citation scored at the Ang keeps its colon rivals (``citations.score_citation``).
+- the prompt's form example is dropped from the candidates beside another citation (#118)
+  whether it is disclaimed or offered as an alternative ("Dhammapada 74 or Dhammapada 184").
 """
 
 from __future__ import annotations
@@ -885,19 +895,54 @@ def bounded_contains(answer: str, expected: str) -> bool:
 
 
 
-def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, int]:
+def example_citation(prompt: str) -> str | None:
+    """Issue #118: the prompt's form example ("… in the same form as: Dhammapada 184."), the citation
+    that immediately follows the instruction's ": " after the quoted passage. None when the prompt
+    has no quoted passage or no example there."""
+    _, quote, tail = prompt.rpartition('"')
+    _, colon, after = tail.partition(": ")
+    if not (quote and colon):
+        return None
+    for rx in (_COLON_CITE, _PARA_CITE, _NUM_CITE):
+        if m := rx.match(after):
+            return m.group(0)
+    return None
+
+
+# An echo of the prompt's example is not one when a book ordinal precedes it: "1 John", "First
+# John", "II John" are different books from "John" (fixed-width lookbehinds over normalized text).
+_NOT_AFTER_BOOK_ORDINAL = r"(?<!\d )" + "".join(
+    rf"(?<!\b{o} )" for o in ("first", "second", "third", "i", "ii", "iii")
+)
+
+
+def _single_citation_correct(
+    answer: str, expected_citation: str, example: str | None = None
+) -> tuple[int, int]:
     """Returns (correct, n_candidates). A multi-candidate answer scores 0; otherwise
     the single candidate must EQUAL ground truth (boundary-aware, not containment).
 
     Spans that all assert the EXPECTED citation count as ONE candidate however many
     times the model repeats it ("It is Jude 1:3. Jude 1:3 warns…") — repetition is
-    not a hedge; only distinct OTHER citations are."""
+    not a hedge; only distinct OTHER citations are. Nor is echoing the prompt's form
+    ``example`` ("Dhammapada 74, not Dhammapada 184") beside another citation (#118); an
+    answer whose only citation is the example keeps it, a wrong locus. ``generate.py`` takes
+    the example from a different entry of the SAME work, so it is never the answer (naming
+    it can never buy credit) and it is always in the expected's own notation."""
     expected_citation = fold_citation_digits(expected_citation)  # both sides (#111); all ASCII today
     cands = _citation_candidates(answer, expected_citation)
     ne = normalize(expected_citation)
     boundary = re.compile(r"(?<!\w)" + re.escape(ne) + r"(?!\w)")
     matching = {c for c in cands if boundary.search(c)}
     others = cands - matching
+    if example is not None:
+        echoes = [  # "1 john 8 41", "first john", "ii john" are other books, not echoes of "john 8 41"
+            re.compile(r"(?<!\w)" + _NOT_AFTER_BOOK_ORDINAL + re.escape(x) + r"(?!\w)")
+            for x in _citation_candidates(example, expected_citation)
+        ]
+        kept = {c for c in others if not any(e.search(c) for e in echoes)}
+        if matching or kept:  # an answer whose only citation IS the example still named a locus
+            others = kept
     n = (1 if matching else 0) + len(others)
     if n > 1:
         return 0, n  # offered more than one DISTINCT citation candidate -> hedge
@@ -912,8 +957,12 @@ def _single_citation_correct(answer: str, expected_citation: str) -> tuple[int, 
     return int(bounded_contains(fold_citation_digits(answer), expected_citation)), n
 
 
-def score_answer(task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None) -> dict:
+def score_answer(
+    task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None,
+    prompt: "str | None" = None,
+) -> dict:
     """Score one model answer. Returns the metrics dict described in the module docstring.
+    ``prompt`` (the question's prompt) lets ``cite_passage`` ignore an echo of its form example.
 
     For the text-retrieval tasks the reported submetric fields and the headline are determined by
     the selected ``graders`` (a list of ``graders.Grader``; ``None`` ⇒ the default deterministic
@@ -958,8 +1007,10 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
             task, answer, expected,
         )
     if task == "cite_passage":
-        correct, n = _single_citation_correct(answer, expected["citation"])
-        return _with_outcome({"correct": correct, "n_candidates": n}, task, answer, expected)
+        from .citations import score_citation  # native notation + Talmud/GGS granularity (#112)
+
+        example = example_citation(prompt) if prompt else None
+        return _with_outcome(score_citation(answer, expected["citation"], example), task, answer, expected)
     raise ScoreError(f"unknown task {task!r}")
 
 
@@ -1151,12 +1202,14 @@ def score_file(
     per_text: dict[tuple[str, str, str], dict] = {}  # (model_id, text_label, task) -> {n, correct, refused}
     per_prompt: dict[tuple[str, str, str], dict] = {}  # (model_id, prompt kind, task)
     per_verify: dict[tuple[str, str], dict] = {}  # (model_id, "yes"|"no")
+    per_segment: dict[tuple[str, str], dict] = {}  # (model_id, text_label) -> {correct, segment_match} (#112)
     usage: dict[str, dict] = {}  # model_id -> {calls, in, out, model, served_by{host:count}}
     with open(scores_path, "w", encoding="utf-8") as out:
         for d in rows:
             metrics = score_answer(
                 d["task"], d["answer"], d["question"]["expected"], graders,
                 language=d["question"].get("source", {}).get("language"),
+                prompt=d["question"].get("prompt"),
             )
             out.write(
                 json.dumps(
@@ -1226,6 +1279,12 @@ def score_file(
                 xacc["correct"] += metrics["correct"]
                 xacc["refused"] += int(refused)
                 _count_kind(xacc, metrics["outcome"], kind)
+                if metrics["correct"] and "segment_match" in metrics:  # a Talmud / GGS cite cell (#112)
+                    sacc = per_segment.setdefault(
+                        (d["model_id"], TEXT_KEY_SEP.join(tkey)), {"correct": 0, "segment_match": 0}
+                    )
+                    sacc["correct"] += 1
+                    sacc["segment_match"] += metrics["segment_match"]
             prompt = _PROMPT_KIND.get(src.get("condition"))
             if prompt:
                 pacc = per_prompt.setdefault(
@@ -1398,6 +1457,18 @@ def score_file(
     # (test_tutorial_run.py). The judge never joins the deterministic headline.
     if judge_provenance is not None:
         summary["judge"] = judge_provenance
+    # Citation granularity provenance (#112), a sibling of `evaluators`: True when the cite_passage
+    # headline scores Talmud at daf+amud and the Guru Granth Sahib at the Ang (the one switch,
+    # citations.HEADLINE_DROPS_SEGMENT). `segment_match`, per model x text where such cells were
+    # scored: the correct cells and how many also match at the full segment / line, so the stricter
+    # count for that text is by_text correct - segment_match.correct + segment_match.segment_match.
+    from . import citations  # lazy: citations imports this module
+
+    summary["headline_drops_segment"] = citations.HEADLINE_DROPS_SEGMENT
+    if per_segment:
+        summary["segment_match"] = {}
+        for (model_id, text_label), sacc in sorted(per_segment.items()):
+            summary["segment_match"].setdefault(model_id, {})[text_label] = sacc
     # Additive run timestamp (Issue #7 pipeline half): a committed, mtime-independent
     # recency signal. The current viewer ignores it; it never affects scoring.
     summary["generated_at"] = datetime.now(timezone.utc).isoformat()
