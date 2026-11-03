@@ -6,11 +6,12 @@ plan_phases: []
 current_plan_phase: null
 gates:
   pr:
-    status: pending
+    status: approved
     requested_at: '2026-11-03T03:33:09.816Z'
+    approved_at: '2026-11-03T03:38:34.746Z'
 iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T03:03:08.441Z'
-updated_at: '2026-11-03T03:33:09.817Z'
-pr_ready_for_human: true
+updated_at: '2026-11-03T03:38:34.747Z'
+pr_ready_for_human: false
