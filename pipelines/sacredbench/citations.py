@@ -186,34 +186,72 @@ def _drop_segment(text: str, unit: str) -> str:
     return _tables().segment_rx.sub(lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text)
 
 
-# The cite prompt asks for the "page (Ang)" (#135), so a bare-Ang answer may call it a page.
-_PAGE_RX = re.compile(f"{_START}(?:{_alternation(_fold(w) for w in ('page', 'ਪੰਨਾ'))}){_END}")
-_ANG_RX = re.compile(f"{_START}ang\\s+(\\d+){_END}")  # over canonical_citation_text: "ਅੰਗ ੩੧੫" is "ang 315"
+# Over canonical_citation_text, where "ਅੰਗ ੩੧੫" is "ang 315". _TOKEN_END is _END that lets a danda (।/॥,
+# inside the Indic range _END excludes) or the Gurmukhi abbreviation sign follow: "ਅੰਗ ੩੧੦।" is Ang 310,
+# while "ang 3150" and "ang 1402ਵਾਂ" are still not Ang 315 / Ang 1402. The cite prompt asks for the
+# "page (Ang)" (#135), so a page word followed by a number may be the Ang label.
+_TOKEN_END = r"(?!(?![।॥੶])[\wऀ-෿])"
+_ANG_RX = re.compile(f"{_START}ang\\s+(\\d+){_TOKEN_END}")
+_PAGE_WORD = f"(?:page(?:\\s+no\\.?)?|pg\\.?|p\\.|{re.escape(_fold('ਪੰਨਾ'))})"
+_PAGE_RX = re.compile(f"{_START}{_PAGE_WORD}(?=\\s*\\d)")
+_PAGE_AFTER_ANG_RX = re.compile(f"({_START}ang\\s+\\d+(?:\\s*:\\s*\\d+)?)[\\s,;(\\[]*{_PAGE_WORD}\\s*\\d+{_TOKEN_END}")
+_THOUSANDS_RX = re.compile(r"(?<=\d),(?=\d{3}(?!\d))")  # "Ang 1,402" is Ang 1402
+_NEGATION = _alternation(_fold(w) for w in ("not", "ਨਹੀਂ"))
+# A colon citation with no work name before it ("…, 1402:3", "(1402:3)"): no letter, Indic sign or
+# digit directly before the number, nor a letter one space before.
+_BARE_COLON_RX = re.compile(r"(?<![^\W\d_])(?<![ऀ-෿])(?<![^\W\d_]\s)(?<![ऀ-෿]\s)(?<!\d)(\d+)\s*:\s*\d+(?!\w)")
 
 
-def _angs(text: str, expected_citation: str) -> set[int]:
-    """The Angs ``text`` names, each line dropped: ``Ang 315:9``, ``ਅੰਗ ੩੧੫`` and ``Page 315`` are 315."""
-    text = _drop_segment(_PAGE_RX.sub("ang", canonical_citation_text(text, expected_citation)), expected_citation)
-    return {int(n) for n in _ANG_RX.findall(text)}
+def _page_as_ang(text: str) -> str:
+    """A page word (``page``, ``Page No.``, ``p.``, ``pg.``, ``ਪੰਨਾ``) directly after an Ang citation is a
+    qualifier and is dropped (``Ang 315, page 2 of this shabad``, ``Ang 315 (page 2)``); anywhere else it
+    is the Ang label, so ``Page 315`` is Ang 315 and ``Ang 315 or Page 316`` names two Angs."""
+    return _PAGE_RX.sub("ang ", _PAGE_AFTER_ANG_RX.sub(r"\1", text))
+
+
+def _ang_text(text: str, expected_citation: str) -> str:
+    """``text`` in the expected's notation, thousands commas dropped, a page label read as Ang, each
+    Ang's line dropped."""
+    text = _THOUSANDS_RX.sub("", canonical_citation_text(text, expected_citation))
+    return _drop_segment(_page_as_ang(text), expected_citation)
+
+
+def _echo_rx(ang: int) -> re.Pattern:
+    """A disclaimed echo of the form example: ``not Ang 306``, a bare ``(Ang 306)``, ``ਨਹੀਂ`` before or after."""
+    a = f"ang\\s+{ang}{_TOKEN_END}"
+    return re.compile(
+        f"{_START}(?:{_NEGATION})\\s+{a}|\\(\\s*{a}\\s*\\)|{_START}{a}\\s+(?:{_NEGATION}){_TOKEN_END}"
+    )
 
 
 def _score_at_ang(answer: str, expected_citation: str, example: str | None) -> dict:
     """``cite_passage`` against a bare Ang (#135). A candidate is an Ang, or a colon citation of another
     work (``… or John 1:1``). A qualifier beside the Ang (``line 9``, ``Mehl 5``, ``ਮਹਲਾ ੫``, a raag) is
-    not one, so an English answer and a Gurmukhi answer score alike. An echo of the form example beside
-    another Ang is dropped, as in #118. The headline is this verdict alone: on the raw answer the
-    no-colon extractor skips every ``Ang N:k`` span, so the containment fallback would credit a hedge.
-    There is no line to match: ``segment_match`` is None."""
+    not one, so an English answer and a Gurmukhi answer score alike. The form example's Ang is dropped
+    only as a disclaimed echo (``Ang 315 (not Ang 306)``); offered beside the answer (``Ang 306 or Ang
+    315``) it is a rival, because nearly every Sikh cite prompt shows the same example. The headline is
+    this verdict alone: on the raw answer the no-colon extractor skips every ``Ang N:k`` span, so the
+    containment fallback would credit a hedge. There is no line to match: ``segment_match`` is None.
+
+    A bare ``N:k`` (no work name) restating a named Ang is that Ang's line, not a rival: ``Ang 1402
+    (Raag Jaijavanti, 1402:3)`` is Ang 1402.
+
+    Known limits, accepted on the #135 follow-up review: a page right after an Ang is a qualifier even
+    with another number (``Ang 1402, Page 1403`` is Ang 1402), and the separator before it is read
+    without its words (``Ang 1402, which is page 2 of this shabad`` and ``Ang 1402: page 2`` are hedges);
+    a bare second number is not a candidate (``Ang 1402 or 1403``); an echo disclaimed away from the
+    example (``(Note: Ang 306 is the example you gave.)``) is a rival; a labelled line of the same Ang is
+    a rival (``Ang 1402 (SGGS 1402:3)``)."""
     target = int(expected_citation.split()[1])
-    angs = _angs(answer, expected_citation)
-    others = angs - {target}
+    text = re.sub(r"\s+", " ", _ang_text(answer, expected_citation))
+    named = {int(n) for n in _ANG_RX.findall(text)}
     if example is not None:
-        kept = others - _angs(example, expected_citation)
-        if target in angs or kept:  # an answer whose only Ang is the example still named a locus
-            others = kept
-    text = _drop_segment(canonical_citation_text(answer, expected_citation), expected_citation)
+        for ang in {int(n) for n in _ANG_RX.findall(_ang_text(example, expected_citation))} - {target}:
+            text = _echo_rx(ang).sub(" ", text)  # an example equal to the answer is never disclaimed away
+    angs = {int(n) for n in _ANG_RX.findall(text)}
+    text = _BARE_COLON_RX.sub(lambda m: " " if int(m[1]) in named else m[0], text)
     rivals = {normalize(m[0]) for m in _COLON_CITE.finditer(text)}
-    n = int(target in angs) + len(others) + len(rivals)
+    n = int(target in angs) + len(angs - {target}) + len(rivals)
     return {"correct": int(target in angs and n == 1), "n_candidates": n, "segment_match": None}
 
 

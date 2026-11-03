@@ -56,3 +56,23 @@ rebuilt data). Architect asked (17:54Z) for a per-model Sikh-cite movers table i
   parity. Oracle unchanged: 7200 non-Sikh + 960 Sikh old-expected identical; bare-Ang rescoring still
   0 verdict movers (n_candidates-only diffs 32 → 25). Suite 1274 passed.
 - Filed #137: generate.py still builds Sikh cite rows at Ang N:k (moves ANCHOR_DIGEST; out of scope).
+
+## 2026-11-03 follow-up (plain task, branch score/135-followup from f416f0c)
+
+Architect post-merge review of #136. Fixed in `_score_at_ang`:
+1. `Page 315:9` was a hedge: rivals text skipped the page→Ang rewrite. Ang set + rivals now share `_ang_text`.
+2. Form-example echo dropped only when disclaimed (`not Ang 306`, `(Ang 306)`, adjacent `ਨਹੀਂ`); `Ang 306 or Ang 315` is a
+   hedge (Ang 306 is the example on 64/66 rows). One committed mover, registered: sonnet abcc56181441ec5d correct→incorrect
+   (example rejected 5 words away). Architect chose to keep the narrow rule (a clause rule credits "not sure whether 306 or 315").
+3. Page word after an Ang = qualifier; elsewhere = Ang label (my proposal; the architect's first rule credited `Ang 315 or Page 316`).
+4. arch-critical.md / arch.md carry the #135 exception. Oracle asserts question_id per row.
+- PR #138 review (architect): P2 fixed: a bare `N:k` (no work name) restating a named Ang is that Ang's line, not a
+  rival (`Ang 1402 (…, 1402:3)` → correct). P3 known limits noted in the `_score_at_ang` docstring: `Ang 1402, Page 1403`
+  → correct; `Ang 1402 or 1403` → correct (bare second number not a candidate); a far-away disclaimed echo is a rival.
+  Oracle + movers table unchanged (1 registered mover).
+- PR #138 consult round (architect, 18:49Z): P1 a danda right after the number hid the Ang (`ਅੰਗ ੩੧੦।`, live in the
+  re-collect) → shared `_TOKEN_END` admits ।/॥/੶ (still rejects `ang 3150`, `ang 1402ਵਾਂ`). P2 oracle pins
+  `AT_ANG_N_ONLY = 27` (outcome same, n_candidates differs; 28 at 47a4b6a, minus one beam cell the danda fix now reads)
+  and is form-aware: Ang:k-shaped run → movers + n-only pinned; bare-Ang run (post re-collect) → identity only; a mix
+  fails. Simulated both shapes + a mix outside pytest. P2 docs: bare-N:k rule in arch-critical/arch.md. P3 taken:
+  thousands comma, example==target guard, `p.`/`pg.`/`Page No.`; the rest documented in the docstring.
