@@ -25,9 +25,9 @@ export function failureMode(r: QuestionResult): FailureMode | null {
 export interface ExplorerFilters {
   task?: string;
   tradition?: string;
-  /** Restrict to correct, or to any non-correct answer. The `mode` filter narrows a non-correct
-   * answer to one of missing / refused / wrong. */
-  correct?: "correct" | "incorrect";
+  /** Restrict to correct cells, to answered-and-scored-incorrect cells (failure mode `wrong` —
+   * excludes refused and missing), or to missing cells. Refused cells are reachable via `mode`. */
+  correct?: "correct" | "incorrect" | "missing";
   /** Restrict failures to one mode (missing / refused / wrong); composes with the others by AND. */
   mode?: FailureMode;
   /** Restrict to one task-specific failure kind (paraphrase, wrong passage, addition, …). */
@@ -45,7 +45,8 @@ export function filterQuestions(results: QuestionResult[], f: ExplorerFilters): 
     if (f.task && r.task !== f.task) return false;
     if (f.tradition && !r.tradition.includes(f.tradition)) return false;
     if (f.correct === "correct" && !r.correct) return false;
-    if (f.correct === "incorrect" && r.correct) return false;
+    if (f.correct === "incorrect" && failureMode(r) !== "wrong") return false;
+    if (f.correct === "missing" && !r.missing) return false;
     if (f.mode && failureMode(r) !== f.mode) return false;
     if (f.kind && r.failure !== f.kind) return false;
     return true;

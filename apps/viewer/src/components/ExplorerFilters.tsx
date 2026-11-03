@@ -3,7 +3,7 @@ import { type ExplorerFilters as Filters } from "../lib/explorer";
 
 // The composing filter bar for the error explorer. Presentational: it renders native
 // selects (provider-less, consistent with RunSelector) for task, tradition,
-// correct/incorrect, and failure-mode, and calls `onChange` with the next full filter
+// result (correct/incorrect/missing), and failure-mode, and calls `onChange` with the next full filter
 // state. The parent (ExplorerPage) owns the URL and maps the change to the search params.
 
 const ALL = "__all__";
@@ -73,12 +73,16 @@ export function ExplorerFilters({
           value={value.correct ?? ALL}
           onChange={(e) => {
             const v = e.target.value;
-            onChange({ ...value, correct: v === "correct" || v === "incorrect" ? v : undefined });
+            onChange({
+              ...value,
+              correct: v === "correct" || v === "incorrect" || v === "missing" ? v : undefined,
+            });
           }}
         >
           <option value={ALL}>all</option>
           <option value="correct">correct</option>
           <option value="incorrect">incorrect</option>
+          <option value="missing">missing</option>
         </select>
       </label>
 

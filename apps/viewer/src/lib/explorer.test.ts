@@ -71,10 +71,25 @@ describe("explorer — filters compose", () => {
     expect(filterQuestions(results, { tradition: "Roman Catholic" }).map((r) => r.question_id)).toEqual(["c", "d"]);
   });
 
-  it("filters by correct / incorrect", () => {
+  it("filters by correct / incorrect / missing", () => {
     expect(filterQuestions(results, { correct: "correct" }).map((r) => r.question_id)).toEqual(["a"]);
-    // incorrect = any non-correct (wrong b/d, missing c, refused e); mode narrows further
-    expect(filterQuestions(results, { correct: "incorrect" }).map((r) => r.question_id)).toEqual(["b", "c", "d", "e"]);
+    // incorrect = answered and scored wrong (b/d) — excludes missing c and refused e
+    expect(filterQuestions(results, { correct: "incorrect" }).map((r) => r.question_id)).toEqual(["b", "d"]);
+    // missing = only the missing cell
+    expect(filterQuestions(results, { correct: "missing" }).map((r) => r.question_id)).toEqual(["c"]);
+  });
+
+  it("'incorrect' excludes missing and refused cells", () => {
+    const ids = filterQuestions(results, { correct: "incorrect" }).map((r) => r.question_id);
+    expect(ids).not.toContain("c"); // missing
+    expect(ids).not.toContain("e"); // refused
+  });
+
+  it("'missing' returns only missing cells", () => {
+    const got = filterQuestions(results, { correct: "missing" });
+    expect(got.length).toBeGreaterThan(0);
+    expect(got.every((r) => r.missing)).toBe(true);
+    expect(got).toHaveLength(results.filter((r) => r.missing).length);
   });
 
   it("filters by failure kind without changing the four-way outcome filter", () => {
