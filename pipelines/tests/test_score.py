@@ -166,10 +166,11 @@ def test_parse_yes_no_arabic_vowels_and_label(ans, expected):
     assert parse_yes_no(ans, "ar") == expected
 
 
-def test_native_label_and_marks_do_not_touch_other_cells():
-    # the Arabic label is read only on an Arabic cell; English parsing is byte-identical
-    assert parse_yes_no("الجواب: لا", "he") is None
-    assert parse_yes_no("الجواب: لا", None) is None
+def test_native_label_is_read_on_every_cell():
+    # the native label is read on every cell, like the native words after it (issue #115; it was
+    # Arabic-cell only before); English parsing is byte-identical
+    assert parse_yes_no("الجواب: لا", "he") == "no"
+    assert parse_yes_no("الجواب: لا", None) == "no"
     assert parse_yes_no("Answer: no") == parse_yes_no("Answer: no", "ar") == "no"
 
 
