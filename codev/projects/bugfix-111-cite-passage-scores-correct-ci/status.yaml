@@ -1,7 +1,7 @@
 id: bugfix-111
 title: cite-passage-scores-correct-ci
 protocol: bugfix
-phase: fix
+phase: pr
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T02:53:40.765Z'
-updated_at: '2026-11-03T02:55:48.640Z'
+updated_at: '2026-11-03T03:01:20.926Z'
