@@ -369,6 +369,8 @@ def _native_cue_re() -> re.Pattern[str]:
     from .score import normalize
 
     cues = sorted({normalize(c) for c in _NATIVE_DECLINE_CUES_RAW}, key=len, reverse=True)
+    if not cues or not all(cues):
+        raise ValueError("empty native decline cue: the pattern would match every answer")
     return re.compile("|".join(r"(?<!\S)" + re.escape(c) + r"(?!\S)" for c in cues))
 
 
