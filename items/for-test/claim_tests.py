@@ -1,45 +1,36 @@
 """Write the paired-claim report from finished score files.
 
-    PYTHONPATH=pipelines python3 items/for-test/claim_tests.py
+    uv --project pipelines run python items/for-test/claim_tests.py --run-dir runs/rerun-2026-11-03
 
-Reads runs/<model>/base/**/scores.jsonl and the population question files.
+Reads <run-dir>/<model>/base/**/scores.jsonl and the population question files.
 A file still being collected is included only for the cells it has already scored.
+Stops when an answer row in the run dir has no population question, unless --allow-partial.
 """
 
 from __future__ import annotations
 
-import json
 from collections import defaultdict
-from pathlib import Path
+from typing import Annotated
+
+import typer
+from paper_join import REPO, check_coverage, model_files, partial_note, population_questions, resolve_run_dir, rows
 
 from sacredbench.claims import fisher_p, mcnemar_p, negative_kind
 
-ROOT = Path(__file__).resolve().parents[2]
-RUNS = ROOT / "runs"
-QUESTIONS = ROOT / "items" / "for-test"
-OUT = RUNS / "paper" / "claim-tests.md"
+OUT = REPO / "runs" / "paper" / "claim-tests.md"
 
 
-def _questions() -> dict[str, dict]:
-    index: dict[str, dict] = {}
-    for path in QUESTIONS.rglob("questions.jsonl"):
-        if "population" not in path.parts:
-            continue
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            src = row["source"]
-            trad = src["tradition"][0] if isinstance(src.get("tradition"), list) else src.get("tradition")
-            index[row["id"]] = {
-                "tradition": trad,
-                "language": src.get("language"),
-                "true_tradition": (row.get("expected") or {}).get("true_tradition"),
-                "citation": src.get("citation"),
-                "work": src.get("work"),
-                "condition": src.get("condition"),
-            }
-    return index
+def _meta(row: dict) -> dict:
+    src = row["source"]
+    trad = src["tradition"][0] if isinstance(src.get("tradition"), list) else src.get("tradition")
+    return {
+        "tradition": trad,
+        "language": src.get("language"),
+        "true_tradition": (row.get("expected") or {}).get("true_tradition"),
+        "citation": src.get("citation"),
+        "work": src.get("work"),
+        "condition": src.get("condition"),
+    }
 
 
 def _fmt(p: float | None) -> str:
@@ -50,8 +41,16 @@ def _fmt(p: float | None) -> str:
     return f"{p:.3f}"
 
 
-def main() -> None:
-    questions = _questions()
+def main(
+    run_dir: Annotated[str, typer.Option(help="run root holding <model>/base/**, such as runs/rerun-2026-11-03")],
+    allow_partial: Annotated[
+        bool, typer.Option(help="write the report even when some answer rows have no question")
+    ] = False,
+) -> None:
+    runs = resolve_run_dir(run_dir)
+    by_id = population_questions()
+    matched, total = check_coverage(runs, by_id, allow_partial)
+    questions = {qid: _meta(row) for qid, row in by_id.items()}
     quote_cite: dict[tuple, dict[str, str]] = defaultdict(dict)
     prompts: dict[tuple, dict[str, str]] = defaultdict(dict)
     verify: dict[tuple, list[int]] = defaultdict(lambda: [0, 0])
@@ -60,19 +59,13 @@ def main() -> None:
     n_cells = 0
     models: set[str] = set()
 
-    for path in RUNS.glob("*/base/**/scores.jsonl"):
-        model = path.relative_to(RUNS).parts[0]
-        if model in {"paper", "archive"}:
-            continue
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            n_cells += 1
-            models.add(model)
+    for model, path in model_files(runs, "scores.jsonl"):
+        for row in rows(path):
             meta = questions.get(row["question_id"])
             if not meta:
                 continue
+            n_cells += 1
+            models.add(model)
             outcome = (row.get("metrics") or {}).get("outcome")
             task = row["task"]
             if task in {"retrieve_quote", "cite_passage"}:
@@ -124,7 +117,8 @@ def main() -> None:
     lines = [
         "# Paired claims",
         "",
-        f"From {n_cells} scored cells across {len(models)} models. A file still being collected contributes only the cells it already has. Accuracy comparisons drop refusals. McNemar is the two-sided exact test on discordant pairs of the same citation. Fisher exact compares two independent answered sets.",
+        f"From {n_cells} scored cells across {len(models)} models in `{runs.relative_to(REPO) if runs.is_relative_to(REPO) else runs}`."
+        f"{partial_note(matched, total)} A file still being collected contributes only the cells it already has. Accuracy comparisons drop refusals. McNemar is the two-sided exact test on discordant pairs of the same citation. Fisher exact compares two independent answered sets.",
         "",
         "## Citation, English prompt against native prompt",
         "",
@@ -207,4 +201,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)

@@ -8,9 +8,12 @@ Metrics emitted per answer:
                   Arabic/Hebrew combining marks + annotation symbols removed and
                   alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
                   matches), case-folded, punctuation stripped, whitespace collapsed
-                  (0/1) — see ``strip_script_marks``. Uthmani/Imla'i orthography is
-                  NOT folded here (Spec 52); it is credited only by
-                  ``fold_aware_contains``.
+                  (0/1) — see ``strip_script_marks``. On an English cell
+                  (``source.language == "en"``) Latin diacritics are also folded on
+                  both sides, here and in ``contains_reference`` (Allāh == Allah,
+                  issue #94; ``fold_latin_marks``); never in ``normalize()`` itself.
+                  Uthmani/Imla'i orthography is NOT folded here (Spec 52); it is
+                  credited only by ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
                   (0..1). A vowel sign or Latin accent is part of the word, so
                   dropping it misses that word. This does not decide ``correct``.
@@ -214,6 +217,24 @@ def _recompose_latin_marks(text: str) -> str:
             out.append(text[i])
             i += 1
     return "".join(out)
+
+
+def fold_latin_marks(normalized: str) -> str:
+    """Remove Latin diacritics from ``normalize()`` output: ``allāh`` becomes ``allah`` (issue #94).
+
+    English editions print transliteration marks as a convention (Saheeh International: Allāh,
+    Islām, iḥrām; Besant's Gita: pârtha, Madhusûdana). A model that writes the plain English
+    spelling has the right words. Scoring-only, like the Spec 52 Arabic fold: the text-retrieval
+    headline applies it to BOTH sides, in the ``normalized`` equality and in
+    ``fold_aware_contains``, and ONLY on an English cell (``source.language == "en"``). In
+    romanized Pali the macron is the orthography (dhamma ≠ dhammā, issue #50), so Pali is not
+    folded. ``normalize()`` keeps the marks, so generation, the question-set digest, the audit,
+    ``token_f1``, and ``cite_passage`` do not change. Only the ``_is_latin_mark`` set is removed."""
+    return "".join(ch for ch in unicodedata.normalize("NFD", normalized) if not _is_latin_mark(ch))
+
+
+def _latin_folded(text: str) -> str:
+    return fold_latin_marks(normalize(text))
 
 
 def _is_indic_mark(ch: str) -> bool:
@@ -496,7 +517,7 @@ def _answer_plene_form(text: str) -> str:
     return _normalize(text, fold=True, plene=True)
 
 
-def fold_aware_contains(answer: str, expected: str) -> bool:
+def fold_aware_contains(answer: str, expected: str, *, fold_latin: bool = False) -> bool:
     """Containment that credits an Uthmani↔Imla'i orthographic match (Spec 52), as a strict SUPERSET
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
     an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern built from
@@ -515,13 +536,19 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     ``_with_outcome`` rule ``classify_refusal(...) and not correct`` means a decline-prefixed Imla'i
     delivery now folds to ``incorrect`` instead of ``refused`` (coverage ↑, accuracy ↓) — the same
     rule ``bounded_contains`` already applied, just reaching more deliveries; no committed run uses
-    strict. Empty reference never matches."""
+    strict. Empty reference never matches. ``fold_latin`` (the headline passes it on an English
+    cell, issue #94) also credits the reference with its Latin diacritics folded on both sides
+    (``fold_latin_marks``); it is one more OR, so the superset guarantee holds."""
     if not normalize(expected):
         return False
     # An end-of-āyah sign glued to a word (…عليم۝١٧٦) is not part of the quotation.
     # Leaving it on breaks the word boundary (issue #60).
     answer = _AYAH_NUMBER.sub(" ", answer)
     if bounded_contains(answer, expected):          # today's contract — superset floor
+        return True
+    if fold_latin and re.search(  # Allāh ↔ Allah, English editions only (issue #94)
+        r"(?<!\w)" + re.escape(_latin_folded(expected)) + r"(?!\w)", _latin_folded(answer)
+    ):
         return True
     if not any(_is_arabic_letter(c) for c in expected):
         return False                                 # non-Arabic refs get only today's behaviour
@@ -616,17 +643,32 @@ _NON_WORD_LEAD = re.compile(r"[^\w]*")
 
 # Per-language native yes/no words (issue #76), keyed by the question's ``source.language``. English
 # (``_YES_NO_LEADING``) stays eligible on every cell, unchanged, because a model may answer in English
-# whatever the prompt language. A native word is only read on its own language's cell, so the Latin
-# Pali "na" can never flip an English answer.
+# whatever the prompt language. A Latin-script native word is only read on its own language's cell, so
+# the Pali "na" can never flip an English answer. Every other native word is read on every cell (issue
+# #95): a model may answer a Pali cell in Punjabi, or a Hebrew cell in Syriac.
 _YES_NO_BY_LANG: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "ar": (("نعم",), ("لا",)),                    # Arabic
     "he": (("כן",), ("לא", "אין", "לאו")),       # Hebrew, including stand-alone אין and לאו
     "arc": (("כן",), ("לא", "אין", "לאו")),      # Aramaic (Hebrew script; לא = no in both)
     "grc": (("ναι", "ναί"), ("όχι", "οχι", "ὄχι", "οὐχί", "οὔ")),  # Greek, as the prompt asks
-    "pa": (("ਹਾਂ",), ("ਨਹੀਂ",)),                 # Gurmukhi / Punjabi
-    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि")),  # Devanagari, including stand-alone न and नहि
+    "pa": (("ਹਾਂ", "ਹਾਂ ਜੀ"), ("ਨਹੀਂ",)),         # Gurmukhi / Punjabi, including the polite ਹਾਂ ਜੀ
+    "sa": (("हाँ", "हां"), ("नहीं", "नही", "न", "नहि", "नास्ति")),  # Devanagari, incl. न, नहि, नास्ति
     "pi": (("āma",), ("na",)),                   # Pali (Latin script)
 }
+# Syriac has no corpus here, but models answer Hebrew-script cells in it.
+_SYRIAC_YES_NO = (("ܐܝܢ",), ("ܠܐ",))
+
+
+def _is_latin(word: str) -> bool:
+    """Whether every letter of ``word`` is Latin script. A word with no letters counts as Latin, so it
+    stays gated to its own cell (the safe direction)."""
+    return all(unicodedata.name(ch, "").startswith("LATIN") for ch in word if ch.isalpha())
+
+
+_YES_NO_TABLES = (*_YES_NO_BY_LANG.values(), _SYRIAC_YES_NO)
+# The non-Latin native words, read on every cell whatever its language (issue #95).
+_ANY_CELL_YES = tuple(dict.fromkeys(w for yes, _ in _YES_NO_TABLES for w in yes if not _is_latin(w)))
+_ANY_CELL_NO = tuple(dict.fromkeys(w for _, no in _YES_NO_TABLES for w in no if not _is_latin(w)))
 
 
 def _strip_marks(text: str) -> str:
@@ -663,10 +705,13 @@ _NATIVE_LABEL_PREFIX = {
 def _native_verdict(window: str, language: "str | None") -> str | None:
     """The leading native yes/no word of the window, when it stands alone; else ``None``.
 
-    Arabic vowel marks are dropped first, and a bare native label ("الجواب:") is stripped like the
-    English "Answer:", so ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
+    The words are the cell language's own plus every non-Latin native word. Arabic vowel marks are
+    dropped first, and a bare native label ("الجواب:") is stripped like the English "Answer:", so
+    ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``. The label stays per-cell (stripped only on its own
+    language's cell) even though the words are now read on every cell.
     """
-    yes, no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    own_yes, own_no = _YES_NO_BY_LANG.get(language or "", ((), ()))
+    yes, no = own_yes + _ANY_CELL_YES, own_no + _ANY_CELL_NO
     s = _strip_marks(_ARABIC_MARKS.sub("", window))
     s = s[_NON_WORD_LEAD.match(s).end():]
     label = _NATIVE_LABEL_PREFIX.get(language or "")
@@ -704,7 +749,9 @@ def parse_yes_no(answer: str, language: "str | None" = None) -> str | None:
     ``no`` inside ``"There is no way to verify this"`` and score a false-premise ``no``-correct.
 
     ``language`` is the question's ``source.language`` (issue #76). English is read first, exactly as
-    before, on every cell. Then that language's native yes/no word is read, under one extra rule: it
+    before, on every cell. Then a native yes/no word is read: any non-Latin one on every cell (issue
+    #95, so Punjabi ``ਨਹੀਂ`` on a Pali cell is a verdict), and a Latin-script one (Pali ``na``) only
+    on its own language's cell. One extra rule applies to every native word: it
     must stand alone, followed only by punctuation or the end of the window. Native "no" words are also
     the sentence-negation particle, so ``"لا أستطيع التحقق"`` ("I cannot verify"), ``"לא ניתן לאמת"`` and
     Pali ``"na jānāmi"`` lead with that word but are refusals, not verdicts, and stay ``None``.
@@ -857,13 +904,18 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         # of bounded_contains that also credits an Uthmani↔Imla'i orthographic match; the
         # bool(normalize(target)) guard stops an empty reference (whose escaped regex matches
         # everywhere) from scoring 1. Containment is confined to these two text-retrieval tasks —
-        # the provenance branches below never see it.
+        # the provenance branches below never see it. On an English cell both headline predicates
+        # also fold Latin diacritics (Allāh == Allah, issue #94); no other language is folded.
+        fold_latin = language == "en"
+        key = _latin_folded if fold_latin else normalize
         computed = {
             "exact": int(answer.strip() == target.strip()),
-            "normalized": int(normalize(answer) == normalize(target)),
+            "normalized": int(key(answer) == key(target)),
             "token_f1": round(token_f1(answer, target), 4),
             "token_f1_base": round(token_f1_base(answer, target), 4),
-            "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
+            "contains_reference": int(
+                bool(normalize(target)) and fold_aware_contains(answer, target, fold_latin=fold_latin)
+            ),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))

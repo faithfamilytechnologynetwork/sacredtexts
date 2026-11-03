@@ -1,0 +1,17 @@
+id: bugfix-93
+title: qwen3-32b-gemma-31b-gpt-oss-20
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-03T01:16:35.637Z'
+    approved_at: '2026-11-03T01:16:58.786Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T00:53:04.729Z'
+updated_at: '2026-11-03T01:17:04.412Z'
+pr_ready_for_human: false

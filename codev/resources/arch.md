@@ -69,13 +69,20 @@ round-trip that proves no invention/reordering.
   Anthropic path passes the server-side web-search tool (`web_search_20250305`,
   `max_uses: 5`) iff a spec enables it, records `web_search_requests`, and fails loud on
   a non-terminal `stop_reason` (allowlist `end_turn`/`stop_sequence`) so a truncated or
-  `pause_turn` turn never silently re-bills; `_openai`/`_gemini` lack that guard (latent
-  trap for a future mixed tool-using panel — the tutorial panel is all-anthropic).
+  `pause_turn` turn never silently re-bills. The search-off `_openai`/`_gemini` paths do
+  NOT fail on truncation: by decision (#93) a `length`/`MAX_TOKENS` cell is committed and
+  scored (a repetition loop that exhausts the budget is the model failing the question).
+  The anthropic, openai-chat, OpenRouter-search and gemini paths record the host's raw
+  reason as `usage.finish_reason` (not the Responses-API search path) so analysis can flag
+  truncated cells; it is omitted when the host sends none, never invented.
 - **score.py**: per-task headline contract — `retrieve_quote`/`complete_unit` → the OR of the
   SELECTED graders' verdicts (default `strict` + `containment` ⇒ `normalized OR contains_reference`,
   Spec 15; graders are named + selectable via `score --evaluator`, a paid/separate-pass grader
   expressible for #21; + exact/token-F1 reported); `verify_source` → the **leading-stance** yes/no
-  equals expected; `cite_passage` → the single extracted citation must equal ground truth (a
+  equals expected (English on every cell; a native word must stand alone — any non-Latin one is read
+  on every cell, a Latin-script one like Pali `na` only on its own language's cell, #76/#95,
+  witnessed by `test_cross_language_verdict_rebaseline.py`); `cite_passage` → the single extracted
+  citation must equal ground truth (a
   multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
@@ -102,7 +109,13 @@ round-trip that proves no invention/reordering.
   pre-registered under-credit residual classes, both deferred to **#60** and pinned in
   `test_orthography_rebaseline.py`: the hamza-seat `ءَا↔آ` letter gap (`HAMZA_ALEF_RESIDUAL`) and a
   verse-number-gluing tokenisation gap (`VERSE_NUMBER_RESIDUAL`, a trailing U+06DD + Arabic-Indic
-  digits breaking the final word boundary). (verify_source is hardened —
+  digits breaking the final word boundary). **English transliteration marks fold in the headline
+  only (#94):** on a cell with `source.language == "en"`, `score_answer` compares
+  `fold_latin_marks(normalize(…))` on both sides for `normalized`, and passes `fold_latin=True` to
+  `fold_aware_contains`, so Saheeh's `Allāh` and Besant's `Pârtha` accept `Allah`/`Partha`. No
+  other language folds (in romanized Pali the macron is the orthography, #50), the default
+  `fold_aware_contains` call-sites do not fold, and `normalize()`/`token_f1`/`cite_passage` are
+  unchanged. Witnessed by `test_latin_diacritic_fold.py` (167 registered 2026-11-02 cells). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised
