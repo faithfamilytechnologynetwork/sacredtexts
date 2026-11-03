@@ -129,7 +129,7 @@ def test_registered_mover_counts():
         assert new == "correct" or new_n < old_n  # a stay-incorrect mover only merges candidates
 
 
-def test_committed_cite_passage_cells_move_only_as_registered():
+def test_committed_cite_passage_cells_move_only_as_registered(native_decline_movers):
     registered = _registered()
     score_files = sorted(RUNS.glob("*/base/**/scores.jsonl"))
     if not score_files:
@@ -147,7 +147,10 @@ def test_committed_cite_passage_cells_move_only_as_registered():
             new = score_answer("cite_passage", row["answer"], row["question"]["expected"])
             key = (folder, i, row["question_id"])
             if key not in registered:
-                assert new == old["metrics"], f"{key} moved but is not registered"
+                expected = old["metrics"]
+                if key in native_decline_movers:  # issue #117: a native-script decline is refused
+                    expected = {**expected, "outcome": "refused"}
+                assert new == expected, f"{key} moved but is not registered"
                 continue
             seen.add(key)
             old_outcome, new_outcome, old_n, new_n = registered[key]
