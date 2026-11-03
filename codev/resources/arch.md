@@ -151,7 +151,11 @@ round-trip that proves no invention/reordering.
   `fold_aware_contains` also tries the answer with counters between dandas (`॥੧॥`, `॥੪॥੯॥`)
   removed, since the corpus pankti drops them (`clean_sggs_line`). One more OR, so still a
   superset; a number after a word (`ਮਹਲਾ ੫`) stays. Witnessed by `test_gurmukhi_verse_counter.py`
-  (7 registered committed cells). (verify_source is hardened —
+  (7 registered committed cells). **Devanagari avagraha folds in containment only:** for a
+  Devanagari reference, `fold_aware_contains` also compares answer and reference with `ऽ` removed
+  (Stotra Samhita `चाऽऽचारो` = printed Gita Press `चाचारो`). One more OR, so still a superset.
+  Witnessed by `test_devanagari_avagraha.py` (177 registered committed cells; 5 of them leave
+  `native_decline_movers.tsv`, since a contained quote outranks a decline). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised
