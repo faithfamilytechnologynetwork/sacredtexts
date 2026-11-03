@@ -1,0 +1,14 @@
+id: bugfix-95
+title: verify-source-refuses-committe
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T00:53:16.494Z'
+updated_at: '2026-11-03T00:53:16.495Z'
