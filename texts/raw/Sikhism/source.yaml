@@ -3,7 +3,9 @@
 # Shabadaarth, SGPC, 2009-2012). The payload is a verbatim, filtered extract of the
 # Shabad OS monorepo (one TOML file per line, 603 MB, many works) built by
 # build_extract.py beside this file. Converter: shabados_sggs (Spec 50) — it strips the
-# Shabad OS vishraam marks and verse counters, never a word.
+# Shabad OS vishraam marks and verse counters, never a word. Dr Sant Singh Khalsa's English
+# (asset DSSK) comes from the same database, line for line (converter shabados_sggs_english).
+# It is a translation, so it stays OUT of the original-language question pool.
 source_url: https://github.com/shabados/shabados
 provenance:
   retrieved_from: github.com/shabados/shabados@7e36a29c96457f62566e26309879314d299f45c5 (database/collections)
@@ -14,7 +16,8 @@ notes: >-
   Shabad OS's own "line" field is the physical printed line and is not unique, so it
   is not used. Two upstream Ang values are wrong and are corrected in the converter,
   checked against BaniDB (see convert_shabados_sggs). Sri Guru Granth Sahib's language is mixed
-  (Sant Bhasha); "pa" records its Gurmukhi Punjabi identity.
+  (Sant Bhasha); "pa" records its Gurmukhi Punjabi identity. The English shares the
+  Gurmukhi's citations, so a citation names the same pankti in both editions.
 targets:
   - payload: sggs_shabados.json
     converter: shabados_sggs
@@ -30,5 +33,23 @@ targets:
       "Derogatory treatments (including adding to, deleting from, altering of, or
       adapting) the words ... is forbidden." Code MIT. The statement's scope note still
       names the pre-monorepo "data" folder.
+    requested_as: ["the Guru Granth Sahib", "Sri Guru Granth Sahib", "the Adi Granth", "Sri Guru Granth Sahib Ji"]
+    canonical_language: pa
+  - payload: sggs_khalsa_english_shabados.json
+    converter: shabados_sggs_english
+    work: Sri Guru Granth Sahib
+    version: Sant Singh Khalsa (Shabad OS)
+    language: en
+    document_type: scripture
+    tradition: [Sikhism]
+    license: open
+    license_detail: >-
+      English translation by Dr Sant Singh Khalsa, carried in Shabad OS as asset DSSK and
+      distributed free of charge online (SikhNet, Sikhi to the Max). A modern translation: it
+      is NOT established as public domain, and no licence statement was found. Shabad OS's
+      public-domain notice covers "most gurbani and panthic texts" and does not clearly reach
+      it. Included for academic benchmark research under the project's fair-use decision
+      (issue #4), as with Saheeh International; pre-release licence clearance is still open.
+      The words are unaltered, as Shabad OS's notice asks.
     requested_as: ["the Guru Granth Sahib", "Sri Guru Granth Sahib", "the Adi Granth", "Sri Guru Granth Sahib Ji"]
     canonical_language: pa

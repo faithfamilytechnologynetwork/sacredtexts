@@ -532,7 +532,7 @@ def test_real_guru_granth_sahib_pools_fill_every_template():
 
     raw = Path(__file__).resolve().parents[2] / "texts" / "raw"
     sources = cat.discover_catalogue(raw)
-    [t] = [t for t in cat.all_targets(sources) if t.source_id == "Sikhism"]
+    [t] = [t for t in cat.all_targets(sources) if t.converter == "shabados_sggs"]
     docs = convert_target(t.payload_paths(raw), t)
     [text], excluded = _build_texts(docs, cat.text_metadata(sources))
     assert not excluded and text.language == "pa"

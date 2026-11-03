@@ -25,6 +25,8 @@ Phase 3):
   one scripture document.
 - ``shabados_sggs`` (Spec 50): the Sri Guru Granth Sahib extract from Shabad OS →
   one document of panktis cited ``Ang N:k``, Shabad OS apparatus removed.
+- ``shabados_sggs_english``: Dr Sant Singh Khalsa's English from the same database → one
+  document with the same ``Ang N:k`` citations, verse markers removed.
 - ``vri_dhammapada``: VRI's romanized Dhammapada (TEI) → one document of verses cited
   ``Dhammapada N``, VRI's notes, page markers and closing matter removed.
 - ``stotrasamhita_gita`` (Spec 64): the Bhagavad Gita extract from Stotra Samhita →
@@ -42,6 +44,7 @@ import html as _html
 import json
 import re
 import xml.etree.ElementTree as ET
+from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -496,6 +499,7 @@ def convert_sefaria_talmud(paths: list[Path], target: "Target") -> list[Document
 _SGGS_VISHRAAM_RE = re.compile(r"[;.,]")  # pause marks from a reading pothi
 _SGGS_SUBSCRIPT_RE = re.compile(r"[₀-₉]")  # Shabad OS disambiguation tags in raag headings
 _SGGS_COUNTER_RE = re.compile(r"(?<=॥)[੦-੯]+(?=॥)")  # verse counters: ॥੧॥, ॥੪॥੯॥੬੦॥
+_SGGS_EN_COUNTER_RE = re.compile(r"\|+\s*\d+(?:\s*\|+\s*\d+)*\s*\|+")  # English: ||1||, ||4||9||, | 2||
 # bindi + ZWJ + sihari-ii is a font workaround; standard Unicode order is ii + bindi
 _SGGS_BINDI_II = ("ਂ‍ੀ", "ੀਂ")
 
@@ -520,22 +524,23 @@ def clean_sggs_line(data: str) -> str:
     return " ".join(t.split())
 
 
-def convert_shabados_sggs(paths: list[Path], target: "Target") -> list[Document]:
-    """``sggs_shabados.json`` (``{upstream, sections, lines[{id, ang, line, data}]}``, lines in
-    reading order — see ``texts/raw/Sikhism/build_extract.py``) → one document.
+def clean_sggs_english_line(data: str) -> str:
+    """One English line -> its words: the translation's own verse markers (``||``, ``||1||``,
+    ``||1||2||``, the same apparatus as ``॥੧॥``) removed. ``||Pause||`` keeps ``Pause``, as
+    ``ਰਹਾਉ`` stays in the Gurmukhi. Every other character is the translation's."""
+    return " ".join(_SGGS_EN_COUNTER_RE.sub(" ", data).replace("|", " ").split())
 
-    The unit is the pankti; its citation is ``Ang N:k``, k = its 1-based position on Ang N in
-    reading order. Shabad OS's ``line`` is the PHYSICAL printed line and repeats (several
-    panktis share one), so it is not used. Fail-fast: an Ang that decreases along the
-    reading order, a stale erratum, or a ZWJ / variation selector the cleaning missed."""
+
+def _sggs_lines(paths: list[Path], name: str) -> Iterator[tuple[int, dict, str]]:
+    """The payload's ``(index, record, "Ang N:k")`` in reading order. Both payloads go through
+    here, so a Gurmukhi line and its English cannot get different citations."""
     if len(paths) != 1:
-        raise ConvertError(f"shabados_sggs expects one payload file, got {len(paths)}")
+        raise ConvertError(f"{name} expects one payload file, got {len(paths)}")
     path = paths[0]
     data = _load_json(path)
     lines = data.get("lines") if isinstance(data, dict) else None
     if not isinstance(lines, list):
-        raise ConvertError(f"{path}: expected an object with a 'lines' list (shabados_sggs)")
-    entries: list[Entry] = []
+        raise ConvertError(f"{path}: expected an object with a 'lines' list ({name})")
     prev_ang, k = 0, 0
     for i, rec in enumerate(lines):
         if not isinstance(rec, dict) or not isinstance(rec.get("ang"), int) or not isinstance(rec.get("data"), str):
@@ -550,11 +555,42 @@ def convert_shabados_sggs(paths: list[Path], target: "Target") -> list[Document]
             raise ConvertError(f"{path}: lines[{i}] ({rec.get('id')}) Ang {ang} after Ang {prev_ang}")
         k = k + 1 if ang == prev_ang else 1
         prev_ang = ang
+        yield i, rec, f"Ang {ang}:{k}"
+
+
+def convert_shabados_sggs(paths: list[Path], target: "Target") -> list[Document]:
+    """``sggs_shabados.json`` (``{upstream, sections, lines[{id, ang, line, data}]}``, lines in
+    reading order — see ``texts/raw/Sikhism/build_extract.py``) → one document.
+
+    The unit is the pankti; its citation is ``Ang N:k``, k = its 1-based position on Ang N in
+    reading order. Shabad OS's ``line`` is the PHYSICAL printed line and repeats (several
+    panktis share one), so it is not used. Fail-fast: an Ang that decreases along the
+    reading order, a stale erratum, or a ZWJ / variation selector the cleaning missed."""
+    path = paths[0] if paths else None
+    entries: list[Entry] = []
+    for i, rec, citation in _sggs_lines(paths, "shabados_sggs"):
         text = clean_sggs_line(rec["data"])
         if "‍" in text or "︀" in text:
             raise ConvertError(f"{path}: lines[{i}] ({rec.get('id')}) keeps an unhandled joiner/selector")
         if text:
-            entries.append(Entry(unit_type="pankti", citation=f"Ang {ang}:{k}", text=text))
+            entries.append(Entry(unit_type="pankti", citation=citation, text=text))
+    if not entries:
+        raise ConvertError(f"{path}: produced no panktis")
+    _require_unique_citations(entries, str(path))
+    return [_doc(target, entries)]
+
+
+def convert_shabados_sggs_english(paths: list[Path], target: "Target") -> list[Document]:
+    """``sggs_khalsa_english_shabados.json`` (``{upstream, lines[{id, ang, data}]}``, the lines
+    of ``sggs_shabados.json`` in the same order) → one document. Fail-fast: a line left with
+    no words or with a verse marker, since either breaks the line-for-line match."""
+    path = paths[0] if paths else None
+    entries: list[Entry] = []
+    for i, rec, citation in _sggs_lines(paths, "shabados_sggs_english"):
+        text = clean_sggs_english_line(rec["data"])
+        if not text or "|" in text:
+            raise ConvertError(f"{path}: lines[{i}] ({rec.get('id')}) has no clean English text")
+        entries.append(Entry(unit_type="pankti", citation=citation, text=text))
     if not entries:
         raise ConvertError(f"{path}: produced no panktis")
     _require_unique_citations(entries, str(path))
@@ -722,6 +758,7 @@ CONVERTERS = {
     "hadith_sunnah_en": convert_hadith_sunnah_en,
     "sefaria_talmud": convert_sefaria_talmud,
     "shabados_sggs": convert_shabados_sggs,
+    "shabados_sggs_english": convert_shabados_sggs_english,
     "vri_dhammapada": convert_vri_dhammapada,
     "stotrasamhita_gita": convert_stotrasamhita_gita,
     "besant_gita": convert_besant_gita,
