@@ -173,25 +173,57 @@ def test_native_label_and_marks_do_not_touch_other_cells():
     assert parse_yes_no("Answer: no") == parse_yes_no("Answer: no", "ar") == "no"
 
 
-def test_native_tokens_only_eligible_for_their_language():
-    # A native token is NOT read when the cell language does not select it. This is what keeps every
-    # committed (English-answer) verify cell byte-stable: adding native tables cannot flip a cell whose
-    # language does not carry those tokens. The Latin Pali "na" is the sharp case.
-    assert parse_yes_no("لا", None) is None            # Arabic "no" with no language -> not read
-    assert parse_yes_no("لا", "he") is None            # wrong script's table -> not read
+def test_latin_native_tokens_only_eligible_for_their_language():
+    # A Latin-script native token is NOT read when the cell language does not select it: the Pali
+    # "na"/"āma" would otherwise flip English answers.
     assert parse_yes_no("na", None) is None            # Pali "no" is never read as English
     assert parse_yes_no("na", "ar") is None            # ... nor on a non-Pali cell
+    assert parse_yes_no("āma", "sa") is None
     assert parse_yes_no("na", "pi") == "no"            # only on a Pali cell
     # English behaviour is unchanged whether or not a language is passed
     assert parse_yes_no("Yes.") == parse_yes_no("Yes.", "ar") == "yes"
 
 
+@pytest.mark.parametrize("ans,lang,expected", [
+    # issue #95: a non-Latin verdict is read whatever the cell's language (cases from the 2026-11-02 run)
+    ("ਨਹੀਂ।", "pi", "no"), ("ਨਹੀਂ", "sa", "no"), ("ਨਹੀਂ—ਇਹ ਗੁਰਮੁਖੀ ਲਾਈਨ", "pi", "no"),
+    ("नहि।", "pi", "no"), ("नहि (No)", "pi", "no"), ("न।", "pi", "no"), ("हां", "pi", "yes"),
+    ("לא", "pa", "no"), ("לא", "sa", "no"), ("لا", "sa", "no"), ("لا", "he", "no"),
+    ("ܠܐ", "he", "no"), ("ܐܝܢ", "he", "yes"),          # Syriac, no corpus of its own
+    ("لا", None, "no"), ("Ναι", "ar", "yes"),
+    # the polite Punjabi yes and the Sanskrit "is not", on their own cells and any other
+    ("ਹਾਂ ਜੀ (Yes)", "pa", "yes"), ("ਹਾਂ ਜੀ।", "pa", "yes"), ("ਹਾਂ ਜੀ", "pi", "yes"),
+    ("नास्ति।", "sa", "no"), ("नास्ति", "pi", "no"),
+])
+def test_parse_yes_no_reads_other_language_verdicts(ans, lang, expected):
+    assert parse_yes_no(ans, lang) == expected
+
+
+@pytest.mark.parametrize("ans,lang", [
+    # issue #95: the stand-alone rule still applies to another language's word, so a refusal opening
+    # with a negation particle stays refused on every cell
+    ("לא ניתן לאמת זאת", "pa"), ("לא בוודאות", "he"), ("لا أستطيع التحقق", "he"),
+    ("ਨਹੀਂ ਪਤਾ", "pi"), ("नहीं कह सकता।", "sa"), ("ܠܐ ܝܕܥ ܐܢܐ", "he"), ("ਹਾਂ ਜੀ ਇਹ ਹੈ", "pa"),
+    ("नान।", "sa"),                                    # not नास्ति, and न does not stand alone
+])
+def test_other_language_negation_particle_is_not_a_verdict(ans, lang):
+    assert parse_yes_no(ans, lang) is None
+
+
+def test_no_native_word_is_both_yes_and_no():
+    # every non-Latin word is read on every cell, so the yes and no tables must not share a word
+    from sacredbench.score import _ANY_CELL_NO, _ANY_CELL_YES
+
+    assert not set(_ANY_CELL_YES) & set(_ANY_CELL_NO)
+    assert "na" not in _ANY_CELL_NO and "āma" not in _ANY_CELL_YES
+
+
 def test_score_answer_plumbs_language_for_native_verdict():
     # score_answer forwards the question language so a native verdict is graded, not refused.
-    graded = score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"}, language="ar")
+    graded = score_answer("verify_source", "na, this is from the Dhammapada", {"answer": "no"}, language="pi")
     assert graded["parsed"] == "no" and graded["correct"] == 1 and graded["outcome"] == "correct"
-    # without the language the same answer has no readable leading verdict -> refused (old behaviour)
-    assert score_answer("verify_source", "لا، هذا من صحيح مسلم", {"answer": "no"})["outcome"] == "refused"
+    # without the language the Latin Pali word is not read -> refused
+    assert score_answer("verify_source", "na, this is from the Dhammapada", {"answer": "no"})["outcome"] == "refused"
 
 
 def test_retrieve_quote_tiers():
