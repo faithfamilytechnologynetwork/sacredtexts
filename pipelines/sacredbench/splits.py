@@ -15,6 +15,7 @@ from math import comb
 from pathlib import Path
 
 from sacredbench.failure_kind import (
+    NEAR_COPY_FAMILY,
     PARAPHRASE_F1,
     classify_failure,
     expected_text,
@@ -158,7 +159,7 @@ def near_copy_by_language(rows: list[dict]) -> Counter:
             contains_reference=metrics.get("contains_reference"),
             n_candidates=metrics.get("n_candidates"),
         )
-        if kind != "near_copy":
+        if kind not in NEAR_COPY_FAMILY:
             continue
         language = row["source"].get("language") or "unknown"
         counts[language] += 1
@@ -229,7 +230,7 @@ def _quote_kind(row: dict, floor: float) -> str | None:
     if row["outcome"] != "incorrect" or row["task"] not in _QUOTE_TASKS:
         return None
     metrics = row["metrics"]
-    return classify_failure(
+    kind = classify_failure(
         task=row["task"],
         correct=False,
         refused=False,
@@ -241,6 +242,8 @@ def _quote_kind(row: dict, floor: float) -> str | None:
         n_candidates=metrics.get("n_candidates"),
         paraphrase_f1=floor,
     )
+    # the floor sweep moves the paraphrase boundary; the near-copy split (issue #96) is not its subject
+    return "near_copy" if kind in NEAR_COPY_FAMILY else kind
 
 
 def sensitivity(rows: list[dict]) -> dict:

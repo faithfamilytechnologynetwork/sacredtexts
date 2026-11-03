@@ -183,6 +183,19 @@ change, or only the marks?
 A low strict score and a high base score is a spelling miss, not a theological
 miss. A low score on both is a change of words.
 
+Each `summary.json` and `summary.md` splits `incorrect` into `minor` (still the
+passage asked for) and `major` (another passage, citation, or verdict), per task
+and per text, and counts each failure kind. A near copy (token overlap 0.85 or
+more) is named three ways:
+
+| Kind | Reading |
+|---|---|
+| `diacritic_only` | The same words once vowel signs, accents and pointing are dropped |
+| `edition_variant` | One or two words differ: another edition or spelling (`ἔθηκε` for `ἔθηκεν`) |
+| `near_copy` | A close copy with more than two words changed |
+
+All three are still incorrect.
+
 Hinduism is the same 30 citations in both editions. The 16-word floor is
 applied to Annie Besant's English, because only 16 Sanskrit verses reach 16
 words. Buddhism is 30 Pali verses of at least 16 words. This corpus has no

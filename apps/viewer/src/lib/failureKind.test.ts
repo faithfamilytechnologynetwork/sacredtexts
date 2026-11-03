@@ -13,6 +13,7 @@ interface SharedCase {
   answer: string;
   expected: string;
   token_f1: number | null;
+  token_f1_base?: number | null;
   normalized: number | null;
   contains_reference: number | null;
   n_candidates: number | null;
@@ -34,6 +35,7 @@ function fromSharedCase(c: SharedCase): FailureInput {
     answer: c.answer,
     expected: c.expected,
     tokenF1: c.token_f1,
+    tokenF1Base: c.token_f1_base,
     normalized: c.normalized,
     containsReference: c.contains_reference,
     nCandidates: c.n_candidates,

@@ -49,7 +49,7 @@ sacredtexts/
 │       ├── export.py          Assembles the shared "interchange" JSON and checks the merge is lossless.
 │       ├── edition_index.py   Shared cross-edition index: editions that share a citation (Spec 32). `edition-index` exports JSONL+manifest (frozen for #21); the FAccT card reads it in-process.
 │       ├── facct.py           The FAccT benchmark card (Spec 32): census + outcomes (from scores.jsonl) + the Bible edition counterfactual → facct.{json,md}. A pure analysis stage; never re-scores.
-│       ├── failure_kind.py    Finer-than-outcome labels for a scored cell (near_copy / paraphrase / other_script / …) and the per-type/tradition/task breakdown. Mirrored by apps/viewer/src/lib/failureKind.ts (shared fixture: fixtures/failure_kind_cases.json).
+│       ├── failure_kind.py    Finer-than-outcome labels for a scored cell (diacritic_only / edition_variant / near_copy / paraphrase / other_script / …) and the per-type/tradition/task breakdown; `score` counts them into the summary. Mirrored by apps/viewer/src/lib/failureKind.ts (shared fixture: fixtures/failure_kind_cases.json).
 │       ├── editions.py        Folded agreement of the public-domain English Bibles, read from the edition index. Read-only analysis.
 │       ├── probes.py          Stored-run checks (letter fold, clustered intervals, refusal notes, KJV substitution). Prints only; never writes a run.
 │       ├── splits.py          Manuscript breakdown tables (per-model-per-text, refusals by text, Fisher gap test, citation distance, cutoff sensitivity). Prints only.

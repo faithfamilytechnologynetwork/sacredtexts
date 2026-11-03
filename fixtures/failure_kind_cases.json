@@ -1,5 +1,5 @@
 {
-  "comment": "Shared parity fixture for the failure-kind taxonomy. The SAME cases are asserted by pipelines/tests/test_failure_kind.py (classify_failure) and apps/viewer/src/lib/failureKind.test.ts (classifyFailure), so the Python and TypeScript classifiers cannot drift. Each case's fields are the classifier inputs (Python kwargs verbatim; the viewer test maps token_f1->tokenF1, contains_reference->containsReference, n_candidates->nCandidates and sets missing:false); expected_kind is the required return (null = unlabeled) and expected_severity is severity(expected_kind) (minor/major/null) — BOTH classifier and severity are asserted in both suites, since severity() / failureSeverity() is a second dual implementation. No restricted-corpus text appears here — strings are synthetic. Covers every branch of the classifier; add a case (with both expected fields) when a branch is added.",
+  "comment": "Shared parity fixture for the failure-kind taxonomy. The SAME cases are asserted by pipelines/tests/test_failure_kind.py (classify_failure) and apps/viewer/src/lib/failureKind.test.ts (classifyFailure), so the Python and TypeScript classifiers cannot drift. Each case's fields are the classifier inputs (Python kwargs verbatim; the viewer test maps token_f1->tokenF1, token_f1_base->tokenF1Base (optional), contains_reference->containsReference, n_candidates->nCandidates and sets missing:false); expected_kind is the required return (null = unlabeled) and expected_severity is severity(expected_kind) (minor/major/null) — BOTH classifier and severity are asserted in both suites, since severity() / failureSeverity() is a second dual implementation. No restricted-corpus text appears here — strings are synthetic. Covers every branch of the classifier; add a case (with both expected fields) when a branch is added.",
   "cases": [
     {
       "name": "refused cell is unlabeled",
@@ -322,6 +322,105 @@
       "n_candidates": null,
       "expected_kind": "other_script",
       "expected_severity": "major"
+    },
+    {
+      "name": "near copy that differs only by a Latin accent is diacritic_only",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "the eternal Āshvattha tree has its roots above",
+      "expected": "the eternal Ashvattha tree has its roots above",
+      "token_f1": 0.875,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "diacritic_only",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "near copy that differs only by Arabic pointing, alef-wasla and tatweel is diacritic_only",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "ٱلْحَمْدُ لِلَّـهِ رَبِّ ٱلْعَـٰلَمِينَ",
+      "expected": "الحمد لله رب العلمين",
+      "token_f1": 0.9,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "diacritic_only",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "near copy that differs only by Greek accents and final sigma is diacritic_only",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "εν αρχη ην ο λογοσ",
+      "expected": "Ἐν ἀρχῇ ἦν ὁ λόγος",
+      "token_f1": 0.9,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "diacritic_only",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "near copy one base-letter token off is an edition_variant",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "the keeper planted twelve tres by the river",
+      "expected": "the keeper planted twelve trees by the river",
+      "token_f1": 0.875,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "edition_variant",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "near copy two base-letter tokens off is an edition_variant",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "the keeper planted twelve tres by a river",
+      "expected": "the keeper planted twelve trees by the river",
+      "token_f1": 0.86,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "edition_variant",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "near copy three base-letter tokens off stays near_copy",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "the keeper planted ten tall trees by a river",
+      "expected": "the keeper planted twelve trees by the river",
+      "token_f1": 0.86,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "near_copy",
+      "expected_severity": "minor"
+    },
+    {
+      "name": "the base-letter overlap is preferred over the strict overlap",
+      "task": "retrieve_quote",
+      "correct": false,
+      "refused": false,
+      "answer": "dhamma pubbangama manosettha",
+      "expected": "dhammā pubbaṅgamā manoseṭṭhā",
+      "token_f1": 0.0,
+      "token_f1_base": 1.0,
+      "normalized": 0,
+      "contains_reference": 0,
+      "n_candidates": null,
+      "expected_kind": "diacritic_only",
+      "expected_severity": "minor"
     }
   ]
 }
