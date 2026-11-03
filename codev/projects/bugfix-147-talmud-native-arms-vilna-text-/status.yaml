@@ -1,0 +1,14 @@
+id: bugfix-147
+title: talmud-native-arms-vilna-text-
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T23:58:34.089Z'
+updated_at: '2026-11-03T23:58:34.090Z'
