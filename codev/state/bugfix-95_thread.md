@@ -60,3 +60,12 @@ Fix scope: ~20 LOC in score.py + tests. Fits BUGFIX.
 - PR #100 opened (Fixes #95). porch `fix` → `porch done` is blocked by the tests check, which fails
   ONLY on the 9 #97 tests (**#97, pre-existing**; fix is PR #99, still open). Holding at `fix`:
   once #99 lands, merge origin/main, re-run `porch done bugfix-95`, then record `--pr 100`.
+
+## Architect review fold (2026-11-03 01:10Z)
+
+- #99 landed; merged origin/main (2d20cb2). Gate now green on Python 3.11: 924 passed, 2 skipped.
+- PR #100 approved pending 3 items, all done: oracle scan widened to `runs/**/scores.jsonl` (archive
+  0-flip claim now machine-witnessed); per-folder skip instead of all-or-nothing, and a scores file
+  with no sibling answers.jsonl is passed over (a scored row with no answer fails with a message);
+  `_native_verdict` docstring notes the Arabic label stays per-cell. `runs/` untouched.
+- Architect owns regenerating `runs/paper/*` from the rerun under the final contract (#94+#95+#96).

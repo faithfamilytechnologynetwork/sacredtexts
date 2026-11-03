@@ -670,7 +670,8 @@ def _native_verdict(window: str, language: "str | None") -> str | None:
 
     The words are the cell language's own plus every non-Latin native word. Arabic vowel marks are
     dropped first, and a bare native label ("الجواب:") is stripped like the English "Answer:", so
-    ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``.
+    ``"الجواب: لا"`` and ``"لَا،"`` read as ``no``. The label stays per-cell (stripped only on its own
+    language's cell) even though the words are now read on every cell.
     """
     own_yes, own_no = _YES_NO_BY_LANG.get(language or "", ((), ()))
     yes, no = own_yes + _ANY_CELL_YES, own_no + _ANY_CELL_NO

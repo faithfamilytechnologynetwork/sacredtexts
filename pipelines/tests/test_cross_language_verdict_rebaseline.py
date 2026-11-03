@@ -109,8 +109,11 @@ FLIPS: dict[str, dict[str, str]] = {
 }
 
 
-def _verify_answers(folder: Path) -> dict[tuple[str, str], dict]:
+def _verify_answers(folder: Path) -> dict[tuple[str, str], dict] | None:
+    """The folder's verify_source answers by ``(model_id, question_id)``; ``None`` if it has none."""
     path = folder / "answers.jsonl"
+    if not path.exists():
+        return None
     rows = (json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
     return {(d["model_id"], d["question_id"]): d for d in rows if d["task"] == "verify_source"}
 
@@ -120,12 +123,6 @@ def _outcome(d: dict) -> dict:
     return score_answer("verify_source", d["answer"] or "", q["expected"], language=q["source"]["language"])
 
 
-@pytest.fixture(scope="module", autouse=True)
-def _evidence():
-    if not all((RUNS / folder / "answers.jsonl").exists() for folder in FLIPS):
-        pytest.skip("committed run evidence not present")
-
-
 def test_registered_set_size():
     outcomes = Counter(o for cells in FLIPS.values() for o in cells.values())
     assert outcomes == {"correct": 60, "incorrect": 25}
@@ -133,8 +130,10 @@ def test_registered_set_size():
 
 @pytest.mark.parametrize("folder", sorted(FLIPS))
 def test_registered_cells_are_graded_as_registered(folder):
-    model = folder.split("/", 1)[0]
     answers = _verify_answers(RUNS / folder)
+    if answers is None:
+        pytest.skip(f"{folder} evidence not present")
+    model = folder.split("/", 1)[0]
     for qid, outcome in FLIPS[folder].items():
         metrics = _outcome(answers[(model, qid)])
         assert metrics["parsed"] is not None, (folder, qid)
@@ -142,21 +141,27 @@ def test_registered_cells_are_graded_as_registered(folder):
 
 
 def test_only_registered_cells_move_and_only_out_of_refused():
-    # Re-derive every committed verify_source score from its answer. A cell may differ from its
-    # committed outcome only if it is registered, committed `refused`, and now at its registered
-    # outcome: nothing else moves, and nothing moves into `refused` or from correct to incorrect.
+    # Re-derive every committed verify_source score (runs/archive included) from its answer. A cell
+    # may differ from its committed outcome only if it is registered, committed `refused`, and now at
+    # its registered outcome: nothing else moves, and nothing moves into `refused` or from correct to
+    # incorrect. A score file without a sibling answers.jsonl cannot be re-derived and is passed over.
     scanned = 0
-    for scores in sorted(RUNS.glob("*/base/**/scores.jsonl")):
-        folder = str(scores.parent.relative_to(RUNS))
+    for scores in sorted(RUNS.glob("**/scores.jsonl")):
         answers = _verify_answers(scores.parent)
+        if answers is None:
+            continue
+        folder = str(scores.parent.relative_to(RUNS))
         for line in scores.read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             if row["task"] != "verify_source":
                 continue
+            key = (row["model_id"], row["question_id"])
+            assert key in answers, f"{folder}: scored verify_source cell {key} has no answer row"
             scanned += 1
             committed = row["metrics"]["outcome"]
-            now = _outcome(answers[(row["model_id"], row["question_id"])])["outcome"]
+            now = _outcome(answers[key])["outcome"]
             if now != committed:
                 assert committed == "refused", (folder, row["question_id"], committed, now)
                 assert FLIPS.get(folder, {}).get(row["question_id"]) == now, (folder, row["question_id"])
-    assert scanned > 0
+    if not scanned:
+        pytest.skip("no committed verify_source scores present")
