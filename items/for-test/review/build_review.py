@@ -45,7 +45,9 @@ def passage_lines(rows: list[dict]) -> tuple[list[str], str]:
     """One line per passage, population first. Size is the question-file row count."""
     picked: dict[tuple[str, str], None] = {}
     for row in rows:
-        if row["task"] != "retrieve_quote":
+        # cite_passage, not retrieve_quote: a Sri Guru Granth Sahib retrieve row asks for its Ang's
+        # edge pankti, not the drawn passage. Every passage has a cite row with its own citation.
+        if row["task"] != "cite_passage":
             continue
         source = row.get("source") or row
         condition = source.get("condition") or row.get("condition")
@@ -207,8 +209,9 @@ def judaism() -> tuple[str, str]:
 def sikhism() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("sikhism", "native"))
     rows.append("- cite_passage asks for and expects the Ang only: line numbering within an Ang is not standardised (#135).")
+    rows.append("- retrieve_quote asks for the first or last pankti of the passage's Ang, for the same reason.")
     native = {
-        "retrieve_quote": "{citation} ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
+        "retrieve_quote": "ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਦੇ {ang} ਦੀ {edge} ਪੰਕਤੀ ਦਾ ਪਾਠ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
         "complete_unit": "ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਇਹ ਟੋਟਾ ਪੂਰਾ ਕਰੋ: \"{head}\" ਸਿਰਫ਼ ਬਾਕੀ ਸ਼ਬਦ ਲਿਖੋ।",
         "cite_passage": "ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚ ਕਿੱਥੇ ਹੈ? \"{text}\" ਸਿਰਫ਼ ਅੰਗ (ਪੰਨਾ) ਲਿਖੋ।",
         "verify_source": "ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ, ਸ਼ਬਦ ਓਐਸ (ਐਸ.ਜੀ.ਪੀ.ਸੀ. ਸ਼ਬਦਾਰਥ) ਵਿਚੋਂ ਹੈ? \"{text}\" ਹਾਂ ਜਾਂ ਨਹੀਂ।",
@@ -274,7 +277,7 @@ def page(
     for task, tmpl in english.items():
         out.append(
             f"- `{task}`: "
-            + tmpl.format(citation="{citation}", version=version, head="{head}", text="{text}", example="{example}")
+            + tmpl.format(citation="{citation}", version=version, head="{head}", text="{text}", example="{example}", ang="{ang}", edge="{edge}")
         )
     if english_suffix:
         out.extend(["", f"Each English prompt has a second line: `{english_suffix}`"])

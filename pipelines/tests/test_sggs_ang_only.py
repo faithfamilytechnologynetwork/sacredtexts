@@ -3,7 +3,7 @@
 Jasbir Singh (working-group chat, 2026-11-03): the Sri Guru Granth Sahib has no standard line
 numbering within an Ang, so asking for ``Ang N:k`` and comparing ``k`` is meaningless. The Sikh
 cite_passage rows now ask for the "page (Ang)", with an ``Ang 306`` form example, and expect
-``Ang N``. retrieve_quote keeps ``Ang N:k``: the line index names the pankti asked about.
+``Ang N``. retrieve_quote names no line either: it asks for the first or last pankti of the Ang.
 
 Scoring a bare Ang (``citations._score_at_ang``): ``Ang 315``, ``ਅੰਗ ੩੧੫``, ``Ang 315:9`` (a line
 the model volunteers) and ``Page 315`` are all Ang 315; a different Ang is not, and a second
@@ -152,10 +152,73 @@ def test_sikh_cite_rows_ask_for_and_expect_the_ang():
         assert "page (Ang)" in q["prompt"] or "ਅੰਗ (ਪੰਨਾ)" in q["prompt"], q["id"]
 
 
-def test_sikh_retrieval_rows_keep_the_line():
-    for q in _sikh_rows():
-        if q["task"] == "retrieve_quote":
-            assert re.search(r"Ang \d+:\d+", q["prompt"]), q["id"]
+def _ang_lines() -> dict[str, list[tuple[str, str]]]:
+    """Each Ang's ``(cleaned text, raw data)`` in reading order, read straight from the raw payload."""
+    from sacredbench.convert import _SGGS_ANG_ERRATA, clean_sggs_line
+
+    raw = json.loads((REPO / "texts" / "raw" / "Sikhism" / "sggs_shabados.json").read_text(encoding="utf-8"))
+    by_ang: dict[str, list[tuple[str, str]]] = {}
+    for rec in raw["lines"]:
+        ang = _SGGS_ANG_ERRATA[rec["id"]][1] if rec["id"] in _SGGS_ANG_ERRATA else rec["ang"]
+        text = clean_sggs_line(rec["data"])
+        if text:
+            by_ang.setdefault(f"Ang {ang}", []).append((text, rec["data"]))
+    return by_ang
+
+
+EDGE = re.compile(r"(?:the (first|last) pankti of (Ang \d+) in )|(?:ਦੇ (Ang \d+) ਦੀ (ਪਹਿਲੀ|ਆਖ਼ਰੀ) ਪੰਕਤੀ)")
+
+
+def test_sikh_retrieval_rows_ask_for_an_edge_pankti_of_the_ang():
+    """The line index k is this corpus's own record count, so a retrieve row names no line. It asks
+    for the first or last pankti of the drawn passage's Ang, and expects exactly that pankti."""
+    by_ang = _ang_lines()
+    rows = _sikh_rows()
+    retrieve = [q for q in rows if q["task"] == "retrieve_quote"]
+    # Two edges per Ang: a population Ang that holds more drawn passages asks only two of them.
+    assert len(retrieve) == 58
+    edges = {"first": 0, "last": 0}
+    for q in retrieve:
+        assert not re.search(r"\d+:\d+", q["prompt"]), q["id"]
+        m = EDGE.search(q["prompt"])
+        assert m, q["id"]
+        edge = m[1] or {"ਪਹਿਲੀ": "first", "ਆਖ਼ਰੀ": "last"}[m[4]]
+        ang = m[2] or m[3]
+        text, data = by_ang[ang][0 if edge == "first" else -1]
+        assert q["expected"] == {"text": text}, q["id"]
+        assert re.search(r"[;.,]", data), q["id"]  # a pankti (vishraam marks), never a heading
+        assert q["source"]["citation"].partition(":")[0] == ang, q["id"]
+        edges[edge] += 1
+    assert edges["first"] and edges["last"]
+    # Each retrieve row asks about the Ang of a passage a cite row quotes, and no file asks twice.
+    for path in sorted(SIKH.rglob("questions.jsonl")):
+        file_rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        asked = [q["prompt"] for q in file_rows if q["task"] == "retrieve_quote"]
+        assert len(asked) == len(set(asked)), path
+        cited = {q["expected"]["citation"] for q in file_rows if q["task"] == "cite_passage"}
+        assert {q["source"]["citation"].partition(":")[0] for q in file_rows if q["task"] == "retrieve_quote"} == cited
+
+
+def test_an_edge_heading_is_never_asked_for():
+    import importlib.util
+    import sys
+
+    review = REPO / "items" / "for-test" / "review"
+    sys.path.insert(0, str(review))
+    spec = importlib.util.spec_from_file_location("build_questions", review / "build_questions.py")
+    bq = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bq)
+    for heading in ("ਗਉੜੀ ਮਹਲਾ ੫ ॥", "ਪਉੜੀ ॥", "ੴ ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ ॥", "ਸਲੋਕ ਮਃ ੪ ॥"):
+        assert not bq.sggs_is_pankti(heading)
+    assert bq.sggs_is_pankti("ਪੇਡੁ ਮੁੰਢਾਹੂੰ ਕਟਿਆ; ਤਿਸੁ ਡਾਲ ਸੁਕੰਦੇ ॥੧੨॥")
+    lines = [("Ang 306:1", "a", "ਸਲੋਕ ਮਃ ੪ ॥"), ("Ang 306:2", "b", "x; y ॥"), ("Ang 306:3", "c", "ਪਉੜੀ ॥")]
+    assert bq.sggs_edge_pankti(lines[1:], "last") == ("first", "Ang 306:2", "b")
+    assert bq.sggs_edge_pankti(lines[:2], "first") == ("last", "Ang 306:2", "b")
+    assert bq.sggs_edge_pankti([lines[0], lines[2]], "first") is None  # a heading at both edges
+    # An Ang asks each edge once: a second passage on it gets the other edge, a third gets none.
+    both = [("Ang 9:1", "a", "x; y ॥"), ("Ang 9:2", "b", "z; w ॥")]
+    assert bq.sggs_edge_pankti(both, "first", {"first"}) == ("last", "Ang 9:2", "b")
+    assert bq.sggs_edge_pankti(both, "first", {"first", "last"}) is None
 
 
 # --- oracle over the committed facct-2026-11-03 run ---------------------------------------------

@@ -288,9 +288,13 @@ def test_every_verify_passage_is_the_one_its_expected_answer_names(builders):
     passages: dict[tuple[str, str, str], str] = {}
     for rows in committed.values():
         for row in rows:
+            s = row["source"]
             if row["task"] == "retrieve_quote":
-                s = row["source"]
                 passages[(s["tradition"][0], s["version"], s["citation"])] = row["expected"]["text"]
+            elif row["task"] == "complete_unit":
+                # A Sri Guru Granth Sahib retrieve row asks for its Ang's edge pankti, so the drawn
+                # passage a verify row quotes is the complete_unit row's whole text (#135 follow-up).
+                passages.setdefault((s["tradition"][0], s["version"], s["citation"]), row["expected"]["full_text"])
     for donor in (*bq._hadith_pool(), *bq._english_hadith_pool()):  # the hadith donors are not question rows
         passages[(donor["tradition"], donor["version"], donor["citation"])] = donor["expected"]["text"]
     checked = 0

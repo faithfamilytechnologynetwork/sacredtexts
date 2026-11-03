@@ -69,12 +69,41 @@ EN = {
 }
 
 # Issue #135 (Jasbir Singh): the Sri Guru Granth Sahib has no standard line numbering within an Ang,
-# so cite_passage asks for and expects the Ang (page) only. retrieve_quote keeps "Ang N:k", and so
-# does every row's source citation: the line index is what names the pankti being asked about.
+# so cite_passage asks for and expects the Ang (page) only. retrieve_quote cannot name a pankti by
+# "Ang N:k" either: k is this corpus's record count, which no model can know (279 of the 426 Sikh
+# retrieve refusals in facct-2026-11-03 said so). It asks for the first or the last pankti of the
+# Ang instead (``sggs_edge_pankti``), the two panktis an Ang names without a line number. Each
+# row's source citation is the pankti it expects.
 SGGS_EN = {
     **EN,
+    "retrieve_quote": "What is the {edge} pankti of {ang} in {version}? Reply with the exact text of that edition and nothing else.",
     "cite_passage": 'Where in {version} can I find this quote? "{text}" Answer with the page (Ang) only, in the same form as: {example}.',
 }
+SGGS_EDGE_WORDS = {"first": ("first", "ਪਹਿਲੀ"), "last": ("last", "ਆਖ਼ਰੀ")}
+_SGGS_VISHRAAM = re.compile(r"[;.,]")  # convert._SGGS_VISHRAAM_RE: Shabad OS marks every pankti's pauses
+
+
+def sggs_is_pankti(data: str) -> bool:
+    """A verse line, not a heading. Shabad OS puts vishraam marks in panktis and none in a heading
+    (``ਗਉੜੀ ਮਹਲਾ ੫ ॥``, ``ਪਉੜੀ ॥``, ``ੴ ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ ॥``). A few short panktis have none either,
+    so this errs toward calling a line a heading: an edge question is only ever asked of a line
+    that is certainly a pankti."""
+    return bool(_SGGS_VISHRAAM.search(data))
+
+
+def sggs_edge_pankti(
+    ang_lines: list[tuple[str, str, str]], prefer: str, taken: set[str] = frozenset(),
+) -> tuple[str, str, str] | None:
+    """``(edge, citation, text)``: the Ang's ``prefer`` edge ("first" or "last"), else the other one,
+    skipping an edge that is a heading or already in ``taken``. ``ang_lines`` is the Ang's
+    ``(citation, text, raw data)`` in reading order. None when neither edge is left: an Ang asks
+    at most two retrieve questions, and a third passage drawn from it gets none."""
+    edges = {"first": ang_lines[0], "last": ang_lines[-1]}
+    for edge in (prefer, "last" if prefer == "first" else "first"):
+        citation, text, data = edges[edge]
+        if edge not in taken and sggs_is_pankti(data):
+            return edge, citation, text
+    return None
 
 
 def sggs_ang(citation: str) -> str:
@@ -286,6 +315,7 @@ def sikhism() -> list[dict]:
     lines = json.loads((RAW / "Sikhism" / "sggs_shabados.json").read_text())["lines"]
     prev_ang, k = 0, 0
     pool = []
+    by_ang: dict[str, list[tuple[str, str, str]]] = {}
     for rec in lines:
         ang = rec["ang"]
         if rec.get("id") in _SGGS_ANG_ERRATA:
@@ -296,6 +326,7 @@ def sikhism() -> list[dict]:
         text = clean_sggs_line(rec["data"])
         if text:
             pool.append((f"Ang {ang}:{k}", text))
+            by_ang.setdefault(f"Ang {ang}", []).append((f"Ang {ang}:{k}", text, rec["data"]))
     text = dict(pool)
     famous = famous_passages("Sri Guru Granth Sahib", "Shabad OS (SGPC Shabadaarth)")
     missing = {p.citation for p in famous} - set(text)
@@ -308,17 +339,49 @@ def sikhism() -> list[dict]:
     ]
     drawn = population_draw(ordinary, famous, seed=20261030)
     pa = {
-        "retrieve_quote": "{citation} ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
+        "retrieve_quote": "ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਦੇ {ang} ਦੀ {edge} ਪੰਕਤੀ ਦਾ ਪਾਠ ਦੱਸੋ। ਸਿਰਫ਼ ਉਸੇ ਅਡੀਸ਼ਨ ਦਾ ਪਾਠ ਲਿਖੋ।",
         "complete_unit": 'ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਇਹ ਟੋਟਾ ਪੂਰਾ ਕਰੋ: "{head}" ਸਿਰਫ਼ ਬਾਕੀ ਸ਼ਬਦ ਲਿਖੋ।',
         "cite_passage": 'ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚ ਕਿੱਥੇ ਹੈ? "{text}" ਸਿਰਫ਼ ਅੰਗ (ਪੰਨਾ) ਲਿਖੋ, ਇਸ ਰੂਪ ਵਿਚ: {example}.',
         "verify_source": 'ਕੀ ਇਹ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਵਿਚੋਂ ਹੈ? "{text}" ਹਾਂ ਜਾਂ ਨਹੀਂ।',
     }
     items = [(p, "population", text[p.citation], None) for p in drawn]
     items += [(p, "familiarity", text[p.citation], None) for p in famous]
-    return rows_for(
-        items, tradition="Sikhism", version="Shabad OS (SGPC Shabadaarth)", native_tmpl=pa,
-        english_tmpl=SGGS_EN, cited_as=sggs_ang,
+    version = "Shabad OS (SGPC Shabadaarth)"
+    # rows_for renders retrieve_quote from a placeholder; the loop below asks it of an edge pankti,
+    # the first and last in turn by passage.
+    edge_later = {"retrieve_quote": "{citation}"}
+    rows = rows_for(
+        items, tradition="Sikhism", version=version, native_tmpl={**pa, **edge_later},
+        english_tmpl={**SGGS_EN, **edge_later}, cited_as=sggs_ang,
     )
+    order = {p.citation: i for i, (p, *_rest) in enumerate(items)}
+    name = edition_name(version)
+    taken: dict[tuple[str, str, str], set[str]] = {}  # (sample, condition, Ang) -> edges asked
+    for row in rows:
+        if row["task"] != "retrieve_quote":
+            continue
+        ang = sggs_ang(row["citation"])
+        prefer = "first" if order[row["citation"]] % 2 == 0 else "last"
+        asked = taken.setdefault((row["sample"], row["condition"], ang), set())
+        picked = sggs_edge_pankti(by_ang[ang], prefer, asked)
+        row["drawn"] = {"citation": row["citation"], "text": row["expected"]["text"]}
+        if picked is None:
+            # Both edges of this Ang are asked already (or are headings). The row stays in the set
+            # as a verify donor (verify_donors) but is not written out.
+            row["unasked"] = True
+            continue
+        edge, citation, edge_text = picked
+        asked.add(edge)
+        english, gurmukhi = SGGS_EDGE_WORDS[edge]
+        if row["condition"] == "ask_english":
+            tmpl, word, suffix = SGGS_EN["retrieve_quote"], english, f"\nAnswer in the language of {name}."
+        else:
+            tmpl, word, suffix = pa["retrieve_quote"], gurmukhi, ""
+        fields = {"ang": ang, "edge": word, "version": name, "text": edge_text}
+        row.update(prompt_for(tmpl, fields, suffix))
+        row["citation"] = citation
+        row["expected"] = {"text": edge_text}
+    return rows
 
 
 def judaism() -> list[dict]:
@@ -533,10 +596,13 @@ def verify_donors(by_name: dict[str, list[dict]]) -> list[dict]:
     for rows in by_name.values():
         for row in rows:
             if row["task"] == "retrieve_quote":
-                key = (row["tradition"], _asked_version(row), row["citation"])
+                # A row that asks about another pankti than its drawn passage (the Sri Guru Granth
+                # Sahib's edge panktis) keeps the passage as the donor, so no other set's "no" rows move.
+                passage = row.get("drawn") or {"citation": row["citation"], "text": row["expected"]["text"]}
+                key = (row["tradition"], _asked_version(row), passage["citation"])
                 donors.setdefault(key, {
-                    "tradition": row["tradition"], "version": key[1], "citation": row["citation"],
-                    "condition": row["condition"], "expected": {"text": row["expected"]["text"]},
+                    "tradition": row["tradition"], "version": key[1], "citation": passage["citation"],
+                    "condition": row["condition"], "expected": {"text": passage["text"]},
                 })
     return [donors[key] for key in sorted(donors)]
 
@@ -976,7 +1042,7 @@ def question_files(built: dict[str, list[dict]]) -> dict[Path, str]:
     The NRSV passages.json records where its wording was fetched, because it is not in the repo.
     """
     grouped: dict[Path, list[dict]] = {}
-    for row in (_collect_row(r) for name in _RUN_META for r in built[name.lower()]):
+    for row in (_collect_row(r) for name in _RUN_META for r in built[name.lower()] if not r.get("unasked")):
         grouped.setdefault(_language_dir(row) / "questions.jsonl", []).append(row)
     files = {path: jsonl(rows) for path, rows in grouped.items()}
     for sample in ("population", "familiarity"):
