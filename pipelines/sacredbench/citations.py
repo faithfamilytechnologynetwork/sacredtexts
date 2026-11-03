@@ -186,34 +186,49 @@ def _drop_segment(text: str, unit: str) -> str:
     return _tables().segment_rx.sub(lambda m: f"{m[1]} {m[2]}" if (m[2][-1] in "ab") == amud else m[0], text)
 
 
-# The cite prompt asks for the "page (Ang)" (#135), so a bare-Ang answer may call it a page.
-_PAGE_RX = re.compile(f"{_START}(?:{_alternation(_fold(w) for w in ('page', 'ਪੰਨਾ'))}){_END}")
-_ANG_RX = re.compile(f"{_START}ang\\s+(\\d+){_END}")  # over canonical_citation_text: "ਅੰਗ ੩੧੫" is "ang 315"
+# Over canonical_citation_text, where "ਅੰਗ ੩੧੫" is "ang 315". The cite prompt asks for the "page
+# (Ang)" (#135), so a page word followed by a number may be the Ang label.
+_ANG_RX = re.compile(f"{_START}ang\\s+(\\d+){_END}")
+_PAGE_WORD = _alternation(_fold(w) for w in ("page", "ਪੰਨਾ"))
+_PAGE_RX = re.compile(f"{_START}(?:{_PAGE_WORD})(?=\\s+\\d)")
+_PAGE_AFTER_ANG_RX = re.compile(f"({_START}ang\\s+\\d+(?:\\s*:\\s*\\d+)?)[\\s,;(\\[]*(?:{_PAGE_WORD})\\s+\\d+{_END}")
+_NEGATION = _alternation(_fold(w) for w in ("not", "ਨਹੀਂ"))
 
 
-def _angs(text: str, expected_citation: str) -> set[int]:
-    """The Angs ``text`` names, each line dropped: ``Ang 315:9``, ``ਅੰਗ ੩੧੫`` and ``Page 315`` are 315."""
-    text = _drop_segment(_PAGE_RX.sub("ang", canonical_citation_text(text, expected_citation)), expected_citation)
-    return {int(n) for n in _ANG_RX.findall(text)}
+def _page_as_ang(text: str) -> str:
+    """A page word directly after an Ang citation is a qualifier and is dropped (``Ang 315, page 2 of
+    this shabad``, ``Ang 315 (page 2)``); anywhere else it is the Ang label, so ``Page 315`` is Ang 315
+    and ``Ang 315 or Page 316`` names two Angs."""
+    return _PAGE_RX.sub("ang", _PAGE_AFTER_ANG_RX.sub(r"\1", text))
+
+
+def _ang_text(text: str, expected_citation: str) -> str:
+    """``text`` in the expected's notation, a page label read as Ang, each Ang's line dropped."""
+    return _drop_segment(_page_as_ang(canonical_citation_text(text, expected_citation)), expected_citation)
+
+
+def _echo_rx(ang: int) -> re.Pattern:
+    """A disclaimed echo of the form example: ``not Ang 306``, a bare ``(Ang 306)``, ``ਨਹੀਂ`` before or after."""
+    a = f"ang\\s+{ang}{_END}"
+    return re.compile(f"{_START}(?:{_NEGATION})\\s+{a}|\\(\\s*{a}\\s*\\)|{_START}{a}\\s+(?:{_NEGATION}){_END}")
 
 
 def _score_at_ang(answer: str, expected_citation: str, example: str | None) -> dict:
     """``cite_passage`` against a bare Ang (#135). A candidate is an Ang, or a colon citation of another
     work (``… or John 1:1``). A qualifier beside the Ang (``line 9``, ``Mehl 5``, ``ਮਹਲਾ ੫``, a raag) is
-    not one, so an English answer and a Gurmukhi answer score alike. An echo of the form example beside
-    another Ang is dropped, as in #118. The headline is this verdict alone: on the raw answer the
-    no-colon extractor skips every ``Ang N:k`` span, so the containment fallback would credit a hedge.
-    There is no line to match: ``segment_match`` is None."""
+    not one, so an English answer and a Gurmukhi answer score alike. The form example's Ang is dropped
+    only as a disclaimed echo (``Ang 315 (not Ang 306)``); offered beside the answer (``Ang 306 or Ang
+    315``) it is a rival, because nearly every Sikh cite prompt shows the same example. The headline is
+    this verdict alone: on the raw answer the no-colon extractor skips every ``Ang N:k`` span, so the
+    containment fallback would credit a hedge. There is no line to match: ``segment_match`` is None."""
     target = int(expected_citation.split()[1])
-    angs = _angs(answer, expected_citation)
-    others = angs - {target}
+    text = _ang_text(answer, expected_citation)
     if example is not None:
-        kept = others - _angs(example, expected_citation)
-        if target in angs or kept:  # an answer whose only Ang is the example still named a locus
-            others = kept
-    text = _drop_segment(canonical_citation_text(answer, expected_citation), expected_citation)
+        for ang in _ANG_RX.findall(_ang_text(example, expected_citation)):
+            text = _echo_rx(int(ang)).sub(" ", text)
+    angs = {int(n) for n in _ANG_RX.findall(text)}
     rivals = {normalize(m[0]) for m in _COLON_CITE.finditer(text)}
-    n = int(target in angs) + len(others) + len(rivals)
+    n = int(target in angs) + len(angs - {target}) + len(rivals)
     return {"correct": int(target in angs and n == 1), "n_candidates": n, "segment_match": None}
 
 

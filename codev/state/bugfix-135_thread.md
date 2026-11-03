@@ -56,3 +56,13 @@ rebuilt data). Architect asked (17:54Z) for a per-model Sikh-cite movers table i
   parity. Oracle unchanged: 7200 non-Sikh + 960 Sikh old-expected identical; bare-Ang rescoring still
   0 verdict movers (n_candidates-only diffs 32 → 25). Suite 1274 passed.
 - Filed #137: generate.py still builds Sikh cite rows at Ang N:k (moves ANCHOR_DIGEST; out of scope).
+
+## 2026-11-03 follow-up (plain task, branch score/135-followup from f416f0c)
+
+Architect post-merge review of #136. Fixed in `_score_at_ang`:
+1. `Page 315:9` was a hedge: rivals text skipped the page→Ang rewrite. Ang set + rivals now share `_ang_text`.
+2. Form-example echo dropped only when disclaimed (`not Ang 306`, `(Ang 306)`, adjacent `ਨਹੀਂ`); `Ang 306 or Ang 315` is a
+   hedge (Ang 306 is the example on 64/66 rows). One committed mover, registered: sonnet abcc56181441ec5d correct→incorrect
+   (example rejected 5 words away). Architect chose to keep the narrow rule (a clause rule credits "not sure whether 306 or 315").
+3. Page word after an Ang = qualifier; elsewhere = Ang label (my proposal; the architect's first rule credited `Ang 315 or Page 316`).
+4. arch-critical.md / arch.md carry the #135 exception. Oracle asserts question_id per row.

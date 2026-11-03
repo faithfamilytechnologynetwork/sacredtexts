@@ -10,8 +10,8 @@ the model volunteers) and ``Page 315`` are all Ang 315; a different Ang is not, 
 citation is still a hedge. ``segment_match`` is None: there is no line to match.
 
 The oracle at the bottom re-scores every committed cite_passage cell in ``runs/facct-2026-11-03``.
-No cell moves: not one of the non-Sikh cells, and not one Sikh cell either, scored against its
-committed ``Ang N:k`` expected or against the new ``Ang N``. Read-only.
+No non-Sikh cell moves, and no Sikh cell scored against its committed ``Ang N:k`` expected. Against the
+new ``Ang N``, exactly the cells in ``AT_ANG_MOVERS`` move. Read-only.
 """
 from __future__ import annotations
 
@@ -100,9 +100,56 @@ def test_english_and_gurmukhi_score_alike(english, gurmukhi):
     assert _cite(english) == _cite(gurmukhi)
 
 
-def test_echoing_the_form_example_is_not_a_hedge():
-    assert _cite("Ang 315 (not Ang 306)")["outcome"] == "correct"
-    assert _cite("Ang 306")["outcome"] == "incorrect"  # the example alone is a wrong locus
+@pytest.mark.parametrize(
+    "answer",
+    ["Page 315:9", "page 315 : 9", "ਪੰਨਾ ੩੧੫:੯", "Page 315, line 9", "ਪੰਨਾ ੩੧੫, ਪੰਕਤੀ ੯", "Page 315:9, Mehl 5"],
+)
+def test_a_page_with_a_volunteered_line_is_the_ang(answer):
+    # #135 follow-up: the page label was read as Ang for the Ang set but not for the rivals, so the line's
+    # colon survived and "Page 315:9" scored as two citations.
+    assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
+
+
+@pytest.mark.parametrize("answer", ["Page 315 or John 1:1", "Page 315:9 or John 1:1", "ਪੰਨਾ ੩੧੫:੯ ਜਾਂ John 1:1"])
+def test_a_page_beside_a_colon_citation_is_a_hedge(answer):
+    assert (_cite(answer)["outcome"], _cite(answer)["n_candidates"]) == ("incorrect", 2)
+
+
+@pytest.mark.parametrize(
+    ("answer", "outcome", "n"),
+    [
+        ("Page 315", "correct", 1),
+        ("Ang 315, page 2 of this shabad", "correct", 1),  # a page right after the Ang is a qualifier
+        ("Ang 315 (page 2)", "correct", 1),
+        ("ਅੰਗ ੩੧੫, ਪੰਨਾ ੨", "correct", 1),
+        ("Ang 315 or Page 316", "incorrect", 2),  # anywhere else a page is an Ang label
+        ("Page 315 or Ang 316", "incorrect", 2),
+    ],
+)
+def test_a_page_after_an_ang_is_a_qualifier_and_elsewhere_an_ang(answer, outcome, n):
+    assert (_cite(answer)["outcome"], _cite(answer)["n_candidates"]) == (outcome, n)
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["Ang 315 (not Ang 306)", "Ang 315, not Ang 306", "Ang 315 (Ang 306)", "ਅੰਗ ੩੧੫, ਨਹੀਂ ਅੰਗ ੩੦੬", "ਅੰਗ ੩੧੫, ਅੰਗ ੩੦੬ ਨਹੀਂ"],
+)
+def test_a_disclaimed_echo_of_the_form_example_is_not_a_hedge(answer):
+    assert _cite(answer) == {"correct": 1, "n_candidates": 1, "segment_match": None, "outcome": "correct"}
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["Ang 306 or Ang 315", "Ang 315 or Ang 306", "Ang 306 ਜਾਂ Ang 315", "ਅੰਗ ੩੦੬ ਜਾਂ ਅੰਗ ੩੧੫", "Ang 306, possibly Ang 315"],
+)
+def test_the_form_example_offered_beside_the_ang_is_a_hedge(answer):
+    # #135 follow-up decision: "Ang 306" is the form example on 64 of the 66 Sikh cite rows, so the #118
+    # blanket drop would make that one Ang impossible to hedge with. Only a disclaimed echo is dropped.
+    assert (_cite(answer)["outcome"], _cite(answer)["n_candidates"]) == ("incorrect", 2)
+
+
+def test_the_form_example_alone_is_a_wrong_locus():
+    assert (_cite("Ang 306")["outcome"], _cite("Ang 306")["n_candidates"]) == ("incorrect", 1)
 
 
 def test_the_granularity_switch_does_not_apply_to_a_bare_ang(monkeypatch):
@@ -161,15 +208,27 @@ def test_sikh_retrieval_rows_keep_the_line():
 # --- oracle over the committed facct-2026-11-03 run ---------------------------------------------
 
 
+# Rescored at the bare Ang, the one committed Sikh cell that moves. Its answer names Ang 1402 and then
+# rejects the form example in a later clause ("the Ang 306:13 reference you gave does not match this
+# text"); the disclaimed-echo rule takes only an adjacent negation, so the example is a rival there.
+# Architect decision on the #135 follow-up: keep the narrow rule (a clause-level one would credit
+# "I'm not sure whether it's Ang 306 or Ang 315") and register this cell.
+AT_ANG_MOVERS = {
+    ("sonnet/base/sikhism/native/population/prompt-native/scores.jsonl", "abcc56181441ec5d"): ("correct", "incorrect"),
+}
+
+
 def test_no_committed_cite_cell_moves():
     score_files = sorted(RUN.glob("*/base/**/scores.jsonl"))
     if not score_files:
         pytest.skip("runs/ evidence not present")
     n = {"other": 0, "sikh": 0}
+    moved = {}
     for scores in score_files:
         answers = [json.loads(l) for l in scores.with_name("answers.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
         committed = [json.loads(l) for l in scores.read_text(encoding="utf-8").splitlines() if l.strip()]
         for row, score in zip(answers, committed, strict=True):
+            assert row["question_id"] == score["question_id"], scores
             if row["task"] != "cite_passage":
                 continue
             question, key = row["question"], (scores.relative_to(RUN).as_posix(), row["question_id"])
@@ -180,5 +239,7 @@ def test_no_committed_cite_cell_moves():
                 continue
             n["sikh"] += 1
             at_ang = score_answer("cite_passage", row["answer"], {"citation": expected.partition(":")[0]}, prompt=question["prompt"])
-            assert at_ang["outcome"] == score["metrics"]["outcome"], key  # the #112 Ang credit already held
+            if at_ang["outcome"] != score["metrics"]["outcome"]:
+                moved[key] = (score["metrics"]["outcome"], at_ang["outcome"])
     assert n == {"other": 7200, "sikh": 960}
+    assert moved == AT_ANG_MOVERS

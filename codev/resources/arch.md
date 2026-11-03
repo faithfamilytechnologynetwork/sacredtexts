@@ -104,6 +104,16 @@ round-trip that proves no invention/reordering.
   of the same work, never the answer, by construction in `generate.py`); `_single_citation_correct`
   drops its echo when another candidate exists — disclaimed or offered as an alternative alike — but
   not after a book ordinal (`1`/`First`/`II … John`), and an example-only answer stays a wrong locus.
+  **GGS bare Ang (#135)**: the Guru Granth Sahib has no standard line numbering within an Ang, so
+  Sikh cite rows ask for the "page (Ang)" and expect `Ang N` (the pankti stays in `source.citation`).
+  `score_citation` sends a bare-Ang expected to `_score_at_ang`, whose verdict alone is the headline
+  (the raw `_NUM_CITE` matcher skips `Ang N:k` spans and its containment fallback would credit a
+  hedge). A candidate is an Ang (`Ang`/`ਅੰਗ`, or a page label `Page`/`ਪੰਨਾ` unless it directly follows
+  an Ang, where it is a qualifier; any `:k` line dropped) or a colon citation of another work;
+  line/pankti/Mehl/raag qualifiers are not candidates, so English and Gurmukhi score alike. The form
+  example's Ang is dropped only as a disclaimed echo (`not Ang 306`, `(Ang 306)`, `ਨਹੀਂ`), because one
+  example (`Ang 306`) is shown on 64 of the 66 rows. These cells carry `segment_match: null` and are
+  left out of the `segment_match` aggregate; `HEADLINE_DROPS_SEGMENT` does not apply.
   Both are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
   not rewritten, and every mover is pinned by identity (`test_citation_equivalence.py`,
   `test_citation_example_echo.py`, and the 21 registered rows of `test_original_run_regression.py`). Every
