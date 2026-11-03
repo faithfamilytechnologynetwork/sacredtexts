@@ -1,0 +1,14 @@
+id: bugfix-112
+title: cite-passage-native-script-boo
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-03T02:56:08.898Z'
+updated_at: '2026-11-03T02:56:08.899Z'
