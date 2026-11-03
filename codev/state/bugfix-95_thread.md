@@ -69,3 +69,17 @@ Fix scope: ~20 LOC in score.py + tests. Fits BUGFIX.
   with no sibling answers.jsonl is passed over (a scored row with no answer fails with a message);
   `_native_verdict` docstring notes the Arabic label stays per-cell. `runs/` untouched.
 - Architect owns regenerating `runs/paper/*` from the rerun under the final contract (#94+#95+#96).
+
+## CMAP (pr phase)
+
+- gemini **APPROVE**, codex **COMMENT** (non-blocking: two follow-up commits used `[bugfix-95]`
+  instead of `[Bugfix #95]`; left as-is rather than rewrite pushed history), claude **APPROVE**
+  (independently re-scored 7,777 committed verify cells incl. 413 archive: exactly 65 move, 48/17, 0
+  into refused).
+- Folded claude's cheap nits: disjointness test compares the mark-stripped forms actually matched;
+  `_is_latin` documents the no-letter case; a missing registered cell fails with a message; arch.md
+  line rewrapped.
+- **For the rerun (not fixed here; contract change):** `_strip_marks` collapses `हाँ`→`ह`,
+  `ਹਾਂ`→`ਹ`, so a leading stand-alone `है।`/`ਹੈ।` ("is") now reads yes on every cell (before: on
+  `sa`/`pa` cells only). Fires on 0 of 7,777 committed cells; worth a glance at the rerun's
+  refusal delta.

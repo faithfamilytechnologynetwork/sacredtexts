@@ -211,10 +211,14 @@ def test_other_language_negation_particle_is_not_a_verdict(ans, lang):
 
 
 def test_no_native_word_is_both_yes_and_no():
-    # every non-Latin word is read on every cell, so the yes and no tables must not share a word
-    from sacredbench.score import _ANY_CELL_NO, _ANY_CELL_YES
+    # every non-Latin word is read on every cell, so the yes and no tables must not share a word in the
+    # mark-stripped, casefolded form the match actually compares
+    from sacredbench.score import _ANY_CELL_NO, _ANY_CELL_YES, _strip_marks
 
-    assert not set(_ANY_CELL_YES) & set(_ANY_CELL_NO)
+    def matched(words):
+        return {_strip_marks(w).casefold() for w in words}
+
+    assert not matched(_ANY_CELL_YES) & matched(_ANY_CELL_NO)
     assert "na" not in _ANY_CELL_NO and "āma" not in _ANY_CELL_YES
 
 

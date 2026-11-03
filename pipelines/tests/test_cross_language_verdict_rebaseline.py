@@ -135,6 +135,7 @@ def test_registered_cells_are_graded_as_registered(folder):
         pytest.skip(f"{folder} evidence not present")
     model = folder.split("/", 1)[0]
     for qid, outcome in FLIPS[folder].items():
+        assert (model, qid) in answers, f"{folder}: registered cell {qid} has no verify_source answer"
         metrics = _outcome(answers[(model, qid)])
         assert metrics["parsed"] is not None, (folder, qid)
         assert metrics["outcome"] == outcome, (folder, qid, metrics)

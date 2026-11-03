@@ -625,6 +625,8 @@ _SYRIAC_YES_NO = (("ܐܝܢ",), ("ܠܐ",))
 
 
 def _is_latin(word: str) -> bool:
+    """Whether every letter of ``word`` is Latin script. A word with no letters counts as Latin, so it
+    stays gated to its own cell (the safe direction)."""
     return all(unicodedata.name(ch, "").startswith("LATIN") for ch in word if ch.isalpha())
 
 
