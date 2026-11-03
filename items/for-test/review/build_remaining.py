@@ -5,7 +5,9 @@ Hinduism is one draw of 30. The 16-word floor is Besant's English, because only
 (English prompt and Sanskrit prompt) and again in Besant's English.
 
 Buddhism is 30 Pali verses of at least 16 words. This corpus has no English
-Dhammapada, so there is no english/ folder.
+Dhammapada, so there is no english/ folder. The Pali text is asked with the
+English prompt only. Romanized Pali has no native speakers, so a Pali-language
+prompt measures nothing comparable to the other native prompts (owner decision, #113).
 
 Familiarity is every Gita and Dhammapada line in well_known.yaml, outside the population draw.
 
@@ -31,19 +33,13 @@ from build_questions import EN, edition_name, jsonl, passages_json, prompt_for, 
 
 MIN_WORDS = 16
 TASKS = ("retrieve_quote", "complete_unit", "cite_passage", "verify_source")
-# The native prompts name the work in the prompt's own language, as the Hebrew, Punjabi and
+# The Sanskrit prompts name the work in the prompt's own language, as the Hebrew, Punjabi and
 # Arabic ones do, rather than splicing in the English edition string (issue #90).
 SA = {
     "retrieve_quote": "{citation} का पाठ श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) में क्या है? केवल उसी संस्करण का पाठ लिखें।",
     "complete_unit": 'श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) से यह उद्धरण पूरा करें: "{head}" केवल शेष शब्द लिखें।',
     "cite_passage": 'श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) में यह उद्धरण कहाँ है? "{text}" केवल संकेत लिखें, इस रूप में: {example}।',
     "verify_source": 'क्या यह पाठ श्रीमद्भगवद्गीता (स्तोत्र संहिता, गीता प्रेस पाठ) से है? "{text}" हाँ या नहीं लिखें।',
-}
-PI = {
-    "retrieve_quote": "Ko {citation} pāṭho Dhammapade (Chaṭṭha Saṅgāyana, VRI)? Tasseva pāṭham eva vissajjehi.",
-    "complete_unit": 'Dhammapadato (Chaṭṭha Saṅgāyana, VRI) imaṃ udāharaṇaṃ paripūrehi: "{head}" Avasiṭṭhapadāni yeva vissajjehi.',
-    "cite_passage": 'Kattha Dhammapade (Chaṭṭha Saṅgāyana, VRI) ayaṃ pāṭho? "{text}" Ṭhānam eva vissajjehi, iminā ākārena: {example}.',
-    "verify_source": 'Ayaṃ pāṭho Dhammapadato (Chaṭṭha Saṅgāyana, VRI)? "{text}" Āma vā no vā vissajjehi.',
 }
 
 
@@ -63,6 +59,7 @@ def population(pool: list[Passage], *, seed: int) -> list[Passage]:
 
 
 def question_rows(items, *, tradition, work, language, version, native_tmpl, document_type="scripture", sample="population"):
+    """The English-prompt row of each task, then the native-prompt row unless ``native_tmpl`` is None."""
     citations = [passage.citation for passage, _ in items]
     out = []
     for passage, text in items:
@@ -105,6 +102,8 @@ def question_rows(items, *, tradition, work, language, version, native_tmpl, doc
                 **prompt_for(EN[task], fields, f"\nAnswer in the language of {edition_name(version)}."),
                 "expected": expected[task],
             })
+            if native_tmpl is None:
+                continue
             out.append({
                 **base,
                 "task": task,
@@ -200,7 +199,7 @@ NOTICE = {
 
 
 def build() -> dict[str, list[dict]]:
-    """The Gita (Sanskrit, both prompts, then Besant) and the Dhammapada (Pali), population then familiarity.
+    """The Gita (Sanskrit, both prompts, then Besant) and the Dhammapada (Pali, English prompt), population then familiarity.
 
     The pre-registered lines in well_known.yaml are not in either drawn 30.
     """
@@ -225,7 +224,7 @@ def build() -> dict[str, list[dict]]:
         )
         sets["buddhism"] += question_rows(
             [(p, pali[p.citation]) for p in dhp[sample]], tradition="Buddhism", work="Dhammapada",
-            language="pi", version=PI_VERSION, native_tmpl=PI, sample=sample,
+            language="pi", version=PI_VERSION, native_tmpl=None, sample=sample,
         )
     return sets
 
@@ -265,7 +264,8 @@ def output_files(sets: dict[str, list[dict]]) -> dict[Path, str]:
             else:
                 prompt = {"ask_english": "prompt-english", "ask_native": "prompt-native"}[condition]
                 folder = ROOT / tradition / "native" / sample / prompt
-                if condition == "ask_native":
+                # Every native set has an English-prompt arm; the Dhammapada has no native-prompt arm (#113).
+                if condition == "ask_english":
                     files[folder.parent / "passages.json"] = _passages(group, notice=notice, sample=sample)
             files[folder / "questions.jsonl"] = jsonl(group)
     return files
