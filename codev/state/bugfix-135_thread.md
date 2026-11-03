@@ -38,3 +38,9 @@ rebuilt data). Architect asked (17:54Z) for a per-model Sikh-cite movers table i
   Sikh cells rescored at bare Ang → **0 verdict movers** for all 16 models (#112 already credited the
   Ang). Only 3/86 correct Sikh cells also matched the line. Table goes in the PR body.
 - New test `test_sggs_ang_only.py` (27): 13 fail on pre-fix code+data. Full gate green.
+
+## 2026-11-03 pr
+
+- PR #136 opened. CMAP: codex=APPROVE, gemini=APPROVE; claude still running when the human said to
+  proceed without it (recorded as "not awaited" in the handoff). `pr` gate fired; waiting on the
+  architect/human. Merge with `gh pr merge --merge` (no --delete-branch) only after approval.
