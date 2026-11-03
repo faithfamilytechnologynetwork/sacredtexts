@@ -83,7 +83,9 @@ round-trip that proves no invention/reordering.
   on every cell, a Latin-script one like Pali `na` only on its own language's cell, #76/#95,
   witnessed by `test_cross_language_verdict_rebaseline.py`); `cite_passage` → the single extracted
   citation must equal ground truth (a
-  multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape). Every
+  multi-candidate hedge scores 0; extractor chosen by the ground-truth citation shape; every Unicode
+  decimal digit is read as ASCII — `٣٤:٤٦` = `34:46` — via `score.fold_citation_digits`, citation
+  path only, #111, witnessed by `test_citation_digit_fold.py`). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline
   is `refused` and excluded from `accuracy = correct/(correct+incorrect)`, with **coverage** reported
   beside it (for `verify_source`, `refused ⟺ parsed is None`). `score_file` also labels every cell
