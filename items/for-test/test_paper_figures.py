@@ -57,6 +57,13 @@ def _haiku_task_row(out: Path) -> str:
     return next(line for line in (out / "models-by-task.tex").read_text(encoding="utf-8").splitlines() if line.startswith("haiku &"))
 
 
+def _row_with(accuracy: str) -> str:
+    """The haiku row with ``accuracy`` in QUESTION's task column and a dash in the others."""
+    cells = ["---"] * len(paper_figures.TASKS)
+    cells[paper_figures.TASKS.index(QUESTION["task"])] = accuracy
+    return "haiku & " + " & ".join(cells) + r" \\"
+
+
 def test_refuses_without_run_dir(out):
     app = typer.Typer()
     app.command()(paper_figures.main)
@@ -68,8 +75,8 @@ def test_refuses_without_run_dir(out):
 
 def test_reads_only_the_given_run_dir(runs, out):
     paper_figures.main(run_dir=str(runs / "rerun-2026-11-03"))
-    # The rerun answer is the verse, so retrieve is 100; the archive answer beside it would be 0.
-    assert _haiku_task_row(out) == r"haiku & 100.0 & --- & --- & --- \\"
+    # The rerun answer is the verse, so its task is 100; the archive answer beside it would be 0.
+    assert _haiku_task_row(out) == _row_with("100.0")
     early = (out / "early-outcomes.md").read_text(encoding="utf-8")
     assert "| haiku | Islam | retrieve_quote | 7 | 0.0% | 100.0% | 0 |" in early
     assert f"From {runs / 'rerun-2026-11-03'}." in (out / "models-by-tradition.tex").read_text(encoding="utf-8")
@@ -86,7 +93,7 @@ def test_unmatched_id_aborts_before_writing(tmp_path, out):
 def test_allow_partial_leaves_the_unmatched_row_out_and_says_so(tmp_path, out):
     _model(tmp_path / "rerun", "haiku", QUESTION["expected"]["text"], incorrect=0, extra_ids=(STALE_ID,))
     paper_figures.main(run_dir=str(tmp_path / "rerun"), allow_partial=True)
-    assert _haiku_task_row(out) == r"haiku & 100.0 & --- & --- & --- \\"
+    assert _haiku_task_row(out) == _row_with("100.0")
     assert "1 of 2 answer rows have no question" in (out / "models-by-task.tex").read_text(encoding="utf-8")
 
 

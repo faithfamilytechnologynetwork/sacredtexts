@@ -94,8 +94,8 @@ def _expected() -> dict[tuple[str, str], int]:
     return counts
 
 
-def _collect(models: list[str], run_dir: Path, questions: dict[str, dict]) -> tuple[dict, dict]:
-    """Return (tradition cells, task cells). Each cell is correct, incorrect, refused.
+def _collect(models: list[str], run_dir: Path, questions: dict[str, dict]) -> tuple[dict, dict, dict, dict]:
+    """Return (tradition, task, condition, grade) cells. Each cell is correct, incorrect, refused.
 
     A row with no population question is left out; it is there only under --allow-partial.
     """

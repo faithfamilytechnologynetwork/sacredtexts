@@ -16,3 +16,8 @@
 - `items/for-test/test_paper_figures.py`: 5 tests; all 5 fail on the pre-fix script (verified by swapping the old file in with `OUT` monkeypatched), all pass with the fix.
 - Real-data check: fixed script `--run-dir runs` vs old script (both into scratch) → all 7 outputs byte-identical except the new provenance comment. Committed `runs/paper/*` NOT regenerated (it's older than the current answers for the still-collecting models — fable/astra/sol/qwen3/gpt-oss/opus-Enc rows would move; that's the architect's call on rerun day).
 - Gate: the runs/ doc edits pull in the viewer lane, which failed only on a missing `apps/viewer/node_modules` in the fresh worktree; `pnpm install --frozen-lockfile` → viewer 225, items 25, pipelines 882 passed.
+
+## PR (2026-11-02)
+
+- PR #109. First CMAP dispatch did nothing ("Multiple projects found" — main now carries many `codev/projects/*`); re-ran with `--issue 107`.
+- CMAP: gemini APPROVE (HIGH), codex APPROVE (HIGH), claude APPROVE (HIGH). Claude nits: folded the stale `_collect` return annotation (I'd carried it through the line I edited) and made the headline test's task column order-independent. Not folded: a panel guard in `write_early` (needs a `summary.json` with no `answers.jsonl`, which collect never writes) and the pre-existing dead `seen` dict (out of BUGFIX scope).
