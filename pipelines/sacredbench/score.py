@@ -8,9 +8,12 @@ Metrics emitted per answer:
                   Arabic/Hebrew combining marks + annotation symbols removed and
                   alef/maqaf variants folded (so vocalised ↔ unvocalised scripture
                   matches), case-folded, punctuation stripped, whitespace collapsed
-                  (0/1) — see ``strip_script_marks``. Uthmani/Imla'i orthography is
-                  NOT folded here (Spec 52); it is credited only by
-                  ``fold_aware_contains``.
+                  (0/1) — see ``strip_script_marks``. On an English cell
+                  (``source.language == "en"``) Latin diacritics are also folded on
+                  both sides, here and in ``contains_reference`` (Allāh == Allah,
+                  issue #94; ``fold_latin_marks``); never in ``normalize()`` itself.
+                  Uthmani/Imla'i orthography is NOT folded here (Spec 52); it is
+                  credited only by ``fold_aware_contains``.
 - ``token_f1``    bag-of-words F1 between normalised answer and expected text
                   (0..1). A vowel sign or Latin accent is part of the word, so
                   dropping it misses that word. This does not decide ``correct``.
@@ -206,6 +209,24 @@ def _recompose_latin_marks(text: str) -> str:
             out.append(text[i])
             i += 1
     return "".join(out)
+
+
+def fold_latin_marks(normalized: str) -> str:
+    """Remove Latin diacritics from ``normalize()`` output: ``allāh`` becomes ``allah`` (issue #94).
+
+    English editions print transliteration marks as a convention (Saheeh International: Allāh,
+    Islām, iḥrām; Besant's Gita: pârtha, Madhusûdana). A model that writes the plain English
+    spelling has the right words. Scoring-only, like the Spec 52 Arabic fold: the text-retrieval
+    headline applies it to BOTH sides, in the ``normalized`` equality and in
+    ``fold_aware_contains``, and ONLY on an English cell (``source.language == "en"``). In
+    romanized Pali the macron is the orthography (dhamma ≠ dhammā, issue #50), so Pali is not
+    folded. ``normalize()`` keeps the marks, so generation, the question-set digest, the audit,
+    ``token_f1``, and ``cite_passage`` do not change. Only the ``_is_latin_mark`` set is removed."""
+    return "".join(ch for ch in unicodedata.normalize("NFD", normalized) if not _is_latin_mark(ch))
+
+
+def _latin_folded(text: str) -> str:
+    return fold_latin_marks(normalize(text))
 
 
 def _is_indic_mark(ch: str) -> bool:
@@ -488,7 +509,7 @@ def _answer_plene_form(text: str) -> str:
     return _normalize(text, fold=True, plene=True)
 
 
-def fold_aware_contains(answer: str, expected: str) -> bool:
+def fold_aware_contains(answer: str, expected: str, *, fold_latin: bool = False) -> bool:
     """Containment that credits an Uthmani↔Imla'i orthographic match (Spec 52), as a strict SUPERSET
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
     an Arabic reference) if the optional-long-ā, whitespace-flexed, word-bounded pattern built from
@@ -507,13 +528,19 @@ def fold_aware_contains(answer: str, expected: str) -> bool:
     ``_with_outcome`` rule ``classify_refusal(...) and not correct`` means a decline-prefixed Imla'i
     delivery now folds to ``incorrect`` instead of ``refused`` (coverage ↑, accuracy ↓) — the same
     rule ``bounded_contains`` already applied, just reaching more deliveries; no committed run uses
-    strict. Empty reference never matches."""
+    strict. Empty reference never matches. ``fold_latin`` (the headline passes it on an English
+    cell, issue #94) also credits the reference with its Latin diacritics folded on both sides
+    (``fold_latin_marks``); it is one more OR, so the superset guarantee holds."""
     if not normalize(expected):
         return False
     # An end-of-āyah sign glued to a word (…عليم۝١٧٦) is not part of the quotation.
     # Leaving it on breaks the word boundary (issue #60).
     answer = _AYAH_NUMBER.sub(" ", answer)
     if bounded_contains(answer, expected):          # today's contract — superset floor
+        return True
+    if fold_latin and re.search(  # Allāh ↔ Allah, English editions only (issue #94)
+        r"(?<!\w)" + re.escape(_latin_folded(expected)) + r"(?!\w)", _latin_folded(answer)
+    ):
         return True
     if not any(_is_arabic_letter(c) for c in expected):
         return False                                 # non-Arabic refs get only today's behaviour
@@ -849,13 +876,18 @@ def score_answer(task: str, answer: str, expected: dict, graders: "list | None" 
         # of bounded_contains that also credits an Uthmani↔Imla'i orthographic match; the
         # bool(normalize(target)) guard stops an empty reference (whose escaped regex matches
         # everywhere) from scoring 1. Containment is confined to these two text-retrieval tasks —
-        # the provenance branches below never see it.
+        # the provenance branches below never see it. On an English cell both headline predicates
+        # also fold Latin diacritics (Allāh == Allah, issue #94); no other language is folded.
+        fold_latin = language == "en"
+        key = _latin_folded if fold_latin else normalize
         computed = {
             "exact": int(answer.strip() == target.strip()),
-            "normalized": int(normalize(answer) == normalize(target)),
+            "normalized": int(key(answer) == key(target)),
             "token_f1": round(token_f1(answer, target), 4),
             "token_f1_base": round(token_f1_base(answer, target), 4),
-            "contains_reference": int(bool(normalize(target)) and fold_aware_contains(answer, target)),
+            "contains_reference": int(
+                bool(normalize(target)) and fold_aware_contains(answer, target, fold_latin=fold_latin)
+            ),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
