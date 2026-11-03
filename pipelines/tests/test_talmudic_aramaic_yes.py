@@ -19,17 +19,29 @@ Aramaic English-prompt cell ("Answer in the language of the William Davidson Ara
 - ``runs/archive``, every Masoretic cell, every other corpus: none.
 
 No committed ``scores.jsonl`` is rewritten. The scan over committed scores is in
-``test_cross_language_verdict_rebaseline.py``, which accepts these cells. Read-only.
+``test_cross_language_verdict_rebaseline.py``, which accepts these cells.
+
+Reading ``אין`` as yes on every cell is safe only while no Hebrew-language answer uses it as a bare
+"no". A sentinel guards that: no git-tracked non-Talmud verify_source answer may open with a stand-alone
+``אין``. If one ever does, the every-cell rule needs revisiting. Read-only.
 """
 from __future__ import annotations
 
 import json
+import subprocess
 from collections import Counter
 from pathlib import Path
 
 import pytest
 
-from sacredbench.score import parse_yes_no, score_answer
+from sacredbench.score import (
+    _NON_WORD_LEAD,
+    _leading_window,
+    _stands_alone,
+    _strip_marks,
+    parse_yes_no,
+    score_answer,
+)
 
 RUNS = Path(__file__).resolve().parents[2] / "runs"
 RERUN = "rerun-2026-11-03"
@@ -210,3 +222,35 @@ def test_rerun_moves_exactly_the_registered_cells():
                     moved.add((folder, row["question_id"]))
     registered = {(f, q) for f, cells in FLIPS.items() if f.startswith(RERUN) for q in cells}
     assert moved == registered
+
+
+def _leads_with_standalone_in(answer: str) -> bool:
+    """Whether the answer's leading token is a stand-alone ``אין``, read as ``parse_yes_no`` reads it."""
+    s = _strip_marks(_leading_window(answer))
+    s = s[_NON_WORD_LEAD.match(s).end():]
+    return s.startswith("אין") and _stands_alone(s[len("אין"):])
+
+
+def test_no_tracked_non_talmud_cell_opens_with_standalone_in():
+    try:
+        tracked = subprocess.run(
+            ["git", "-C", str(RUNS.parent), "ls-files", "-z", "runs/"], capture_output=True, text=True, check=True,
+        ).stdout.split("\0")
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        pytest.skip("no git checkout to list the tracked run evidence")
+    talmud: set[tuple[str, str]] = set()
+    other: list[tuple[str, str, str]] = []
+    for path in sorted(RUNS.parent / p for p in tracked if p.endswith("/answers.jsonl")):
+        folder = str(path.parent.relative_to(RUNS))
+        for d in (json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()):
+            if d["task"] != "verify_source" or not _leads_with_standalone_in(d["answer"] or ""):
+                continue
+            if d["question"]["source"]["work"] == "Talmud Bavli":
+                talmud.add((folder, d["question_id"]))
+            else:
+                other.append((folder, d["question_id"], d["question"]["source"]["work"]))
+    if not talmud and not other:
+        pytest.skip("no committed verify_source answers present")
+    assert other == []
+    # not vacuous: the detector finds every committed registered mover
+    assert {(f, q) for f, cells in FLIPS.items() if not f.startswith(RERUN) for q in cells} <= talmud

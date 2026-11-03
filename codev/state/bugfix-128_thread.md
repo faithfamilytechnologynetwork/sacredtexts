@@ -47,3 +47,11 @@ source fields plumbed into score_answer). Holding before implementing.
 - Not registered: `runs/facct-2026-11-03` and `-pre113` (untracked; 66 Talmud cells → correct each).
   The paper numbers come from a re-score under the final contract.
 - arch.md #95 clause updated with the premise correction.
+
+## 2026-11-03 — pr
+
+- CMAP: gemini APPROVE, codex REQUEST_CHANGES (option B, which the architect rejected; branch behind main, merged
+  origin/main 1318aa8), claude APPROVE (suggested a sentinel). Dispositions posted on PR #129.
+- pr gate approved. Architect asked for the sentinel before merge: `test_no_tracked_non_talmud_cell_opens_with_standalone_in`
+  fails if any git-tracked non-Talmud verify_source answer opens with a stand-alone אין (it finds exactly the
+  74 committed Talmud cells today).
