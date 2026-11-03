@@ -3,6 +3,8 @@ synthetic TEXT — no copyrighted translation is committed to this public repo."
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from sacredbench.schema import Document, Entry
@@ -77,3 +79,14 @@ ENCYCLICAL_SHAPE = {
         {"paragraph": None, "text": "  "},
     ],
 }
+
+
+@pytest.fixture(scope="session")
+def native_decline_movers() -> set[tuple[str, int, str]]:
+    """Issue #117: committed cells that native-script decline cues move from incorrect to refused,
+    as (run folder under runs/, 0-based row in answers.jsonl, question_id). The committed
+    scores.jsonl are not rewritten, so a guard that re-derives committed outcomes expects these
+    cells to read `refused`. Registry: testdata/native_decline_movers.tsv."""
+    path = Path(__file__).parent / "testdata" / "native_decline_movers.tsv"
+    rows = [l.split("\t") for l in path.read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
+    return {(folder, int(row), qid) for folder, row, qid, _ in rows}

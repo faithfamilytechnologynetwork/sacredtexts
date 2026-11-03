@@ -5,7 +5,8 @@ three-model panel) and the **generation-invariance anchor** that replaced the re
 generator guard (`test_first_run_regression.py`). Two invariants:
 
 - **Scoring invariance (always runs):** re-scoring the committed `answers.jsonl` to a scratch
-  path reproduces the committed `scores.jsonl` byte-for-byte — proof that scoring changes did
+  path reproduces the committed `scores.jsonl` byte-for-byte (except the one cell issue #117
+  registers in `testdata/native_decline_movers.tsv`) — proof that scoring changes did
   not move the only committed evidence that exercises Arabic/Aramaic `normalize()`, the
   leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit` over 1,428 real answers.
 - **Generation invariance (skips if `texts/standardized/` is absent, i.e. in a fresh clone /
@@ -67,15 +68,24 @@ SURVEY_COUNT = 24
 SURVEY_SHA256 = "8244e9fb6c6b4d44ed067c3e0f6a75504f6bf28031259fe3ec334a90f24c5060"
 
 
-def test_rescoring_committed_original_run_reproduces_scores(tmp_path):
+def test_rescoring_committed_original_run_reproduces_scores(tmp_path, native_decline_movers):
     answers = RUN / "answers.jsonl"
     committed = RUN / "scores.jsonl"
     if not answers.exists() or not committed.exists():
         pytest.skip("original-2026-10-21 evidence not present")
     out = tmp_path / "scores.jsonl"
     score_file(answers, out)  # no roster/panel needed to reproduce per-answer scores
-    # byte-for-byte, order included (score_file preserves input-row order).
-    assert out.read_text(encoding="utf-8") == committed.read_text(encoding="utf-8")
+    # byte-for-byte, order included (score_file preserves input-row order), except the cells
+    # issue #117 registers: a Hebrew decline that is now refused. The committed file is not rewritten.
+    lines = committed.read_text(encoding="utf-8").splitlines(keepends=True)
+    for folder, row, qid in native_decline_movers:
+        if folder != "archive/original-2026-10-21":
+            continue
+        cell = json.loads(lines[row])
+        assert cell["question_id"] == qid and cell["metrics"]["outcome"] == "incorrect"
+        cell["metrics"]["outcome"] = "refused"
+        lines[row] = json.dumps(cell, ensure_ascii=False) + "\n"
+    assert out.read_text(encoding="utf-8") == "".join(lines)
 
 
 # The committed FAccT card is FROZEN as of issue #74. Until #74 this test rebuilt the card and

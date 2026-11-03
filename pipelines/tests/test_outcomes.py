@@ -323,7 +323,7 @@ def test_spec48_hedged_english_delivery_is_script_neutral():
 
 
 @pytest.mark.parametrize("run,sfile,afile,qfile", TRIPLES)
-def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfile):
+def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfile, native_decline_movers):
     # THE GATE: recompute the refusal OUTCOME from each answer + its expected text via the real
     # classify_refusal (gated on `correct`, exactly as score._with_outcome does) and assert it
     # reproduces the committed `refused` set for every _TEXT_RETRIEVAL cell. This catches BOTH
@@ -338,7 +338,7 @@ def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfil
     answers = _load_answers(run_dir, afile)
     expected = _load_expected_text(run_dir, qfile)
     committed_refused, predicted_refused = set(), set()
-    for line in spath.read_text(encoding="utf-8").splitlines():
+    for row, line in enumerate(spath.read_text(encoding="utf-8").splitlines()):
         if not line.strip():
             continue
         r = json.loads(line)
@@ -346,7 +346,9 @@ def test_spec48_classifier_reproduces_committed_refusals(run, sfile, afile, qfil
             continue
         key = (r["model_id"], r["question_id"])
         m = r["metrics"]
-        if m.get("outcome") == "refused":
+        # issue #117: a registered native-script decline is refused (committed file not rewritten)
+        registered = sfile == "scores.jsonl" and (f"archive/{run}", row, r["question_id"]) in native_decline_movers
+        if m.get("outcome") == "refused" or registered:
             committed_refused.add(key)
         exp = {"text": expected.get(r["question_id"], "")}
         # mirrors score._with_outcome: refused = classify_refusal(...) AND not correct

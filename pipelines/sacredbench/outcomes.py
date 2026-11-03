@@ -12,15 +12,20 @@ per-model counts this matcher must reproduce):
 
     a cell is ``refused`` iff a **decline cue appears in the leading segment of the answer**
     (the first ``LEADING_WINDOW`` normalized characters) **AND** the expected reference is **not**
-    delivered. The cue list is English. A decline in Greek, Hebrew, or Arabic that does not use
-    one of these phrases is not classified as refused, so refusal rates are not comparable across
-    scripts.
+    delivered.
 
 Both halves matter:
 
 - *decline cue* — a conservative set of first-person inability / non-delivery / refusal markers
   (``DECLINE_CUES``). They are matched against the normalized answer, so case and punctuation
-  (including the apostrophe in ``can't``) fold automatically.
+  (including the apostrophe in ``can't``) fold automatically. A model often declines in the
+  edition's language (Hebrew, Punjabi, Hindi, Arabic or Greek). That happens on the native-prompt
+  arms, and on the English-prompt arms too, because the model answers in the edition's language
+  either way: 21% of the #117 movers are on English-prompt arms. Those declines are matched by a
+  second, equally narrow set (``_NATIVE_DECLINE_CUES_RAW``, issue #117). A native cue must stand as whole words. Apart from two single Talmud occurrences (see the
+  list), none of them occurs in the scripture corpus.
+  In Punjabi and Hindi the inability verb ends the sentence, so the opening-sentence test below
+  (not the 60-character window) is what usually catches them.
 - *leading segment* — the cue must OPEN the answer, not trail it. An answer that delivers the verse
   and then appends a caveat ("…verse… (I couldn't retrieve the source to verify)") is an ANSWER with
   a disclaimer, not a refusal; its cue sits past the delivered text, outside the leading window. In
@@ -110,6 +115,37 @@ _DECLINE_CUES_RAW: tuple[str, ...] = (
     "i don't want to give a fabricated",
     "isn't possible",
     "i can't access", "i cannot access",
+)
+
+# Native-script decline cues (issue #117), calibrated on the 2026-11-03 rerun. Like the English set,
+# each one says the model is not delivering the text. Each cue matches only as whole words. Substring
+# matching would find اسف inside a delivered أَسْفَارًا, and it would also read שאינני יכול ("since I
+# can't …, here is the text") as a decline. Every cue was checked against texts/standardized. Seeds
+# that occur in scripture are left out: לא אוכל (Gen 19:19, Talmud ×25), מצטער, צר לי, عذرا (Qur'an
+# 18:76), لا أستطيع (hadith ×18), لا أملك (Qur'an 7:188). Two cues stay in although each occurs once
+# in the Talmud, because they carry 67 declines: איני יכול (Bava Batra 20b:15) and אין בידי (Yevamot
+# 80b:9). A bare apology is left out too, because it also opens a confident non-existence claim
+# ("عذرًا، لا يوجد آية رقم 12", "ਮਾਫ਼ ਕਰਨਾ, ਪਰ … ਮੌਜੂਦ ਨਹੀਂ"), which is a wrong answer, not a decline.
+# The Punjabi apology counts only with a first-person subject after it. That is the verb-final form
+# of "i'm sorry, but i don't".
+_NATIVE_DECLINE_CUES_RAW: tuple[str, ...] = (
+    # Hebrew: I can't · I have no access / ability / way · I didn't manage
+    "אני לא יכול", "אני לא יכולה", "אינני יכול", "אינני יכולה", "איני יכול",
+    "אין לי גישה", "אין ביכולתי", "אין באפשרותי", "אין לי אפשרות", "אין לי יכולת",
+    "אין בידי", "אין בידיי", "לא הצלחתי", "אני לא מצליח",
+    # Gurmukhi: can't do · give · tell · write · check; unable; sorry + I / to me / with me
+    "ਨਹੀਂ ਕਰ ਸਕਦਾ", "ਨਹੀਂ ਕਰ ਸਕਦੀ", "ਨਹੀਂ ਦੇ ਸਕਦਾ", "ਨਹੀਂ ਦੇ ਸਕਦੀ", "ਨਹੀਂ ਦੱਸ ਸਕਦਾ", "ਨਹੀਂ ਦੱਸ ਸਕਦੀ",
+    "ਨਹੀਂ ਲਿਖ ਸਕਦਾ", "ਨਹੀਂ ਲਿਖ ਸਕਦੀ", "ਜਾਂਚ ਨਹੀਂ ਸਕਦਾ", "ਜਾਂਚ ਨਹੀਂ ਸਕਦੀ", "ਅਸਮਰੱਥ",
+    "ਮਾਫ਼ ਕਰਨਾ, ਮੈਂ", "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ", "ਮਾਫ਼ ਕਰਨਾ, ਮੇਰੇ ਕੋਲ", "ਮਾਫ ਕਰਨਾ, ਮੈਂ", "ਮਾਫ ਕਰਨਾ, ਮੈਨੂੰ",
+    "ਮੁਆਫ਼ ਕਰਨਾ, ਮੈਂ", "ਮੁਆਫ਼ ਕਰਨਾ, ਮੈਨੂੰ",
+    # Devanagari (Hindi): can't do · give · tell · write; am not able. (The bare apology क्षमा करें
+    # predates #117 and stays in the list above, unchanged.)
+    "नहीं कर सकता", "नहीं कर सकती", "नहीं दे सकता", "नहीं दे सकती", "नहीं बता सकता", "नहीं बता सकती",
+    "नहीं लिख सकता", "नहीं लिख सकती", "नहीं कर पा रहा", "नहीं कर पा रही", "सक्षम नहीं हूँ",
+    # Arabic: I can't
+    "لا يمكنني",
+    # Greek (modern): I can't · I have no access
+    "δεν μπορώ", "δεν έχω πρόσβαση",
 )
 
 _TEXT_RETRIEVAL = ("retrieve_quote", "complete_unit")
@@ -327,11 +363,23 @@ def _normalized_cues() -> frozenset[str]:
     return frozenset(normalize(c) for c in _DECLINE_CUES_RAW)
 
 
+@lru_cache(maxsize=1)
+def _native_cue_re() -> re.Pattern[str]:
+    """The native cues as one whole-word pattern over normalized text. ``search`` returns the
+    leftmost cue, so its start is the earliest position any native cue begins."""
+    from .score import normalize
+
+    cues = sorted({normalize(c) for c in _NATIVE_DECLINE_CUES_RAW}, key=len, reverse=True)
+    if not cues or not all(cues):
+        raise ValueError("empty native decline cue: the pattern would match every answer")
+    return re.compile("|".join(r"(?<!\S)" + re.escape(c) + r"(?!\S)" for c in cues))
+
+
 def _has_cue(text: str) -> bool:
     from .score import normalize
 
     nans = normalize(text)
-    return any(cue in nans for cue in _normalized_cues())
+    return any(cue in nans for cue in _normalized_cues()) or _native_cue_re().search(nans) is not None
 
 
 def leading_decline(answer: str) -> bool:
@@ -341,7 +389,10 @@ def leading_decline(answer: str) -> bool:
     # only the leading window can match; keep a cue-length margin so a cue that STARTS just inside
     # the window but runs past it is still found (same result as scanning the whole answer).
     nans = normalize(answer)[: LEADING_WINDOW + 64]
-    return any(0 <= nans.find(cue) < LEADING_WINDOW for cue in _normalized_cues())
+    if any(0 <= nans.find(cue) < LEADING_WINDOW for cue in _normalized_cues()):
+        return True
+    native = _native_cue_re().search(nans)
+    return native is not None and native.start() < LEADING_WINDOW
 
 
 def first_sentence_decline(answer: str) -> bool:
@@ -349,8 +400,12 @@ def first_sentence_decline(answer: str) -> bool:
 
     A cue that appears only after that sentence — a delivered verse, then a caveat — is not a
     decline. The model already gave an answer.
+
+    The sentence ends at ``. ! ?``, a newline, or a native terminator (#117): Devanagari danda
+    ``।``, Hebrew sof pasuq ``׃``, Arabic ``؟``, Urdu ``۔``, Greek question mark U+037E. ASCII
+    ``;`` is not one, since an English semicolon does not end a sentence.
     """
-    sentence = re.split(r"[.!?।\n]", answer.strip(), maxsplit=1)[0]
+    sentence = re.split(r"[.!?।\n׃؟۔\u037e]", answer.strip(), maxsplit=1)[0]
     return _has_cue(sentence)
 
 
