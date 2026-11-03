@@ -71,3 +71,9 @@ pipelines/tests. runs/ untouched (architect: collection in flight on main; re-co
   tradition "The Church of Jesus Christ of Latter-Day Saints") — the new table test fails on HEAD for that reason.
 - Pre-existing, unrelated: `test_collect.py` `_DaemonPool` uses ThreadPoolExecutor private `_initializer`, gone in
   Python 3.14 (this env). Not touched by this branch.
+
+## Tests check (2026-11-03)
+
+- `porch check` fails ONLY on 9 pre-existing tests (test_collect 6, test_phase2_tools 3), all
+  `_DaemonPool._initializer` on Python 3.14. They are #97, pre-existing (they fail on origin/main 7cff2fd). Per the
+  architect: don't patch `_DaemonPool` here; open the PR anyway, and merge origin/main once #97 lands to get a clean gate.
