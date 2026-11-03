@@ -1,0 +1,334 @@
+{
+ "models": {
+  "astra": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 20,
+    "incorrect": 10,
+    "minor": 0,
+    "major": 10,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 10
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.2667,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 22,
+    "minor": 16,
+    "major": 6,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 7,
+     "paraphrase": 5,
+     "wrong_passage": 6,
+     "omission": 4,
+     "addition": 1
+    },
+    "exact": 0.1667,
+    "normalized": 0.2333,
+    "token_f1": 0.6693,
+    "token_f1_base": 0.6693,
+    "contains_reference": 0.2667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.1111,
+    "coverage": 0.6,
+    "correct": 2,
+    "incorrect": 16,
+    "minor": 4,
+    "major": 12,
+    "refused": 12,
+    "refused_rate": 0.4,
+    "kinds": {
+     "near_copy": 1,
+     "paraphrase": 3,
+     "wrong_passage": 12
+    },
+    "exact": 0.0,
+    "normalized": 0.1111,
+    "token_f1": 0.3147,
+    "token_f1_base": 0.3147,
+    "contains_reference": 0.1111
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.5556,
+    "coverage": 0.9,
+    "correct": 60,
+    "incorrect": 48,
+    "minor": 20,
+    "major": 28,
+    "refused": 12,
+    "refused_rate": 0.1,
+    "kinds": {
+     "edition_variant": 7,
+     "near_copy": 1,
+     "paraphrase": 8,
+     "wrong_passage": 18,
+     "omission": 4,
+     "addition": 1,
+     "wrong_locus": 10
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "astra": {
+   "Judaism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1111,
+     "coverage": 0.6,
+     "correct": 2,
+     "incorrect": 16,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5556,
+     "coverage": 0.9,
+     "correct": 60,
+     "incorrect": 48,
+     "refused": 12,
+     "refused_rate": 0.1
+    }
+   }
+  }
+ },
+ "by_text": {
+  "astra": {
+   "Talmud Bavli\u0000William Davidson Edition - Aramaic\u0000he": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "minor": 0,
+     "major": 10,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 10
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "minor": 16,
+     "major": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 7,
+      "paraphrase": 5,
+      "wrong_passage": 6,
+      "omission": 4,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1111,
+     "coverage": 0.6,
+     "correct": 2,
+     "incorrect": 16,
+     "minor": 4,
+     "major": 12,
+     "refused": 12,
+     "refused_rate": 0.4,
+     "kinds": {
+      "near_copy": 1,
+      "paraphrase": 3,
+      "wrong_passage": 12
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5556,
+     "coverage": 0.9,
+     "correct": 60,
+     "incorrect": 48,
+     "minor": 20,
+     "major": 28,
+     "refused": 12,
+     "refused_rate": 0.1,
+     "kinds": {
+      "edition_variant": 7,
+      "near_copy": 1,
+      "paraphrase": 8,
+      "wrong_passage": 18,
+      "omission": 4,
+      "addition": 1,
+      "wrong_locus": 10
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "astra": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.1111,
+     "coverage": 0.6,
+     "correct": 2,
+     "incorrect": 16,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5556,
+     "coverage": 0.9,
+     "correct": 60,
+     "incorrect": 48,
+     "refused": 12,
+     "refused_rate": 0.1
+    }
+   }
+  }
+ },
+ "verify": {
+  "astra": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "astra": {
+    "calls": 120,
+    "in": 11478,
+    "out": 53336
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 11478,
+   "out": 53336
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "segment_match": {
+  "astra": {
+   "Talmud Bavli\u0000William Davidson Edition - Aramaic\u0000he": {
+    "correct": 20,
+    "segment_match": 11
+   }
+  }
+ },
+ "generated_at": "2026-11-03T05:24:43.749044+00:00"
+}

@@ -1,0 +1,314 @@
+{
+ "models": {
+  "opus": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 24,
+    "incorrect": 6,
+    "minor": 5,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 1,
+     "near_copy": 4,
+     "wrong_passage": 1
+    },
+    "exact": 0.4667,
+    "normalized": 0.8,
+    "token_f1": 0.9454,
+    "token_f1_base": 0.959,
+    "contains_reference": 0.8
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 20,
+    "incorrect": 10,
+    "minor": 10,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "near_copy": 6
+    },
+    "exact": 0.2,
+    "normalized": 0.6667,
+    "token_f1": 0.9586,
+    "token_f1_base": 0.9903,
+    "contains_reference": 0.6667
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 2
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.85,
+    "coverage": 1.0,
+    "correct": 102,
+    "incorrect": 18,
+    "minor": 15,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 5,
+     "near_copy": 10,
+     "wrong_passage": 1,
+     "wrong_verdict": 2
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "opus": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.85,
+     "coverage": 1.0,
+     "correct": 102,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "opus": {
+   "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "minor": 5,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 1,
+      "near_copy": 4,
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "minor": 10,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "near_copy": 6
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 2
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.85,
+     "coverage": 1.0,
+     "correct": 102,
+     "incorrect": 18,
+     "minor": 15,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 5,
+      "near_copy": 10,
+      "wrong_passage": 1,
+      "wrong_verdict": 2
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "opus": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.85,
+     "coverage": 1.0,
+     "correct": 102,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "opus": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "opus": {
+    "calls": 120,
+    "in": 13133,
+    "out": 21872
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13133,
+   "out": 21872
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:25.337351+00:00"
+}

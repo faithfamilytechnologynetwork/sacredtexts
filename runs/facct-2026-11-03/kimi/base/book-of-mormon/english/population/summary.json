@@ -1,0 +1,320 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 20,
+    "incorrect": 10,
+    "minor": 0,
+    "major": 10,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 10
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.5333,
+    "coverage": 1.0,
+    "correct": 16,
+    "incorrect": 14,
+    "minor": 10,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "paraphrase": 6,
+     "wrong_passage": 4,
+     "addition": 2
+    },
+    "exact": 0.4667,
+    "normalized": 0.4667,
+    "token_f1": 0.7468,
+    "token_f1_base": 0.7468,
+    "contains_reference": 0.5333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.6071,
+    "coverage": 0.9333,
+    "correct": 17,
+    "incorrect": 11,
+    "minor": 4,
+    "major": 7,
+    "refused": 2,
+    "refused_rate": 0.0667,
+    "kinds": {
+     "edition_variant": 2,
+     "paraphrase": 2,
+     "wrong_passage": 7
+    },
+    "exact": 0.3929,
+    "normalized": 0.4286,
+    "token_f1": 0.7809,
+    "token_f1_base": 0.7809,
+    "contains_reference": 0.6071
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.7034,
+    "coverage": 0.9833,
+    "correct": 83,
+    "incorrect": 35,
+    "minor": 14,
+    "major": 21,
+    "refused": 2,
+    "refused_rate": 0.0167,
+    "kinds": {
+     "edition_variant": 6,
+     "paraphrase": 8,
+     "wrong_passage": 11,
+     "addition": 2,
+     "wrong_locus": 10
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6071,
+     "coverage": 0.9333,
+     "correct": 17,
+     "incorrect": 11,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7034,
+     "coverage": 0.9833,
+     "correct": 83,
+     "incorrect": 35,
+     "refused": 2,
+     "refused_rate": 0.0167
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "minor": 0,
+     "major": 10,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 10
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "minor": 10,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "paraphrase": 6,
+      "wrong_passage": 4,
+      "addition": 2
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6071,
+     "coverage": 0.9333,
+     "correct": 17,
+     "incorrect": 11,
+     "minor": 4,
+     "major": 7,
+     "refused": 2,
+     "refused_rate": 0.0667,
+     "kinds": {
+      "edition_variant": 2,
+      "paraphrase": 2,
+      "wrong_passage": 7
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7034,
+     "coverage": 0.9833,
+     "correct": 83,
+     "incorrect": 35,
+     "minor": 14,
+     "major": 21,
+     "refused": 2,
+     "refused_rate": 0.0167,
+     "kinds": {
+      "edition_variant": 6,
+      "paraphrase": 8,
+      "wrong_passage": 11,
+      "addition": 2,
+      "wrong_locus": 10
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "kimi": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6071,
+     "coverage": 0.9333,
+     "correct": 17,
+     "incorrect": 11,
+     "refused": 2,
+     "refused_rate": 0.0667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7034,
+     "coverage": 0.9833,
+     "correct": 83,
+     "incorrect": 35,
+     "refused": 2,
+     "refused_rate": 0.0167
+    }
+   }
+  }
+ },
+ "verify": {
+  "kimi": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 10858,
+    "out": 7603
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 10858,
+   "out": 7603
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:11.279733+00:00"
+}

@@ -1,0 +1,71 @@
+{
+  "panel_id": "deepseek-v4-pro",
+  "openrouter_id": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "deepseek/deepseek-v4-pro",
+    "name": "DeepSeek: DeepSeek V4 Pro 0423",
+    "context_length": 1048576,
+    "max_completion_tokens": 393216,
+    "modality": "text->text",
+    "tokenizer": "DeepSeek",
+    "pricing_usd_per_token": {
+      "prompt": "0.0000016",
+      "completion": "0.0000032",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 1.6,
+      "output": 3.2
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logit_bias",
+      "logprobs",
+      "max_completion_tokens",
+      "max_tokens",
+      "min_p",
+      "presence_penalty",
+      "reasoning",
+      "reasoning_effort",
+      "repetition_penalty",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_k",
+      "top_logprobs",
+      "top_p"
+    ],
+    "reasoning": {
+      "mandatory": false,
+      "supported_efforts": [
+        "xhigh",
+        "high",
+        "none"
+      ],
+      "default_effort": "high"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "length",
+    "text": "",
+    "provider": "Relace",
+    "prompt_tokens": 11,
+    "completion_tokens": 16,
+    "total_tokens": 27,
+    "cost_usd": 3.39e-05
+  },
+  "collected": {
+    "calls": 23,
+    "prompt_tokens": 3078,
+    "completion_tokens": 220,
+    "cost_usd": 0.0056288
+  }
+}

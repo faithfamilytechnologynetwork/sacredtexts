@@ -1,0 +1,336 @@
+{
+ "models": {
+  "luna": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 2
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.5333,
+    "coverage": 1.0,
+    "correct": 16,
+    "incorrect": 14,
+    "minor": 11,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "near_copy": 1,
+     "paraphrase": 5,
+     "wrong_passage": 3,
+     "omission": 1,
+     "addition": 1
+    },
+    "exact": 0.3333,
+    "normalized": 0.4667,
+    "token_f1": 0.8094,
+    "token_f1_base": 0.8094,
+    "contains_reference": 0.5333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 0.3333,
+    "correct": 4,
+    "incorrect": 6,
+    "minor": 4,
+    "major": 2,
+    "refused": 20,
+    "refused_rate": 0.6667,
+    "kinds": {
+     "edition_variant": 3,
+     "wrong_passage": 2,
+     "omission": 1,
+     "addition": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.3,
+    "token_f1": 0.7619,
+    "token_f1_base": 0.7619,
+    "contains_reference": 0.4
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.9,
+    "coverage": 1.0,
+    "correct": 27,
+    "incorrect": 3,
+    "minor": 0,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 3
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.75,
+    "coverage": 0.8333,
+    "correct": 75,
+    "incorrect": 25,
+    "minor": 15,
+    "major": 10,
+    "refused": 20,
+    "refused_rate": 0.1667,
+    "kinds": {
+     "edition_variant": 7,
+     "near_copy": 1,
+     "paraphrase": 5,
+     "wrong_passage": 5,
+     "omission": 2,
+     "addition": 2,
+     "wrong_locus": 2,
+     "wrong_verdict": 3
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "luna": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 0.3333,
+     "correct": 4,
+     "incorrect": 6,
+     "refused": 20,
+     "refused_rate": 0.6667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.75,
+     "coverage": 0.8333,
+     "correct": 75,
+     "incorrect": 25,
+     "refused": 20,
+     "refused_rate": 0.1667
+    }
+   }
+  }
+ },
+ "by_text": {
+  "luna": {
+   "The Bible\u0000NRSV\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 2
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "minor": 11,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "near_copy": 1,
+      "paraphrase": 5,
+      "wrong_passage": 3,
+      "omission": 1,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 0.3333,
+     "correct": 4,
+     "incorrect": 6,
+     "minor": 4,
+     "major": 2,
+     "refused": 20,
+     "refused_rate": 0.6667,
+     "kinds": {
+      "edition_variant": 3,
+      "wrong_passage": 2,
+      "omission": 1,
+      "addition": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 3
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.75,
+     "coverage": 0.8333,
+     "correct": 75,
+     "incorrect": 25,
+     "minor": 15,
+     "major": 10,
+     "refused": 20,
+     "refused_rate": 0.1667,
+     "kinds": {
+      "edition_variant": 7,
+      "near_copy": 1,
+      "paraphrase": 5,
+      "wrong_passage": 5,
+      "omission": 2,
+      "addition": 2,
+      "wrong_locus": 2,
+      "wrong_verdict": 3
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "luna": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5333,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 14,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 0.3333,
+     "correct": 4,
+     "incorrect": 6,
+     "refused": 20,
+     "refused_rate": 0.6667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.75,
+     "coverage": 0.8333,
+     "correct": 75,
+     "incorrect": 25,
+     "refused": 20,
+     "refused_rate": 0.1667
+    }
+   }
+  }
+ },
+ "verify": {
+  "luna": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 3,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "luna": {
+    "calls": 120,
+    "in": 6864,
+    "out": 2226
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 6864,
+   "out": 2226
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:53.394729+00:00"
+}

@@ -1,0 +1,316 @@
+{
+ "models": {
+  "opus": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.8333,
+    "coverage": 1.0,
+    "correct": 25,
+    "incorrect": 5,
+    "minor": 3,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 1,
+     "paraphrase": 2,
+     "wrong_passage": 2
+    },
+    "exact": 0.5,
+    "normalized": 0.8333,
+    "token_f1": 0.9174,
+    "token_f1_base": 0.9174,
+    "contains_reference": 0.8333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.8333,
+    "coverage": 1.0,
+    "correct": 25,
+    "incorrect": 5,
+    "minor": 5,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 2,
+     "near_copy": 1,
+     "paraphrase": 1,
+     "omission": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.7667,
+    "token_f1": 0.9745,
+    "token_f1_base": 0.9745,
+    "contains_reference": 0.8333
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.9167,
+    "coverage": 1.0,
+    "correct": 110,
+    "incorrect": 10,
+    "minor": 8,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 3,
+     "near_copy": 1,
+     "paraphrase": 3,
+     "wrong_passage": 2,
+     "omission": 1
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "opus": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9167,
+     "coverage": 1.0,
+     "correct": 110,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "opus": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "minor": 3,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 1,
+      "paraphrase": 2,
+      "wrong_passage": 2
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "minor": 5,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 2,
+      "near_copy": 1,
+      "paraphrase": 1,
+      "omission": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9167,
+     "coverage": 1.0,
+     "correct": 110,
+     "incorrect": 10,
+     "minor": 8,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 3,
+      "near_copy": 1,
+      "paraphrase": 3,
+      "wrong_passage": 2,
+      "omission": 1
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "opus": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9167,
+     "coverage": 1.0,
+     "correct": 110,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "opus": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "opus": {
+    "calls": 120,
+    "in": 20794,
+    "out": 34164
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 20794,
+   "out": 34164
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:22.989680+00:00"
+}

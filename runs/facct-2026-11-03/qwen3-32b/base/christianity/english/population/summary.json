@@ -1,0 +1,336 @@
+{
+ "models": {
+  "qwen3-32b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.5667,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 13,
+    "minor": 0,
+    "major": 13,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 13
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0667,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 28,
+    "minor": 14,
+    "major": 14,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "paraphrase": 9,
+     "wrong_passage": 14,
+     "omission": 1,
+     "addition": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0333,
+    "token_f1": 0.4574,
+    "token_f1_base": 0.4574,
+    "contains_reference": 0.0667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 14,
+    "major": 16,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 1,
+     "near_copy": 3,
+     "paraphrase": 9,
+     "wrong_passage": 16,
+     "omission": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.4655,
+    "token_f1_base": 0.4655,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 24,
+    "incorrect": 6,
+    "minor": 0,
+    "major": 6,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 6
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.3583,
+    "coverage": 1.0,
+    "correct": 43,
+    "incorrect": 77,
+    "minor": 28,
+    "major": 49,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 5,
+     "near_copy": 3,
+     "paraphrase": 18,
+     "wrong_passage": 30,
+     "omission": 2,
+     "addition": 1,
+     "wrong_locus": 13,
+     "wrong_verdict": 6
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "qwen3-32b": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 28,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3583,
+     "coverage": 1.0,
+     "correct": 43,
+     "incorrect": 77,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "qwen3-32b": {
+   "The Bible\u0000NRSV\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "minor": 0,
+     "major": 13,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 13
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 28,
+     "minor": 14,
+     "major": 14,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "paraphrase": 9,
+      "wrong_passage": 14,
+      "omission": 1,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 14,
+     "major": 16,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 1,
+      "near_copy": 3,
+      "paraphrase": 9,
+      "wrong_passage": 16,
+      "omission": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 6
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3583,
+     "coverage": 1.0,
+     "correct": 43,
+     "incorrect": 77,
+     "minor": 28,
+     "major": 49,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 5,
+      "near_copy": 3,
+      "paraphrase": 18,
+      "wrong_passage": 30,
+      "omission": 2,
+      "addition": 1,
+      "wrong_locus": 13,
+      "wrong_verdict": 6
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "qwen3-32b": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0667,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 28,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3583,
+     "coverage": 1.0,
+     "correct": 43,
+     "incorrect": 77,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "qwen3-32b": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.6,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 6,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "qwen3-32b": {
+    "calls": 120,
+    "in": 7410,
+    "out": 75176
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 7410,
+   "out": 75176
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:26.171729+00:00"
+}

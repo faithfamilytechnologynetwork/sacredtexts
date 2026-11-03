@@ -1,0 +1,306 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.9667,
+    "coverage": 1.0,
+    "correct": 29,
+    "incorrect": 1,
+    "minor": 1,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.8667,
+    "token_f1": 0.9855,
+    "token_f1_base": 0.9855,
+    "contains_reference": 0.9667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.6,
+    "coverage": 1.0,
+    "correct": 18,
+    "incorrect": 12,
+    "minor": 5,
+    "major": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 3,
+     "paraphrase": 2,
+     "wrong_passage": 7
+    },
+    "exact": 0.0,
+    "normalized": 0.3667,
+    "token_f1": 0.7078,
+    "token_f1_base": 0.7078,
+    "contains_reference": 0.6
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.8917,
+    "coverage": 1.0,
+    "correct": 107,
+    "incorrect": 13,
+    "minor": 6,
+    "major": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "paraphrase": 2,
+     "wrong_passage": 7
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6,
+     "coverage": 1.0,
+     "correct": 18,
+     "incorrect": 12,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8917,
+     "coverage": 1.0,
+     "correct": 107,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6,
+     "coverage": 1.0,
+     "correct": 18,
+     "incorrect": 12,
+     "minor": 5,
+     "major": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 3,
+      "paraphrase": 2,
+      "wrong_passage": 7
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8917,
+     "coverage": 1.0,
+     "correct": 107,
+     "incorrect": 13,
+     "minor": 6,
+     "major": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "paraphrase": 2,
+      "wrong_passage": 7
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "kimi": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.6,
+     "coverage": 1.0,
+     "correct": 18,
+     "incorrect": 12,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8917,
+     "coverage": 1.0,
+     "correct": 107,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "kimi": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 23215,
+    "out": 10851
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 23215,
+   "out": 10851
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:14.236216+00:00"
+}

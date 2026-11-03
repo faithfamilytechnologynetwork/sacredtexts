@@ -1,0 +1,324 @@
+{
+ "models": {
+  "gemini-flash": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.1333,
+    "coverage": 1.0,
+    "correct": 4,
+    "incorrect": 26,
+    "minor": 0,
+    "major": 26,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 25,
+     "no_citation": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 2,
+    "major": 28,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 28,
+     "omission": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1278,
+    "token_f1_base": 0.1392,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 30
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0328,
+    "token_f1_base": 0.0693,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2833,
+    "coverage": 1.0,
+    "correct": 34,
+    "incorrect": 86,
+    "minor": 2,
+    "major": 84,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 58,
+     "omission": 1,
+     "wrong_locus": 25,
+     "no_citation": 1
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "gemini-flash": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2833,
+     "coverage": 1.0,
+     "correct": 34,
+     "incorrect": 86,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "gemini-flash": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "minor": 0,
+     "major": 26,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 25,
+      "no_citation": 1
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 2,
+     "major": 28,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 28,
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 30
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2833,
+     "coverage": 1.0,
+     "correct": 34,
+     "incorrect": 86,
+     "minor": 2,
+     "major": 84,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 58,
+      "omission": 1,
+      "wrong_locus": 25,
+      "no_citation": 1
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "gemini-flash": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2833,
+     "coverage": 1.0,
+     "correct": 34,
+     "incorrect": 86,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "gemini-flash": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "gemini-flash": {
+    "calls": 120,
+    "in": 9843,
+    "out": 28184
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 9843,
+   "out": 28184
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "segment_match": {
+  "gemini-flash": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "correct": 4,
+    "segment_match": 0
+   }
+  }
+ },
+ "generated_at": "2026-11-03T05:25:06.625449+00:00"
+}

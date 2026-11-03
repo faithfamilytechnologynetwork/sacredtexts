@@ -1,0 +1,326 @@
+{
+ "models": {
+  "beam": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.2333,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 23,
+    "minor": 0,
+    "major": 23,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 23
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9667,
+    "correct": 0,
+    "incorrect": 29,
+    "minor": 8,
+    "major": 21,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "paraphrase": 5,
+     "wrong_passage": 21,
+     "omission": 3
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2575,
+    "token_f1_base": 0.2575,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.0333,
+    "correct": 0,
+    "incorrect": 1,
+    "minor": 0,
+    "major": 1,
+    "refused": 29,
+    "refused_rate": 0.9667,
+    "kinds": {
+     "wrong_passage": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1356,
+    "token_f1_base": 0.1356,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8333,
+    "coverage": 1.0,
+    "correct": 25,
+    "incorrect": 5,
+    "minor": 0,
+    "major": 5,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 5
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.3556,
+    "coverage": 0.75,
+    "correct": 32,
+    "incorrect": 58,
+    "minor": 8,
+    "major": 50,
+    "refused": 30,
+    "refused_rate": 0.25,
+    "kinds": {
+     "paraphrase": 5,
+     "wrong_passage": 22,
+     "omission": 3,
+     "wrong_locus": 23,
+     "wrong_verdict": 5
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "beam": {
+   "Judaism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0333,
+     "correct": 0,
+     "incorrect": 1,
+     "refused": 29,
+     "refused_rate": 0.9667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3556,
+     "coverage": 0.75,
+     "correct": 32,
+     "incorrect": 58,
+     "refused": 30,
+     "refused_rate": 0.25
+    }
+   }
+  }
+ },
+ "by_text": {
+  "beam": {
+   "Talmud Bavli\u0000William Davidson Edition - English\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "minor": 0,
+     "major": 23,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 23
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "minor": 8,
+     "major": 21,
+     "refused": 1,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "paraphrase": 5,
+      "wrong_passage": 21,
+      "omission": 3
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0333,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 29,
+     "refused_rate": 0.9667,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "minor": 0,
+     "major": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 5
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3556,
+     "coverage": 0.75,
+     "correct": 32,
+     "incorrect": 58,
+     "minor": 8,
+     "major": 50,
+     "refused": 30,
+     "refused_rate": 0.25,
+     "kinds": {
+      "paraphrase": 5,
+      "wrong_passage": 22,
+      "omission": 3,
+      "wrong_locus": 23,
+      "wrong_verdict": 5
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "beam": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.0333,
+     "correct": 0,
+     "incorrect": 1,
+     "refused": 29,
+     "refused_rate": 0.9667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3556,
+     "coverage": 0.75,
+     "correct": 32,
+     "incorrect": 58,
+     "refused": 30,
+     "refused_rate": 0.25
+    }
+   }
+  }
+ },
+ "verify": {
+  "beam": {
+   "no": {
+    "n": 15,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 3,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "beam": {
+    "calls": 120,
+    "in": 18017,
+    "out": 143387
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 18017,
+   "out": 143387
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "segment_match": {
+  "beam": {
+   "Talmud Bavli\u0000William Davidson Edition - English\u0000en": {
+    "correct": 7,
+    "segment_match": 2
+   }
+  }
+ },
+ "generated_at": "2026-11-03T05:25:19.867668+00:00"
+}

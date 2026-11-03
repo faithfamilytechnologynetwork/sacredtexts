@@ -1,0 +1,63 @@
+{
+  "panel_id": "sonnet",
+  "openrouter_id": "anthropic/claude-sonnet-5.5",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "anthropic/claude-sonnet-5.5",
+    "name": "Anthropic: Claude Sonnet 5.5",
+    "context_length": 1000000,
+    "max_completion_tokens": 128000,
+    "modality": "text+image+file->text",
+    "tokenizer": "Claude",
+    "pricing_usd_per_token": {
+      "prompt": "0.000002",
+      "completion": "0.00001",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 2.0,
+      "output": 10.0
+    },
+    "supported_parameters": [
+      "include_reasoning",
+      "max_completion_tokens",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "stop",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "verbosity"
+    ],
+    "reasoning": {
+      "mandatory": true,
+      "supported_efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default_effort": "high"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "Claude Platform on AWS",
+    "prompt_tokens": 18,
+    "completion_tokens": 4,
+    "total_tokens": 22,
+    "cost_usd": 7.6e-05
+  },
+  "collected": {
+    "calls": 23,
+    "prompt_tokens": 4485,
+    "completion_tokens": 5065,
+    "cost_usd": 0.05962
+  }
+}

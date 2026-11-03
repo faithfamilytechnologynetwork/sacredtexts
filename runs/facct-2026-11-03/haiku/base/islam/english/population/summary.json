@@ -1,0 +1,320 @@
+{
+ "models": {
+  "haiku": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 1,
+     "hedge": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.6667,
+    "correct": 0,
+    "incorrect": 20,
+    "minor": 12,
+    "major": 8,
+    "refused": 10,
+    "refused_rate": 0.3333,
+    "kinds": {
+     "edition_variant": 2,
+     "near_copy": 3,
+     "paraphrase": 6,
+     "wrong_passage": 8,
+     "omission": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.5682,
+    "token_f1_base": 0.581,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 30,
+    "refused_rate": 1.0,
+    "kinds": {},
+    "exact": null,
+    "normalized": null,
+    "token_f1": null,
+    "token_f1_base": null,
+    "contains_reference": null
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 0.3667,
+    "correct": 11,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 19,
+    "refused_rate": 0.6333,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.6393,
+    "coverage": 0.5083,
+    "correct": 39,
+    "incorrect": 22,
+    "minor": 12,
+    "major": 10,
+    "refused": 59,
+    "refused_rate": 0.4917,
+    "kinds": {
+     "edition_variant": 2,
+     "near_copy": 3,
+     "paraphrase": 6,
+     "wrong_passage": 8,
+     "omission": 1,
+     "wrong_locus": 1,
+     "hedge": 1
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "haiku": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.3667,
+     "correct": 11,
+     "incorrect": 0,
+     "refused": 19,
+     "refused_rate": 0.6333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.6393,
+     "coverage": 0.5083,
+     "correct": 39,
+     "incorrect": 22,
+     "refused": 59,
+     "refused_rate": 0.4917
+    }
+   }
+  }
+ },
+ "by_text": {
+  "haiku": {
+   "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1,
+      "hedge": 1
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "minor": 12,
+     "major": 8,
+     "refused": 10,
+     "refused_rate": 0.3333,
+     "kinds": {
+      "edition_variant": 2,
+      "near_copy": 3,
+      "paraphrase": 6,
+      "wrong_passage": 8,
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 30,
+     "refused_rate": 1.0,
+     "kinds": {}
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.3667,
+     "correct": 11,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 19,
+     "refused_rate": 0.6333,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.6393,
+     "coverage": 0.5083,
+     "correct": 39,
+     "incorrect": 22,
+     "minor": 12,
+     "major": 10,
+     "refused": 59,
+     "refused_rate": 0.4917,
+     "kinds": {
+      "edition_variant": 2,
+      "near_copy": 3,
+      "paraphrase": 6,
+      "wrong_passage": 8,
+      "omission": 1,
+      "wrong_locus": 1,
+      "hedge": 1
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "haiku": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.3667,
+     "correct": 11,
+     "incorrect": 0,
+     "refused": 19,
+     "refused_rate": 0.6333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.6393,
+     "coverage": 0.5083,
+     "correct": 39,
+     "incorrect": 22,
+     "refused": 59,
+     "refused_rate": 0.4917
+    }
+   }
+  }
+ },
+ "verify": {
+  "haiku": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.2,
+    "correct": 3,
+    "incorrect": 0,
+    "refused": 12,
+    "refused_rate": 0.8
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.5333,
+    "correct": 8,
+    "incorrect": 0,
+    "refused": 7,
+    "refused_rate": 0.4667
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "haiku": {
+    "calls": 120,
+    "in": 12893,
+    "out": 10436
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 12893,
+   "out": 10436
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:37.195371+00:00"
+}

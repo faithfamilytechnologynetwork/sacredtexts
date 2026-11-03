@@ -1,0 +1,120 @@
+{"question_id": "8b61fe7f3a394509", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "6f0b1095650c4b2c", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "54d34a8f18c8f922", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1143, "token_f1_base": 0.1143, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "93793fc8bf9ae086", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0426, "token_f1_base": 0.0426, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "ea4dff46172b9cc8", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "9f6cd3ede9809c55", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "37785f4afb2fc502", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6487163caf763d77", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.05, "token_f1_base": 0.05, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "d8590c08a02f0c54", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "dce875c62daa244e", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2, "token_f1_base": 0.2, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d6e1e5de150fc40f", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "f8542f88717b48d7", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0159, "token_f1_base": 0.0159, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "a3bd8a80a13aa7c2", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0435, "token_f1_base": 0.0435, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "1ff038c4ec1903f0", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "defabf228e837ad3", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "18b5fdaf825209e1", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "6a70dc69d71fdeed", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0541, "token_f1_base": 0.0541, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "3eab2af45157c488", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "5cc61aeb99a946e8", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0714, "token_f1_base": 0.0714, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "b7189d45b8c0612c", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "41f81a78b13f5e1c", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.25, "token_f1_base": 0.25, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5b5a5817e1845b36", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "5b0eb571ff79ad4a", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "eede71a65e1d5ec5", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0417, "token_f1_base": 0.0417, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6fb3e1bfb7965232", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5385, "token_f1_base": 0.5385, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "f9471db8eece107b", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "9e36f56761dbd328", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "b52fa41b80ecf0c7", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "3e9dc4584254725a", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "0037def465b51079", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3158, "token_f1_base": 0.3158, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "b4ad3328d6c2356d", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1481, "token_f1_base": 0.1481, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "c2a668632a6aa845", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "65fbcda6086b2ea4", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0328, "token_f1_base": 0.0328, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "91c185f8eaf657ca", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0734, "token_f1_base": 0.0734, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "7de09cc389e5af2d", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "fc6aabc49a7b3b80", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9286, "token_f1_base": 0.9286, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "4d1aa7544bb0eabb", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "2587d8a4a3d99e82", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.16, "token_f1_base": 0.16, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "4ed16f529cd06d1d", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0635, "token_f1_base": 0.0635, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "43e43f8f42f625fe", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "84b1fbf0f644a6b0", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "429b98f51f480ac0", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "3ef21edb7abe01ec", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "635bc01c1d01de33", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "c288e2163a7c2e93", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0278, "token_f1_base": 0.0278, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "a9ba52195c904c43", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "e64766cf218fcd3c", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5b49cb50bdd86148", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.08, "token_f1_base": 0.08, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "a3d1087ff4fa6863", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "b7bc619ef34ac696", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.046, "token_f1_base": 0.046, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6c1981c7f78df887", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1, "token_f1_base": 0.1, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "8e8ea821a3a4e2f5", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "bce6135cff0acf8b", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0465, "token_f1_base": 0.0465, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "ab4b195c68307c5f", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "7118e55d1da26800", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "df2c10c3b1153c86", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "0ee29d7a04a2a051", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2424, "token_f1_base": 0.2424, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "36b42a28abc37c4c", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "15a538be6a990b2c", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3077, "token_f1_base": 0.3077, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5d15e4a5ea86e8e6", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "4bf7598835b6e4ee", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1818, "token_f1_base": 0.1818, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "2574337e1a4fc0b3", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "9a015367d3054b00", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "3ef763d8b7b97e06", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1702, "token_f1_base": 0.1702, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "3c07dedefa2d2f67", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0222, "token_f1_base": 0.0222, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "11686949a1194b6b", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "5c182d4631609bb1", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5902, "token_f1_base": 0.5902, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "9b47e2ca10a38ea5", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "be7285a2571426df", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5da134d9b1e47c39", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.05, "token_f1_base": 0.05, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "28d0b76b5c04a786", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
+{"question_id": "e40d16cf70d82151", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "9533cb397a32f0f4", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "9f1c2e8595e0a2ac", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "d9e8e5eb9e116add", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6533be64a2cd254a", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0361, "token_f1_base": 0.0361, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "893fe376f0388f79", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "e41faf29627855b9", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "2d8cc3ef8955a0b2", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1176, "token_f1_base": 0.1176, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "5159c3417122e761", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "4766e2348097cf18", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "27cda12c39366041", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "5555b7a04c61540d", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5185, "token_f1_base": 0.5185, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "07a0f79894f797e6", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0465, "token_f1_base": 0.0465, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "970053df7b325f1d", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "segment_match": 0, "outcome": "correct"}}
+{"question_id": "f2b06cd809788950", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.062, "token_f1_base": 0.062, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "600f5888f0243fcb", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "236e0621df235a92", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "1d5dfdce82ac2c1a", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "da582947a7dcf897", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "e92baf25ae28e729", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d07df619091ece54", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0625, "token_f1_base": 0.0625, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "18097a86cfed5497", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1111, "token_f1_base": 0.1111, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d63a2d3b0d149a2f", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5714, "token_f1_base": 0.5714, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
+{"question_id": "21612c8c66949c3d", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "ea51f2cbe710db39", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "90bf6c1a3bf2ffd9", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "088e9f1dbde2200b", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0351, "token_f1_base": 0.0351, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "db10650e9699cd34", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "d9755fcf99b5d8ef", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "c11b2f51c91f20cd", "model_id": "luna", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0339, "token_f1_base": 0.0339, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
+{"question_id": "197ee9d518ffa337", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.4118, "token_f1_base": 0.4118, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "f743475811b62601", "model_id": "luna", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
+{"question_id": "418dc943e322604c", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
+{"question_id": "de54313e6f67951d", "model_id": "luna", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0, "token_f1_base": 0.0, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "85dcdda8214c6f83", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "a9ef2a7010ffbbfc", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "381d746654337523", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "d2cf4e2fa959478c", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "f64fa7018daaec86", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "f084f53d987d658f", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "6647459a7670fe43", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "888d5add1ca130f6", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "8f9f7ef8f2c53dc6", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "82e0755b663f518a", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "84cef5aa8cdbf55b", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "7f57c930d3979d67", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "60399c323a33cbbb", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "00bded472cd9d31d", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
+{"question_id": "3f6c0ddf1f1c3715", "model_id": "luna", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}

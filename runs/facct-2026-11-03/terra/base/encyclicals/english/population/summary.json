@@ -1,0 +1,2089 @@
+{
+ "models": {
+  "terra": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 18,
+    "minor": 0,
+    "major": 18,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 17,
+     "no_citation": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 11,
+    "major": 19,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "near_copy": 1,
+     "paraphrase": 6,
+     "wrong_passage": 19,
+     "omission": 4
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2538,
+    "token_f1_base": 0.2538,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9667,
+    "correct": 0,
+    "incorrect": 29,
+    "minor": 6,
+    "major": 23,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "near_copy": 4,
+     "paraphrase": 1,
+     "wrong_passage": 23,
+     "omission": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.344,
+    "token_f1_base": 0.3441,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 4,
+    "minor": 0,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 4
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.3193,
+    "coverage": 0.9917,
+    "correct": 38,
+    "incorrect": 81,
+    "minor": 17,
+    "major": 64,
+    "refused": 1,
+    "refused_rate": 0.0083,
+    "kinds": {
+     "near_copy": 5,
+     "paraphrase": 7,
+     "wrong_passage": 42,
+     "omission": 5,
+     "wrong_locus": 17,
+     "no_citation": 1,
+     "wrong_verdict": 4
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "terra": {
+   "Encyclicals": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3193,
+     "coverage": 0.9917,
+     "correct": 38,
+     "incorrect": 81,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "by_text": {
+  "terra": {
+   "Ad Petri Cathedram\u0000Vatican English text (John XXIII, 1959-06-29)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "no_citation": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "no_citation": 1
+     }
+    }
+   },
+   "Aeterni Patris\u0000Vatican English text (Leo XIII, 1879-08-04)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 1,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 1,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Augustissimae Virginis Mariae\u0000Vatican English text (Leo XIII, 1897-09-12)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 1,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1,
+      "omission": 1,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Casti Connubii\u0000Vatican English text (Pius XI, 1930-12-31)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Christi Matri\u0000Vatican English text (Paul VI, 1966-09-15)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Communium Rerum\u0000Vatican English text (Pius X, 1909-04-21)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 1
+     }
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1,
+      "wrong_verdict": 1
+     }
+    }
+   },
+   "Depuis le Jour\u0000Vatican English text (Leo XIII, 1899-09-08)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 1
+     }
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1,
+      "wrong_verdict": 1
+     }
+    }
+   },
+   "Deus caritas est\u0000Vatican English text (Benedict XVI, 2005-12-25)\u0000en": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 1,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1,
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 2,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2
+     }
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 8,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 4,
+     "minor": 3,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2,
+      "wrong_passage": 1,
+      "omission": 1
+     }
+    }
+   },
+   "Dominum et vivificantem\u0000Vatican English text (John Paul II, 1986-05-18)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 1,
+     "refused_rate": 1.0,
+     "kinds": {}
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.6667,
+     "coverage": 0.75,
+     "correct": 2,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 1,
+     "refused_rate": 0.25,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    }
+   },
+   "Ecclesiam Suam\u0000Vatican English text (Paul VI, 1964-08-06)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Fides et Ratio\u0000Vatican English text (John Paul II, 1998-09-14)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 2,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 2
+     }
+    }
+   },
+   "Fratelli tutti\u0000Vatican English text (Francis, 2020-10-03)\u0000en": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 2,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 2,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2
+     }
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 8,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 4,
+     "minor": 4,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2,
+      "paraphrase": 1,
+      "omission": 1
+     }
+    }
+   },
+   "Laudato si'\u0000Vatican English text (Francis, 2015-05-24)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "omission": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 2,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 1,
+      "omission": 1
+     }
+    }
+   },
+   "Meminisse Iuvat\u0000Vatican English text (Pius XII, 1958-07-14)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Musicae Sacrae\u0000Vatican English text (Pius XII, 1955-12-25)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 1,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 1,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Mysterium Fidei\u0000Vatican English text (Paul VI, 1965-09-03)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 1,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 1,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Non Abbiamo Bisogno\u0000Vatican English text (Pius XI, 1931-06-29)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Octobri Mense\u0000Vatican English text (Leo XIII, 1891-09-22)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Orientales Omnes Ecclesias\u0000Vatican English text (Pius XII, 1945-12-23)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    }
+   },
+   "Quadragesimo Anno\u0000Vatican English text (Pius XI, 1931-05-15)\u0000en": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 2
+     }
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    },
+    "retrieve_quote": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 8,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 4,
+      "wrong_locus": 2
+     }
+    }
+   },
+   "Quod Anniversarius\u0000Vatican English text (Leo XIII, 1888-04-01)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "Quod Multum\u0000Vatican English text (Leo XIII, 1886-08-22)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 1
+     }
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1,
+      "wrong_verdict": 1
+     }
+    }
+   },
+   "Redemptoris Mater\u0000Vatican English text (John Paul II, 1987-03-25)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 1,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1,
+      "omission": 1
+     }
+    }
+   },
+   "Sacerdotalis Caelibatus\u0000Vatican English text (Paul VI, 1967-06-24)\u0000en": {
+    "cite_passage": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    },
+    "retrieve_quote": {
+     "n": 2,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    },
+    "verify_source": {
+     "n": 2,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 1
+     }
+    },
+    "_overall": {
+     "n": 8,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 4,
+      "wrong_locus": 1,
+      "wrong_verdict": 1
+     }
+    }
+   },
+   "Ut Unum Sint\u0000Vatican English text (John Paul II, 1995-05-25)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 1,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 1,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 1
+     }
+    }
+   },
+   "Veritatis Splendor\u0000Vatican English text (John Paul II, 1993-08-06)\u0000en": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "terra": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.3193,
+     "coverage": 0.9917,
+     "correct": 38,
+     "incorrect": 81,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "verify": {
+  "terra": {
+   "no": {
+    "n": 15,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "terra": {
+    "calls": 120,
+    "in": 17123,
+    "out": 6278
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 17123,
+   "out": 6278
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:50.088411+00:00"
+}

@@ -1,0 +1,336 @@
+{
+ "models": {
+  "terra": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9667,
+    "coverage": 1.0,
+    "correct": 29,
+    "incorrect": 1,
+    "minor": 0,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 20,
+    "incorrect": 10,
+    "minor": 7,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 1,
+     "edition_variant": 2,
+     "paraphrase": 3,
+     "wrong_passage": 3,
+     "omission": 1
+    },
+    "exact": 0.1,
+    "normalized": 0.6667,
+    "token_f1": 0.8474,
+    "token_f1_base": 0.8515,
+    "contains_reference": 0.6667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 15,
+    "minor": 14,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 1,
+     "edition_variant": 8,
+     "near_copy": 1,
+     "paraphrase": 4,
+     "wrong_passage": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.3,
+    "token_f1": 0.9057,
+    "token_f1_base": 0.9136,
+    "contains_reference": 0.5
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 2
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.7667,
+    "coverage": 1.0,
+    "correct": 92,
+    "incorrect": 28,
+    "minor": 21,
+    "major": 7,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 2,
+     "edition_variant": 10,
+     "near_copy": 1,
+     "paraphrase": 7,
+     "wrong_passage": 4,
+     "omission": 1,
+     "wrong_locus": 1,
+     "wrong_verdict": 2
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "terra": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7667,
+     "coverage": 1.0,
+     "correct": 92,
+     "incorrect": 28,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "terra": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "minor": 7,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 1,
+      "edition_variant": 2,
+      "paraphrase": 3,
+      "wrong_passage": 3,
+      "omission": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "minor": 14,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 1,
+      "edition_variant": 8,
+      "near_copy": 1,
+      "paraphrase": 4,
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 2
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7667,
+     "coverage": 1.0,
+     "correct": 92,
+     "incorrect": 28,
+     "minor": 21,
+     "major": 7,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 2,
+      "edition_variant": 10,
+      "near_copy": 1,
+      "paraphrase": 7,
+      "wrong_passage": 4,
+      "omission": 1,
+      "wrong_locus": 1,
+      "wrong_verdict": 2
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "terra": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7667,
+     "coverage": 1.0,
+     "correct": 92,
+     "incorrect": 28,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "terra": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 2,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "terra": {
+    "calls": 120,
+    "in": 13878,
+    "out": 3421
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13878,
+   "out": 3421
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:48.727516+00:00"
+}

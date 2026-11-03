@@ -1,0 +1,298 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "addition": 15
+    },
+    "exact": 0.0,
+    "normalized": 0.5,
+    "token_f1": 0.7897,
+    "token_f1_base": 0.7897,
+    "contains_reference": 1.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "addition": 2
+    },
+    "exact": 0.0,
+    "normalized": 0.6667,
+    "token_f1": 0.9555,
+    "token_f1_base": 0.9555,
+    "contains_reference": 1.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 0.7333,
+    "correct": 22,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 8,
+    "refused_rate": 0.2667,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 1.0,
+    "coverage": 0.9333,
+    "correct": 112,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 8,
+    "refused_rate": 0.0667,
+    "kinds": {
+     "addition": 17
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.7333,
+     "correct": 22,
+     "incorrect": 0,
+     "refused": 8,
+     "refused_rate": 0.2667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 1.0,
+     "coverage": 0.9333,
+     "correct": 112,
+     "incorrect": 0,
+     "refused": 8,
+     "refused_rate": 0.0667
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "addition": 15
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "addition": 2
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.7333,
+     "correct": 22,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 8,
+     "refused_rate": 0.2667,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 1.0,
+     "coverage": 0.9333,
+     "correct": 112,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 8,
+     "refused_rate": 0.0667,
+     "kinds": {
+      "addition": 17
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.7333,
+     "correct": 22,
+     "incorrect": 0,
+     "refused": 8,
+     "refused_rate": 0.2667
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 1.0,
+     "coverage": 0.9333,
+     "correct": 112,
+     "incorrect": 0,
+     "refused": 8,
+     "refused_rate": 0.0667
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.4667,
+    "correct": 7,
+    "incorrect": 0,
+    "refused": 8,
+    "refused_rate": 0.5333
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 28024,
+    "out": 23101
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 28024,
+   "out": 23101
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:31.144196+00:00"
+}

@@ -1,0 +1,324 @@
+{
+ "models": {
+  "gemma-31b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 18,
+    "minor": 0,
+    "major": 18,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 18
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0333,
+    "coverage": 1.0,
+    "correct": 1,
+    "incorrect": 29,
+    "minor": 8,
+    "major": 21,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 6,
+     "wrong_passage": 21,
+     "omission": 2
+    },
+    "exact": 0.0,
+    "normalized": 0.0333,
+    "token_f1": 0.2702,
+    "token_f1_base": 0.2702,
+    "contains_reference": 0.0333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 12,
+    "major": 18,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "near_copy": 2,
+     "paraphrase": 10,
+     "wrong_passage": 18
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.3995,
+    "token_f1_base": 0.3995,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 22,
+    "incorrect": 8,
+    "minor": 0,
+    "major": 8,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 8
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2917,
+    "coverage": 1.0,
+    "correct": 35,
+    "incorrect": 85,
+    "minor": 20,
+    "major": 65,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "near_copy": 2,
+     "paraphrase": 16,
+     "wrong_passage": 39,
+     "omission": 2,
+     "wrong_locus": 18,
+     "wrong_verdict": 8
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "gemma-31b": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2917,
+     "coverage": 1.0,
+     "correct": 35,
+     "incorrect": 85,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "gemma-31b": {
+   "The Bible\u0000NRSV\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "minor": 0,
+     "major": 18,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 18
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "minor": 8,
+     "major": 21,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 6,
+      "wrong_passage": 21,
+      "omission": 2
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 12,
+     "major": 18,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2,
+      "paraphrase": 10,
+      "wrong_passage": 18
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "minor": 0,
+     "major": 8,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 8
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2917,
+     "coverage": 1.0,
+     "correct": 35,
+     "incorrect": 85,
+     "minor": 20,
+     "major": 65,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "near_copy": 2,
+      "paraphrase": 16,
+      "wrong_passage": 39,
+      "omission": 2,
+      "wrong_locus": 18,
+      "wrong_verdict": 8
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "gemma-31b": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0333,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 29,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2917,
+     "coverage": 1.0,
+     "correct": 35,
+     "incorrect": 85,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "gemma-31b": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.4667,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 8,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "gemma-31b": {
+    "calls": 120,
+    "in": 7741,
+    "out": 1583
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 7741,
+   "out": 1583
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:21.541009+00:00"
+}

@@ -1,0 +1,322 @@
+{
+ "models": {
+  "terra": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.1333,
+    "coverage": 1.0,
+    "correct": 4,
+    "incorrect": 26,
+    "minor": 0,
+    "major": 26,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 26
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 1,
+    "major": 29,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 1,
+     "wrong_passage": 29
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0944,
+    "token_f1_base": 0.1081,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 30
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.02,
+    "token_f1_base": 0.0373,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8333,
+    "coverage": 1.0,
+    "correct": 25,
+    "incorrect": 5,
+    "minor": 0,
+    "major": 5,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 5
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2417,
+    "coverage": 1.0,
+    "correct": 29,
+    "incorrect": 91,
+    "minor": 1,
+    "major": 90,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 1,
+     "wrong_passage": 59,
+     "wrong_locus": 26,
+     "wrong_verdict": 5
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "terra": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2417,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 91,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "terra": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "minor": 0,
+     "major": 26,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 26
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 1,
+     "major": 29,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 1,
+      "wrong_passage": 29
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 30
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "minor": 0,
+     "major": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 5
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2417,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 91,
+     "minor": 1,
+     "major": 90,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 1,
+      "wrong_passage": 59,
+      "wrong_locus": 26,
+      "wrong_verdict": 5
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "terra": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.1333,
+     "coverage": 1.0,
+     "correct": 4,
+     "incorrect": 26,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 1.0,
+     "correct": 25,
+     "incorrect": 5,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2417,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 91,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "terra": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 10,
+    "incorrect": 5,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "terra": {
+    "calls": 120,
+    "in": 12749,
+    "out": 2293
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 12749,
+   "out": 2293
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "segment_match": {
+  "terra": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "correct": 4,
+    "segment_match": 1
+   }
+  }
+ },
+ "generated_at": "2026-11-03T05:24:52.456139+00:00"
+}

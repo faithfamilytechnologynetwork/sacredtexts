@@ -1,0 +1,330 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 2
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.3333,
+    "coverage": 1.0,
+    "correct": 10,
+    "incorrect": 20,
+    "minor": 16,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 5,
+     "near_copy": 1,
+     "paraphrase": 10,
+     "wrong_passage": 4
+    },
+    "exact": 0.1333,
+    "normalized": 0.3333,
+    "token_f1": 0.7488,
+    "token_f1_base": 0.7679,
+    "contains_reference": 0.3333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.3448,
+    "coverage": 0.9667,
+    "correct": 10,
+    "incorrect": 19,
+    "minor": 9,
+    "major": 10,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "diacritic_only": 3,
+     "edition_variant": 3,
+     "paraphrase": 3,
+     "wrong_passage": 10
+    },
+    "exact": 0.0,
+    "normalized": 0.3103,
+    "token_f1": 0.6281,
+    "token_f1_base": 0.6381,
+    "contains_reference": 0.3448
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.6667,
+    "coverage": 1.0,
+    "correct": 20,
+    "incorrect": 10,
+    "minor": 0,
+    "major": 10,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 10
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.5714,
+    "coverage": 0.9917,
+    "correct": 68,
+    "incorrect": 51,
+    "minor": 25,
+    "major": 26,
+    "refused": 1,
+    "refused_rate": 0.0083,
+    "kinds": {
+     "diacritic_only": 3,
+     "edition_variant": 8,
+     "near_copy": 1,
+     "paraphrase": 13,
+     "wrong_passage": 14,
+     "wrong_locus": 2,
+     "wrong_verdict": 10
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 10,
+     "incorrect": 20,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.3448,
+     "coverage": 0.9667,
+     "correct": 10,
+     "incorrect": 19,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5714,
+     "coverage": 0.9917,
+     "correct": 68,
+     "incorrect": 51,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 2
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 10,
+     "incorrect": 20,
+     "minor": 16,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 5,
+      "near_copy": 1,
+      "paraphrase": 10,
+      "wrong_passage": 4
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.3448,
+     "coverage": 0.9667,
+     "correct": 10,
+     "incorrect": 19,
+     "minor": 9,
+     "major": 10,
+     "refused": 1,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "diacritic_only": 3,
+      "edition_variant": 3,
+      "paraphrase": 3,
+      "wrong_passage": 10
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "minor": 0,
+     "major": 10,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 10
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5714,
+     "coverage": 0.9917,
+     "correct": 68,
+     "incorrect": 51,
+     "minor": 25,
+     "major": 26,
+     "refused": 1,
+     "refused_rate": 0.0083,
+     "kinds": {
+      "diacritic_only": 3,
+      "edition_variant": 8,
+      "near_copy": 1,
+      "paraphrase": 13,
+      "wrong_passage": 14,
+      "wrong_locus": 2,
+      "wrong_verdict": 10
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "kimi": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.3333,
+     "coverage": 1.0,
+     "correct": 10,
+     "incorrect": 20,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.3448,
+     "coverage": 0.9667,
+     "correct": 10,
+     "incorrect": 19,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.6667,
+     "coverage": 1.0,
+     "correct": 20,
+     "incorrect": 10,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5714,
+     "coverage": 0.9917,
+     "correct": 68,
+     "incorrect": 51,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "verify": {
+  "kimi": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.3333,
+    "coverage": 1.0,
+    "correct": 5,
+    "incorrect": 10,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 16986,
+    "out": 4208
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 16986,
+   "out": 4208
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:11.481141+00:00"
+}

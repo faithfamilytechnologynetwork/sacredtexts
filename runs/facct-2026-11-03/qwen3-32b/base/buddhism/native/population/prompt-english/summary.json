@@ -1,0 +1,314 @@
+{
+ "models": {
+  "qwen3-32b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 30
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 1,
+    "major": 29,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 29
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1019,
+    "token_f1_base": 0.105,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 30
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0163,
+    "token_f1_base": 0.0163,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.9231,
+    "coverage": 0.8667,
+    "correct": 24,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 4,
+    "refused_rate": 0.1333,
+    "kinds": {
+     "wrong_verdict": 2
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.2069,
+    "coverage": 0.9667,
+    "correct": 24,
+    "incorrect": 92,
+    "minor": 1,
+    "major": 91,
+    "refused": 4,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 59,
+     "wrong_locus": 30,
+     "wrong_verdict": 2
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "qwen3-32b": {
+   "Buddhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9231,
+     "coverage": 0.8667,
+     "correct": 24,
+     "incorrect": 2,
+     "refused": 4,
+     "refused_rate": 0.1333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 24,
+     "incorrect": 92,
+     "refused": 4,
+     "refused_rate": 0.0333
+    }
+   }
+  }
+ },
+ "by_text": {
+  "qwen3-32b": {
+   "Dhammapada\u0000Cha\u1e6d\u1e6dha Sa\u1e45g\u0101yana (VRI)\u0000pi": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 30
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 1,
+     "major": 29,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 29
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 30
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9231,
+     "coverage": 0.8667,
+     "correct": 24,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 4,
+     "refused_rate": 0.1333,
+     "kinds": {
+      "wrong_verdict": 2
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 24,
+     "incorrect": 92,
+     "minor": 1,
+     "major": 91,
+     "refused": 4,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 59,
+      "wrong_locus": 30,
+      "wrong_verdict": 2
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "qwen3-32b": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.9231,
+     "coverage": 0.8667,
+     "correct": 24,
+     "incorrect": 2,
+     "refused": 4,
+     "refused_rate": 0.1333
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.2069,
+     "coverage": 0.9667,
+     "correct": 24,
+     "incorrect": 92,
+     "refused": 4,
+     "refused_rate": 0.0333
+    }
+   }
+  }
+ },
+ "verify": {
+  "qwen3-32b": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 0.9333,
+    "correct": 14,
+    "incorrect": 0,
+    "refused": 1,
+    "refused_rate": 0.0667
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.8333,
+    "coverage": 0.8,
+    "correct": 10,
+    "incorrect": 2,
+    "refused": 3,
+    "refused_rate": 0.2
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "qwen3-32b": {
+    "calls": 120,
+    "in": 15781,
+    "out": 81770
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 15781,
+   "out": 81770
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:25.946585+00:00"
+}

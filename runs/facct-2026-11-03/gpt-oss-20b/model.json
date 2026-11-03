@@ -1,0 +1,70 @@
+{
+  "panel_id": "gpt-oss-20b",
+  "openrouter_id": "openai/gpt-oss-20b",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "openai/gpt-oss-20b",
+    "name": "OpenAI: gpt-oss-20b",
+    "context_length": 131072,
+    "max_completion_tokens": 117964,
+    "modality": "text->text",
+    "tokenizer": "GPT",
+    "pricing_usd_per_token": {
+      "prompt": "0.00000003",
+      "completion": "0.00000013",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.03,
+      "output": 0.13
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logit_bias",
+      "logprobs",
+      "max_tokens",
+      "min_p",
+      "presence_penalty",
+      "reasoning",
+      "reasoning_effort",
+      "repetition_penalty",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_k",
+      "top_logprobs",
+      "top_p"
+    ],
+    "reasoning": {
+      "mandatory": true,
+      "supported_efforts": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default_effort": "medium"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "length",
+    "text": "",
+    "provider": "PrimeIntellect",
+    "prompt_tokens": 74,
+    "completion_tokens": 16,
+    "total_tokens": 90,
+    "cost_usd": 1.088e-06
+  },
+  "collected": {
+    "calls": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "cost_usd": 0.0
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "panel_id": "beam",
+  "openrouter_id": "reflection/beam-1.0-501b-a23b",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "reflection/beam-1.0-501b-a23b",
+    "name": "Reflection: Beam 1.0 501B A23B",
+    "context_length": 1048576,
+    "max_completion_tokens": 131072,
+    "modality": "text->text",
+    "tokenizer": "Other",
+    "pricing_usd_per_token": {
+      "prompt": "0.00000025",
+      "completion": "0.000001",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 0.25,
+      "output": 1.0
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logit_bias",
+      "logprobs",
+      "max_tokens",
+      "min_p",
+      "presence_penalty",
+      "reasoning",
+      "reasoning_effort",
+      "repetition_penalty",
+      "response_format",
+      "seed",
+      "stop",
+      "structured_outputs",
+      "temperature",
+      "tool_choice",
+      "tools",
+      "top_k",
+      "top_logprobs",
+      "top_p"
+    ],
+    "reasoning": {
+      "mandatory": true,
+      "supported_efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default_effort": "max"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "length",
+    "text": "",
+    "provider": "BaseTen",
+    "prompt_tokens": 54,
+    "completion_tokens": 16,
+    "total_tokens": 70,
+    "cost_usd": 4.08e-05
+  },
+  "collected": {
+    "calls": 24,
+    "prompt_tokens": 4775,
+    "completion_tokens": 21826,
+    "cost_usd": 0.02301975
+  }
+}

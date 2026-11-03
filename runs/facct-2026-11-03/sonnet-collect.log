@@ -1,0 +1,780 @@
+carry christianity/english/population: 117 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/christianity/english/population/answers.jsonl
+collect christianity/english/population -> runs/facct-2026-11-03/sonnet/base/christianity/english/population/answers.jsonl (120 questions, 3 to call)
+christianity/english/population:   0%|          | 0/3 [00:00<?, ?call/s]christianity/english/population:  33%|███▎      | 1/3 [00:01<00:02,  1.49s/call]christianity/english/population:  67%|██████▋   | 2/3 [00:02<00:01,  1.10s/call, usd=0.0010]christianity/english/population: 100%|██████████| 3/3 [00:02<00:00,  1.52call/s, usd=0.0022]christianity/english/population: 100%|██████████| 3/3 [00:02<00:00,  1.22call/s, usd=0.0034]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 90% cov 100% (n=30; c/i/r 27/3/0; minor/major 0/3) | 73% cov 100% (n=30; c/i/r 22/8/0; minor/major 7/1) | 83% cov 60% (n=30; c/i/r 15/3/12; minor/major 3/0) | 79% cov 80% (n=30; c/i/r 19/5/6; minor/major 0/5) | **81%** cov 85% (c/i/r 83/19/18; minor/major 10/9) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 3 | 0 | 3 | hedge 3 |
+| sonnet | complete_unit | 8 | 7 | 1 | paraphrase 7, wrong_passage 1, addition 18 |
+| sonnet | retrieve_quote | 3 | 3 | 0 | edition_variant 1, near_copy 1, paraphrase 1, addition 10 |
+| sonnet | verify_source | 5 | 0 | 5 | wrong_verdict 5 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Christianity | 90% cov 100% (n=30; c/i/r 27/3/0) | 73% cov 100% (n=30; c/i/r 22/8/0) | 83% cov 60% (n=30; c/i/r 15/3/12) | 79% cov 80% (n=30; c/i/r 19/5/6) | **81%** cov 85% (n=120; c/i/r 83/19/18) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (NRSV, en) | 120 | 81% | 85% | 18 | — | 10 | 9 | edition_variant 1, near_copy 1, paraphrase 8, wrong_passage 1, addition 28, hedge 3, wrong_verdict 5 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 9,947 | 13,393 |
+| **total** | 120 | 9,947 | 13,393 |
+
+  collected 3, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/english/population/summary.md
+carry christianity/native/masoretic/population/prompt-english: 83 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/christianity/native/masoretic/population/prompt-english/answers.jsonl
+collect christianity/native/masoretic/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/answers.jsonl (84 questions, 1 to call)
+christianity/native/masoretic/population/prompt-english:   0%|          | 0/1 [00:00<?, ?call/s]christianity/native/masoretic/population/prompt-english: 100%|██████████| 1/1 [00:01<00:00,  1.74s/call]christianity/native/masoretic/population/prompt-english: 100%|██████████| 1/1 [00:01<00:00,  1.74s/call, usd=0.0052]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 81% cov 100% (n=21; c/i/r 17/4/0; minor/major 0/4) | 86% cov 100% (n=21; c/i/r 18/3/0; minor/major 0/3) | 57% cov 100% (n=21; c/i/r 12/9/0; minor/major 6/3) | 100% cov 38% (n=21; c/i/r 8/0/13; minor/major 0/0) | **77%** cov 85% (c/i/r 55/16/13; minor/major 6/10) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 4 | 0 | 4 | hedge 4 |
+| sonnet | complete_unit | 3 | 0 | 3 | wrong_passage 3, addition 18 |
+| sonnet | retrieve_quote | 9 | 6 | 3 | edition_variant 2, paraphrase 4, other_script 3, addition 5 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Christianity | 81% cov 100% (n=21; c/i/r 17/4/0) | 86% cov 100% (n=21; c/i/r 18/3/0) | 57% cov 100% (n=21; c/i/r 12/9/0) | 100% cov 38% (n=21; c/i/r 8/0/13) | **77%** cov 85% (n=84; c/i/r 55/16/13) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), arc) | 4 | 75% | 100% | 0 | — | 0 | 1 | other_script 1, addition 1 |
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), he) | 80 | 78% | 84% | 13 | — | 6 | 9 | edition_variant 2, paraphrase 4, wrong_passage 3, other_script 2, addition 22, hedge 4 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 84 | 16,248 | 20,536 |
+| **total** | 84 | 16,248 | 20,536 |
+
+  collected 1, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-english/summary.md
+carry christianity/native/masoretic/population/prompt-native: 82 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/christianity/native/masoretic/population/prompt-native/answers.jsonl
+collect christianity/native/masoretic/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/answers.jsonl (84 questions, 2 to call)
+christianity/native/masoretic/population/prompt-native:   0%|          | 0/2 [00:00<?, ?call/s]christianity/native/masoretic/population/prompt-native:  50%|█████     | 1/2 [00:02<00:02,  2.01s/call]christianity/native/masoretic/population/prompt-native: 100%|██████████| 2/2 [00:03<00:00,  1.64s/call, usd=0.0062]christianity/native/masoretic/population/prompt-native: 100%|██████████| 2/2 [00:03<00:00,  1.69s/call, usd=0.0088]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 90% cov 100% (n=21; c/i/r 19/2/0; minor/major 0/2) | 76% cov 100% (n=21; c/i/r 16/5/0; minor/major 1/4) | 52% cov 100% (n=21; c/i/r 11/10/0; minor/major 8/2) | 52% cov 100% (n=21; c/i/r 11/10/0; minor/major 0/10) | **68%** cov 100% (c/i/r 57/27/0; minor/major 9/18) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 2 | 0 | 2 | wrong_locus 1, hedge 1 |
+| sonnet | complete_unit | 5 | 1 | 4 | edition_variant 1, wrong_passage 4, addition 13 |
+| sonnet | retrieve_quote | 10 | 8 | 2 | edition_variant 2, paraphrase 6, wrong_passage 2, addition 7 |
+| sonnet | verify_source | 10 | 0 | 10 | wrong_verdict 10 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Christianity | 90% cov 100% (n=21; c/i/r 19/2/0) | 76% cov 100% (n=21; c/i/r 16/5/0) | 52% cov 100% (n=21; c/i/r 11/10/0) | 52% cov 100% (n=21; c/i/r 11/10/0) | **68%** cov 100% (n=84; c/i/r 57/27/0) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), arc) | 4 | 50% | 100% | 0 | — | 1 | 1 | paraphrase 1, wrong_passage 1 |
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), he) | 80 | 69% | 100% | 0 | — | 8 | 17 | edition_variant 3, paraphrase 5, wrong_passage 5, addition 20, wrong_locus 1, hedge 1, wrong_verdict 10 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 84 | 13,563 | 24,375 |
+| **total** | 84 | 13,563 | 24,375 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=9; c/i/r 9/0/0; minor/major 0/0) | 78% cov 100% (n=9; c/i/r 7/2/0; minor/major 1/1) | 56% cov 100% (n=9; c/i/r 5/4/0; minor/major 4/0) | 100% cov 67% (n=9; c/i/r 6/0/3; minor/major 0/0) | **82%** cov 92% (c/i/r 27/6/3; minor/major 5/1) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 2 | 1 | 1 | paraphrase 1, wrong_passage 1, addition 7 |
+| sonnet | retrieve_quote | 4 | 4 | 0 | edition_variant 4, addition 2 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Christianity | 100% cov 100% (n=9; c/i/r 9/0/0) | 78% cov 100% (n=9; c/i/r 7/2/0) | 56% cov 100% (n=9; c/i/r 5/4/0) | 100% cov 67% (n=9; c/i/r 6/0/3) | **82%** cov 92% (n=36; c/i/r 27/6/3) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Greek New Testament (Scrivener 1894), grc) | 36 | 82% | 92% | 3 | — | 5 | 1 | edition_variant 4, paraphrase 1, wrong_passage 1, addition 9 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 36 | 5,345 | 6,851 |
+| **total** | 36 | 5,345 | 6,851 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=9; c/i/r 9/0/0; minor/major 0/0) | 67% cov 100% (n=9; c/i/r 6/3/0; minor/major 3/0) | 56% cov 100% (n=9; c/i/r 5/4/0; minor/major 4/0) | 89% cov 100% (n=9; c/i/r 8/1/0; minor/major 0/1) | **78%** cov 100% (c/i/r 28/8/0; minor/major 7/1) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 3 | 3 | 0 | edition_variant 3, addition 3 |
+| sonnet | retrieve_quote | 4 | 4 | 0 | edition_variant 2, paraphrase 2, addition 2 |
+| sonnet | verify_source | 1 | 0 | 1 | wrong_verdict 1 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Christianity | 100% cov 100% (n=9; c/i/r 9/0/0) | 67% cov 100% (n=9; c/i/r 6/3/0) | 56% cov 100% (n=9; c/i/r 5/4/0) | 89% cov 100% (n=9; c/i/r 8/1/0) | **78%** cov 100% (n=36; c/i/r 28/8/0) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Greek New Testament (Scrivener 1894), grc) | 36 | 78% | 100% | 0 | — | 7 | 1 | edition_variant 5, paraphrase 2, addition 5, wrong_verdict 1 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 36 | 5,784 | 4,469 |
+| **total** | 36 | 5,784 | 4,469 |
+
+  collected 2, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/masoretic/population/prompt-native/summary.md
+carry christianity/native/greek/population/prompt-english: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/christianity/native/greek/population/prompt-english/answers.jsonl
+collect christianity/native/greek/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-english/summary.md
+carry christianity/native/greek/population/prompt-native: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/christianity/native/greek/population/prompt-native/answers.jsonl
+collect christianity/native/greek/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/christianity/native/greek/population/prompt-native/summary.md
+carry judaism/native/population/prompt-english: 117 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/judaism/native/population/prompt-english/answers.jsonl
+collect judaism/native/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/answers.jsonl (120 questions, 3 to call)
+judaism/native/population/prompt-english:   0%|          | 0/3 [00:00<?, ?call/s]judaism/native/population/prompt-english:  33%|███▎      | 1/3 [00:02<00:04,  2.22s/call]judaism/native/population/prompt-english:  67%|██████▋   | 2/3 [00:03<00:01,  1.44s/call, usd=0.0113]judaism/native/population/prompt-english: 100%|██████████| 3/3 [00:05<00:00,  1.87s/call, usd=0.0152]judaism/native/population/prompt-english: 100%|██████████| 3/3 [00:05<00:00,  1.83s/call, usd=0.0198]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 4% cov 87% (n=30; c/i/r 1/25/4; minor/major 0/25) | 4% cov 87% (n=30; c/i/r 1/25/4; minor/major 1/24) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 25% cov 13% (n=30; c/i/r 1/3/26; minor/major 0/3) | **5%** cov 47% (c/i/r 3/53/64; minor/major 1/52) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 25 | 0 | 25 | hedge 25 |
+| sonnet | complete_unit | 25 | 1 | 24 | paraphrase 1, wrong_passage 13, other_script 11, addition 1 |
+| sonnet | verify_source | 3 | 0 | 3 | wrong_verdict 3 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Judaism | 4% cov 87% (n=30; c/i/r 1/25/4) | 4% cov 87% (n=30; c/i/r 1/25/4) | n/a cov 0% (n=30; c/i/r 0/0/30) | 25% cov 13% (n=30; c/i/r 1/3/26) | **5%** cov 47% (n=120; c/i/r 3/53/64) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 5% | 47% | 64 | — | 1 | 52 | paraphrase 1, wrong_passage 13, other_script 11, addition 1, hedge 25, wrong_verdict 3 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 19,945 | 42,722 |
+| **total** | 120 | 19,945 | 42,722 |
+
+  collected 3, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english/summary.md
+carry judaism/native/population/prompt-native: 115 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/judaism/native/population/prompt-native/answers.jsonl
+collect judaism/native/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/answers.jsonl (120 questions, 5 to call)
+judaism/native/population/prompt-native:   0%|          | 0/5 [00:00<?, ?call/s]judaism/native/population/prompt-native:  20%|██        | 1/5 [00:02<00:11,  2.92s/call]judaism/native/population/prompt-native:  40%|████      | 2/5 [00:04<00:06,  2.32s/call, usd=0.0230]judaism/native/population/prompt-native:  60%|██████    | 3/5 [00:04<00:02,  1.32s/call, usd=0.0286]judaism/native/population/prompt-native:  80%|████████  | 4/5 [00:05<00:01,  1.10s/call, usd=0.0314]judaism/native/population/prompt-native: 100%|██████████| 5/5 [00:05<00:00,  1.33call/s, usd=0.0341]judaism/native/population/prompt-native: 100%|██████████| 5/5 [00:05<00:00,  1.17s/call, usd=0.0401]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 14% cov 70% (n=30; c/i/r 3/18/9; minor/major 0/18) | 0% cov 70% (n=30; c/i/r 0/21/9; minor/major 1/20) | 0% cov 10% (n=30; c/i/r 0/3/27; minor/major 0/3) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **24%** cov 62% (c/i/r 18/57/45; minor/major 1/56) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 18 | 0 | 18 | wrong_locus 15, hedge 3 |
+| sonnet | complete_unit | 21 | 1 | 20 | edition_variant 1, wrong_passage 20 |
+| sonnet | retrieve_quote | 3 | 0 | 3 | wrong_passage 3 |
+| sonnet | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Judaism | 14% cov 70% (n=30; c/i/r 3/18/9) | 0% cov 70% (n=30; c/i/r 0/21/9) | 0% cov 10% (n=30; c/i/r 0/3/27) | 50% cov 100% (n=30; c/i/r 15/15/0) | **24%** cov 62% (n=120; c/i/r 18/57/45) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 24% | 62% | 45 | — | 1 | 56 | edition_variant 1, wrong_passage 23, wrong_locus 15, hedge 3, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 17,877 | 47,286 |
+| **total** | 120 | 17,877 | 47,286 |
+
+  collected 5, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native/summary.md
+carry judaism/english/population: 115 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/judaism/english/population/answers.jsonl
+collect judaism/english/population -> runs/facct-2026-11-03/sonnet/base/judaism/english/population/answers.jsonl (120 questions, 5 to call)
+judaism/english/population:   0%|          | 0/5 [00:00<?, ?call/s]judaism/english/population:  20%|██        | 1/5 [00:02<00:10,  2.50s/call]judaism/english/population:  40%|████      | 2/5 [00:02<00:03,  1.22s/call, usd=0.0426]judaism/english/population:  80%|████████  | 4/5 [00:05<00:01,  1.14s/call, usd=0.0476]judaism/english/population: 100%|██████████| 5/5 [00:05<00:00,  1.02s/call, usd=0.0525]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 4% cov 83% (n=30; c/i/r 1/24/5; minor/major 0/24) | 0% cov 33% (n=30; c/i/r 0/10/20; minor/major 0/10) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 96% cov 77% (n=30; c/i/r 22/1/7; minor/major 0/1) | **40%** cov 48% (c/i/r 23/35/62; minor/major 0/35) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 24 | 0 | 24 | hedge 24 |
+| sonnet | complete_unit | 10 | 0 | 10 | wrong_passage 10 |
+| sonnet | verify_source | 1 | 0 | 1 | wrong_verdict 1 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Judaism | 4% cov 83% (n=30; c/i/r 1/24/5) | 0% cov 33% (n=30; c/i/r 0/10/20) | n/a cov 0% (n=30; c/i/r 0/0/30) | 96% cov 77% (n=30; c/i/r 22/1/7) | **40%** cov 48% (n=120; c/i/r 23/35/62) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - English, en) | 120 | 40% | 48% | 62 | — | 0 | 35 | wrong_passage 10, hedge 24, wrong_verdict 1 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 18,967 | 33,199 |
+| **total** | 120 | 18,967 | 33,199 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 100% cov 73% (n=30; c/i/r 22/0/8; minor/major 0/0) | **100%** cov 93% (c/i/r 112/0/8; minor/major 0/0) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 0 | 0 | 0 | addition 15 |
+| sonnet | retrieve_quote | 0 | 0 | 0 | addition 2 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Islam | 100% cov 100% (n=30; c/i/r 30/0/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | 100% cov 73% (n=30; c/i/r 22/0/8) | **100%** cov 93% (n=120; c/i/r 112/0/8) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Uthmani (QUL), ar) | 120 | 100% | 93% | 8 | — | 0 | 0 | addition 17 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 28,024 | 23,101 |
+| **total** | 120 | 28,024 | 23,101 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 97% cov 100% (n=30; c/i/r 29/1/0; minor/major 1/0) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 83% cov 100% (n=30; c/i/r 25/5/0; minor/major 0/5) | **95%** cov 100% (c/i/r 114/6/0; minor/major 1/5) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 1 | 1 | 0 | omission 1, addition 9 |
+| sonnet | retrieve_quote | 0 | 0 | 0 | addition 9 |
+| sonnet | verify_source | 5 | 0 | 5 | wrong_verdict 5 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Islam | 100% cov 100% (n=30; c/i/r 30/0/0) | 97% cov 100% (n=30; c/i/r 29/1/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | 83% cov 100% (n=30; c/i/r 25/5/0) | **95%** cov 100% (n=120; c/i/r 114/6/0) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Uthmani (QUL), ar) | 120 | 95% | 100% | 0 | — | 1 | 5 | omission 1, addition 18, wrong_verdict 5 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 27,421 | 23,243 |
+| **total** | 120 | 27,421 | 23,243 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 37% cov 100% (n=30; c/i/r 11/19/0; minor/major 16/3) | 35% cov 77% (n=30; c/i/r 8/15/7; minor/major 14/1) | 88% cov 87% (n=30; c/i/r 23/3/4; minor/major 0/3) | **66%** cov 91% (c/i/r 72/37/11; minor/major 30/7) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 19 | 16 | 3 | near_copy 4, paraphrase 12, wrong_passage 3, addition 9 |
+| sonnet | retrieve_quote | 15 | 14 | 1 | near_copy 7, paraphrase 7, wrong_passage 1, addition 6 |
+| sonnet | verify_source | 3 | 0 | 3 | wrong_verdict 3 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Islam | 100% cov 100% (n=30; c/i/r 30/0/0) | 37% cov 100% (n=30; c/i/r 11/19/0) | 35% cov 77% (n=30; c/i/r 8/15/7) | 88% cov 87% (n=30; c/i/r 23/3/4) | **66%** cov 91% (n=120; c/i/r 72/37/11) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Saheeh International (QUL), en) | 120 | 66% | 91% | 11 | — | 30 | 7 | near_copy 11, paraphrase 19, wrong_passage 4, addition 15, wrong_verdict 3 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 13,133 | 14,763 |
+| **total** | 120 | 13,133 | 14,763 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 0% cov 67% (n=30; c/i/r 0/20/10; minor/major 0/20) | 0% cov 53% (n=30; c/i/r 0/16/14; minor/major 0/16) | 0% cov 7% (n=30; c/i/r 0/2/28; minor/major 0/2) | 61% cov 60% (n=30; c/i/r 11/7/12; minor/major 0/7) | **20%** cov 47% (c/i/r 11/45/64; minor/major 0/45) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 20 | 0 | 20 | wrong_locus 11, hedge 2, no_citation 7 |
+| sonnet | complete_unit | 16 | 0 | 16 | wrong_passage 16 |
+| sonnet | retrieve_quote | 2 | 0 | 2 | wrong_passage 2 |
+| sonnet | verify_source | 7 | 0 | 7 | wrong_verdict 7 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Sikhism | 0% cov 67% (n=30; c/i/r 0/20/10) | 0% cov 53% (n=30; c/i/r 0/16/14) | 0% cov 7% (n=30; c/i/r 0/2/28) | 61% cov 60% (n=30; c/i/r 11/7/12) | **20%** cov 47% (n=120; c/i/r 11/45/64) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 20% | 47% | 64 | — | 0 | 45 | wrong_passage 18, wrong_locus 11, hedge 2, no_citation 7, wrong_verdict 7 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 25,667 | 43,657 |
+| **total** | 120 | 25,667 | 43,657 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 6% cov 60% (n=30; c/i/r 1/17/12; minor/major 0/17) | 0% cov 90% (n=30; c/i/r 0/27/3; minor/major 0/27) | 0% cov 17% (n=30; c/i/r 0/5/25; minor/major 0/5) | 70% cov 100% (n=30; c/i/r 21/9/0; minor/major 0/9) | **28%** cov 67% (c/i/r 22/58/40; minor/major 0/58) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 17 | 0 | 17 | wrong_locus 8, no_citation 9 |
+| sonnet | complete_unit | 27 | 0 | 27 | wrong_passage 27 |
+| sonnet | retrieve_quote | 5 | 0 | 5 | wrong_passage 5 |
+| sonnet | verify_source | 9 | 0 | 9 | wrong_verdict 9 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Sikhism | 6% cov 60% (n=30; c/i/r 1/17/12) | 0% cov 90% (n=30; c/i/r 0/27/3) | 0% cov 17% (n=30; c/i/r 0/5/25) | 70% cov 100% (n=30; c/i/r 21/9/0) | **28%** cov 67% (n=120; c/i/r 22/58/40) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 28% | 67% | 40 | — | 0 | 58 | wrong_passage 32, wrong_locus 8, no_citation 9, wrong_verdict 9 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 30,418 | 112,283 |
+| **total** | 120 | 30,418 | 112,283 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 67% cov 100% (n=30; c/i/r 20/10/0; minor/major 1/9) | 53% cov 100% (n=30; c/i/r 16/14/0; minor/major 9/5) | 100% cov 67% (n=30; c/i/r 20/0/10; minor/major 0/0) | **78%** cov 92% (c/i/r 86/24/10; minor/major 10/14) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | complete_unit | 10 | 1 | 9 | paraphrase 1, wrong_passage 9, addition 16 |
+| sonnet | retrieve_quote | 14 | 9 | 5 | edition_variant 2, paraphrase 7, wrong_passage 5, addition 5 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Hinduism | 100% cov 100% (n=30; c/i/r 30/0/0) | 67% cov 100% (n=30; c/i/r 20/10/0) | 53% cov 100% (n=30; c/i/r 16/14/0) | 100% cov 67% (n=30; c/i/r 20/0/10) | **78%** cov 92% (n=120; c/i/r 86/24/10) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 78% | 92% | 10 | — | 10 | 14 | edition_variant 2, paraphrase 8, wrong_passage 14, addition 21 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 18,444 | 16,280 |
+| **total** | 120 | 18,444 | 16,280 |
+
+  collected 5, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/judaism/english/population/summary.md
+carry islam/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/islam/native/population/prompt-english/answers.jsonl
+collect islam/native/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-english/summary.md
+carry islam/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/islam/native/population/prompt-native/answers.jsonl
+collect islam/native/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/native/population/prompt-native/summary.md
+carry islam/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/islam/english/population/answers.jsonl
+collect islam/english/population -> runs/facct-2026-11-03/sonnet/base/islam/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/islam/english/population/summary.md
+carry sikhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/sikhism/native/population/prompt-english/answers.jsonl
+collect sikhism/native/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-english/summary.md
+carry sikhism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/sikhism/native/population/prompt-native/answers.jsonl
+collect sikhism/native/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/sikhism/native/population/prompt-native/summary.md
+carry hinduism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/hinduism/native/population/prompt-english/answers.jsonl
+collect hinduism/native/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-english/summary.md
+carry hinduism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/hinduism/native/population/prompt-native/answers.jsonl
+collect hinduism/native/population/prompt-native -> runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/summary.mdwrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | 67% cov 100% (n=30; c/i/r 20/10/0; minor/major 0/10) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 4/11) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **78%** cov 100% (c/i/r 93/27/0; minor/major 4/23) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 2 | 0 | 2 | hedge 2 |
+| sonnet | complete_unit | 10 | 0 | 10 | wrong_passage 10, addition 20 |
+| sonnet | retrieve_quote | 15 | 4 | 11 | paraphrase 4, wrong_passage 11, addition 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Hinduism | 93% cov 100% (n=30; c/i/r 28/2/0) | 67% cov 100% (n=30; c/i/r 20/10/0) | 50% cov 100% (n=30; c/i/r 15/15/0) | 100% cov 100% (n=30; c/i/r 30/0/0) | **78%** cov 100% (n=120; c/i/r 93/27/0) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 78% | 100% | 0 | — | 4 | 23 | paraphrase 4, wrong_passage 21, addition 35, hedge 2 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 16,413 | 23,889 |
+| **total** | 120 | 16,413 | 23,889 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 80% cov 100% (n=30; c/i/r 24/6/0; minor/major 0/6) | 4% cov 83% (n=30; c/i/r 1/24/5; minor/major 3/21) | 0% cov 23% (n=30; c/i/r 0/7/23; minor/major 6/1) | 80% cov 83% (n=30; c/i/r 20/5/5; minor/major 0/5) | **52%** cov 72% (c/i/r 45/42/33; minor/major 9/33) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 6 | 0 | 6 | hedge 6 |
+| sonnet | complete_unit | 24 | 3 | 21 | paraphrase 3, wrong_passage 21, addition 1 |
+| sonnet | retrieve_quote | 7 | 6 | 1 | edition_variant 1, paraphrase 5, wrong_passage 1 |
+| sonnet | verify_source | 5 | 0 | 5 | wrong_verdict 5 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Hinduism | 80% cov 100% (n=30; c/i/r 24/6/0) | 4% cov 83% (n=30; c/i/r 1/24/5) | 0% cov 23% (n=30; c/i/r 0/7/23) | 80% cov 83% (n=30; c/i/r 20/5/5) | **52%** cov 72% (n=120; c/i/r 45/42/33) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Annie Besant (1922), en) | 120 | 52% | 72% | 33 | — | 9 | 33 | edition_variant 1, paraphrase 8, wrong_passage 22, addition 1, hedge 6, wrong_verdict 5 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 11,579 | 22,378 |
+| **total** | 120 | 11,579 | 22,378 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 7% cov 100% (n=30; c/i/r 2/28/0; minor/major 0/28) | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 3/10) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 5/10) | 100% cov 7% (n=30; c/i/r 2/0/28; minor/major 0/0) | **39%** cov 77% (c/i/r 36/56/28; minor/major 8/48) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 28 | 0 | 28 | hedge 28 |
+| sonnet | complete_unit | 13 | 3 | 10 | edition_variant 1, paraphrase 2, wrong_passage 10, addition 17 |
+| sonnet | retrieve_quote | 15 | 5 | 10 | near_copy 1, paraphrase 4, wrong_passage 10, addition 13 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Buddhism | 7% cov 100% (n=30; c/i/r 2/28/0) | 57% cov 100% (n=30; c/i/r 17/13/0) | 50% cov 100% (n=30; c/i/r 15/15/0) | 100% cov 7% (n=30; c/i/r 2/0/28) | **39%** cov 77% (n=120; c/i/r 36/56/28) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Dhammapada (Chaṭṭha Saṅgāyana (VRI), pi) | 120 | 39% | 77% | 28 | — | 8 | 48 | edition_variant 1, near_copy 1, paraphrase 6, wrong_passage 20, addition 30, hedge 28 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 20,794 | 32,071 |
+| **total** | 120 | 20,794 | 32,071 |
+
+
+carry hinduism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/hinduism/english/population/answers.jsonl
+collect hinduism/english/population -> runs/facct-2026-11-03/sonnet/base/hinduism/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/hinduism/english/population/summary.md
+carry buddhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/buddhism/native/population/prompt-english/answers.jsonl
+collect buddhism/native/population/prompt-english -> runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/buddhism/native/population/prompt-english/summary.md
+carry book-of-mormon/english/population: 118 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/book-of-mormon/english/population/answers.jsonl
+collect book-of-mormon/english/population -> runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/answers.jsonl (120 questions, 2 to call)
+book-of-mormon/english/population:   0%|          | 0/2 [00:00<?, ?call/s]book-of-mormon/english/population:  50%|█████     | 1/2 [00:01<00:01,  1.56s/call]book-of-mormon/english/population: 100%|██████████| 2/2 [00:01<00:00,  1.27call/s, usd=0.0544]book-of-mormon/english/population: 100%|██████████| 2/2 [00:01<00:00,  1.10call/s, usd=0.0567]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 32% cov 93% (n=30; c/i/r 9/19/2; minor/major 0/19) | 46% cov 87% (n=30; c/i/r 12/14/4; minor/major 1/13) | 35% cov 57% (n=30; c/i/r 6/11/13; minor/major 0/11) | 78% cov 90% (n=30; c/i/r 21/6/3; minor/major 0/6) | **49%** cov 82% (c/i/r 48/50/22; minor/major 1/49) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 19 | 0 | 19 | hedge 19 |
+| sonnet | complete_unit | 14 | 1 | 13 | paraphrase 1, wrong_passage 13, addition 9 |
+| sonnet | retrieve_quote | 11 | 0 | 11 | wrong_passage 11, addition 6 |
+| sonnet | verify_source | 6 | 0 | 6 | wrong_verdict 6 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Book of Mormon | 32% cov 93% (n=30; c/i/r 9/19/2) | 46% cov 87% (n=30; c/i/r 12/14/4) | 35% cov 57% (n=30; c/i/r 6/11/13) | 78% cov 90% (n=30; c/i/r 21/6/3) | **49%** cov 82% (n=120; c/i/r 48/50/22) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Book of Mormon (2013 edition, en) | 120 | 49% | 82% | 22 | — | 1 | 49 | paraphrase 1, wrong_passage 24, addition 15, hedge 19, wrong_verdict 6 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 13,423 | 33,114 |
+| **total** | 120 | 13,423 | 33,114 |
+
+  collected 2, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/book-of-mormon/english/population/summary.md
+carry encyclicals/english/population: 118 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/sonnet/base/encyclicals/english/population/answers.jsonl
+collect encyclicals/english/population -> runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/answers.jsonl (120 questions, 2 to call)
+encyclicals/english/population:   0%|          | 0/2 [00:00<?, ?call/s]encyclicals/english/population:  50%|█████     | 1/2 [00:01<00:01,  1.60s/call]encyclicals/english/population: 100%|██████████| 2/2 [00:01<00:00,  1.17call/s, usd=0.0581]encyclicals/english/population: 100%|██████████| 2/2 [00:01<00:00,  1.04call/s, usd=0.0596]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| sonnet | 56% cov 60% (n=30; c/i/r 10/8/12; minor/major 0/8) | 0% cov 53% (n=30; c/i/r 0/16/14; minor/major 6/10) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 76% cov 83% (n=30; c/i/r 19/6/5; minor/major 0/6) | **49%** cov 49% (c/i/r 29/30/61; minor/major 6/24) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| sonnet | cite_passage | 8 | 0 | 8 | wrong_locus 3, hedge 4, no_citation 1 |
+| sonnet | complete_unit | 16 | 6 | 10 | paraphrase 6, wrong_passage 10 |
+| sonnet | verify_source | 6 | 0 | 6 | wrong_verdict 6 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| sonnet | Encyclicals | 56% cov 60% (n=30; c/i/r 10/8/12) | 0% cov 53% (n=30; c/i/r 0/16/14) | n/a cov 0% (n=30; c/i/r 0/0/30) | 76% cov 83% (n=30; c/i/r 19/6/5) | **49%** cov 49% (n=120; c/i/r 29/30/61) |
+
+### By text (one text = one work · version · language)
+
+**sonnet**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Ad Petri Cathedram (Vatican English text (John XXIII, 1959-06-29), en) | 4 | 100% | 25% | 3 | — | 0 | 0 | — |
+| Aeterni Patris (Vatican English text (Leo XIII, 1879-08-04), en) | 4 | 33% | 75% | 1 | — | 1 | 1 | paraphrase 1, wrong_locus 1 |
+| Augustissimae Virginis Mariae (Vatican English text (Leo XIII, 1897-09-12), en) | 4 | 50% | 50% | 2 | — | 0 | 1 | wrong_passage 1 |
+| Casti Connubii (Vatican English text (Pius XI, 1930-12-31), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Christi Matri (Vatican English text (Paul VI, 1966-09-15), en) | 4 | 100% | 25% | 3 | — | 0 | 0 | — |
+| Communium Rerum (Vatican English text (Pius X, 1909-04-21), en) | 4 | 100% | 25% | 3 | — | 0 | 0 | — |
+| Depuis le Jour (Vatican English text (Leo XIII, 1899-09-08), en) | 4 | n/a | 0% | 4 | — | 0 | 0 | — |
+| Deus caritas est (Vatican English text (Benedict XVI, 2005-12-25), en) | 8 | 67% | 75% | 2 | — | 2 | 0 | paraphrase 2 |
+| Dominum et vivificantem (Vatican English text (John Paul II, 1986-05-18), en) | 4 | 67% | 75% | 1 | — | 0 | 1 | wrong_passage 1 |
+| Ecclesiam Suam (Vatican English text (Paul VI, 1964-08-06), en) | 4 | 100% | 50% | 2 | — | 0 | 0 | — |
+| Fides et Ratio (Vatican English text (John Paul II, 1998-09-14), en) | 4 | 67% | 75% | 1 | — | 1 | 0 | paraphrase 1 |
+| Fratelli tutti (Vatican English text (Francis, 2020-10-03), en) | 8 | 67% | 75% | 2 | — | 1 | 1 | paraphrase 1, wrong_passage 1 |
+| Laudato si' (Vatican English text (Francis, 2015-05-24), en) | 4 | 67% | 75% | 1 | — | 1 | 0 | paraphrase 1 |
+| Meminisse Iuvat (Vatican English text (Pius XII, 1958-07-14), en) | 4 | n/a | 0% | 4 | — | 0 | 0 | — |
+| Musicae Sacrae (Vatican English text (Pius XII, 1955-12-25), en) | 4 | 0% | 25% | 3 | — | 0 | 1 | wrong_verdict 1 |
+| Mysterium Fidei (Vatican English text (Paul VI, 1965-09-03), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, hedge 1 |
+| Non Abbiamo Bisogno (Vatican English text (Pius XI, 1931-06-29), en) | 4 | n/a | 0% | 4 | — | 0 | 0 | — |
+| Octobri Mense (Vatican English text (Leo XIII, 1891-09-22), en) | 4 | 0% | 25% | 3 | — | 0 | 1 | wrong_verdict 1 |
+| Orientales Omnes Ecclesias (Vatican English text (Pius XII, 1945-12-23), en) | 4 | 0% | 25% | 3 | — | 0 | 1 | wrong_locus 1 |
+| Quadragesimo Anno (Vatican English text (Pius XI, 1931-05-15), en) | 8 | 40% | 62% | 3 | — | 0 | 3 | wrong_passage 2, hedge 1 |
+| Quod Anniversarius (Vatican English text (Leo XIII, 1888-04-01), en) | 4 | n/a | 0% | 4 | — | 0 | 0 | — |
+| Quod Multum (Vatican English text (Leo XIII, 1886-08-22), en) | 4 | 0% | 50% | 2 | — | 0 | 2 | no_citation 1, wrong_verdict 1 |
+| Redemptoris Mater (Vatican English text (John Paul II, 1987-03-25), en) | 4 | 67% | 75% | 1 | — | 0 | 1 | wrong_passage 1 |
+| Sacerdotalis Caelibatus (Vatican English text (Paul VI, 1967-06-24), en) | 8 | 0% | 38% | 5 | — | 0 | 3 | hedge 1, wrong_verdict 2 |
+| Ut Unum Sint (Vatican English text (John Paul II, 1995-05-25), en) | 4 | 67% | 75% | 1 | — | 0 | 1 | wrong_passage 1 |
+| Veritatis Splendor (Vatican English text (John Paul II, 1993-08-06), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, hedge 1, wrong_verdict 1 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| sonnet | 120 | 25,453 | 26,777 |
+| **total** | 120 | 25,453 | 26,777 |
+
+  collected 2, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpDfkaJT/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/sonnet/base/encyclicals/english/population/summary.md

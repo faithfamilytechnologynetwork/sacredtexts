@@ -1,0 +1,312 @@
+{
+ "models": {
+  "luna": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 4,
+    "minor": 3,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 3,
+     "wrong_passage": 1,
+     "addition": 1
+    },
+    "exact": 0.3667,
+    "normalized": 0.7333,
+    "token_f1": 0.9482,
+    "token_f1_base": 0.9482,
+    "contains_reference": 0.8667
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.4333,
+    "coverage": 1.0,
+    "correct": 13,
+    "incorrect": 17,
+    "minor": 0,
+    "major": 17,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 17
+    },
+    "exact": 0.0,
+    "normalized": 0.2,
+    "token_f1": 0.4451,
+    "token_f1_base": 0.4451,
+    "contains_reference": 0.4333
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8,
+    "coverage": 1.0,
+    "correct": 24,
+    "incorrect": 6,
+    "minor": 0,
+    "major": 6,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 6
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.775,
+    "coverage": 1.0,
+    "correct": 93,
+    "incorrect": 27,
+    "minor": 3,
+    "major": 24,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 3,
+     "wrong_passage": 18,
+     "addition": 1,
+     "wrong_verdict": 6
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "luna": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4333,
+     "coverage": 1.0,
+     "correct": 13,
+     "incorrect": 17,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.775,
+     "coverage": 1.0,
+     "correct": 93,
+     "incorrect": 27,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "luna": {
+   "The Qur'an\u0000Uthmani (QUL)\u0000ar": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "minor": 3,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 3,
+      "wrong_passage": 1,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4333,
+     "coverage": 1.0,
+     "correct": 13,
+     "incorrect": 17,
+     "minor": 0,
+     "major": 17,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 17
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 6
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.775,
+     "coverage": 1.0,
+     "correct": 93,
+     "incorrect": 27,
+     "minor": 3,
+     "major": 24,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 3,
+      "wrong_passage": 18,
+      "addition": 1,
+      "wrong_verdict": 6
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "luna": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.4333,
+     "coverage": 1.0,
+     "correct": 13,
+     "incorrect": 17,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 6,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.775,
+     "coverage": 1.0,
+     "correct": 93,
+     "incorrect": 27,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "luna": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.6,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 6,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "luna": {
+    "calls": 120,
+    "in": 17092,
+    "out": 6796
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 17092,
+   "out": 6796
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:55.899958+00:00"
+}

@@ -1,0 +1,326 @@
+{
+ "models": {
+  "deepseek-v4-pro": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.2333,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 23,
+    "minor": 18,
+    "major": 5,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 3,
+     "near_copy": 1,
+     "paraphrase": 6,
+     "wrong_passage": 5,
+     "omission": 8
+    },
+    "exact": 0.1,
+    "normalized": 0.2333,
+    "token_f1": 0.6286,
+    "token_f1_base": 0.641,
+    "contains_reference": 0.2333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.2333,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 23,
+    "minor": 10,
+    "major": 13,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 4,
+     "near_copy": 5,
+     "paraphrase": 1,
+     "wrong_passage": 13
+    },
+    "exact": 0.1,
+    "normalized": 0.2333,
+    "token_f1": 0.6205,
+    "token_f1_base": 0.6415,
+    "contains_reference": 0.2333
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8667,
+    "coverage": 1.0,
+    "correct": 26,
+    "incorrect": 4,
+    "minor": 0,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 4
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.5833,
+    "coverage": 1.0,
+    "correct": 70,
+    "incorrect": 50,
+    "minor": 28,
+    "major": 22,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 7,
+     "near_copy": 6,
+     "paraphrase": 7,
+     "wrong_passage": 18,
+     "omission": 8,
+     "wrong_verdict": 4
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "deepseek-v4-pro": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5833,
+     "coverage": 1.0,
+     "correct": 70,
+     "incorrect": 50,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "by_text": {
+  "deepseek-v4-pro": {
+   "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "minor": 18,
+     "major": 5,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 3,
+      "near_copy": 1,
+      "paraphrase": 6,
+      "wrong_passage": 5,
+      "omission": 8
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "minor": 10,
+     "major": 13,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 4,
+      "near_copy": 5,
+      "paraphrase": 1,
+      "wrong_passage": 13
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 4
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5833,
+     "coverage": 1.0,
+     "correct": 70,
+     "incorrect": 50,
+     "minor": 28,
+     "major": 22,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 7,
+      "near_copy": 6,
+      "paraphrase": 7,
+      "wrong_passage": 18,
+      "omission": 8,
+      "wrong_verdict": 4
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "deepseek-v4-pro": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2333,
+     "coverage": 1.0,
+     "correct": 7,
+     "incorrect": 23,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8667,
+     "coverage": 1.0,
+     "correct": 26,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.5833,
+     "coverage": 1.0,
+     "correct": 70,
+     "incorrect": 50,
+     "refused": 0,
+     "refused_rate": 0.0
+    }
+   }
+  }
+ },
+ "verify": {
+  "deepseek-v4-pro": {
+   "no": {
+    "n": 15,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 11,
+    "incorrect": 4,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "deepseek-v4-pro": {
+    "calls": 120,
+    "in": 9108,
+    "out": 2607
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 9108,
+   "out": 2607
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:09.198831+00:00"
+}

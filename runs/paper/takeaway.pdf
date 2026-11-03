@@ -9,7 +9,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 792 560] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 3163 >>
+<< /Length 3178 >>
 stream
 0.98 0.98 0.97 rg
 0 0 792 560 re f
@@ -19,56 +19,56 @@ BT /F2 11 Tf 0.12 g 36.0 476.0 Td (Saying no is easier than recognizing the real
 BT /F1 8 Tf 0.25 g 168.0 464.0 Td (real text) Tj ET
 BT /F1 8 Tf 0.25 g 330.0 464.0 Td (a fake) Tj ET
 BT /F1 9 Tf 0.15 g 36.0 448.0 Td (gemini-flash) Tj ET
-160.0 446.0 109.9 12.0 re 0.25 0.45 0.72 rg f
-BT /F1 8 Tf 0.20 g 273.9 448.0 Td (73%) Tj ET
-322.0 446.0 148.9 12.0 re 0.75 0.45 0.28 rg f
-BT /F1 8 Tf 0.20 g 474.9 448.0 Td (99%) Tj ET
+160.0 446.0 140.7 12.0 re 0.25 0.45 0.72 rg f
+BT /F1 8 Tf 0.20 g 304.7 448.0 Td (94%) Tj ET
+322.0 446.0 148.8 12.0 re 0.75 0.45 0.28 rg f
+BT /F1 8 Tf 0.20 g 474.8 448.0 Td (99%) Tj ET
 BT /F1 9 Tf 0.15 g 36.0 420.0 Td (haiku) Tj ET
-160.0 418.0 95.0 12.0 re 0.25 0.45 0.72 rg f
-BT /F1 8 Tf 0.20 g 259.0 420.0 Td (63%) Tj ET
-322.0 418.0 149.1 12.0 re 0.75 0.45 0.28 rg f
-BT /F1 8 Tf 0.20 g 475.1 420.0 Td (99%) Tj ET
+160.0 418.0 107.4 12.0 re 0.25 0.45 0.72 rg f
+BT /F1 8 Tf 0.20 g 271.4 420.0 Td (72%) Tj ET
+322.0 418.0 150.0 12.0 re 0.75 0.45 0.28 rg f
+BT /F1 8 Tf 0.20 g 476.0 420.0 Td (100%) Tj ET
 BT /F1 9 Tf 0.15 g 36.0 392.0 Td (qwen3-32b) Tj ET
-160.0 390.0 90.0 12.0 re 0.25 0.45 0.72 rg f
-BT /F1 8 Tf 0.20 g 254.0 392.0 Td (60%) Tj ET
-322.0 390.0 116.9 12.0 re 0.75 0.45 0.28 rg f
-BT /F1 8 Tf 0.20 g 442.9 392.0 Td (78%) Tj ET
+160.0 390.0 102.4 12.0 re 0.25 0.45 0.72 rg f
+BT /F1 8 Tf 0.20 g 266.4 392.0 Td (68%) Tj ET
+322.0 390.0 134.7 12.0 re 0.75 0.45 0.28 rg f
+BT /F1 8 Tf 0.20 g 460.7 392.0 Td (90%) Tj ET
 BT /F1 9 Tf 0.15 g 36.0 364.0 Td (gpt-oss-20b) Tj ET
-160.0 362.0 19.9 12.0 re 0.25 0.45 0.72 rg f
-BT /F1 8 Tf 0.20 g 183.9 364.0 Td (13%) Tj ET
-322.0 362.0 150.0 12.0 re 0.75 0.45 0.28 rg f
-BT /F1 8 Tf 0.20 g 476.0 364.0 Td (100%) Tj ET
+160.0 362.0 18.8 12.0 re 0.25 0.45 0.72 rg f
+BT /F1 8 Tf 0.20 g 182.8 364.0 Td (12%) Tj ET
+322.0 362.0 148.8 12.0 re 0.75 0.45 0.28 rg f
+BT /F1 8 Tf 0.20 g 474.8 364.0 Td (99%) Tj ET
 BT /F2 11 Tf 0.12 g 36.0 328.0 Td (Gemini Flash: quoting and citing switch with the prompt) Tj ET
 BT /F1 8 Tf 0.25 g 250.0 314.0 Td (quote) Tj ET
 BT /F1 8 Tf 0.25 g 400.0 314.0 Td (cite) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 300.0 Td (Qur'an, Arabic prompt) Tj ET
-230.0 298.0 112.0 11.0 re 0.20 0.50 0.42 rg f
-BT /F1 8 Tf 0.20 g 354.0 300.0 Td (93%) Tj ET
+230.0 298.0 108.0 11.0 re 0.20 0.50 0.42 rg f
+BT /F1 8 Tf 0.20 g 354.0 300.0 Td (90%) Tj ET
 380.0 298.0 120.0 11.0 re 0.45 0.32 0.62 rg f
 BT /F1 8 Tf 0.20 g 504.0 300.0 Td (100%) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 276.0 Td (Qur'an, English prompt) Tj ET
-230.0 274.0 112.0 11.0 re 0.20 0.50 0.42 rg f
-BT /F1 8 Tf 0.20 g 354.0 276.0 Td (93%) Tj ET
-380.0 274.0 4.0 11.0 re 0.45 0.32 0.62 rg f
-BT /F1 8 Tf 0.20 g 504.0 276.0 Td (3%) Tj ET
+230.0 274.0 104.0 11.0 re 0.20 0.50 0.42 rg f
+BT /F1 8 Tf 0.20 g 354.0 276.0 Td (87%) Tj ET
+380.0 274.0 120.0 11.0 re 0.45 0.32 0.62 rg f
+BT /F1 8 Tf 0.20 g 504.0 276.0 Td (100%) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 252.0 Td (Hebrew text, Hebrew prompt) Tj ET
-230.0 250.0 0.0 11.0 re 0.20 0.50 0.42 rg f
-BT /F1 8 Tf 0.20 g 354.0 252.0 Td (0%) Tj ET
-380.0 250.0 120.0 11.0 re 0.45 0.32 0.62 rg f
-BT /F1 8 Tf 0.20 g 504.0 252.0 Td (100%) Tj ET
+230.0 250.0 85.7 11.0 re 0.20 0.50 0.42 rg f
+BT /F1 8 Tf 0.20 g 354.0 252.0 Td (71%) Tj ET
+380.0 250.0 114.3 11.0 re 0.45 0.32 0.62 rg f
+BT /F1 8 Tf 0.20 g 504.0 252.0 Td (95%) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 228.0 Td (Hebrew text, English prompt) Tj ET
-230.0 226.0 0.0 11.0 re 0.20 0.50 0.42 rg f
-BT /F1 8 Tf 0.20 g 354.0 228.0 Td (0%) Tj ET
-380.0 226.0 0.0 11.0 re 0.45 0.32 0.62 rg f
-BT /F1 8 Tf 0.20 g 504.0 228.0 Td (0%) Tj ET
+230.0 226.0 91.4 11.0 re 0.20 0.50 0.42 rg f
+BT /F1 8 Tf 0.20 g 354.0 228.0 Td (76%) Tj ET
+380.0 226.0 114.3 11.0 re 0.45 0.32 0.62 rg f
+BT /F1 8 Tf 0.20 g 504.0 228.0 Td (95%) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 204.0 Td (Greek text, English prompt) Tj ET
 230.0 202.0 106.7 11.0 re 0.20 0.50 0.42 rg f
 BT /F1 8 Tf 0.20 g 354.0 204.0 Td (89%) Tj ET
-380.0 202.0 0.0 11.0 re 0.45 0.32 0.62 rg f
-BT /F1 8 Tf 0.20 g 504.0 204.0 Td (0%) Tj ET
+380.0 202.0 120.0 11.0 re 0.45 0.32 0.62 rg f
+BT /F1 8 Tf 0.20 g 504.0 204.0 Td (100%) Tj ET
 BT /F1 8 Tf 0.15 g 36.0 180.0 Td (NRSV, English prompt) Tj ET
-230.0 178.0 100.0 11.0 re 0.20 0.50 0.42 rg f
-BT /F1 8 Tf 0.20 g 354.0 180.0 Td (83%) Tj ET
+230.0 178.0 95.2 11.0 re 0.20 0.50 0.42 rg f
+BT /F1 8 Tf 0.20 g 354.0 180.0 Td (79%) Tj ET
 380.0 178.0 120.0 11.0 re 0.45 0.32 0.62 rg f
 BT /F1 8 Tf 0.20 g 504.0 180.0 Td (100%) Tj ET
 BT /F1 8 Tf 0.35 g 36.0 28.0 Td (Blue is recognizing the real verse. Orange is rejecting a fake. Green is quotation. Purple is citation.) Tj ET
@@ -87,9 +87,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000251 00000 n 
-0000003466 00000 n 
-0000003536 00000 n 
+0000003481 00000 n 
+0000003551 00000 n 
 trailer << /Size 7 /Root 1 0 R >>
 startxref
-3611
+3626
 %%EOF

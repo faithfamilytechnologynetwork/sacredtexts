@@ -1,0 +1,389 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 21,
+    "accuracy": 0.8095,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 4,
+    "minor": 0,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "hedge": 4
+    }
+   },
+   "complete_unit": {
+    "n": 21,
+    "accuracy": 0.8571,
+    "coverage": 1.0,
+    "correct": 18,
+    "incorrect": 3,
+    "minor": 0,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 3,
+     "addition": 18
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.337,
+    "token_f1_base": 0.337,
+    "contains_reference": 0.8571
+   },
+   "retrieve_quote": {
+    "n": 21,
+    "accuracy": 0.5714,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 9,
+    "minor": 6,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 2,
+     "paraphrase": 4,
+     "other_script": 3,
+     "addition": 5
+    },
+    "exact": 0.0,
+    "normalized": 0.3333,
+    "token_f1": 0.7204,
+    "token_f1_base": 0.7204,
+    "contains_reference": 0.5714
+   },
+   "verify_source": {
+    "n": 21,
+    "accuracy": 1.0,
+    "coverage": 0.381,
+    "correct": 8,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 13,
+    "refused_rate": 0.619,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 84,
+    "accuracy": 0.7746,
+    "coverage": 0.8452,
+    "correct": 55,
+    "incorrect": 16,
+    "minor": 6,
+    "major": 10,
+    "refused": 13,
+    "refused_rate": 0.1548,
+    "kinds": {
+     "edition_variant": 2,
+     "paraphrase": 4,
+     "wrong_passage": 3,
+     "other_script": 3,
+     "addition": 23,
+     "hedge": 4
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 21,
+     "accuracy": 0.8095,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 21,
+     "accuracy": 0.8571,
+     "coverage": 1.0,
+     "correct": 18,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 21,
+     "accuracy": 0.5714,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 21,
+     "accuracy": 1.0,
+     "coverage": 0.381,
+     "correct": 8,
+     "incorrect": 0,
+     "refused": 13,
+     "refused_rate": 0.619
+    },
+    "_overall": {
+     "n": 84,
+     "accuracy": 0.7746,
+     "coverage": 0.8452,
+     "correct": 55,
+     "incorrect": 16,
+     "refused": 13,
+     "refused_rate": 0.1548
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "other_script": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.75,
+     "coverage": 1.0,
+     "correct": 3,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "other_script": 1,
+      "addition": 1
+     }
+    }
+   },
+   "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+    "cite_passage": {
+     "n": 20,
+     "accuracy": 0.8,
+     "coverage": 1.0,
+     "correct": 16,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "hedge": 4
+     }
+    },
+    "complete_unit": {
+     "n": 20,
+     "accuracy": 0.85,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 3,
+      "addition": 17
+     }
+    },
+    "retrieve_quote": {
+     "n": 20,
+     "accuracy": 0.6,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 8,
+     "minor": 6,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 2,
+      "paraphrase": 4,
+      "other_script": 2,
+      "addition": 5
+     }
+    },
+    "verify_source": {
+     "n": 20,
+     "accuracy": 1.0,
+     "coverage": 0.35,
+     "correct": 7,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 13,
+     "refused_rate": 0.65,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 80,
+     "accuracy": 0.7761,
+     "coverage": 0.8375,
+     "correct": 52,
+     "incorrect": 15,
+     "minor": 6,
+     "major": 9,
+     "refused": 13,
+     "refused_rate": 0.1625,
+     "kinds": {
+      "edition_variant": 2,
+      "paraphrase": 4,
+      "wrong_passage": 3,
+      "other_script": 2,
+      "addition": 22,
+      "hedge": 4
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English prompt": {
+    "cite_passage": {
+     "n": 21,
+     "accuracy": 0.8095,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 4,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 21,
+     "accuracy": 0.8571,
+     "coverage": 1.0,
+     "correct": 18,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 21,
+     "accuracy": 0.5714,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 9,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 21,
+     "accuracy": 1.0,
+     "coverage": 0.381,
+     "correct": 8,
+     "incorrect": 0,
+     "refused": 13,
+     "refused_rate": 0.619
+    },
+    "_overall": {
+     "n": 84,
+     "accuracy": 0.7746,
+     "coverage": 0.8452,
+     "correct": 55,
+     "incorrect": 16,
+     "refused": 13,
+     "refused_rate": 0.1548
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 10,
+    "accuracy": 1.0,
+    "coverage": 0.8,
+    "correct": 8,
+    "incorrect": 0,
+    "refused": 2,
+    "refused_rate": 0.2
+   },
+   "yes": {
+    "n": 11,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "refused": 11,
+    "refused_rate": 1.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 84,
+    "in": 16248,
+    "out": 20536
+   }
+  },
+  "total": {
+   "calls": 84,
+   "in": 16248,
+   "out": 20536
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:28.850062+00:00"
+}

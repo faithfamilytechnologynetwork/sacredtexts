@@ -1,0 +1,328 @@
+{
+ "models": {
+  "luna": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.5667,
+    "coverage": 1.0,
+    "correct": 17,
+    "incorrect": 13,
+    "minor": 0,
+    "major": 13,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 13
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.069,
+    "coverage": 0.9667,
+    "correct": 2,
+    "incorrect": 27,
+    "minor": 10,
+    "major": 17,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "near_copy": 2,
+     "paraphrase": 4,
+     "wrong_passage": 17,
+     "omission": 4
+    },
+    "exact": 0.0,
+    "normalized": 0.0345,
+    "token_f1": 0.4187,
+    "token_f1_base": 0.4187,
+    "contains_reference": 0.069
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.2667,
+    "coverage": 1.0,
+    "correct": 8,
+    "incorrect": 22,
+    "minor": 4,
+    "major": 18,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 4,
+     "wrong_passage": 18,
+     "addition": 1
+    },
+    "exact": 0.2,
+    "normalized": 0.2333,
+    "token_f1": 0.4567,
+    "token_f1_base": 0.4567,
+    "contains_reference": 0.2667
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 22,
+    "incorrect": 8,
+    "minor": 0,
+    "major": 8,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 8
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.4118,
+    "coverage": 0.9917,
+    "correct": 49,
+    "incorrect": 70,
+    "minor": 14,
+    "major": 56,
+    "refused": 1,
+    "refused_rate": 0.0083,
+    "kinds": {
+     "near_copy": 2,
+     "paraphrase": 8,
+     "wrong_passage": 35,
+     "omission": 4,
+     "addition": 1,
+     "wrong_locus": 13,
+     "wrong_verdict": 8
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "luna": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.069,
+     "coverage": 0.9667,
+     "correct": 2,
+     "incorrect": 27,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4118,
+     "coverage": 0.9917,
+     "correct": 49,
+     "incorrect": 70,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "by_text": {
+  "luna": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "minor": 0,
+     "major": 13,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 13
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.069,
+     "coverage": 0.9667,
+     "correct": 2,
+     "incorrect": 27,
+     "minor": 10,
+     "major": 17,
+     "refused": 1,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "near_copy": 2,
+      "paraphrase": 4,
+      "wrong_passage": 17,
+      "omission": 4
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "minor": 4,
+     "major": 18,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 4,
+      "wrong_passage": 18,
+      "addition": 1
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "minor": 0,
+     "major": 8,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 8
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4118,
+     "coverage": 0.9917,
+     "correct": 49,
+     "incorrect": 70,
+     "minor": 14,
+     "major": 56,
+     "refused": 1,
+     "refused_rate": 0.0083,
+     "kinds": {
+      "near_copy": 2,
+      "paraphrase": 8,
+      "wrong_passage": 35,
+      "omission": 4,
+      "addition": 1,
+      "wrong_locus": 13,
+      "wrong_verdict": 8
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "luna": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.5667,
+     "coverage": 1.0,
+     "correct": 17,
+     "incorrect": 13,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.069,
+     "coverage": 0.9667,
+     "correct": 2,
+     "incorrect": 27,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.2667,
+     "coverage": 1.0,
+     "correct": 8,
+     "incorrect": 22,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.4118,
+     "coverage": 0.9917,
+     "correct": 49,
+     "incorrect": 70,
+     "refused": 1,
+     "refused_rate": 0.0083
+    }
+   }
+  }
+ },
+ "verify": {
+  "luna": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.4667,
+    "coverage": 1.0,
+    "correct": 7,
+    "incorrect": 8,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "luna": {
+    "calls": 120,
+    "in": 9378,
+    "out": 8095
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 9378,
+   "out": 8095
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:52.984238+00:00"
+}

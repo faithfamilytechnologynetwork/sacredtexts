@@ -1,0 +1,300 @@
+{
+ "models": {
+  "haiku": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 0.8667,
+    "correct": 26,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 4,
+    "refused_rate": 0.1333,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.1333,
+    "correct": 0,
+    "incorrect": 4,
+    "minor": 0,
+    "major": 4,
+    "refused": 26,
+    "refused_rate": 0.8667,
+    "kinds": {
+     "wrong_passage": 4
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1637,
+    "token_f1_base": 0.1637,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 30,
+    "refused_rate": 1.0,
+    "kinds": {},
+    "exact": null,
+    "normalized": null,
+    "token_f1": null,
+    "token_f1_base": null,
+    "contains_reference": null
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.8095,
+    "coverage": 0.7,
+    "correct": 17,
+    "incorrect": 4,
+    "minor": 0,
+    "major": 4,
+    "refused": 9,
+    "refused_rate": 0.3,
+    "kinds": {
+     "wrong_verdict": 4
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.8431,
+    "coverage": 0.425,
+    "correct": 43,
+    "incorrect": 8,
+    "minor": 0,
+    "major": 8,
+    "refused": 69,
+    "refused_rate": 0.575,
+    "kinds": {
+     "wrong_passage": 4,
+     "wrong_verdict": 4
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "haiku": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.8667,
+     "correct": 26,
+     "incorrect": 0,
+     "refused": 4,
+     "refused_rate": 0.1333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.1333,
+     "correct": 0,
+     "incorrect": 4,
+     "refused": 26,
+     "refused_rate": 0.8667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8095,
+     "coverage": 0.7,
+     "correct": 17,
+     "incorrect": 4,
+     "refused": 9,
+     "refused_rate": 0.3
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8431,
+     "coverage": 0.425,
+     "correct": 43,
+     "incorrect": 8,
+     "refused": 69,
+     "refused_rate": 0.575
+    }
+   }
+  }
+ },
+ "by_text": {
+  "haiku": {
+   "Bhagavad Gita\u0000Annie Besant (1922)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.8667,
+     "correct": 26,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 4,
+     "refused_rate": 0.1333,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.1333,
+     "correct": 0,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 26,
+     "refused_rate": 0.8667,
+     "kinds": {
+      "wrong_passage": 4
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 30,
+     "refused_rate": 1.0,
+     "kinds": {}
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8095,
+     "coverage": 0.7,
+     "correct": 17,
+     "incorrect": 4,
+     "minor": 0,
+     "major": 4,
+     "refused": 9,
+     "refused_rate": 0.3,
+     "kinds": {
+      "wrong_verdict": 4
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8431,
+     "coverage": 0.425,
+     "correct": 43,
+     "incorrect": 8,
+     "minor": 0,
+     "major": 8,
+     "refused": 69,
+     "refused_rate": 0.575,
+     "kinds": {
+      "wrong_passage": 4,
+      "wrong_verdict": 4
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "haiku": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 0.8667,
+     "correct": 26,
+     "incorrect": 0,
+     "refused": 4,
+     "refused_rate": 0.1333
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.1333,
+     "correct": 0,
+     "incorrect": 4,
+     "refused": 26,
+     "refused_rate": 0.8667
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.8095,
+     "coverage": 0.7,
+     "correct": 17,
+     "incorrect": 4,
+     "refused": 9,
+     "refused_rate": 0.3
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8431,
+     "coverage": 0.425,
+     "correct": 43,
+     "incorrect": 8,
+     "refused": 69,
+     "refused_rate": 0.575
+    }
+   }
+  }
+ },
+ "verify": {
+  "haiku": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.3333,
+    "coverage": 0.4,
+    "correct": 2,
+    "incorrect": 4,
+    "refused": 9,
+    "refused_rate": 0.6
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "haiku": {
+    "calls": 120,
+    "in": 11339,
+    "out": 16590
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 11339,
+   "out": 16590
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:36.250670+00:00"
+}

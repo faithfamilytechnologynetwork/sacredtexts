@@ -1,0 +1,784 @@
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 3% cov 100% (n=30; c/i/r 1/29/0; minor/major 0/29) | 3% cov 97% (n=30; c/i/r 1/28/1; minor/major 2/26) | 0% cov 93% (n=30; c/i/r 0/28/2; minor/major 2/26) | 73% cov 100% (n=30; c/i/r 22/8/0; minor/major 0/8) | **21%** cov 98% (c/i/r 24/93/3; minor/major 4/89) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 29 | 0 | 29 | wrong_locus 27, no_citation 2 |
+| gpt-oss-20b | complete_unit | 28 | 2 | 26 | paraphrase 2, wrong_passage 26 |
+| gpt-oss-20b | retrieve_quote | 28 | 2 | 26 | near_copy 1, paraphrase 1, wrong_passage 26 |
+| gpt-oss-20b | verify_source | 8 | 0 | 8 | wrong_verdict 8 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Christianity | 3% cov 100% (n=30; c/i/r 1/29/0) | 3% cov 97% (n=30; c/i/r 1/28/1) | 0% cov 93% (n=30; c/i/r 0/28/2) | 73% cov 100% (n=30; c/i/r 22/8/0) | **21%** cov 98% (n=120; c/i/r 24/93/3) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (NRSV, en) | 120 | 21% | 98% | 3 | — | 4 | 89 | near_copy 1, paraphrase 3, wrong_passage 52, wrong_locus 27, no_citation 2, wrong_verdict 8 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 14,167 | 61,782 |
+| **total** | 120 | 14,167 | 61,782 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 95% (n=21; c/i/r 0/20/1; minor/major 0/20) | 0% cov 100% (n=21; c/i/r 0/21/0; minor/major 0/21) | 0% cov 100% (n=21; c/i/r 0/21/0; minor/major 0/21) | 57% cov 100% (n=21; c/i/r 12/9/0; minor/major 0/9) | **14%** cov 99% (c/i/r 12/71/1; minor/major 0/71) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 20 | 0 | 20 | wrong_locus 16, no_citation 4 |
+| gpt-oss-20b | complete_unit | 21 | 0 | 21 | wrong_passage 21 |
+| gpt-oss-20b | retrieve_quote | 21 | 0 | 21 | wrong_passage 21 |
+| gpt-oss-20b | verify_source | 9 | 0 | 9 | wrong_verdict 9 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Christianity | 0% cov 95% (n=21; c/i/r 0/20/1) | 0% cov 100% (n=21; c/i/r 0/21/0) | 0% cov 100% (n=21; c/i/r 0/21/0) | 57% cov 100% (n=21; c/i/r 12/9/0) | **14%** cov 99% (n=84; c/i/r 12/71/1) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), arc) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 2 |
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), he) | 80 | 14% | 100% | 0 | — | 0 | 69 | wrong_passage 40, wrong_locus 16, no_citation 4, wrong_verdict 9 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 84 | 16,837 | 129,407 |
+| **total** | 84 | 16,837 | 129,407 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=21; c/i/r 0/21/0; minor/major 0/21) | 0% cov 81% (n=21; c/i/r 0/17/4; minor/major 0/17) | 0% cov 100% (n=21; c/i/r 0/21/0; minor/major 0/21) | 71% cov 100% (n=21; c/i/r 15/6/0; minor/major 0/6) | **19%** cov 95% (c/i/r 15/65/4; minor/major 0/65) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 21 | 0 | 21 | wrong_locus 19, no_citation 2 |
+| gpt-oss-20b | complete_unit | 17 | 0 | 17 | wrong_passage 17 |
+| gpt-oss-20b | retrieve_quote | 21 | 0 | 21 | wrong_passage 19, other_script 2 |
+| gpt-oss-20b | verify_source | 6 | 0 | 6 | wrong_verdict 6 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Christianity | 0% cov 100% (n=21; c/i/r 0/21/0) | 0% cov 81% (n=21; c/i/r 0/17/4) | 0% cov 100% (n=21; c/i/r 0/21/0) | 71% cov 100% (n=21; c/i/r 15/6/0) | **19%** cov 95% (n=84; c/i/r 15/65/4) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), arc) | 4 | 25% | 100% | 0 | — | 0 | 3 | wrong_passage 2, wrong_locus 1 |
+| The Bible (the Masoretic Text (Westminster Leningrad Codex), he) | 80 | 18% | 95% | 4 | — | 0 | 62 | wrong_passage 34, other_script 2, wrong_locus 18, no_citation 2, wrong_verdict 6 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 84 | 14,906 | 108,672 |
+| **total** | 84 | 14,906 | 108,672 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=9; c/i/r 0/9/0; minor/major 0/9) | 0% cov 100% (n=9; c/i/r 0/9/0; minor/major 0/9) | 0% cov 100% (n=9; c/i/r 0/9/0; minor/major 0/9) | 56% cov 100% (n=9; c/i/r 5/4/0; minor/major 0/4) | **14%** cov 100% (c/i/r 5/31/0; minor/major 0/31) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 9 | 0 | 9 | wrong_locus 8, no_citation 1 |
+| gpt-oss-20b | complete_unit | 9 | 0 | 9 | wrong_passage 9 |
+| gpt-oss-20b | retrieve_quote | 9 | 0 | 9 | wrong_passage 9 |
+| gpt-oss-20b | verify_source | 4 | 0 | 4 | wrong_verdict 4 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Christianity | 0% cov 100% (n=9; c/i/r 0/9/0) | 0% cov 100% (n=9; c/i/r 0/9/0) | 0% cov 100% (n=9; c/i/r 0/9/0) | 56% cov 100% (n=9; c/i/r 5/4/0) | **14%** cov 100% (n=36; c/i/r 5/31/0) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Greek New Testament (Scrivener 1894), grc) | 36 | 14% | 100% | 0 | — | 0 | 31 | wrong_passage 18, wrong_locus 8, no_citation 1, wrong_verdict 4 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 36 | 6,081 | 70,213 |
+| **total** | 36 | 6,081 | 70,213 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=9; c/i/r 0/9/0; minor/major 0/9) | 0% cov 78% (n=9; c/i/r 0/7/2; minor/major 0/7) | 0% cov 100% (n=9; c/i/r 0/9/0; minor/major 0/9) | 56% cov 100% (n=9; c/i/r 5/4/0; minor/major 0/4) | **15%** cov 94% (c/i/r 5/29/2; minor/major 0/29) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 9 | 0 | 9 | wrong_locus 9 |
+| gpt-oss-20b | complete_unit | 7 | 0 | 7 | wrong_passage 7 |
+| gpt-oss-20b | retrieve_quote | 9 | 0 | 9 | wrong_passage 9 |
+| gpt-oss-20b | verify_source | 4 | 0 | 4 | wrong_verdict 4 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Christianity | 0% cov 100% (n=9; c/i/r 0/9/0) | 0% cov 78% (n=9; c/i/r 0/7/2) | 0% cov 100% (n=9; c/i/r 0/9/0) | 56% cov 100% (n=9; c/i/r 5/4/0) | **15%** cov 94% (n=36; c/i/r 5/29/2) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Bible (the Greek New Testament (Scrivener 1894), grc) | 36 | 15% | 94% | 2 | — | 0 | 29 | wrong_passage 16, wrong_locus 9, wrong_verdict 4 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 36 | 6,036 | 16,374 |
+| **total** | 36 | 6,036 | 16,374 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 93% (n=30; c/i/r 0/28/2; minor/major 0/28) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 0/13) | **19%** cov 73% (c/i/r 17/71/32; minor/major 0/71) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 24, no_citation 6 |
+| gpt-oss-20b | complete_unit | 28 | 0 | 28 | wrong_passage 28 |
+| gpt-oss-20b | verify_source | 13 | 0 | 13 | wrong_verdict 13 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Judaism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 93% (n=30; c/i/r 0/28/2) | n/a cov 0% (n=30; c/i/r 0/0/30) | 57% cov 100% (n=30; c/i/r 17/13/0) | **19%** cov 73% (n=120; c/i/r 17/71/32) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 19% | 73% | 32 | — | 0 | 71 | wrong_passage 28, wrong_locus 24, no_citation 6, wrong_verdict 13 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 20,210 | 23,167 |
+| **total** | 120 | 20,210 | 23,167 |
+
+carry christianity/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/christianity/english/population/answers.jsonl
+collect christianity/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/english/population/summary.md
+carry christianity/native/masoretic/population/prompt-english: 84 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/answers.jsonl
+collect christianity/native/masoretic/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/answers.jsonl (84 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-english/summary.md
+carry christianity/native/masoretic/population/prompt-native: 84 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/answers.jsonl
+collect christianity/native/masoretic/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/answers.jsonl (84 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/masoretic/population/prompt-native/summary.md
+carry christianity/native/greek/population/prompt-english: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/answers.jsonl
+collect christianity/native/greek/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-english/summary.md
+carry christianity/native/greek/population/prompt-native: 36 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/answers.jsonl
+collect christianity/native/greek/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/answers.jsonl (36 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/christianity/native/greek/population/prompt-native/summary.md
+carry judaism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/judaism/native/population/prompt-english/answers.jsonl
+collect judaism/native/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-english/summary.md
+carry judaism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/judaism/native/population/prompt-native/answers.jsonl
+collect judaism/native/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/summary.mdwrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 67% (n=30; c/i/r 0/20/10; minor/major 0/20) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **14%** cov 92% (c/i/r 15/95/10; minor/major 0/95) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 30 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 30 |
+| gpt-oss-20b | retrieve_quote | 20 | 0 | 20 | wrong_passage 20 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Judaism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 67% (n=30; c/i/r 0/20/10) | 50% cov 100% (n=30; c/i/r 15/15/0) | **14%** cov 92% (n=120; c/i/r 15/95/10) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 14% | 92% | 10 | — | 0 | 95 | wrong_passage 50, wrong_locus 30, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 18,785 | 180,779 |
+| **total** | 120 | 18,785 | 180,779 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 87% (n=30; c/i/r 0/26/4; minor/major 0/26) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **17%** cov 72% (c/i/r 15/71/34; minor/major 0/71) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 28, no_citation 2 |
+| gpt-oss-20b | complete_unit | 26 | 0 | 26 | wrong_passage 26 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Judaism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 87% (n=30; c/i/r 0/26/4) | n/a cov 0% (n=30; c/i/r 0/0/30) | 50% cov 100% (n=30; c/i/r 15/15/0) | **17%** cov 72% (n=120; c/i/r 15/71/34) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - English, en) | 120 | 17% | 72% | 34 | — | 0 | 71 | wrong_passage 26, wrong_locus 28, no_citation 2, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 20,404 | 144,883 |
+| **total** | 120 | 20,404 | 144,883 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 7% cov 93% (n=30; c/i/r 2/26/2; minor/major 0/26) | 0% cov 97% (n=30; c/i/r 0/29/1; minor/major 0/29) | 0% cov 97% (n=30; c/i/r 0/29/1; minor/major 0/29) | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 0/13) | **16%** cov 97% (c/i/r 19/97/4; minor/major 0/97) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 26 | 0 | 26 | wrong_locus 17, hedge 1, no_citation 8 |
+| gpt-oss-20b | complete_unit | 29 | 0 | 29 | wrong_passage 29 |
+| gpt-oss-20b | retrieve_quote | 29 | 0 | 29 | wrong_passage 26, other_script 3 |
+| gpt-oss-20b | verify_source | 13 | 0 | 13 | wrong_verdict 13 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Islam | 7% cov 93% (n=30; c/i/r 2/26/2) | 0% cov 97% (n=30; c/i/r 0/29/1) | 0% cov 97% (n=30; c/i/r 0/29/1) | 57% cov 100% (n=30; c/i/r 17/13/0) | **16%** cov 97% (n=120; c/i/r 19/97/4) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Uthmani (QUL), ar) | 120 | 16% | 97% | 4 | — | 0 | 97 | wrong_passage 55, other_script 3, wrong_locus 17, hedge 1, no_citation 8, wrong_verdict 13 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 25,782 | 106,900 |
+| **total** | 120 | 25,782 | 106,900 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 97% (n=30; c/i/r 0/29/1; minor/major 0/29) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 90% (n=30; c/i/r 0/27/3; minor/major 0/27) | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 0/13) | **15%** cov 97% (c/i/r 17/99/4; minor/major 0/99) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 29 | 0 | 29 | wrong_locus 19, no_citation 10 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 29, other_script 1 |
+| gpt-oss-20b | retrieve_quote | 27 | 0 | 27 | wrong_passage 27 |
+| gpt-oss-20b | verify_source | 13 | 0 | 13 | wrong_verdict 13 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Islam | 0% cov 97% (n=30; c/i/r 0/29/1) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 90% (n=30; c/i/r 0/27/3) | 57% cov 100% (n=30; c/i/r 17/13/0) | **15%** cov 97% (n=120; c/i/r 17/99/4) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Uthmani (QUL), ar) | 120 | 15% | 97% | 4 | — | 0 | 99 | wrong_passage 56, other_script 1, wrong_locus 19, no_citation 10, wrong_verdict 13 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 24,390 | 153,925 |
+| **total** | 120 | 24,390 | 153,925 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 10% cov 97% (n=30; c/i/r 3/26/1; minor/major 0/26) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 1/29) | 0% cov 93% (n=30; c/i/r 0/28/2; minor/major 1/27) | 60% cov 100% (n=30; c/i/r 18/12/0; minor/major 0/12) | **18%** cov 98% (c/i/r 21/96/3; minor/major 2/94) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 26 | 0 | 26 | wrong_locus 26 |
+| gpt-oss-20b | complete_unit | 30 | 1 | 29 | paraphrase 1, wrong_passage 29 |
+| gpt-oss-20b | retrieve_quote | 28 | 1 | 27 | paraphrase 1, wrong_passage 27 |
+| gpt-oss-20b | verify_source | 12 | 0 | 12 | wrong_verdict 12 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Islam | 10% cov 97% (n=30; c/i/r 3/26/1) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 93% (n=30; c/i/r 0/28/2) | 60% cov 100% (n=30; c/i/r 18/12/0) | **18%** cov 98% (n=120; c/i/r 21/96/3) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| The Qur'an (Saheeh International (QUL), en) | 120 | 18% | 98% | 3 | — | 2 | 94 | paraphrase 2, wrong_passage 56, wrong_locus 26, wrong_verdict 12 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 16,687 | 41,844 |
+| **total** | 120 | 16,687 | 41,844 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 3% (n=30; c/i/r 0/1/29; minor/major 0/1) | 60% cov 100% (n=30; c/i/r 18/12/0; minor/major 0/12) | **20%** cov 76% (c/i/r 18/73/29; minor/major 0/73) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 30 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 30 |
+| gpt-oss-20b | retrieve_quote | 1 | 0 | 1 | wrong_passage 1 |
+| gpt-oss-20b | verify_source | 12 | 0 | 12 | wrong_verdict 12 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Sikhism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 3% (n=30; c/i/r 0/1/29) | 60% cov 100% (n=30; c/i/r 18/12/0) | **20%** cov 76% (n=120; c/i/r 18/73/29) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 20% | 76% | 29 | — | 0 | 73 | wrong_passage 31, wrong_locus 30, wrong_verdict 12 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 20,073 | 76,733 |
+| **total** | 120 | 20,073 | 76,733 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 67% (n=30; c/i/r 0/20/10; minor/major 0/20) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **14%** cov 92% (c/i/r 15/95/10; minor/major 0/95) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 30 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 30 |
+| gpt-oss-20b | retrieve_quote | 20 | 0 | 20 | wrong_passage 20 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Sikhism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 67% (n=30; c/i/r 0/20/10) | 50% cov 100% (n=30; c/i/r 15/15/0) | **14%** cov 92% (n=120; c/i/r 15/95/10) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Sri Guru Granth Sahib (Shabad OS (SGPC Shabadaarth), pa) | 120 | 14% | 92% | 10 | — | 0 | 95 | wrong_passage 50, wrong_locus 30, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 17,573 | 107,387 |
+| **total** | 120 | 17,573 | 107,387 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 1/29) | n/a cov 0% (n=30; c/i/r 0/0/30; minor/major 0/0) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **17%** cov 75% (c/i/r 15/75/30; minor/major 1/74) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 29, no_citation 1 |
+| gpt-oss-20b | complete_unit | 30 | 1 | 29 | paraphrase 1, wrong_passage 29 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Hinduism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | n/a cov 0% (n=30; c/i/r 0/0/30) | 50% cov 100% (n=30; c/i/r 15/15/0) | **17%** cov 75% (n=120; c/i/r 15/75/30) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 17% | 75% | 30 | — | 1 | 74 | paraphrase 1, wrong_passage 29, wrong_locus 29, no_citation 1, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 19,144 | 60,387 |
+| **total** | 120 | 19,144 | 60,387 |
+
+
+carry judaism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/judaism/english/population/answers.jsonl
+collect judaism/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/judaism/english/population/summary.md
+carry islam/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/islam/native/population/prompt-english/answers.jsonl
+collect islam/native/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-english/summary.md
+carry islam/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/islam/native/population/prompt-native/answers.jsonl
+collect islam/native/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/native/population/prompt-native/summary.md
+carry islam/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/islam/english/population/answers.jsonl
+collect islam/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/islam/english/population/summary.md
+carry sikhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/sikhism/native/population/prompt-english/answers.jsonl
+collect sikhism/native/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-english/summary.md
+carry sikhism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/sikhism/native/population/prompt-native/answers.jsonl
+collect sikhism/native/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/sikhism/native/population/prompt-native/summary.md
+carry hinduism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/hinduism/native/population/prompt-english/answers.jsonl
+collect hinduism/native/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-english/summary.md
+carry hinduism/native/population/prompt-native: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/hinduism/native/population/prompt-native/answers.jsonl
+collect hinduism/native/population/prompt-native -> runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/answers.jsonl (120 questions, 0 to call)wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 23% (n=30; c/i/r 0/7/23; minor/major 0/7) | 53% cov 100% (n=30; c/i/r 16/14/0; minor/major 0/14) | **16%** cov 81% (c/i/r 16/81/23; minor/major 0/81) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 28, no_citation 2 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 30 |
+| gpt-oss-20b | retrieve_quote | 7 | 0 | 7 | wrong_passage 7 |
+| gpt-oss-20b | verify_source | 14 | 0 | 14 | wrong_verdict 14 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Hinduism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 23% (n=30; c/i/r 0/7/23) | 53% cov 100% (n=30; c/i/r 16/14/0) | **16%** cov 81% (n=120; c/i/r 16/81/23) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Stotra Samhita (Gita Press text), sa) | 120 | 16% | 81% | 23 | — | 0 | 81 | wrong_passage 37, wrong_locus 28, no_citation 2, wrong_verdict 14 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 16,603 | 51,964 |
+| **total** | 120 | 16,603 | 51,964 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 2/28) | 0% cov 10% (n=30; c/i/r 0/3/27; minor/major 0/3) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **16%** cov 78% (c/i/r 15/78/27; minor/major 2/76) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 20, no_citation 10 |
+| gpt-oss-20b | complete_unit | 30 | 2 | 28 | paraphrase 2, wrong_passage 28 |
+| gpt-oss-20b | retrieve_quote | 3 | 0 | 3 | wrong_passage 3 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Hinduism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 10% (n=30; c/i/r 0/3/27) | 50% cov 100% (n=30; c/i/r 15/15/0) | **16%** cov 78% (n=120; c/i/r 15/78/27) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Bhagavad Gita (Annie Besant (1922), en) | 120 | 16% | 78% | 27 | — | 2 | 76 | paraphrase 2, wrong_passage 31, wrong_locus 20, no_citation 10, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 15,231 | 18,444 |
+| **total** | 120 | 15,231 | 18,444 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 43% (n=30; c/i/r 0/13/17; minor/major 0/13) | 71% cov 70% (n=30; c/i/r 15/6/9; minor/major 0/6) | **16%** cov 78% (c/i/r 15/79/26; minor/major 0/79) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 30 |
+| gpt-oss-20b | complete_unit | 30 | 0 | 30 | wrong_passage 30 |
+| gpt-oss-20b | retrieve_quote | 13 | 0 | 13 | wrong_passage 13 |
+| gpt-oss-20b | verify_source | 6 | 0 | 6 | wrong_verdict 6 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Buddhism | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 43% (n=30; c/i/r 0/13/17) | 71% cov 70% (n=30; c/i/r 15/6/9) | **16%** cov 78% (n=120; c/i/r 15/79/26) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Dhammapada (Chaṭṭha Saṅgāyana (VRI), pi) | 120 | 16% | 78% | 26 | — | 0 | 79 | wrong_passage 43, wrong_locus 30, wrong_verdict 6 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 21,188 | 22,979 |
+| **total** | 120 | 21,188 | 22,979 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 97% (n=30; c/i/r 0/29/1; minor/major 0/29) | 0% cov 67% (n=30; c/i/r 0/20/10; minor/major 1/19) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **14%** cov 91% (c/i/r 15/94/11; minor/major 1/93) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 29, no_citation 1 |
+| gpt-oss-20b | complete_unit | 29 | 0 | 29 | wrong_passage 29 |
+| gpt-oss-20b | retrieve_quote | 20 | 1 | 19 | paraphrase 1, wrong_passage 19 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Book of Mormon | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 97% (n=30; c/i/r 0/29/1) | 0% cov 67% (n=30; c/i/r 0/20/10) | 50% cov 100% (n=30; c/i/r 15/15/0) | **14%** cov 91% (n=120; c/i/r 15/94/11) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Book of Mormon (2013 edition, en) | 120 | 14% | 91% | 11 | — | 1 | 93 | paraphrase 1, wrong_passage 48, wrong_locus 29, no_citation 1, wrong_verdict 15 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 16,686 | 28,986 |
+| **total** | 120 | 16,686 | 28,986 |
+
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| gpt-oss-20b | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 0% cov 90% (n=30; c/i/r 0/27/3; minor/major 3/24) | 0% cov 3% (n=30; c/i/r 0/1/29; minor/major 0/1) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 0/15) | **17%** cov 73% (c/i/r 15/73/32; minor/major 3/70) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| gpt-oss-20b | cite_passage | 30 | 0 | 30 | wrong_locus 27, no_citation 3 |
+| gpt-oss-20b | complete_unit | 27 | 3 | 24 | paraphrase 1, wrong_passage 24, omission 2 |
+| gpt-oss-20b | retrieve_quote | 1 | 0 | 1 | wrong_passage 1 |
+| gpt-oss-20b | verify_source | 15 | 0 | 15 | wrong_verdict 15 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| gpt-oss-20b | Encyclicals | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 90% (n=30; c/i/r 0/27/3) | 0% cov 3% (n=30; c/i/r 0/1/29) | 50% cov 100% (n=30; c/i/r 15/15/0) | **17%** cov 73% (n=120; c/i/r 15/73/32) |
+
+### By text (one text = one work · version · language)
+
+**gpt-oss-20b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Ad Petri Cathedram (Vatican English text (John XXIII, 1959-06-29), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Aeterni Patris (Vatican English text (Leo XIII, 1879-08-04), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Augustissimae Virginis Mariae (Vatican English text (Leo XIII, 1897-09-12), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Casti Connubii (Vatican English text (Pius XI, 1930-12-31), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Christi Matri (Vatican English text (Paul VI, 1966-09-15), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Communium Rerum (Vatican English text (Pius X, 1909-04-21), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Depuis le Jour (Vatican English text (Leo XIII, 1899-09-08), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Deus caritas est (Vatican English text (Benedict XVI, 2005-12-25), en) | 8 | 40% | 62% | 3 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, no_citation 1 |
+| Dominum et vivificantem (Vatican English text (John Paul II, 1986-05-18), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Ecclesiam Suam (Vatican English text (Paul VI, 1964-08-06), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Fides et Ratio (Vatican English text (John Paul II, 1998-09-14), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Fratelli tutti (Vatican English text (Francis, 2020-10-03), en) | 8 | 40% | 62% | 3 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, no_citation 1 |
+| Laudato si' (Vatican English text (Francis, 2015-05-24), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, no_citation 1 |
+| Meminisse Iuvat (Vatican English text (Pius XII, 1958-07-14), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Musicae Sacrae (Vatican English text (Pius XII, 1955-12-25), en) | 4 | 0% | 50% | 2 | — | 0 | 2 | wrong_locus 1, wrong_verdict 1 |
+| Mysterium Fidei (Vatican English text (Paul VI, 1965-09-03), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Non Abbiamo Bisogno (Vatican English text (Pius XI, 1931-06-29), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Octobri Mense (Vatican English text (Leo XIII, 1891-09-22), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Orientales Omnes Ecclesias (Vatican English text (Pius XII, 1945-12-23), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Quadragesimo Anno (Vatican English text (Pius XI, 1931-05-15), en) | 8 | 0% | 75% | 2 | — | 0 | 6 | wrong_passage 2, wrong_locus 2, wrong_verdict 2 |
+| Quod Anniversarius (Vatican English text (Leo XIII, 1888-04-01), en) | 4 | 0% | 75% | 1 | — | 1 | 2 | paraphrase 1, wrong_locus 1, wrong_verdict 1 |
+| Quod Multum (Vatican English text (Leo XIII, 1886-08-22), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Redemptoris Mater (Vatican English text (John Paul II, 1987-03-25), en) | 4 | 0% | 75% | 1 | — | 1 | 2 | omission 1, wrong_locus 1, wrong_verdict 1 |
+| Sacerdotalis Caelibatus (Vatican English text (Paul VI, 1967-06-24), en) | 8 | 0% | 75% | 2 | — | 0 | 6 | wrong_passage 2, wrong_locus 2, wrong_verdict 2 |
+| Ut Unum Sint (Vatican English text (John Paul II, 1995-05-25), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
+| Veritatis Splendor (Vatican English text (John Paul II, 1993-08-06), en) | 4 | 0% | 100% | 0 | — | 1 | 3 | wrong_passage 1, omission 1, wrong_locus 1, wrong_verdict 1 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| gpt-oss-20b | 120 | 24,598 | 8,339 |
+| **total** | 120 | 24,598 | 8,339 |
+
+
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/native/population/prompt-native/summary.md
+carry hinduism/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/hinduism/english/population/answers.jsonl
+collect hinduism/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/hinduism/english/population/summary.md
+carry buddhism/native/population/prompt-english: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/buddhism/native/population/prompt-english/answers.jsonl
+collect buddhism/native/population/prompt-english -> runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/buddhism/native/population/prompt-english/summary.md
+carry book-of-mormon/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/book-of-mormon/english/population/answers.jsonl
+collect book-of-mormon/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/book-of-mormon/english/population/summary.md
+carry encyclicals/english/population: 120 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre113/gpt-oss-20b/base/encyclicals/english/population/answers.jsonl
+collect encyclicals/english/population -> runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/answers.jsonl (120 questions, 0 to call)
+  collected 0, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmpdFtCzm/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/gpt-oss-20b/base/encyclicals/english/population/summary.md

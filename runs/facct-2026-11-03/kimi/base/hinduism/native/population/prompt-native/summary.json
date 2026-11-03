@@ -1,0 +1,326 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9667,
+    "coverage": 1.0,
+    "correct": 29,
+    "incorrect": 1,
+    "minor": 0,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.4,
+    "coverage": 1.0,
+    "correct": 12,
+    "incorrect": 18,
+    "minor": 14,
+    "major": 4,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "diacritic_only": 2,
+     "edition_variant": 1,
+     "paraphrase": 7,
+     "wrong_passage": 4,
+     "omission": 4
+    },
+    "exact": 0.2333,
+    "normalized": 0.3667,
+    "token_f1": 0.7161,
+    "token_f1_base": 0.7311,
+    "contains_reference": 0.4
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.35,
+    "coverage": 0.6667,
+    "correct": 7,
+    "incorrect": 13,
+    "minor": 6,
+    "major": 7,
+    "refused": 10,
+    "refused_rate": 0.3333,
+    "kinds": {
+     "paraphrase": 6,
+     "wrong_passage": 7,
+     "addition": 7
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.3444,
+    "token_f1_base": 0.3456,
+    "contains_reference": 0.35
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.7091,
+    "coverage": 0.9167,
+    "correct": 78,
+    "incorrect": 32,
+    "minor": 20,
+    "major": 12,
+    "refused": 10,
+    "refused_rate": 0.0833,
+    "kinds": {
+     "diacritic_only": 2,
+     "edition_variant": 1,
+     "paraphrase": 13,
+     "wrong_passage": 11,
+     "omission": 4,
+     "addition": 7,
+     "wrong_locus": 1
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Hinduism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.35,
+     "coverage": 0.6667,
+     "correct": 7,
+     "incorrect": 13,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7091,
+     "coverage": 0.9167,
+     "correct": 78,
+     "incorrect": 32,
+     "refused": 10,
+     "refused_rate": 0.0833
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "Bhagavad Gita\u0000Stotra Samhita (Gita Press text)\u0000sa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "minor": 14,
+     "major": 4,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "diacritic_only": 2,
+      "edition_variant": 1,
+      "paraphrase": 7,
+      "wrong_passage": 4,
+      "omission": 4
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.35,
+     "coverage": 0.6667,
+     "correct": 7,
+     "incorrect": 13,
+     "minor": 6,
+     "major": 7,
+     "refused": 10,
+     "refused_rate": 0.3333,
+     "kinds": {
+      "paraphrase": 6,
+      "wrong_passage": 7,
+      "addition": 7
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7091,
+     "coverage": 0.9167,
+     "correct": 78,
+     "incorrect": 32,
+     "minor": 20,
+     "major": 12,
+     "refused": 10,
+     "refused_rate": 0.0833,
+     "kinds": {
+      "diacritic_only": 2,
+      "edition_variant": 1,
+      "paraphrase": 13,
+      "wrong_passage": 11,
+      "omission": 4,
+      "addition": 7,
+      "wrong_locus": 1
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "kimi": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9667,
+     "coverage": 1.0,
+     "correct": 29,
+     "incorrect": 1,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.4,
+     "coverage": 1.0,
+     "correct": 12,
+     "incorrect": 18,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.35,
+     "coverage": 0.6667,
+     "correct": 7,
+     "incorrect": 13,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.7091,
+     "coverage": 0.9167,
+     "correct": 78,
+     "incorrect": 32,
+     "refused": 10,
+     "refused_rate": 0.0833
+    }
+   }
+  }
+ },
+ "verify": {
+  "kimi": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 13775,
+    "out": 6416
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 13775,
+   "out": 6416
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:13.701435+00:00"
+}

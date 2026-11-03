@@ -1,0 +1,310 @@
+{
+ "models": {
+  "gpt-oss-20b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 30
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_passage": 30
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0591,
+    "token_f1_base": 0.0845,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.6667,
+    "correct": 0,
+    "incorrect": 20,
+    "minor": 0,
+    "major": 20,
+    "refused": 10,
+    "refused_rate": 0.3333,
+    "kinds": {
+     "wrong_passage": 20
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.0037,
+    "token_f1_base": 0.0153,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 15,
+    "minor": 0,
+    "major": 15,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 15
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.1364,
+    "coverage": 0.9167,
+    "correct": 15,
+    "incorrect": 95,
+    "minor": 0,
+    "major": 95,
+    "refused": 10,
+    "refused_rate": 0.0833,
+    "kinds": {
+     "wrong_passage": 50,
+     "wrong_locus": 30,
+     "wrong_verdict": 15
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "gpt-oss-20b": {
+   "Sikhism": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1364,
+     "coverage": 0.9167,
+     "correct": 15,
+     "incorrect": 95,
+     "refused": 10,
+     "refused_rate": 0.0833
+    }
+   }
+  }
+ },
+ "by_text": {
+  "gpt-oss-20b": {
+   "Sri Guru Granth Sahib\u0000Shabad OS (SGPC Shabadaarth)\u0000pa": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 30
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 30
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "minor": 0,
+     "major": 20,
+     "refused": 10,
+     "refused_rate": 0.3333,
+     "kinds": {
+      "wrong_passage": 20
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "minor": 0,
+     "major": 15,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 15
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1364,
+     "coverage": 0.9167,
+     "correct": 15,
+     "incorrect": 95,
+     "minor": 0,
+     "major": 95,
+     "refused": 10,
+     "refused_rate": 0.0833,
+     "kinds": {
+      "wrong_passage": 50,
+      "wrong_locus": 30,
+      "wrong_verdict": 15
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "gpt-oss-20b": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1364,
+     "coverage": 0.9167,
+     "correct": 15,
+     "incorrect": 95,
+     "refused": 10,
+     "refused_rate": 0.0833
+    }
+   }
+  }
+ },
+ "verify": {
+  "gpt-oss-20b": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 15,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "gpt-oss-20b": {
+    "calls": 120,
+    "in": 17573,
+    "out": 107387
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 17573,
+   "out": 107387
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:37.075246+00:00"
+}

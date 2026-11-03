@@ -1,0 +1,318 @@
+{
+ "models": {
+  "gpt-oss-20b": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 30,
+    "minor": 0,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 29,
+     "no_citation": 1
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.9667,
+    "correct": 0,
+    "incorrect": 29,
+    "minor": 0,
+    "major": 29,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "wrong_passage": 29
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1966,
+    "token_f1_base": 0.1966,
+    "contains_reference": 0.0
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.0,
+    "coverage": 0.6667,
+    "correct": 0,
+    "incorrect": 20,
+    "minor": 1,
+    "major": 19,
+    "refused": 10,
+    "refused_rate": 0.3333,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 19
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.2321,
+    "token_f1_base": 0.2321,
+    "contains_reference": 0.0
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 15,
+    "minor": 0,
+    "major": 15,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_verdict": 15
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.1376,
+    "coverage": 0.9083,
+    "correct": 15,
+    "incorrect": 94,
+    "minor": 1,
+    "major": 93,
+    "refused": 11,
+    "refused_rate": 0.0917,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 48,
+     "wrong_locus": 29,
+     "no_citation": 1,
+     "wrong_verdict": 15
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "gpt-oss-20b": {
+   "Book of Mormon": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1376,
+     "coverage": 0.9083,
+     "correct": 15,
+     "incorrect": 94,
+     "refused": 11,
+     "refused_rate": 0.0917
+    }
+   }
+  }
+ },
+ "by_text": {
+  "gpt-oss-20b": {
+   "Book of Mormon\u00002013 edition\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "minor": 0,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 29,
+      "no_citation": 1
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "minor": 0,
+     "major": 29,
+     "refused": 1,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "wrong_passage": 29
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "minor": 1,
+     "major": 19,
+     "refused": 10,
+     "refused_rate": 0.3333,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 19
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "minor": 0,
+     "major": 15,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_verdict": 15
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1376,
+     "coverage": 0.9083,
+     "correct": 15,
+     "incorrect": 94,
+     "minor": 1,
+     "major": 93,
+     "refused": 11,
+     "refused_rate": 0.0917,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 48,
+      "wrong_locus": 29,
+      "no_citation": 1,
+      "wrong_verdict": 15
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "gpt-oss-20b": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.9667,
+     "correct": 0,
+     "incorrect": 29,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.0,
+     "coverage": 0.6667,
+     "correct": 0,
+     "incorrect": 20,
+     "refused": 10,
+     "refused_rate": 0.3333
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 1.0,
+     "correct": 15,
+     "incorrect": 15,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.1376,
+     "coverage": 0.9083,
+     "correct": 15,
+     "incorrect": 94,
+     "refused": 11,
+     "refused_rate": 0.0917
+    }
+   }
+  }
+ },
+ "verify": {
+  "gpt-oss-20b": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.0,
+    "coverage": 1.0,
+    "correct": 0,
+    "incorrect": 15,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "gpt-oss-20b": {
+    "calls": 120,
+    "in": 16686,
+    "out": 28986
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 16686,
+   "out": 28986
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:31.670613+00:00"
+}

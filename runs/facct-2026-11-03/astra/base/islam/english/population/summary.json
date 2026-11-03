@@ -1,0 +1,294 @@
+{
+ "models": {
+  "astra": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.5,
+    "coverage": 0.0667,
+    "correct": 1,
+    "incorrect": 1,
+    "minor": 0,
+    "major": 1,
+    "refused": 28,
+    "refused_rate": 0.9333,
+    "kinds": {
+     "wrong_passage": 1
+    },
+    "exact": 0.5,
+    "normalized": 0.5,
+    "token_f1": 0.5345,
+    "token_f1_base": 0.5345,
+    "contains_reference": 0.5
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": null,
+    "coverage": 0.0,
+    "correct": 0,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 30,
+    "refused_rate": 1.0,
+    "kinds": {},
+    "exact": null,
+    "normalized": null,
+    "token_f1": null,
+    "token_f1_base": null,
+    "contains_reference": null
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.9839,
+    "coverage": 0.5167,
+    "correct": 61,
+    "incorrect": 1,
+    "minor": 0,
+    "major": 1,
+    "refused": 58,
+    "refused_rate": 0.4833,
+    "kinds": {
+     "wrong_passage": 1
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "astra": {
+   "Islam": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.0667,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9839,
+     "coverage": 0.5167,
+     "correct": 61,
+     "incorrect": 1,
+     "refused": 58,
+     "refused_rate": 0.4833
+    }
+   }
+  }
+ },
+ "by_text": {
+  "astra": {
+   "The Qur'an\u0000Saheeh International (QUL)\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.0667,
+     "correct": 1,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 28,
+     "refused_rate": 0.9333,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 30,
+     "refused_rate": 1.0,
+     "kinds": {}
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9839,
+     "coverage": 0.5167,
+     "correct": 61,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 58,
+     "refused_rate": 0.4833,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "astra": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.5,
+     "coverage": 0.0667,
+     "correct": 1,
+     "incorrect": 1,
+     "refused": 28,
+     "refused_rate": 0.9333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": null,
+     "coverage": 0.0,
+     "correct": 0,
+     "incorrect": 0,
+     "refused": 30,
+     "refused_rate": 1.0
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.9839,
+     "coverage": 0.5167,
+     "correct": 61,
+     "incorrect": 1,
+     "refused": 58,
+     "refused_rate": 0.4833
+    }
+   }
+  }
+ },
+ "verify": {
+  "astra": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "astra": {
+    "calls": 120,
+    "in": 9379,
+    "out": 5944
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 9379,
+   "out": 5944
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:42.510445+00:00"
+}

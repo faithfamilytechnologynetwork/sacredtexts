@@ -1,0 +1,65 @@
+{
+  "panel_id": "kimi",
+  "openrouter_id": "moonshotai/kimi-k3.1-pro",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "moonshotai/kimi-k3.1-pro",
+    "name": "MoonshotAI: Kimi K3.1 Pro",
+    "context_length": 1048576,
+    "max_completion_tokens": 943718,
+    "modality": "text+image+video->text",
+    "tokenizer": "Other",
+    "pricing_usd_per_token": {
+      "prompt": "0.000002",
+      "completion": "0.00001",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 2.0,
+      "output": 10.0
+    },
+    "supported_parameters": [
+      "frequency_penalty",
+      "include_reasoning",
+      "logprobs",
+      "max_tokens",
+      "presence_penalty",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "stop",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "top_logprobs"
+    ],
+    "reasoning": {
+      "mandatory": false,
+      "default_enabled": true,
+      "supported_efforts": [
+        "max",
+        "high",
+        "low",
+        "none"
+      ],
+      "default_effort": "max"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "length",
+    "text": "",
+    "provider": "Moonshot AI",
+    "prompt_tokens": 92,
+    "completion_tokens": 16,
+    "total_tokens": 108,
+    "cost_usd": 0.000344
+  },
+  "collected": {
+    "calls": 23,
+    "prompt_tokens": 3891,
+    "completion_tokens": 403,
+    "cost_usd": 0.011812
+  }
+}

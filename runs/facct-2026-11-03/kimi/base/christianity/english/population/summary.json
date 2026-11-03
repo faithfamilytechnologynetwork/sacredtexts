@@ -1,0 +1,322 @@
+{
+ "models": {
+  "kimi": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9333,
+    "coverage": 1.0,
+    "correct": 28,
+    "incorrect": 2,
+    "minor": 0,
+    "major": 2,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "wrong_locus": 2
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.7586,
+    "coverage": 0.9667,
+    "correct": 22,
+    "incorrect": 7,
+    "minor": 7,
+    "major": 0,
+    "refused": 1,
+    "refused_rate": 0.0333,
+    "kinds": {
+     "edition_variant": 3,
+     "near_copy": 1,
+     "paraphrase": 2,
+     "omission": 1,
+     "addition": 1
+    },
+    "exact": 0.5517,
+    "normalized": 0.7241,
+    "token_f1": 0.9542,
+    "token_f1_base": 0.9542,
+    "contains_reference": 0.7586
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.7727,
+    "coverage": 0.7333,
+    "correct": 17,
+    "incorrect": 5,
+    "minor": 5,
+    "major": 0,
+    "refused": 8,
+    "refused_rate": 0.2667,
+    "kinds": {
+     "edition_variant": 2,
+     "near_copy": 3
+    },
+    "exact": 0.5,
+    "normalized": 0.7273,
+    "token_f1": 0.9774,
+    "token_f1_base": 0.9774,
+    "contains_reference": 0.7727
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 30,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.8739,
+    "coverage": 0.925,
+    "correct": 97,
+    "incorrect": 14,
+    "minor": 12,
+    "major": 2,
+    "refused": 9,
+    "refused_rate": 0.075,
+    "kinds": {
+     "edition_variant": 5,
+     "near_copy": 4,
+     "paraphrase": 2,
+     "omission": 1,
+     "addition": 1,
+     "wrong_locus": 2
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "kimi": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7586,
+     "coverage": 0.9667,
+     "correct": 22,
+     "incorrect": 7,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.7727,
+     "coverage": 0.7333,
+     "correct": 17,
+     "incorrect": 5,
+     "refused": 8,
+     "refused_rate": 0.2667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8739,
+     "coverage": 0.925,
+     "correct": 97,
+     "incorrect": 14,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "by_text": {
+  "kimi": {
+   "The Bible\u0000NRSV\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "minor": 0,
+     "major": 2,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 2
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7586,
+     "coverage": 0.9667,
+     "correct": 22,
+     "incorrect": 7,
+     "minor": 7,
+     "major": 0,
+     "refused": 1,
+     "refused_rate": 0.0333,
+     "kinds": {
+      "edition_variant": 3,
+      "near_copy": 1,
+      "paraphrase": 2,
+      "omission": 1,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.7727,
+     "coverage": 0.7333,
+     "correct": 17,
+     "incorrect": 5,
+     "minor": 5,
+     "major": 0,
+     "refused": 8,
+     "refused_rate": 0.2667,
+     "kinds": {
+      "edition_variant": 2,
+      "near_copy": 3
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8739,
+     "coverage": 0.925,
+     "correct": 97,
+     "incorrect": 14,
+     "minor": 12,
+     "major": 2,
+     "refused": 9,
+     "refused_rate": 0.075,
+     "kinds": {
+      "edition_variant": 5,
+      "near_copy": 4,
+      "paraphrase": 2,
+      "omission": 1,
+      "addition": 1,
+      "wrong_locus": 2
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "kimi": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9333,
+     "coverage": 1.0,
+     "correct": 28,
+     "incorrect": 2,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7586,
+     "coverage": 0.9667,
+     "correct": 22,
+     "incorrect": 7,
+     "refused": 1,
+     "refused_rate": 0.0333
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.7727,
+     "coverage": 0.7333,
+     "correct": 17,
+     "incorrect": 5,
+     "refused": 8,
+     "refused_rate": 0.2667
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 30,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8739,
+     "coverage": 0.925,
+     "correct": 97,
+     "incorrect": 14,
+     "refused": 9,
+     "refused_rate": 0.075
+    }
+   }
+  }
+ },
+ "verify": {
+  "kimi": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "kimi": {
+    "calls": 120,
+    "in": 8332,
+    "out": 2975
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 8332,
+   "out": 2975
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:25:11.688343+00:00"
+}

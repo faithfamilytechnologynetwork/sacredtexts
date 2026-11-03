@@ -1,0 +1,286 @@
+{
+ "models": {
+  "fable": {
+   "cite_passage": {
+    "n": 9,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {}
+   },
+   "complete_unit": {
+    "n": 9,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {},
+    "exact": 0.0,
+    "normalized": 1.0,
+    "token_f1": 1.0,
+    "token_f1_base": 1.0,
+    "contains_reference": 1.0
+   },
+   "retrieve_quote": {
+    "n": 9,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 9,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {},
+    "exact": 0.0,
+    "normalized": 1.0,
+    "token_f1": 1.0,
+    "token_f1_base": 1.0,
+    "contains_reference": 1.0
+   },
+   "verify_source": {
+    "n": 9,
+    "accuracy": 1.0,
+    "coverage": 0.8889,
+    "correct": 8,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 1,
+    "refused_rate": 0.1111,
+    "kinds": {}
+   },
+   "_overall": {
+    "n": 36,
+    "accuracy": 1.0,
+    "coverage": 0.9722,
+    "correct": 35,
+    "incorrect": 0,
+    "minor": 0,
+    "major": 0,
+    "refused": 1,
+    "refused_rate": 0.0278,
+    "kinds": {}
+   }
+  }
+ },
+ "by_tradition": {
+  "fable": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 0.8889,
+     "correct": 8,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.1111
+    },
+    "_overall": {
+     "n": 36,
+     "accuracy": 1.0,
+     "coverage": 0.9722,
+     "correct": 35,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.0278
+    }
+   }
+  }
+ },
+ "by_text": {
+  "fable": {
+   "The Bible\u0000the Greek New Testament (Scrivener 1894)\u0000grc": {
+    "cite_passage": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "complete_unit": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "retrieve_quote": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "verify_source": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 0.8889,
+     "correct": 8,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 1,
+     "refused_rate": 0.1111,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 36,
+     "accuracy": 1.0,
+     "coverage": 0.9722,
+     "correct": 35,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 1,
+     "refused_rate": 0.0278,
+     "kinds": {}
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "fable": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 9,
+     "incorrect": 0,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 9,
+     "accuracy": 1.0,
+     "coverage": 0.8889,
+     "correct": 8,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.1111
+    },
+    "_overall": {
+     "n": 36,
+     "accuracy": 1.0,
+     "coverage": 0.9722,
+     "correct": 35,
+     "incorrect": 0,
+     "refused": 1,
+     "refused_rate": 0.0278
+    }
+   }
+  }
+ },
+ "verify": {
+  "fable": {
+   "no": {
+    "n": 4,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 4,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 5,
+    "accuracy": 1.0,
+    "coverage": 0.8,
+    "correct": 4,
+    "incorrect": 0,
+    "refused": 1,
+    "refused_rate": 0.2
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "fable": {
+    "calls": 36,
+    "in": 5784,
+    "out": 3280
+   }
+  },
+  "total": {
+   "calls": 36,
+   "in": 5784,
+   "out": 3280
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:18.929025+00:00"
+}

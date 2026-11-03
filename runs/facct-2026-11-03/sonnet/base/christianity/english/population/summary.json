@@ -1,0 +1,328 @@
+{
+ "models": {
+  "sonnet": {
+   "cite_passage": {
+    "n": 30,
+    "accuracy": 0.9,
+    "coverage": 1.0,
+    "correct": 27,
+    "incorrect": 3,
+    "minor": 0,
+    "major": 3,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "hedge": 3
+    }
+   },
+   "complete_unit": {
+    "n": 30,
+    "accuracy": 0.7333,
+    "coverage": 1.0,
+    "correct": 22,
+    "incorrect": 8,
+    "minor": 7,
+    "major": 1,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "paraphrase": 7,
+     "wrong_passage": 1,
+     "addition": 18
+    },
+    "exact": 0.0667,
+    "normalized": 0.1,
+    "token_f1": 0.4654,
+    "token_f1_base": 0.4654,
+    "contains_reference": 0.7333
+   },
+   "retrieve_quote": {
+    "n": 30,
+    "accuracy": 0.8333,
+    "coverage": 0.6,
+    "correct": 15,
+    "incorrect": 3,
+    "minor": 3,
+    "major": 0,
+    "refused": 12,
+    "refused_rate": 0.4,
+    "kinds": {
+     "edition_variant": 1,
+     "near_copy": 1,
+     "paraphrase": 1,
+     "addition": 10
+    },
+    "exact": 0.0556,
+    "normalized": 0.2222,
+    "token_f1": 0.6999,
+    "token_f1_base": 0.6999,
+    "contains_reference": 0.8333
+   },
+   "verify_source": {
+    "n": 30,
+    "accuracy": 0.7917,
+    "coverage": 0.8,
+    "correct": 19,
+    "incorrect": 5,
+    "minor": 0,
+    "major": 5,
+    "refused": 6,
+    "refused_rate": 0.2,
+    "kinds": {
+     "wrong_verdict": 5
+    }
+   },
+   "_overall": {
+    "n": 120,
+    "accuracy": 0.8137,
+    "coverage": 0.85,
+    "correct": 83,
+    "incorrect": 19,
+    "minor": 10,
+    "major": 9,
+    "refused": 18,
+    "refused_rate": 0.15,
+    "kinds": {
+     "edition_variant": 1,
+     "near_copy": 1,
+     "paraphrase": 8,
+     "wrong_passage": 1,
+     "addition": 28,
+     "hedge": 3,
+     "wrong_verdict": 5
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "sonnet": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 0.6,
+     "correct": 15,
+     "incorrect": 3,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7917,
+     "coverage": 0.8,
+     "correct": 19,
+     "incorrect": 5,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8137,
+     "coverage": 0.85,
+     "correct": 83,
+     "incorrect": 19,
+     "refused": 18,
+     "refused_rate": 0.15
+    }
+   }
+  }
+ },
+ "by_text": {
+  "sonnet": {
+   "The Bible\u0000NRSV\u0000en": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "hedge": 3
+     }
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "minor": 7,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "paraphrase": 7,
+      "wrong_passage": 1,
+      "addition": 18
+     }
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 0.6,
+     "correct": 15,
+     "incorrect": 3,
+     "minor": 3,
+     "major": 0,
+     "refused": 12,
+     "refused_rate": 0.4,
+     "kinds": {
+      "edition_variant": 1,
+      "near_copy": 1,
+      "paraphrase": 1,
+      "addition": 10
+     }
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7917,
+     "coverage": 0.8,
+     "correct": 19,
+     "incorrect": 5,
+     "minor": 0,
+     "major": 5,
+     "refused": 6,
+     "refused_rate": 0.2,
+     "kinds": {
+      "wrong_verdict": 5
+     }
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8137,
+     "coverage": 0.85,
+     "correct": 83,
+     "incorrect": 19,
+     "minor": 10,
+     "major": 9,
+     "refused": 18,
+     "refused_rate": 0.15,
+     "kinds": {
+      "edition_variant": 1,
+      "near_copy": 1,
+      "paraphrase": 8,
+      "wrong_passage": 1,
+      "addition": 28,
+      "hedge": 3,
+      "wrong_verdict": 5
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "sonnet": {
+   "English text": {
+    "cite_passage": {
+     "n": 30,
+     "accuracy": 0.9,
+     "coverage": 1.0,
+     "correct": 27,
+     "incorrect": 3,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "complete_unit": {
+     "n": 30,
+     "accuracy": 0.7333,
+     "coverage": 1.0,
+     "correct": 22,
+     "incorrect": 8,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "retrieve_quote": {
+     "n": 30,
+     "accuracy": 0.8333,
+     "coverage": 0.6,
+     "correct": 15,
+     "incorrect": 3,
+     "refused": 12,
+     "refused_rate": 0.4
+    },
+    "verify_source": {
+     "n": 30,
+     "accuracy": 0.7917,
+     "coverage": 0.8,
+     "correct": 19,
+     "incorrect": 5,
+     "refused": 6,
+     "refused_rate": 0.2
+    },
+    "_overall": {
+     "n": 120,
+     "accuracy": 0.8137,
+     "coverage": 0.85,
+     "correct": 83,
+     "incorrect": 19,
+     "refused": 18,
+     "refused_rate": 0.15
+    }
+   }
+  }
+ },
+ "verify": {
+  "sonnet": {
+   "no": {
+    "n": 15,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 15,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 15,
+    "accuracy": 0.4444,
+    "coverage": 0.6,
+    "correct": 4,
+    "incorrect": 5,
+    "refused": 6,
+    "refused_rate": 0.4
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "sonnet": {
+    "calls": 120,
+    "in": 9947,
+    "out": 13393
+   }
+  },
+  "total": {
+   "calls": 120,
+   "in": 9947,
+   "out": 13393
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:28.310060+00:00"
+}

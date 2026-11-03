@@ -1,0 +1,64 @@
+{
+  "panel_id": "astra",
+  "openrouter_id": "openai/gpt-6-astra",
+  "temperature": 0,
+  "search": false,
+  "catalogue": {
+    "id": "openai/gpt-6-astra",
+    "name": "OpenAI: GPT-6 Astra",
+    "context_length": 1050000,
+    "max_completion_tokens": 128000,
+    "modality": "text+image+file->text",
+    "tokenizer": "GPT",
+    "pricing_usd_per_token": {
+      "prompt": "0.00001",
+      "completion": "0.00005",
+      "request": null
+    },
+    "pricing_usd_per_million": {
+      "input": 10.0,
+      "output": 50.0
+    },
+    "supported_parameters": [
+      "include_reasoning",
+      "max_completion_tokens",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "seed",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "verbosity"
+    ],
+    "reasoning": {
+      "mandatory": true,
+      "default_enabled": true,
+      "supported_efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default_effort": "medium"
+    }
+  },
+  "probe": {
+    "ok": true,
+    "finish_reason": "stop",
+    "text": "ok",
+    "provider": "OpenAI",
+    "prompt_tokens": 13,
+    "completion_tokens": 5,
+    "total_tokens": 18,
+    "cost_usd": 0.00038
+  },
+  "collected": {
+    "calls": 23,
+    "prompt_tokens": 3223,
+    "completion_tokens": 1395,
+    "cost_usd": 0.10198
+  }
+}

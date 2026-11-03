@@ -1,0 +1,409 @@
+{
+ "models": {
+  "haiku": {
+   "cite_passage": {
+    "n": 21,
+    "accuracy": 0.65,
+    "coverage": 0.9524,
+    "correct": 13,
+    "incorrect": 7,
+    "minor": 0,
+    "major": 7,
+    "refused": 1,
+    "refused_rate": 0.0476,
+    "kinds": {
+     "wrong_locus": 3,
+     "hedge": 1,
+     "no_citation": 3
+    }
+   },
+   "complete_unit": {
+    "n": 21,
+    "accuracy": 0.0556,
+    "coverage": 0.8571,
+    "correct": 1,
+    "incorrect": 17,
+    "minor": 1,
+    "major": 16,
+    "refused": 3,
+    "refused_rate": 0.1429,
+    "kinds": {
+     "paraphrase": 1,
+     "wrong_passage": 12,
+     "other_script": 4,
+     "addition": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0,
+    "token_f1": 0.1176,
+    "token_f1_base": 0.1176,
+    "contains_reference": 0.0556
+   },
+   "retrieve_quote": {
+    "n": 21,
+    "accuracy": 0.0952,
+    "coverage": 1.0,
+    "correct": 2,
+    "incorrect": 19,
+    "minor": 10,
+    "major": 9,
+    "refused": 0,
+    "refused_rate": 0.0,
+    "kinds": {
+     "edition_variant": 2,
+     "paraphrase": 8,
+     "wrong_passage": 9,
+     "addition": 1
+    },
+    "exact": 0.0,
+    "normalized": 0.0476,
+    "token_f1": 0.4774,
+    "token_f1_base": 0.4774,
+    "contains_reference": 0.0952
+   },
+   "verify_source": {
+    "n": 21,
+    "accuracy": 0.625,
+    "coverage": 0.7619,
+    "correct": 10,
+    "incorrect": 6,
+    "minor": 0,
+    "major": 6,
+    "refused": 5,
+    "refused_rate": 0.2381,
+    "kinds": {
+     "wrong_verdict": 6
+    }
+   },
+   "_overall": {
+    "n": 84,
+    "accuracy": 0.3467,
+    "coverage": 0.8929,
+    "correct": 26,
+    "incorrect": 49,
+    "minor": 11,
+    "major": 38,
+    "refused": 9,
+    "refused_rate": 0.1071,
+    "kinds": {
+     "edition_variant": 2,
+     "paraphrase": 9,
+     "wrong_passage": 21,
+     "other_script": 4,
+     "addition": 2,
+     "wrong_locus": 3,
+     "hedge": 1,
+     "no_citation": 3,
+     "wrong_verdict": 6
+    }
+   }
+  }
+ },
+ "by_tradition": {
+  "haiku": {
+   "Christianity": {
+    "cite_passage": {
+     "n": 21,
+     "accuracy": 0.65,
+     "coverage": 0.9524,
+     "correct": 13,
+     "incorrect": 7,
+     "refused": 1,
+     "refused_rate": 0.0476
+    },
+    "complete_unit": {
+     "n": 21,
+     "accuracy": 0.0556,
+     "coverage": 0.8571,
+     "correct": 1,
+     "incorrect": 17,
+     "refused": 3,
+     "refused_rate": 0.1429
+    },
+    "retrieve_quote": {
+     "n": 21,
+     "accuracy": 0.0952,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 19,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 21,
+     "accuracy": 0.625,
+     "coverage": 0.7619,
+     "correct": 10,
+     "incorrect": 6,
+     "refused": 5,
+     "refused_rate": 0.2381
+    },
+    "_overall": {
+     "n": 84,
+     "accuracy": 0.3467,
+     "coverage": 0.8929,
+     "correct": 26,
+     "incorrect": 49,
+     "refused": 9,
+     "refused_rate": 0.1071
+    }
+   }
+  }
+ },
+ "by_text": {
+  "haiku": {
+   "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000arc": {
+    "cite_passage": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_locus": 1
+     }
+    },
+    "complete_unit": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 1,
+     "accuracy": 0.0,
+     "coverage": 1.0,
+     "correct": 0,
+     "incorrect": 1,
+     "minor": 0,
+     "major": 1,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 1
+     }
+    },
+    "verify_source": {
+     "n": 1,
+     "accuracy": 1.0,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
+     "major": 0,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {}
+    },
+    "_overall": {
+     "n": 4,
+     "accuracy": 0.25,
+     "coverage": 1.0,
+     "correct": 1,
+     "incorrect": 3,
+     "minor": 0,
+     "major": 3,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "wrong_passage": 2,
+      "wrong_locus": 1
+     }
+    }
+   },
+   "The Bible\u0000the Masoretic Text (Westminster Leningrad Codex)\u0000he": {
+    "cite_passage": {
+     "n": 20,
+     "accuracy": 0.6842,
+     "coverage": 0.95,
+     "correct": 13,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 1,
+     "refused_rate": 0.05,
+     "kinds": {
+      "wrong_locus": 2,
+      "hedge": 1,
+      "no_citation": 3
+     }
+    },
+    "complete_unit": {
+     "n": 20,
+     "accuracy": 0.0588,
+     "coverage": 0.85,
+     "correct": 1,
+     "incorrect": 16,
+     "minor": 1,
+     "major": 15,
+     "refused": 3,
+     "refused_rate": 0.15,
+     "kinds": {
+      "paraphrase": 1,
+      "wrong_passage": 11,
+      "other_script": 4,
+      "addition": 1
+     }
+    },
+    "retrieve_quote": {
+     "n": 20,
+     "accuracy": 0.1,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 18,
+     "minor": 10,
+     "major": 8,
+     "refused": 0,
+     "refused_rate": 0.0,
+     "kinds": {
+      "edition_variant": 2,
+      "paraphrase": 8,
+      "wrong_passage": 8,
+      "addition": 1
+     }
+    },
+    "verify_source": {
+     "n": 20,
+     "accuracy": 0.6,
+     "coverage": 0.75,
+     "correct": 9,
+     "incorrect": 6,
+     "minor": 0,
+     "major": 6,
+     "refused": 5,
+     "refused_rate": 0.25,
+     "kinds": {
+      "wrong_verdict": 6
+     }
+    },
+    "_overall": {
+     "n": 80,
+     "accuracy": 0.3521,
+     "coverage": 0.8875,
+     "correct": 25,
+     "incorrect": 46,
+     "minor": 11,
+     "major": 35,
+     "refused": 9,
+     "refused_rate": 0.1125,
+     "kinds": {
+      "edition_variant": 2,
+      "paraphrase": 9,
+      "wrong_passage": 19,
+      "other_script": 4,
+      "addition": 2,
+      "wrong_locus": 2,
+      "hedge": 1,
+      "no_citation": 3,
+      "wrong_verdict": 6
+     }
+    }
+   }
+  }
+ },
+ "by_prompt": {
+  "haiku": {
+   "Native prompt": {
+    "cite_passage": {
+     "n": 21,
+     "accuracy": 0.65,
+     "coverage": 0.9524,
+     "correct": 13,
+     "incorrect": 7,
+     "refused": 1,
+     "refused_rate": 0.0476
+    },
+    "complete_unit": {
+     "n": 21,
+     "accuracy": 0.0556,
+     "coverage": 0.8571,
+     "correct": 1,
+     "incorrect": 17,
+     "refused": 3,
+     "refused_rate": 0.1429
+    },
+    "retrieve_quote": {
+     "n": 21,
+     "accuracy": 0.0952,
+     "coverage": 1.0,
+     "correct": 2,
+     "incorrect": 19,
+     "refused": 0,
+     "refused_rate": 0.0
+    },
+    "verify_source": {
+     "n": 21,
+     "accuracy": 0.625,
+     "coverage": 0.7619,
+     "correct": 10,
+     "incorrect": 6,
+     "refused": 5,
+     "refused_rate": 0.2381
+    },
+    "_overall": {
+     "n": 84,
+     "accuracy": 0.3467,
+     "coverage": 0.8929,
+     "correct": 26,
+     "incorrect": 49,
+     "refused": 9,
+     "refused_rate": 0.1071
+    }
+   }
+  }
+ },
+ "verify": {
+  "haiku": {
+   "no": {
+    "n": 10,
+    "accuracy": 1.0,
+    "coverage": 1.0,
+    "correct": 10,
+    "incorrect": 0,
+    "refused": 0,
+    "refused_rate": 0.0
+   },
+   "yes": {
+    "n": 11,
+    "accuracy": 0.0,
+    "coverage": 0.5455,
+    "correct": 0,
+    "incorrect": 6,
+    "refused": 5,
+    "refused_rate": 0.4545
+   }
+  }
+ },
+ "usage": {
+  "per_model": {
+   "haiku": {
+    "calls": 84,
+    "in": 13395,
+    "out": 21560
+   }
+  },
+  "total": {
+   "calls": 84,
+   "in": 13395,
+   "out": 21560
+  }
+ },
+ "evaluators": [
+  "strict",
+  "containment"
+ ],
+ "headline_drops_segment": true,
+ "generated_at": "2026-11-03T05:24:35.280514+00:00"
+}
