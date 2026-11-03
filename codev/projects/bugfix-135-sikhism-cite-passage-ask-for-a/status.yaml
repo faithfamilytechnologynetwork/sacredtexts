@@ -1,7 +1,7 @@
 id: bugfix-135
 title: sikhism-cite-passage-ask-for-a
 protocol: bugfix
-phase: investigate
+phase: fix
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-03T17:53:50.324Z'
-updated_at: '2026-11-03T17:53:50.325Z'
+updated_at: '2026-11-03T17:57:05.997Z'
