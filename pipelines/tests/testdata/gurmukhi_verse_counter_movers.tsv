@@ -3,10 +3,10 @@
 # printed ॥੧॥ before ਰਹਾਉ. All 7 are complete_unit and go from not contained to contained
 # (incorrect -> correct): 5 in facct-2026-11-03, 2 in the earlier per-model runs. No cell loses credit.
 # A cell is (folder under runs/, 0-based row in answers.jsonl, question_id).
-facct-2026-11-03/astra/base/sikhism/native/population/prompt-english	65	715857cce322744d
-facct-2026-11-03/fable/base/sikhism/native/population/prompt-english	106	fedccb9fed113993
-facct-2026-11-03/fable/base/sikhism/native/population/prompt-native	64	8d44031c082424c0
-facct-2026-11-03/fable/base/sikhism/native/population/prompt-native	107	318e714fc6590b9b
-facct-2026-11-03/opus/base/sikhism/native/population/prompt-native	109	318e714fc6590b9b
+facct-2026-11-03/astra/base/sikhism/native/population/prompt-english	32	715857cce322744d
+facct-2026-11-03/fable/base/sikhism/native/population/prompt-english	53	fedccb9fed113993
+facct-2026-11-03/fable/base/sikhism/native/population/prompt-native	33	8d44031c082424c0
+facct-2026-11-03/fable/base/sikhism/native/population/prompt-native	54	318e714fc6590b9b
+facct-2026-11-03/opus/base/sikhism/native/population/prompt-native	54	318e714fc6590b9b
 opus/base/sikhism/native/population/prompt-native	108	5b577c5856eeabed
 sol/base/sikhism/native/population/prompt-english	63	646b88a64be7bb6c
