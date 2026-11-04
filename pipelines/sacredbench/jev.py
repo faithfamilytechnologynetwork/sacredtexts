@@ -566,8 +566,10 @@ def string_settled(row: dict) -> bool:
         return False
     from sacredbench.score import score_answer
 
-    language = (question.get("source") or {}).get("language")
-    metrics = score_answer(row["task"], row.get("answer") or "", expected, language=language)
+    source = question.get("source") or {}
+    metrics = score_answer(
+        row["task"], row.get("answer") or "", expected, language=source.get("language"), work=source.get("work")
+    )
     return bool(metrics.get("normalized") or metrics.get("contains_reference"))
 
 
