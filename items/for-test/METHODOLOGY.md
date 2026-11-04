@@ -108,9 +108,15 @@ asymmetry versus the English "Answer Yes or No". The verify `no` donors are hadi
 (content negatives), so naming the orthography does not turn verify into a spelling
 test.
 
-`complete_unit` expects the remaining words of the passage. Continuing into
-later verses is still correct: the headline treats the answer as correct when
-those remaining words are contained in it. A `cite_passage` item that should
+`complete_unit` expects the remaining words of the passage. The headline treats
+the answer as correct when it contains the first ten of those words (all of
+them when there are ten or fewer). A word is a whitespace token after
+normalisation, so the count is the same in every script. A prose unit can leave
+a hundred words or more, and a model that continues correctly and then stops at
+a natural pause, or goes on to other text, is not marked wrong for a boundary it
+cannot know (issue #150). An answer with the whole remainder is still correct,
+and continuing into later verses is still correct. Exact match, normalised
+match and token F1 are still measured against the whole remainder. A `cite_passage` item that should
 be declined because the quotation is from another edition is not in this run.
 
 Guru Granth Sahib citations are asked and scored at the Ang (page), because

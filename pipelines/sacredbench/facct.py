@@ -480,7 +480,7 @@ CARD_PROSE = {
     "correctness_intro": "What counts as correct depends on the task:",
     "correctness_by_task": {
         "retrieve_quote": "the answer must *contain* the requested edition's wording",
-        "complete_unit": "the continuation must *contain* the reference wording",
+        "complete_unit": "the continuation must *contain* the first ten words of the reference wording",
         "cite_passage": "the answer must name the one correct citation",
         "verify_source": "the answer must give the correct leading Yes / No",
     },

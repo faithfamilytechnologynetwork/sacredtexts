@@ -1,0 +1,17 @@
+id: bugfix-150
+title: complete-unit-score-the-headli
+protocol: bugfix
+phase: pr
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-04T01:16:45.771Z'
+    approved_at: '2026-11-04T02:24:23.051Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-04T00:43:55.187Z'
+updated_at: '2026-11-04T02:24:23.052Z'
+pr_ready_for_human: false

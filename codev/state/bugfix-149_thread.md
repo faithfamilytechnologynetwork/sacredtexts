@@ -68,3 +68,13 @@
      another numeral 2 (`שתים`, `ב׳`) — that is the "other side has a numeral" case.
   P3s documented + pinned: `י״א` only 11 (no יש אומרים row in the guide); `שתין` folds onto `שתים`.
   Oracle: still exactly the 64 registered cells.
+- Owner approved PR #151; architect ran `porch approve … --a-human-explicitly-approved-this`.
+- Merged origin/main after #152 (#150 completion head: complete_unit also counts on the first ten
+  words of the continuation). Conflicts: score_answer's contains_reference (now loops over
+  `references` with work/language passed), the arch.md fold paragraph (both kept), arch-critical
+  (main's line + the Talmud clause).
+- With #150 in, the fold-level oracle no longer matched the headline (2 of the 64 are now credited by
+  the head alone). The oracle now scores each Talmud cell through `score_answer` with the fold off and
+  on: 85 movers, all incorrect → correct (42 in facct-2026-11-03; 52 complete_unit, 33
+  retrieve_quote). The 23 new ones are completions whose first ten words differ only by guide forms
+  (leading ו, האסורים/האסורין, ממנו/הימנו) — hand-checked against the head.

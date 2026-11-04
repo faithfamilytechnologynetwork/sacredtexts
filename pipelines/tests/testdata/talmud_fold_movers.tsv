@@ -1,20 +1,24 @@
-# Committed Talmud Bavli (Aramaic) retrieve_quote / complete_unit cells the #149 Talmud fold moves.
+# Committed Talmud Bavli (Aramaic) retrieve_quote / complete_unit cells whose headline the #149 Talmud fold moves.
 # Each answer has the passage's words in a spelling the owner's Talmud normalization guide accepts:
 # הימנו/ממנו, אע״פ/אף על פי, רשב״ג/רבן שמעון בן גמליאל, בר״ה/בראש השנה, ר׳/רבי, גוי or עובד כוכבים/נכרי,
-# וחייבין/וחייבים, a leading ו, את היציע/יציע, י׳/עשרה, שלוש/שלש. Every one was hand-checked at scoring
-# granularity. All 64 go incorrect -> correct (33 in facct-2026-11-03); no cell loses credit.
+# וחייבין/וחייבים, האסורים/האסורין, a leading ו, את היציע/יציע, י׳/עשרה, שלוש/שלש. Every one was hand-checked at
+# scoring granularity (a completion against its first ten words, #150, where that is what the fold completes).
+# All 85 go incorrect -> correct (42 in facct-2026-11-03); no cell loses credit.
 # A cell is (folder, 0-based row in answers.jsonl, question_id, task). The committed scores.jsonl are not rewritten.
 argon/base/judaism/native/population/prompt-english	36	32c34fecc705f1ab	complete_unit
 argon/base/judaism/native/population/prompt-native	35	013dd6fa64808774	retrieve_quote
 argon/base/judaism/native/population/prompt-native	36	8411a9e52409e82e	complete_unit
+astra/base/judaism/native/population/prompt-english	30	0530b4cfa9dc201b	complete_unit
 astra/base/judaism/native/population/prompt-english	34	6e8c09ebb3089106	retrieve_quote
 astra/base/judaism/native/population/prompt-english	64	e3b438b8606950a4	retrieve_quote
 astra/base/judaism/native/population/prompt-english	84	5909c81ef184b613	complete_unit
+astra/base/judaism/native/population/prompt-native	31	37875aa343e6b9fa	complete_unit
 astra/base/judaism/native/population/prompt-native	38	013dd6fa64808774	retrieve_quote
 astra/base/judaism/native/population/prompt-native	42	95f56cee57cce83f	retrieve_quote
 astra/base/judaism/native/population/prompt-native	66	26411ebfbc87fcaa	retrieve_quote
 astra/base/judaism/native/population/prompt-native	83	099b666aa9b89ef4	complete_unit
 deepseek-v4-pro/base/judaism/native/population/prompt-english	43	6e8c09ebb3089106	retrieve_quote
+fable/base/judaism/native/population/prompt-english	10	a4793b43d315b572	complete_unit
 fable/base/judaism/native/population/prompt-english	35	32c34fecc705f1ab	complete_unit
 fable/base/judaism/native/population/prompt-english	83	c436057b58f11c07	retrieve_quote
 fable/base/judaism/native/population/prompt-native	37	8411a9e52409e82e	complete_unit
@@ -22,12 +26,13 @@ fable/base/judaism/native/population/prompt-native	38	013dd6fa64808774	retrieve_
 fable/base/judaism/native/population/prompt-native	69	26411ebfbc87fcaa	retrieve_quote
 facct-2026-11-03/argon/base/judaism/native/population/prompt-english	34	742ec7f9e32d8b35	retrieve_quote
 facct-2026-11-03/argon/base/judaism/native/population/prompt-english	36	19dbddcec133e074	complete_unit
-facct-2026-11-03/argon/base/judaism/native/population/prompt-english	60	c27efcf355bf0717	complete_unit
 facct-2026-11-03/argon/base/judaism/native/population/prompt-native	34	7de09cc389e5af2d	retrieve_quote
 facct-2026-11-03/argon/base/judaism/native/population/prompt-native	35	fc6aabc49a7b3b80	complete_unit
+facct-2026-11-03/astra/base/judaism/native/population/prompt-english	29	82fad8c4aefdf19e	complete_unit
 facct-2026-11-03/astra/base/judaism/native/population/prompt-english	35	742ec7f9e32d8b35	retrieve_quote
 facct-2026-11-03/astra/base/judaism/native/population/prompt-english	58	08a251f8313886ca	retrieve_quote
 facct-2026-11-03/astra/base/judaism/native/population/prompt-english	78	5f8211f4ad7949d1	complete_unit
+facct-2026-11-03/astra/base/judaism/native/population/prompt-native	30	b4ad3328d6c2356d	complete_unit
 facct-2026-11-03/astra/base/judaism/native/population/prompt-native	35	7de09cc389e5af2d	retrieve_quote
 facct-2026-11-03/astra/base/judaism/native/population/prompt-native	60	3ef763d8b7b97e06	retrieve_quote
 facct-2026-11-03/astra/base/judaism/native/population/prompt-native	68	be7285a2571426df	complete_unit
@@ -40,31 +45,48 @@ facct-2026-11-03/fable/base/judaism/native/population/prompt-native	35	fc6aabc49
 facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	33	19dbddcec133e074	complete_unit
 facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	36	ab3788c364d1cdbe	complete_unit
 facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-native	36	2587d8a4a3d99e82	complete_unit
+facct-2026-11-03/kimi/base/judaism/native/population/prompt-english	36	ab3788c364d1cdbe	complete_unit
+facct-2026-11-03/kimi/base/judaism/native/population/prompt-native	36	2587d8a4a3d99e82	complete_unit
 facct-2026-11-03/luna/base/judaism/native/population/prompt-english	93	902a0c3bfc8b1e50	complete_unit
-facct-2026-11-03/opus/base/judaism/native/population/prompt-english	36	ab3788c364d1cdbe	complete_unit
+facct-2026-11-03/opus/base/judaism/native/population/prompt-english	11	a44228c43989905e	complete_unit
 facct-2026-11-03/opus/base/judaism/native/population/prompt-english	38	742ec7f9e32d8b35	retrieve_quote
+facct-2026-11-03/opus/base/judaism/native/population/prompt-native	12	1ff038c4ec1903f0	complete_unit
 facct-2026-11-03/opus/base/judaism/native/population/prompt-native	37	7de09cc389e5af2d	retrieve_quote
+facct-2026-11-03/sol/base/judaism/native/population/prompt-english	10	a44228c43989905e	complete_unit
+facct-2026-11-03/sol/base/judaism/native/population/prompt-english	30	82fad8c4aefdf19e	complete_unit
 facct-2026-11-03/sol/base/judaism/native/population/prompt-english	31	742ec7f9e32d8b35	retrieve_quote
 facct-2026-11-03/sol/base/judaism/native/population/prompt-english	56	08a251f8313886ca	retrieve_quote
 facct-2026-11-03/sol/base/judaism/native/population/prompt-english	76	5f8211f4ad7949d1	complete_unit
+facct-2026-11-03/sol/base/judaism/native/population/prompt-native	29	b4ad3328d6c2356d	complete_unit
 facct-2026-11-03/sol/base/judaism/native/population/prompt-native	33	7de09cc389e5af2d	retrieve_quote
 facct-2026-11-03/sol/base/judaism/native/population/prompt-native	56	3ef763d8b7b97e06	retrieve_quote
 facct-2026-11-03/sol/base/judaism/native/population/prompt-native	77	2d8cc3ef8955a0b2	complete_unit
+facct-2026-11-03/sonnet/base/judaism/native/population/prompt-native	38	2587d8a4a3d99e82	complete_unit
 facct-2026-11-03/terra/base/judaism/native/population/prompt-english	36	742ec7f9e32d8b35	retrieve_quote
+facct-2026-11-03/terra/base/judaism/native/population/prompt-native	33	fc6aabc49a7b3b80	complete_unit
 facct-2026-11-03/terra/base/judaism/native/population/prompt-native	35	7de09cc389e5af2d	retrieve_quote
 facct-2026-11-03/terra/base/judaism/native/population/prompt-native	44	5b49cb50bdd86148	complete_unit
 gemini-flash/base/judaism/native/population/prompt-english	86	5909c81ef184b613	complete_unit
 gemini-flash/base/judaism/native/population/prompt-native	38	94655e20cdf87edf	complete_unit
 gemini-flash/base/judaism/native/population/prompt-native	83	099b666aa9b89ef4	complete_unit
+kimi/base/judaism/native/population/prompt-english	40	d874be71e7abea64	complete_unit
+kimi/base/judaism/native/population/prompt-native	39	94655e20cdf87edf	complete_unit
+opus/base/judaism/native/population/prompt-english	12	a4793b43d315b572	complete_unit
 opus/base/judaism/native/population/prompt-english	38	32c34fecc705f1ab	complete_unit
+opus/base/judaism/native/population/prompt-native	12	b03f0b4722910630	complete_unit
 opus/base/judaism/native/population/prompt-native	41	013dd6fa64808774	retrieve_quote
 sol/base/judaism/native/population/prompt-english	14	26509397045730e9	retrieve_quote
+sol/base/judaism/native/population/prompt-english	31	0530b4cfa9dc201b	complete_unit
 sol/base/judaism/native/population/prompt-english	37	6e8c09ebb3089106	retrieve_quote
 sol/base/judaism/native/population/prompt-english	62	e3b438b8606950a4	retrieve_quote
 sol/base/judaism/native/population/prompt-english	77	8e0b23986872cf4d	complete_unit
 sol/base/judaism/native/population/prompt-english	85	5909c81ef184b613	complete_unit
+sol/base/judaism/native/population/prompt-native	31	37875aa343e6b9fa	complete_unit
 sol/base/judaism/native/population/prompt-native	34	013dd6fa64808774	retrieve_quote
 sol/base/judaism/native/population/prompt-native	52	423f96e4430e935a	retrieve_quote
 sol/base/judaism/native/population/prompt-native	63	26411ebfbc87fcaa	retrieve_quote
 sol/base/judaism/native/population/prompt-native	85	099b666aa9b89ef4	complete_unit
+sonnet/base/judaism/native/population/prompt-english	41	d874be71e7abea64	complete_unit
+sonnet/base/judaism/native/population/prompt-native	41	94655e20cdf87edf	complete_unit
 terra/base/judaism/native/population/prompt-english	98	900c5fd3a294ad6c	complete_unit
+terra/base/judaism/native/population/prompt-native	34	8411a9e52409e82e	complete_unit

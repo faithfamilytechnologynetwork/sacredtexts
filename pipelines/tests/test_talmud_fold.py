@@ -7,8 +7,9 @@ and scored incorrect. ``fold_aware_contains`` now also compares the two under th
 Hebrew script. It is one more OR, so it only adds credit; ``normalize()`` and the equality
 submetrics are unchanged, and the Masoretic Bible (also Hebrew script) is never folded.
 
-The oracle at the bottom re-derives containment for every committed Talmud retrieve_quote /
-complete_unit cell, fold off and fold on. The cells that move are exactly those registered in
+The oracle at the bottom scores every committed Talmud retrieve_quote / complete_unit cell with the
+fold off and on, through ``score_answer`` (so a completion is also matched on its first ten words,
+#150). The cells whose headline moves are exactly those registered in
 ``testdata/talmud_fold_movers.tsv``, and each goes incorrect -> correct. Read-only.
 """
 from __future__ import annotations
@@ -223,7 +224,8 @@ def _registered() -> dict[tuple[str, int, str], str]:
 
 def test_committed_cells_move_only_as_registered():
     # Fold off and fold on are both derived from answers.jsonl, never from the committed scores, so
-    # the oracle still holds after the sanctioned re-score writes these cells as correct.
+    # the oracle still holds after the sanctioned re-score writes these cells as correct. Both are
+    # the headline, as score_file computes it: a completion also counts on its first ten words (#150).
     score_files = sorted(RUNS.glob("**/scores.jsonl"))
     if not score_files:
         pytest.skip("runs/ evidence not present")
@@ -238,13 +240,13 @@ def test_committed_cells_move_only_as_registered():
             if row["task"] not in _TEXT_TASKS or source.get("work") != TALMUD_WORK:
                 continue
             answer, expected = row["answer"] or "", row["question"]["expected"]
-            on_args = {"work": TALMUD_WORK, "language": source.get("language")}
-            if fold_aware_contains(answer, expected["text"]) == fold_aware_contains(answer, expected["text"], **on_args):
-                continue
             off = score_answer(row["task"], answer, expected, language=source.get("language"))
             on = score_answer(row["task"], answer, expected, language=source.get("language"), work=TALMUD_WORK)
+            if off == on:
+                continue
             assert off["outcome"] == "incorrect", (folder, i)
             assert on["outcome"] == "correct" and on["contains_reference"] == 1, (folder, i)  # credit-only
+            assert {k for k in off if off[k] != on[k]} <= {"contains_reference", "correct", "outcome"}
             moved[(folder, i, row["question_id"])] = row["task"]
     assert moved == _registered()
-    assert sum(folder.startswith("facct-2026-11-03/") for folder, _, _ in moved) == 33
+    assert sum(folder.startswith("facct-2026-11-03/") for folder, _, _ in moved) == 42

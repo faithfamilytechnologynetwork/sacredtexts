@@ -90,3 +90,17 @@ def native_decline_movers() -> set[tuple[str, int, str]]:
     path = Path(__file__).parent / "testdata" / "native_decline_movers.tsv"
     rows = [l.split("\t") for l in path.read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
     return {(folder, int(row), qid) for folder, row, qid, _ in rows}
+
+
+@pytest.fixture(scope="session")
+def completion_head_movers() -> set[tuple[str, int, str]]:
+    """Issue #150: committed complete_unit cells that the ten-word completion head moves from
+    incorrect to correct, as (run folder under runs/, 0-based row in answers.jsonl, question_id).
+    Only ``contains_reference``, ``correct`` and ``outcome`` change. A guard that compares the
+    scorer with committed scores not yet re-scored under #150 expects exactly these cells to differ.
+    Registry: testdata/completion_head_movers.tsv."""
+    path = Path(__file__).parent / "testdata" / "completion_head_movers.tsv"
+    rows = [l.split("\t") for l in path.read_text(encoding="utf-8").splitlines() if l and not l.startswith("#")]
+    movers = {(folder, int(row), qid) for folder, row, qid in rows}
+    assert len(movers) == len(rows)
+    return movers

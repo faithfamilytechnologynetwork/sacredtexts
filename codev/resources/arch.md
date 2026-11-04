@@ -190,7 +190,15 @@ round-trip that proves no invention/reordering.
   Devanagari reference, `fold_aware_contains` also compares answer and reference with `ऽ` removed
   (Stotra Samhita `चाऽऽचारो` = printed Gita Press `चाचारो`). One more OR, so still a superset.
   Witnessed by `test_devanagari_avagraha.py` (177 registered committed cells; 5 of them leave
-  `native_decline_movers.tsv`, since a contained quote outranks a decline). **The Talmud folds in
+  `native_decline_movers.tsv`, since a contained quote outranks a decline). **A completion needs
+  the first ten words of the continuation (#150):** for `complete_unit`, `contains_reference` is
+  also met when the answer contains `score.completion_head(continuation)`, OR'd with the full
+  continuation, so it only adds credit. A word is a whitespace token of `normalize()` (the same
+  count in every script: a maqaf, `॥` or apostrophe splits as `normalize()` splits it); the cut is
+  made in the RAW text at a space or punctuation mark, so the folds above still see the
+  reference's marks (the Spec 52 dagger-alif). `exact`/`normalized`/`token_f1`/`token_f1_base` and
+  the failure-kind reference keep the full continuation; `retrieve_quote` is unchanged. Witnessed
+  by `test_completion_head.py` (403 registered committed cells, all incorrect→correct). **The Talmud folds in
   containment only (#149):** when the cell's `source.work` is the Talmud Bavli, its language is `he`/`arc`
   and the reference is Hebrew script, `fold_aware_contains(…, work=, language=)` also compares both sides under the owner's Talmud
   normalization guide (`talmud_normalization_terms.tsv`, loaded once by `talmud_fold.py`):
@@ -199,7 +207,7 @@ round-trip that proves no invention/reordering.
   numerals, `הימנו`/`ממנו`, `-ים`/`-ין`, leading `ו`, `את ה-`. The work and language are passed
   (`score_file` → `score_answer(work=)` → `fold_aware_contains` / `classify_refusal`), never inferred
   from the script, so neither the Masoretic Bible nor the English Davidson edition is folded. One more OR, so still a superset. Witnessed by
-  `test_talmud_fold.py` (64 registered committed cells, all incorrect → correct). (verify_source is hardened —
+  `test_talmud_fold.py` (85 registered committed cells on the headline, all incorrect → correct). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised
