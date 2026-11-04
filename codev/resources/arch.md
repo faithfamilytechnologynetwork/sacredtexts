@@ -198,7 +198,16 @@ round-trip that proves no invention/reordering.
   made in the RAW text at a space or punctuation mark, so the folds above still see the
   reference's marks (the Spec 52 dagger-alif). `exact`/`normalized`/`token_f1`/`token_f1_base` and
   the failure-kind reference keep the full continuation; `retrieve_quote` is unchanged. Witnessed
-  by `test_completion_head.py` (403 registered committed cells, all incorrect→correct). (verify_source is hardened —
+  by `test_completion_head.py` (403 registered committed cells, all incorrect→correct). **The Talmud folds in
+  containment only (#149):** when the cell's `source.work` is the Talmud Bavli, its language is `he`/`arc`
+  and the reference is Hebrew script, `fold_aware_contains(…, work=, language=)` also compares both sides under the owner's Talmud
+  normalization guide (`talmud_normalization_terms.tsv`, loaded once by `talmud_fold.py`):
+  abbreviations expanded (an ambiguous one takes the reading the other side has; full names are
+  never collapsed, so `רבי יהודה` ≠ `רבי יוסי`), censors' substitutes → one class, divine names,
+  numerals, `הימנו`/`ממנו`, `-ים`/`-ין`, leading `ו`, `את ה-`. The work and language are passed
+  (`score_file` → `score_answer(work=)` → `fold_aware_contains` / `classify_refusal`), never inferred
+  from the script, so neither the Masoretic Bible nor the English Davidson edition is folded. One more OR, so still a superset. Witnessed by
+  `test_talmud_fold.py` (85 registered committed cells on the headline, all incorrect → correct). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds
   alef-wasla→alef / Hebrew maqaf→space *before* the punctuation pass, so vocalised

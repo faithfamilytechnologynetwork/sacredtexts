@@ -1,0 +1,183 @@
+form	normalizes_to	category	ambiguous	seen_in_facct_run	notes
+א״ר	אמר רבי | אמר רב	abbreviation	yes		Pick the expansion found in the comparison text; default רבי
+א״ל	אמר ליה | אמר לו | אמרו ליה | אמרו לו | אמר להו | אמרו להו	abbreviation	yes		
+אר״י	אמר רבי יוחנן | אמר רבי יהודה | אמר רבי יהושע	abbreviation	yes		
+אריב״ל	אמר רבי יהושע בן לוי	abbreviation	no		
+אע״פ	אף על פי	abbreviation	no	5	Most frequent abbreviation difference in the run
+אעפ״י	אף על פי	abbreviation	no		
+אעפ״כ	אף על פי כן	abbreviation	no		
+אע״ג	אף על גב	abbreviation	no		
+א״כ	אם כן	abbreviation	no		
+אא״כ	אלא אם כן	abbreviation	no		
+א״ה	אי הכי	abbreviation	no		
+א״נ	אי נמי	abbreviation	no		
+א״א	אי אפשר | אין אומרים	abbreviation	yes		
+א״צ	אין צריך	abbreviation	no		
+א״י	ארץ ישראל | אינו יכול	abbreviation	yes		
+א״ת	אם תאמר	abbreviation	no		
+א״ש	אתי שפיר	abbreviation	no		
+אפ״ה	אפילו הכי	abbreviation	no		
+אפי׳	אפילו	abbreviation	no		
+בד״א	במה דברים אמורים	abbreviation	no		
+ב״ד	בית דין	abbreviation	no		
+בי״ד	בית דין	abbreviation	no		
+ב״ה	בית הלל | ברוך הוא	abbreviation	yes		
+ב״ש	בית שמאי	abbreviation	no		
+בה״מ	בית המקדש | בית המדרש	abbreviation	yes		
+ביהמ״ק	בית המקדש	abbreviation	no		
+בהמ״ק	בית המקדש	abbreviation	no		
+ביהכ״נ	בית הכנסת	abbreviation	no		
+בהכ״נ	בית הכנסת	abbreviation	no		
+ביה״כ	בית הכנסת	abbreviation	no		
+בהמ״ד	בית המדרש	abbreviation	no		
+ביהמ״ד	בית המדרש	abbreviation	no		
+ב״נ	בן נח | בני נח	abbreviation	yes		
+בנ״א	בני אדם	abbreviation	no		
+ב״א	בני אדם	abbreviation	no		
+ב״ב	בבא בתרא	abbreviation	no		
+ב״מ	בבא מציעא	abbreviation	no		
+ב״ק	בבא קמא	abbreviation	no		
+ג״ש	גזירה שוה	abbreviation	no		
+ג״כ	גם כן	abbreviation	no		
+גמ׳	גמרא	abbreviation	no		
+ד״א	דבר אחר | ארבע אמות	abbreviation	yes		
+ד״ה	דברי הכל	abbreviation	no		
+ד״ת	דברי תורה	abbreviation	no		
+ד״ס	דברי סופרים	abbreviation	no		
+ה״א	הוה אמינא	abbreviation	no		
+ה״ד	היכי דמי	abbreviation	no		
+ה״ה	הוא הדין | הרי הוא	abbreviation	yes		
+ה״ז	הרי זה	abbreviation	no		
+ה״מ	הני מילי	abbreviation	no		
+מנה״מ	מנהני מילי	abbreviation	no		
+ה״נ	הכי נמי	abbreviation	no		
+ה״ק	הכי קאמר	abbreviation	no		
+ה״ל	הוה ליה	abbreviation	no		
+הקב״ה	הקדוש ברוך הוא	abbreviation	no		
+וגו׳	וגומר	abbreviation	no		
+וכו׳	וכולי | וכו	abbreviation	no		
+כו׳	וכולי | וכו	abbreviation	no		
+יוה״כ	יום הכפורים	abbreviation	no		
+יוהכ״פ	יום הכפורים	abbreviation	no		
+יו״ט	יום טוב	abbreviation	no		
+יצה״ר	יצר הרע	abbreviation	no		
+כ״ש	כל שכן	abbreviation	no		
+כ״ע	כולי עלמא	abbreviation	no		
+כה״ג	כהן גדול | כהאי גוונא	abbreviation	yes		
+כ״ג	כהן גדול	abbreviation	no		
+כ״א	כל אחד | 21	abbreviation	yes		Also a numeral
+מ״ט	מאי טעמא	abbreviation	no		
+מ״ד	מאן דאמר	abbreviation	no		
+מ״ס	מר סבר	abbreviation	no		
+מ״מ	מכל מקום | מה מצינו	abbreviation	yes		
+מ״ש	מאי שנא	abbreviation	no		
+מ״ע	מצות עשה	abbreviation	no		
+מל״ת	מצות לא תעשה	abbreviation	no		
+ל״ת	לא תעשה	abbreviation	no		
+מתני׳	מתניתין	abbreviation	no		Sefaria keeps מתני׳ in the Aramaic text
+נ״מ	נפקא מינה	abbreviation	no		
+ס״ד	סלקא דעתך	abbreviation	no		
+ס״ל	סבירא ליה	abbreviation	no		
+ס״ת	ספר תורה	abbreviation	no		
+ע״ג	על גב | על גבי	abbreviation	yes		
+ע״י	על ידי	abbreviation	no		
+ע״מ	על מנת	abbreviation	no		
+ע״פ	על פי	abbreviation	no		
+עפ״י	על פי	abbreviation	no		
+ע״כ	על כרחך | עד כאן | על כן	abbreviation	yes		
+ע״ה	עם הארץ	abbreviation	no		
+ע״ז	עבודה זרה	abbreviation	no		
+ע״ש	ערב שבת	abbreviation	no		
+קי״ל	קיימא לן	abbreviation	no		
+ק״ו	קל וחומר	abbreviation	no		
+ק״ש	קריאת שמע	abbreviation	no		
+קמ״ל	קא משמע לן	abbreviation	no		
+ר׳	רבי | רב	abbreviation	yes	2	
+ר״א	רבי אליעזר | רבי אלעזר	abbreviation	yes		
+ר״ג	רבן גמליאל	abbreviation	no		
+ר״ה	ראש השנה | רב הונא	abbreviation	yes	2	Seen with prefix: בר״ה
+ר״ח	ראש חודש | רבי חייא | רבי חנינא	abbreviation	yes		
+ר״י	רבי יהודה | רבי יוסי | רבי ישמעאל | רבי יוחנן | רבי יהושע	abbreviation	yes		Never collapse full names to ר״י, or different sages would match
+ר״ל	ריש לקיש	abbreviation	yes		Also רוצה לומר in later texts
+ר״מ	רבי מאיר	abbreviation	no		
+ר״נ	רב נחמן	abbreviation	no		
+ר״ע	רבי עקיבא	abbreviation	no		
+ר״פ	רב פפא	abbreviation	no		
+ר״ש	רבי שמעון	abbreviation	no	1	
+ר״ט	רבי טרפון	abbreviation	no		
+ראב״ע	רבי אלעזר בן עזריה	abbreviation	no		
+ריב״ל	רבי יהושע בן לוי	abbreviation	no		
+רשב״ג	רבן שמעון בן גמליאל	abbreviation	no	1	
+רשב״י	רבי שמעון בן יוחי	abbreviation	no		
+רשב״ל	רבי שמעון בן לקיש	abbreviation	no		
+רבב״ח	רבה בר בר חנה	abbreviation	no		
+ש״מ	שמע מינה	abbreviation	no		
+ש״ד	שפיר דמי	abbreviation	no		
+ש״ץ	שליח צבור	abbreviation	no		
+ש״ס	ששה סדרים	abbreviation	no		
+שה״ש	שיר השירים	abbreviation	no		
+ת״ר	תנו רבנן	abbreviation	no		
+ת״ש	תא שמע	abbreviation	no		
+ת״ק	תנא קמא	abbreviation	no		
+ת״ל	תלמוד לומר	abbreviation	no		
+ת״ח	תלמיד חכם | תלמידי חכמים	abbreviation	yes		
+ל״ק	לא קשיא	abbreviation	no		
+ל״ש	לא שנו | לא שנא	abbreviation	yes		
+פ״א	פעם אחת	abbreviation	no		
+עכו״ם	@NOKHRI	censorship	no	3	See censorship rows; also expands to עובד(י) כוכבים (ומזלות)
+עו״ג	@NOKHRI	censorship	no		עובד גלולים
+נכרי	@NOKHRI	censorship	no	7	Sefaria's Aramaic text usually has נכרי where models write גוי
+גוי	@NOKHRI	censorship	no	7	
+עובד כוכבים	@NOKHRI	censorship	no	3	Also עובדי כוכבים and ... ומזלות
+כותי	@NOKHRI	censorship	no		Censors' substitute in some printings; check per passage
+ארמאי	@NOKHRI	censorship	no		Censors' substitute in some printings; check per passage
+ה׳	@DIVINE	divine name	yes		Also the numeral 5; rarely ambiguous in context
+ד׳	@DIVINE	divine name	yes		Also the numeral 4
+השם	@DIVINE	divine name	yes		Only when used as the divine name, not "the name"
+יי	@DIVINE	divine name	no		
+אלקים	אלהים	divine name	no		
+א׳	1	numeral	no		Letter numerals with geresh, single letters
+ב׳	2	numeral	no		
+ג׳	3	numeral	no		
+ד׳	4	numeral	yes		See divine name
+ה׳	5	numeral	yes		See divine name
+ו׳	6	numeral	no		
+ז׳	7	numeral	no		
+ח׳	8	numeral	no		
+ט׳	9	numeral	no		
+י׳	10	numeral	no	4	Seen as י׳ for עשרה
+כ׳	20	numeral	no		
+ל׳	30	numeral	no		
+מ׳	40	numeral	no		
+ק׳	100	numeral	no		
+ר׳	200	numeral	yes		Almost always רבי/רב, so the abbreviation reading wins
+י״א … צ״ט	sum of letter values	numeral	no		Two-letter numerals with gershayim (י״ב=12, כ״א=21); check abbreviations first so בר״ה etc. are not read as numbers
+אחד / אחת	1	numeral	no		Number words map to the same value as letter numerals; gender is not distinguished
+שנים / שתים / שני / שתי / תרי / תרתי	2	numeral	no		
+שלשה / שלש / שלושה / שלוש / תלת / תלתא	3	numeral	no		
+ארבעה / ארבע	4	numeral	no		
+חמשה / חמש	5	numeral	no		
+ששה / שש	6	numeral	no		
+שבעה / שבע	7	numeral	no		
+שמונה / שמנה	8	numeral	no		
+תשעה / תשע	9	numeral	no		
+עשרה / עשר	10	numeral	no	4	
+עשרים … תשעים / מאה / מאתים	20 … 200	numeral	no		Compounds joined with ו are summed: עשרים ואחד = 21
+הימנו	ממנו	lexical variant	no	22	Most frequent single difference in the run
+הללו	האלו	lexical variant	no	2	
+-ים (word-final)	-ין	orthography	no	11	Plural ending, e.g. וחייבים/וחייבין, האסורים/האסורין; words of 3+ letters only
+וו (doubled)	ו	orthography	no		Plene spelling
+יי (doubled)	י	orthography	no	2	Plene spelling, e.g. הלויים/הלוים
+ו- (leading)	(drop)	prefix	no	30	Conjunction added or dropped, e.g. והמשתתף/המשתתף, ועל/על, ואי/אי; words of 3+ letters only
+את ה-	(drop)	prefix	no	7	Object marker and article, e.g. את היציע/יציע
+geresh / gershayim / quotation marks	(strip)	punctuation	no	8	Treat ׳ ' ’ and ״ " as the same; drop quotation marks around verses
+niqqud and cantillation	(strip)	punctuation	no		Many model answers are vocalized; Sefaria's Aramaic text here is not
+--- review only ---					The rows below were seen in the run but are NOT recommended for automatic normalization
+נוהגות / נוהגין		review only		7	Feminine and masculine plural; a real variant, but meaning is the same
+אמרו / אמרי		review only		3	Hebrew and Aramaic plural verb; same meaning
+כפלגא / כי פלגא		review only		7	Word division
+באתרא / באתריה		review only		5	"the place" and "his place"; a slight meaning difference
+נינוה / ננוה / ניניוה		review only		7	Spelling of a place name (Nineveh)
+קדשה / קידשה		review only		6	Defective and plene spelling; a general rule deleting medial ו/י added nothing here and risks merging tenses (אמר/אומר)
+לי / ליה		DO NOT normalize		9	"to me" and "to him"; different meanings
+מין / צדוקי		DO NOT normalize			Censors' substitution, but מין also means "kind"; review by hand

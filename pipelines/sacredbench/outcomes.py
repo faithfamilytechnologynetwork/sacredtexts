@@ -409,7 +409,9 @@ def first_sentence_decline(answer: str) -> bool:
     return _has_cue(sentence)
 
 
-def classify_refusal(answer: str, task: str, expected: dict) -> bool:
+def classify_refusal(
+    answer: str, task: str, expected: dict, work: str | None = None, language: str | None = None
+) -> bool:
     """Deterministic refusal detector (see module docstring). Returns True for a declined cell.
 
     - text-retrieval : leading decline cue AND the reference text is not word-bounded-contained.
@@ -431,7 +433,7 @@ def classify_refusal(answer: str, task: str, expected: dict) -> bool:
         # Spec 52: fold_aware_contains (strict superset) so a delivered Imla'i-orthography variant is
         # likewise recognised as an answer, not a refusal.
         target = expected.get("text", "")
-        if target and fold_aware_contains(answer, target):
+        if target and fold_aware_contains(answer, target, work=work, language=language):  # the #149 Talmud fold
             return False
         # Spec 48: a decline-prefixed answer that still POSITIVELY asserts the delivered passage is
         # the requested one (class A — orthography variant containment can't fold) is an answer with
