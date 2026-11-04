@@ -35,7 +35,7 @@ before they are used as the scored prompt.
 | Folder | In raw data? | Edition in the question | English edition, if different |
 |---|---|---|---|
 | `01-christianity` | questions in `christianity/english/`; full `nrsv.json` is gitignored | NRSV | same |
-| `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |
+| `02-judaism` | yes | Talmud Bavli (Vilna text), from Sefaria's William Davidson Aramaic | William Davidson English |
 | `03-islam` | yes | the Uthmani Qur'an (catalogue version `Uthmani (QUL)`) | Saheeh International, same citations |
 | `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |
 | `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |

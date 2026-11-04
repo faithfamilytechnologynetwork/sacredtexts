@@ -3,7 +3,8 @@
 Each file has a uniform population sample of 30 and a separate familiarity
 panel (every citation in well_known.yaml). Sikh citations are Ang N:k in
 reading order; a Sikh cite_passage row asks for and expects the Ang only, because
-line numbering within an Ang is not standardised (issue #135). Within each sample, half of the verify_source rows quote a
+line numbering within an Ang is not standardised (issue #135). A native Talmud row names the Vilna
+text and asks at daf+amud, not at Sefaria's segment (issue #147). Within each sample, half of the verify_source rows quote a
 different work and expect "no". An Arabic passage's "no" quotes the matn of a
 hadith that shares no text with the Qur'an (issue #75).
 
@@ -121,15 +122,57 @@ def sggs_ang(citation: str) -> str:
     return citation.partition(":")[0]
 
 
+# Issue #147: the native Talmud arms. With Sefaria's "William Davidson Aramaic edition" named, some 200
+# retrieve answers per arm were refusals (219 and 196), only 35 and 10 of them explicitly on copyright or
+# licence grounds; most decline on the segment divisions and orthography of a specific digital edition. So
+# the prompts name the Vilna text. And the
+# ":3" of "Megillah 23b:3" is Sefaria's own paragraph split, which no model can know, so a row asks at
+# daf+amud: retrieve_quote asks for the text at the beginning of the drawn passage's amud and expects the
+# amud's opening (``talmud_opening``; the row's source citation is its first segment, where the opening
+# starts), and cite_passage
+# expects the daf+amud. The English (Davidson/Steinsaltz) arm is unchanged.
+TALMUD_EN_RETRIEVE = (
+    "What is the text at the beginning of {amud} in {version}? Reply with the exact text of that edition and nothing else."
+)
+TALMUD_HE = {
+    "retrieve_quote": "מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.",
+    "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): "{head}" ענה במילים הנותרות בלבד.',
+    "cite_passage": 'היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד, בצורה: {example}.',
+    "verify_source": 'האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? "{text}" ענה כן או לא.',
+}
+# An amud often opens with the tail of a clause from the one before (``Megillah 23b:1`` is four words), and
+# a few words can be contained in a wrong answer by accident. The opening runs on to this many words.
+TALMUD_OPENING_WORDS = 10
+
+
+def talmud_amud(citation: str) -> str:
+    """``Megillah 23b`` for the segment ``Megillah 23b:3``."""
+    return citation.rpartition(":")[0]
+
+
+def talmud_opening(amud: str, segments: list) -> str:
+    """The text at the beginning of an amud: its segments from the first, space-joined as they read on
+    the page, until there are at least TALMUD_OPENING_WORDS words."""
+    text = ""
+    for n, segment in enumerate(segments, start=1):
+        if not isinstance(segment, str):
+            raise SystemExit(f"{amud}:{n} is not text; the opening cannot run past it")
+        text = f"{text} {clean_html(segment)}".strip()
+        if len(text.split()) >= TALMUD_OPENING_WORDS:
+            return text
+    raise SystemExit(f"{amud} has fewer than {TALMUD_OPENING_WORDS} words")
+
+
 # English display names the model sees in a prompt. Each names the work as well as
 # the edition: a bare catalogue version ("Is the following text from 2013 edition?")
 # never says which work's edition (issue #90). The catalogue `version` string is
 # unchanged in each question's source metadata; only the prompt wording changes. The
-# Qur'an is named "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75).
+# Qur'an is named "the Uthmani Qur'an" (no "QUL"), owner-signed 2026-11-01 (issue #75). The Aramaic
+# Talmud is named the Vilna text it is, not Sefaria's edition (issue #147).
 _EDITION_DISPLAY = {
     "Uthmani (QUL)": "the Uthmani Qur'an",
     "Saheeh International (QUL)": "the Saheeh International translation",
-    "William Davidson Edition - Aramaic": "the William Davidson Aramaic edition of the Babylonian Talmud",
+    "William Davidson Edition - Aramaic": "the Talmud Bavli (Vilna text)",
     "William Davidson Edition - English": "the William Davidson English edition of the Babylonian Talmud",
     "Shabad OS (SGPC Shabadaarth)": "the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib",
     "Stotra Samhita (Gita Press text)": "the Stotra Samhita (Gita Press text) edition of the Bhagavad Gita",
@@ -214,9 +257,10 @@ def rows_for(
     items, *, tradition, version, native_tmpl, english_version=None, english_native_tmpl=None,
     english_tmpl=EN, cited_as=None,
 ):
-    """``cited_as`` maps a passage's citation to the one its cite_passage row asks for and expects
-    (the Guru Granth Sahib's Ang, #135). The form example is a different cited citation, never the
-    answer, even where two passages share an Ang."""
+    """``cited_as`` maps a passage's citation to the one its native cite_passage row asks for and
+    expects (the Guru Granth Sahib's Ang, #135; the Talmud's daf+amud, #147). The form example is a
+    different cited citation, never the answer, even where two passages share an Ang. An English
+    edition's cite row keeps the passage's own citation."""
     cited_as = cited_as or (lambda citation: citation)
     citations = [passage.citation for passage, _, _, _ in items]
     out = []
@@ -264,12 +308,13 @@ def rows_for(
         head_e, rest_e = split_words(english)
         fields_e = {
             "citation": passage.citation, "version": edition_name(english_version),
-            "head": prompt_text(head_e), "text": prompt_text(english), "example": example,
+            "head": prompt_text(head_e), "text": prompt_text(english),
+            "example": next(c for c in citations if c != passage.citation),
         }
         expected_e = {
             "retrieve_quote": {"text": english},
             "complete_unit": {"text": rest_e, "full_text": english},
-            "cite_passage": {"citation": cited},
+            "cite_passage": {"citation": passage.citation},
             "verify_source": {
                 "answer": "yes", "true_tradition": tradition,
                 "true_version": english_version, "true_citation": passage.citation,
@@ -397,6 +442,7 @@ def sikhism() -> list[dict]:
 def judaism() -> list[dict]:
     root = RAW / "Judaism" / "Talmud Bavli"
     pairs = []
+    sections: dict[str, list] = {}  # amud -> its Aramaic segments, for the opening a retrieve row asks for (#147)
     for he_path in sorted(root.glob("* - he - William Davidson Edition - Aramaic.json")):
         tract = he_path.name.split(" - he - ")[0]
         en_path = root / f"{tract} - en - William Davidson Edition - English.json"
@@ -411,6 +457,7 @@ def judaism() -> list[dict]:
                 continue
             daf = (i // 2) + 1
             side = "a" if i % 2 == 0 else "b"
+            sections[f"{tract} {daf}{side}"] = sec_h
             # A daf side can end with one extra segment in one edition. Pair only
             # the shared indexes. An unpaired tail has no wording in the other edition.
             paired = min(len(sec_h), len(sec_e))
@@ -431,12 +478,6 @@ def judaism() -> list[dict]:
         for c in text
     ]
     drawn = population_draw(ordinary, famous, seed=20261030)
-    he = {
-        "retrieve_quote": "מהו נוסח {citation} בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? ענה בנוסח אותה מהדורה בלבד.",
-        "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית: "{head}" ענה במילים הנותרות בלבד.',
-        "cite_passage": 'היכן בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית, נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד, בצורה: {example}.',
-        "verify_source": 'האם הטקסט הבא מן התלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? "{text}" ענה כן או לא.',
-    }
     he_en = {
         "retrieve_quote": "מהו הנוסח האנגלי של {citation} בתלמוד הבבלי, מהדורת ויליאם דייווידסון האנגלית? ענה בנוסח אותה מהדורה בלבד.",
         "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי, מהדורת ויליאם דייווידסון האנגלית: "{head}" ענה במילים הנותרות בלבד.',
@@ -445,11 +486,33 @@ def judaism() -> list[dict]:
     }
     items = [(p, "population", *text[p.citation]) for p in drawn]
     items += [(p, "familiarity", *text[p.citation]) for p in famous]
+    version = "William Davidson Edition - Aramaic"
     rows = rows_for(
-        items, tradition="Judaism", version="William Davidson Edition - Aramaic",
-        native_tmpl=he, english_version="William Davidson Edition - English",
-        english_native_tmpl=he_en,
+        items, tradition="Judaism", version=version,
+        native_tmpl={**TALMUD_HE, "retrieve_quote": "{citation}"}, english_version="William Davidson Edition - English",
+        english_native_tmpl=he_en, cited_as=talmud_amud,
     )
+    # rows_for renders a native retrieve_quote row at the passage's segment; the loop asks it of the amud.
+    name = edition_name(version)
+    asked: set[tuple[str, str, str]] = set()  # (sample, condition, amud)
+    for row in rows:
+        if row["task"] != "retrieve_quote" or row["condition"] == "en_ask_en_answer":
+            continue
+        amud = talmud_amud(row["citation"])
+        row["drawn"] = {"citation": row["citation"], "text": row["expected"]["text"]}
+        if (row["sample"], row["condition"], amud) in asked:
+            # One retrieve row per amud. The row stays in the set as a verify donor (verify_donors).
+            row["unasked"] = True
+            continue
+        asked.add((row["sample"], row["condition"], amud))
+        opening = talmud_opening(amud, sections[amud])
+        if row["condition"] == "ask_english":
+            tmpl, suffix = TALMUD_EN_RETRIEVE, f"\nAnswer in the language of {name}."
+        else:
+            tmpl, suffix = TALMUD_HE["retrieve_quote"], ""
+        row.update(prompt_for(tmpl, {"amud": amud, "version": name, "text": opening}, suffix))
+        row["citation"] = f"{amud}:1"
+        row["expected"] = {"text": opening}
     note = "William Davidson Edition on Sefaria, CC-BY-NC. Attribute Sefaria and the William Davidson Edition."
     for row in rows:
         row["license"] = note
@@ -606,8 +669,9 @@ def verify_donors(by_name: dict[str, list[dict]]) -> list[dict]:
     for rows in by_name.values():
         for row in rows:
             if row["task"] == "retrieve_quote":
-                # A row that asks about another pankti than its drawn passage (the Sri Guru Granth
-                # Sahib's edge panktis) keeps the passage as the donor, so no other set's "no" rows move.
+                # A row that asks about another text than its drawn passage (the Sri Guru Granth
+                # Sahib's edge panktis, the opening of a Talmud amud) keeps the passage as the donor,
+                # so no other set's "no" rows move.
                 passage = row.get("drawn") or {"citation": row["citation"], "text": row["expected"]["text"]}
                 key = (row["tradition"], _asked_version(row), passage["citation"])
                 donors.setdefault(key, {
