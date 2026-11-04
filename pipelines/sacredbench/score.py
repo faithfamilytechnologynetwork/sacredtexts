@@ -77,6 +77,8 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
   A GGS citation scored at the Ang keeps its colon rivals (``citations.score_citation``).
 - the prompt's form example is dropped from the candidates beside another citation (#118)
   whether it is disclaimed or offered as an alternative ("Dhammapada 74 or Dhammapada 184").
+  A bare Ang (#135) or bare daf+amud (#147) expected drops it only as a disclaimed echo
+  ("Ang 315 (not Ang 306)"); offered beside the answer it is a rival ("Gittin 40a or Megillah 23b").
 """
 
 from __future__ import annotations

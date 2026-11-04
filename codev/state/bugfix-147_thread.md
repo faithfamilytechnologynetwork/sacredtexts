@@ -77,3 +77,7 @@
   example form quoted in a note, so the example is a rival); fable 628ae424 `גיטין מ.:י"ג` and f02605da
   `בבא קמא קיא:` incorrect→correct (print convention). n_candidates-only: 127.
 - Question files rebuild byte-identical (scorer + comments only this round).
+- CMAP round 4 (a39e034): gemini APPROVE, claude APPROVE, codex COMMENT. Its one doc note, that the
+  `score.py` known-gaps comment said the example is dropped whether disclaimed or offered, is fixed:
+  the bare Ang / bare daf paths drop it only as a disclaimed echo. Its commit-prefix note is the round-3
+  P3, left as is.
