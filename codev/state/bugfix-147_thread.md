@@ -81,3 +81,10 @@
   `score.py` known-gaps comment said the example is dropped whether disclaimed or offered, is fixed:
   the bare Ang / bare daf paths drop it only as a disclaimed echo. Its commit-prefix note is the round-3
   P3, left as is.
+- Architect P3 on a39e034 (01:10Z): `Megillah 23b:3 or 23b:4` was n=2. A Latin daf with no tractate
+  that restates a named daf now collapses into it (`unlabeled` form in `_daf_text`), like the bare N:k
+  rule on the Ang path; `… or 24a` stays a hedge. Two more movers, both incorrect→correct: fable
+  3eab2af4 ("begins on 111b" + Bava Kamma 111b:8) and sonnet 082e372f (every citation is Sanhedrin 88b).
+  While checking the sonnet cell (`סנהדרין פח:י`), I narrowed the print rule: a colon followed directly
+  by a Hebrew numeral is a segment form, like a digit (`כג:ג` has no amud). The sonnet cell moves on
+  the dedupe either way. Oracle: 7 movers, n-only 128.

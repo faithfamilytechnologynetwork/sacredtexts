@@ -276,6 +276,7 @@ class _DafForms:
     printed: re.Pattern  # the print convention: a period is amud alef, a colon amud bet (מגילה כג:)
     named: re.Pattern  # a tractate's daf+amud, once rewritten (megillah 23b)
     bare: re.Pattern  # a Hebrew daf+amud with no tractate, marked by דף or by ע״א / ע״ב
+    unlabeled: re.Pattern  # a daf+amud, once rewritten, with its tractate if it has one (… or 23b:4)
     qualifier: re.Pattern  # a line / Mishnah / segment number right after a daf+amud (megillah 23b, line 4)
 
 
@@ -288,12 +289,13 @@ def _daf_forms() -> _DafForms:
         lead=re.compile(f"{_START}({label})\\s*,?\\s*(?:(?:{daf_word}|daf)\\s+)?(?=\\d|[א-ת])"),
         amud=re.compile(f"{_fold('עמוד')}\\s*(?=[אב]{_GERESH}?(?![א-ת]))"),
         digits=re.compile(f"{_START}({label})\\s+(\\d+){amud}"),
-        printed=re.compile(f"{_START}({label})\\s+({_HEB_NUM})([.:])(?!\\s*\\d)"),
+        printed=re.compile(f"{_START}({label})\\s+({_HEB_NUM})([.:])(?!\\s*\\d|[א-ת])"),
         named=re.compile(f"{_START}(?:{label})\\s+(\\d+[ab]){_END}"),
         bare=re.compile(
             f"(?<![א-ת]){daf_word}\\s+({_HEB_NUM}|\\d+){amud}"
             f"|(?<![א-ת\\d])({_HEB_NUM}|\\d+)(?:\\s*,\\s*|\\s+)ע{_GERESH}([אב]){_GERESH}?(?![א-ת])"
         ),
+        unlabeled=re.compile(f"({_START}(?:{label})\\s+)?(?<!\\w)(\\d+[ab])(?:\\s*:\\s*\\d+)?(?!\\w)"),
         qualifier=re.compile(
             f"({_START}(?:{label})\\s+\\d+[ab])(?:[\\s,;(\\[]*(?:lines?|mishnah|segments?|seg\\.?)\\s*\\d+"
             f"(?:\\s*[-–]\\s*\\d+)?[)\\]]?)+"
@@ -321,10 +323,11 @@ def _printed(m: re.Match) -> str:
 def _daf_text(text: str, expected_citation: str) -> str:
     """``text`` in the expected's daf+amud notation, every segment dropped. Spelled-out forms are read:
     ``מסכת מגילה, דף כ"ג ע"ב``, ``מגילה דף כג עמוד ב``, ``מגילה 23 ע״ב``, ``Megillah, 23b`` and the print
-    convention ``מגילה כג:`` (a colon after the daf is amud bet, a period amud alef, when no digit follows:
-    ``מגילה כג:3`` is no amud) are all ``megillah 23b``. A Hebrew daf with no tractate (``… או דף כ״ד
+    convention ``מגילה כג:`` (a colon after the daf is amud bet, a period amud alef, when no digit or Hebrew
+    numeral follows: ``מגילה כג:3`` and ``מגילה כג:ג`` are segment forms with no amud) are all ``megillah 23b``. A Hebrew daf with no tractate (``… או דף כ״ד
     ע״א``) is a candidate of its own, ``daf 24a``, unless it restates a daf the answer names (``Megillah
-    23b (דף כ״ג ע״ב)``), as a bare ``N:k`` restating a named Ang is its line (#135). A line, Mishnah or segment number after a daf is a qualifier, not a candidate
+    23b (דף כ״ג ע״ב)``), as a bare ``N:k`` restating a named Ang is its line (#135); so is a Latin daf with
+    no tractate (``Megillah 23b:3 or 23b:4`` is Megillah 23b, ``… or 24a`` a hedge). A line, Mishnah or segment number after a daf is a qualifier, not a candidate
     (``Megillah 23b, line 4``), as a line or Mehl beside an Ang is."""
     forms = _daf_forms()
     text = forms.amud.sub("ע", forms.lead.sub(r"\1 ", canonical_citation_text(text, expected_citation)))
@@ -342,6 +345,7 @@ def _daf_text(text: str, expected_citation: str) -> str:
         return " " if cited in named else f" daf {cited} "
 
     text = forms.bare.sub(bare, text)
+    text = forms.unlabeled.sub(lambda m: " " if m[1] is None and m[2] in named else m[0], text)
     text = _DAF_COLON.sub(r"\1", _drop_segment(text, expected_citation))
     return re.sub(r"\s+", " ", forms.qualifier.sub(r"\1", text))
 
