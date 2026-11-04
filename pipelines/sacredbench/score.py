@@ -24,6 +24,9 @@ Metrics emitted per answer:
                   appears word-bounded inside the normalised answer (0/1) — catches a
                   correct-but-wrapped retrieval (bracketed quote + a citation/caveat) that
                   strict ``normalized`` scores 0. A strict superset of ``normalized``.
+                  For complete_unit the first ten words of the continuation are enough
+                  (``completion_head``, #150); ``exact``/``normalized``/``token_f1`` keep
+                  the full continuation.
 - ``correct``     the per-task headline judgment (see below)
 - ``outcome``     (Spec 15) ``correct`` / ``incorrect`` / ``refused`` — a declined answer is
                   ``refused`` (``correct`` forced 0) and EXCLUDED from accuracy; see
@@ -44,7 +47,10 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
 - retrieve_quote / complete_unit : OR of the selected graders' verdicts — default
                                    ``normalized`` OR ``contains_reference`` (Spec 15: a
                                    verbatim quote wrapped in brackets/notes IS a correct
-                                   retrieval; exact + token-F1 reported alongside).
+                                   retrieval; exact + token-F1 reported alongside). A
+                                   completion need only contain the first ten words of
+                                   the continuation (#150): the unit may run on past a
+                                   point the model cannot know.
                                    Containment is confined to these two text-retrieval
                                    tasks — the provenance tasks below never use it.
 - verify_source                  : the parsed **leading-stance** Yes/No equals expected
@@ -977,6 +983,32 @@ def _single_citation_correct(
     return int(bounded_contains(fold_citation_digits(answer), expected_citation)), n
 
 
+COMPLETION_HEAD_WORDS = 10  # #150: how much of a complete_unit continuation the headline needs
+
+
+def _is_cut_point(ch: str) -> bool:
+    return ch.isspace() or unicodedata.category(ch)[0] in "PSZ"
+
+
+def completion_head(text: str, words: int = COMPLETION_HEAD_WORDS) -> str:
+    """The first ``words`` words of a complete_unit continuation (#150), or ``text`` itself when it
+    has no more. A word is a whitespace token of ``normalize(text)``, so the count is the same in
+    every script. The cut is made in the raw text, at a space or punctuation mark, so the
+    containment folds still see the reference's own marks (the Spec 52 dagger-alif)."""
+    want = normalize(text).split()
+    if len(want) <= words:
+        return text
+    for i, ch in enumerate(text):
+        if not _is_cut_point(ch):
+            continue
+        got = normalize(text[:i]).split()
+        if got == want[:words]:
+            return text[:i]
+        if len(got) > words:
+            break
+    raise ScoreError(f"cannot cut the continuation after word {words}: {text[:80]!r}")
+
+
 def score_answer(
     task: str, answer: str, expected: dict, graders: "list | None" = None, language: "str | None" = None,
     prompt: "str | None" = None,
@@ -1005,16 +1037,23 @@ def score_answer(
         # everywhere) from scoring 1. Containment is confined to these two text-retrieval tasks —
         # the provenance branches below never see it. On an English cell both headline predicates
         # also fold Latin diacritics (Allāh == Allah, issue #94); no other language is folded.
+        # A complete_unit answer is contained when it holds the first ten words of the continuation
+        # (#150); the full continuation still counts, so this only adds credit. The equality and
+        # overlap metrics keep the full continuation.
         fold_latin = language == "en"
         key = _latin_folded if fold_latin else normalize
+        references = (target,)
+        if task == "complete_unit" and (head := completion_head(target)) != target:
+            references = (head, target)
         computed = {
             "exact": int(answer.strip() == target.strip()),
             "normalized": int(key(answer) == key(target)),
             "token_f1": round(token_f1(answer, target), 4),
             "token_f1_base": round(token_f1_base(answer, target), 4),
-            "contains_reference": int(
-                bool(normalize(target)) and fold_aware_contains(answer, target, fold_latin=fold_latin)
-            ),
+            "contains_reference": int(any(
+                bool(normalize(ref)) and fold_aware_contains(answer, ref, fold_latin=fold_latin)
+                for ref in references
+            )),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))

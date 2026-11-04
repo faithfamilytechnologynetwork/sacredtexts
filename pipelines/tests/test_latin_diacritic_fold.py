@@ -91,7 +91,7 @@ def test_registered_mover_counts():
     assert by_kind == {("islam", "incorrect"): 151, ("hinduism", "incorrect"): 15, ("hinduism", "refused"): 1}
 
 
-def test_committed_english_cells_move_only_as_registered():
+def test_committed_english_cells_move_only_as_registered(completion_head_movers):
     registered = _registered()
     score_files = sorted((REPO_ROOT / "runs").glob("*/base/**/scores.jsonl"))
     if not score_files:
@@ -102,12 +102,18 @@ def test_committed_english_cells_move_only_as_registered():
         answers = [json.loads(l) for l in scores.with_name("answers.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
         committed = [json.loads(l) for l in scores.read_text(encoding="utf-8").splitlines() if l.strip()]
         assert len(answers) == len(committed), folder  # score_file keeps row order, so pair by position
-        for row, old in zip(answers, committed):
+        for i, (row, old) in enumerate(zip(answers, committed)):
             language = row["question"]["source"].get("language")
             if row["task"] not in ("retrieve_quote", "complete_unit") or language != "en":
                 continue
             new = score_answer(row["task"], row["answer"], row["question"]["expected"], language=language)
             key = (folder, row["task"], row["question_id"])
+            if (folder, i, row["question_id"]) in completion_head_movers and new != old["metrics"]:
+                # issue #150, not yet re-scored: the completion head credits it, nothing else moves
+                changed = {k for k in new if new[k] != old["metrics"].get(k)}
+                assert changed == {"contains_reference", "correct", "outcome"}, (key, changed)
+                assert (old["metrics"]["outcome"], new["outcome"]) == ("incorrect", "correct"), key
+                continue
             if key not in registered:
                 assert new == old["metrics"], f"{key} moved but is not registered"
                 continue
