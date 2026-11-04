@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, SGGS_EN, edition_name
+from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, SGGS_EN, TALMUD_EN_RETRIEVE, edition_name
 
 OUT = Path(__file__).resolve().parent
 
@@ -124,7 +124,7 @@ def write_index(religions: list[tuple[str, str]]) -> None:
         "| Folder | In raw data? | Edition in the question | English edition, if different |",
         "|---|---|---|---|",
         "| `01-christianity` | questions in `christianity/english/`; full `nrsv.json` is gitignored | NRSV | same |",
-        "| `02-judaism` | yes | Talmud Bavli, William Davidson Aramaic | William Davidson English |",
+        "| `02-judaism` | yes | Talmud Bavli (Vilna text), from Sefaria's William Davidson Aramaic | William Davidson English |",
         "| `03-islam` | yes | the Uthmani Qur'an (catalogue version `Uthmani (QUL)`) | Saheeh International, same citations |",
         "| `04-sikhism` | yes | Sri Guru Granth Sahib, Shabad OS (SGPC Shabadaarth) | no English SGGS in this corpus |",
         "| `05-hinduism` | yes | Bhagavad Gita, Stotra Samhita (Gita Press text) | Annie Besant (1922) |",
@@ -185,11 +185,13 @@ def islam() -> tuple[str, str]:
 def judaism() -> tuple[str, str]:
     rows, size = passage_lines(load_questions("judaism", "native") + load_questions("judaism", "english"))
     rows.append("- The Aramaic and English Davidson files are different wording (CC-BY-NC).")
+    rows.append("- The Aramaic prompts name the Vilna text, not the Davidson edition (#147).")
+    rows.append("- Aramaic cite_passage expects the daf+amud; retrieve_quote asks for the beginning of the amud (#147).")
     native = {
-        "retrieve_quote": "מהו נוסח {citation} בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? ענה בנוסח אותה מהדורה בלבד.",
-        "complete_unit": "השלם ציטוט זה מהתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית: \"{head}\" ענה במילים הנותרות בלבד.",
-        "cite_passage": "היכן בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית, נמצא הטקסט הזה? \"{text}\" ענה בציון המקום בלבד.",
-        "verify_source": "האם הטקסט הבא מן התלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? \"{text}\" ענה כן או לא.",
+        "retrieve_quote": "מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.",
+        "complete_unit": "השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): \"{head}\" ענה במילים הנותרות בלבד.",
+        "cite_passage": "היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? \"{text}\" ענה בציון המקום בלבד, בצורה: {example}.",
+        "verify_source": "האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? \"{text}\" ענה כן או לא.",
     }
     name = edition_name("William Davidson Edition - Aramaic")
     return "02-judaism", page(
@@ -201,7 +203,7 @@ def judaism() -> tuple[str, str]:
         rows=rows,
         source="texts/raw/Judaism/Talmud Bavli/",
         size=size,
-        english_prompts=EN,
+        english_prompts={**EN, "retrieve_quote": TALMUD_EN_RETRIEVE},
         english_suffix=f"Answer in the language of {name}.",
     )
 
@@ -277,7 +279,7 @@ def page(
     for task, tmpl in english.items():
         out.append(
             f"- `{task}`: "
-            + tmpl.format(citation="{citation}", version=version, head="{head}", text="{text}", example="{example}", ang="{ang}", edge="{edge}")
+            + tmpl.format(citation="{citation}", version=version, head="{head}", text="{text}", example="{example}", ang="{ang}", edge="{edge}", amud="{amud}")
         )
     if english_suffix:
         out.extend(["", f"Each English prompt has a second line: `{english_suffix}`"])

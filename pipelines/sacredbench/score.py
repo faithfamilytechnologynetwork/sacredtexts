@@ -58,7 +58,8 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
                                    24:1``, ``שמות כח:מג``); Talmud is scored at daf+amud and the
                                    Guru Granth Sahib at the Ang, with ``segment_match`` beside it
                                    (``citations.py``, #112); a Sikh row now expects the bare Ang
-                                   (#135), and its ``segment_match`` is None
+                                   (#135) and a native Talmud row the bare daf+amud (#147), and
+                                   their ``segment_match`` is None
 
 (``identify_version`` and ``identify_source`` were retired in Spec 26: the question set is
 original-language-only, so there are never ≥2 editions of one work for ``identify_version``, and

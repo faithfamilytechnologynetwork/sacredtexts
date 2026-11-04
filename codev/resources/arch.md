@@ -117,6 +117,15 @@ round-trip that proves no invention/reordering.
   example's Ang is dropped only as a disclaimed echo (`not Ang 306`, `(Ang 306)`, `ਨਹੀਂ`), because one
   example (`Ang 306`) is shown on 64 of the 66 rows. These cells carry `segment_match: null` and are
   left out of the `segment_match` aggregate; `HEADLINE_DROPS_SEGMENT` does not apply.
+  **Talmud bare daf+amud (#147)**: Sefaria's segment index is that edition's own paragraph split, so
+  the native Talmud cite rows expect `Megillah 23b` (the passage stays in `source.citation`; the
+  English arm keeps its segments). `score_citation` sends a bare daf+amud of a `segment_indexed`
+  tractate to `_score_at_daf`: #112's daf+amud stage alone (Hebrew notation rewritten, every volunteered
+  segment dropped in answer and example, a colon after a daf with no segment dropped), correct iff the
+  expected is the single extracted candidate. Containment-free, like `_score_at_ang` (the raw matcher
+  reads `Megillah 23b:3` as `megillah 23` and never reads Hebrew notation); no colon rivals, as before
+  #112 (one committed right answer names the verse its passage quotes). `segment_match: null`, so
+  out of the aggregate; witnessed by a 0-mover oracle over the committed cells (`test_talmud_daf_amud.py`).
   Both are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
   not rewritten, and every mover is pinned by identity (`test_citation_equivalence.py`,
   `test_citation_example_echo.py`, and the 21 registered rows of `test_original_run_regression.py`). Every

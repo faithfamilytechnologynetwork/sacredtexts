@@ -85,8 +85,7 @@ speakers, so a Pali-language prompt would not measure what the other native
 prompts measure (owner decision, issue #113).
 
 The prompt names the work as well as the edition: "the 2013 edition of the
-Book of Mormon", "the William Davidson Aramaic edition of the Babylonian
-Talmud", "the Vatican English text of the encyclical Fides et Ratio (John Paul
+Book of Mormon", "the Talmud Bavli (Vilna text)", "the Vatican English text of the encyclical Fides et Ratio (John Paul
 II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
 edition?") left the model guessing which work was meant, and that cost 16-28
 points on `verify_source` for the traditions it hit (issue #90). The names are
@@ -120,6 +119,20 @@ or raag the model adds beside the Ang is ignored; a second Ang is a hedge.
 `retrieve_quote` asks for the first or last pankti of the Ang, never a
 heading or a multi-tuk record, for the same reason. An Ang asks at most two such questions, so
 a passage drawn from an Ang that already has two gets no retrieve row.
+
+The Aramaic Talmud is asked and scored at daf+amud (issue #147). The `:3` of
+`Megillah 23b:3` is Sefaria's paragraph split, which no model can know.
+`retrieve_quote` asks for the text at the beginning of the drawn passage's
+amud and expects the amud's first segment, which starts at its first word; the
+row's source citation is that segment (`Megillah 23b:1`). An amud asks one
+retrieve question. The pool holds one passage per amud, so no drawn passage
+loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds
+is ignored, and a second daf is a hedge. The Aramaic prompts name "the Talmud
+Bavli (Vilna text)", not Sefaria's William Davidson edition. Naming that edition
+drew some 200 copyright refusals per prompt arm on the public-domain Vilna text.
+The catalogue `version` and the licence note still name the Davidson edition.
+The English Talmud is that edition's Steinsaltz translation, named and cited by
+segment as before. Its refusals are on licence grounds.
 
 Within each sample, half of the `verify_source` questions quote a real passage
 from a different work and expect `no`. The donor is the same language as the

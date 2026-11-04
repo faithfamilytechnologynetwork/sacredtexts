@@ -17,10 +17,14 @@ Since #135 a Guru Granth Sahib cite row asks for and expects the bare Ang (``Ang
 numbering within an Ang is not standardised. A line the model volunteers (``Ang 315:9``) is dropped,
 ``Page 315`` is the Ang, and ``segment_match`` is None (no line to match).
 
+Since #147 a native Talmud cite row asks for and expects the bare daf+amud (``Megillah 23b``):
+Sefaria's segment index is that edition's own paragraph split, which no model can know. A segment
+the model volunteers (``Megillah 23b:3``, ``מגילה כ״ג ב:ג``) is dropped, and ``segment_match`` is None.
+
 :func:`score_citation` is credit-only: the headline is the existing matcher's verdict OR the
 equivalence verdict, so a cell that scored correct before still does. The one exception is a
-bare-Ang expected (#135): its headline is the Ang verdict alone, because the raw matcher would credit
-a hedge there.
+bare-Ang expected (#135) and a bare daf+amud expected (#147): the headline is that verdict alone,
+because the raw matcher would credit a hedge there.
 """
 
 from __future__ import annotations
@@ -47,7 +51,8 @@ ALIASES_PATH = Path(__file__).with_name("citation_aliases.yaml")
 
 # The #112 owner-decision switch. False scores Talmud and Guru Granth Sahib citations at the
 # expected's full segment / line granularity again; segment_match is reported either way. A bare-Ang
-# expected (#135) has no line, so the switch does not apply to it.
+# expected (#135) has no line and a bare daf+amud expected (#147) no segment, so the switch does not
+# apply to them.
 HEADLINE_DROPS_SEGMENT = True
 
 _HEBREW_VALUES = dict(zip(
@@ -60,11 +65,13 @@ _HEB_NUM = rf"[א-ת](?:{_GERESH}?[א-ת]){{0,3}}{_GERESH}?"
 _START = r"(?<![\wऀ-෿])"
 _END = r"(?![\wऀ-෿])"
 
-_DAF_CITATION = re.compile(r"\d+[ab]:\d+$")
+_DAF_CITATION = re.compile(r"\d+[ab](?::\d+)?$")
 _VERSE_CITATION = re.compile(r"\d+:\d+$")
 _BARE_VERSE = re.compile(r"\d+:\d+")
 _SEGMENTED = re.compile(r"(.+?) (\d+[ab]?):\d+")
 _BARE_ANG = re.compile(r"Ang \d+")
+_BARE_DAF = re.compile(r"(.+?) \d+[ab]")
+_DAF_COLON = re.compile(r"(\d[ab])\s*:(?!\s*\d)")  # "Megillah 23b: the Mishnah on …": no segment follows
 
 
 def _fold(text: str) -> str:
@@ -255,14 +262,48 @@ def _score_at_ang(answer: str, expected_citation: str, example: str | None) -> d
     return {"correct": int(target in angs and n == 1), "n_candidates": n, "segment_match": None}
 
 
+def _is_bare_daf(expected_citation: str) -> bool:
+    """``Megillah 23b``: a segment-indexed tractate at daf+amud, with no segment (#147)."""
+    m = _BARE_DAF.fullmatch(expected_citation)
+    return m is not None and m[1].casefold() in _tables().segmented
+
+
+def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> dict:
+    """``cite_passage`` against a bare daf+amud (#147): #112's daf+amud stage alone. The answer is
+    rewritten into the expected's notation (``מגילה כ״ג ב`` is ``megillah 23b``) and every segment it
+    volunteers is dropped, in the answer and the form example alike, as is a colon after a daf with no
+    segment after it (``Megillah 23b: the Mishnah on …``). It is correct when the expected
+    is its one candidate, after an echo of the example beside another citation is set aside (#118).
+
+    The raw matcher is not consulted, nor its containment fallback: on the raw answer the number
+    extractor reads ``Megillah 23b:3`` as ``megillah 23`` and never reads Hebrew notation, so it
+    would count a hedge where there is none and credit a citation it did not extract. A colon citation
+    of another work is not a candidate, as before #112 (``score.py`` known gaps): counting one would
+    mark wrong a committed right answer that names the verse the passage quotes (``Numbers 3:45``).
+    There is no segment to match: ``segment_match`` is None."""
+    def at_daf(t: str) -> str:
+        return _DAF_COLON.sub(r"\1", _drop_segment(canonical_citation_text(t, expected_citation), expected_citation))
+
+    text = at_daf(answer)
+    if example is not None:
+        example = at_daf(example)
+    _, n = _single_citation_correct(text, expected_citation, example)
+    target = re.compile(r"(?<!\w)" + re.escape(normalize(expected_citation)) + r"(?!\w)")
+    named = any(target.search(c) for c in _citation_candidates(text, expected_citation))
+    return {"correct": int(named and n == 1), "n_candidates": n, "segment_match": None}
+
+
 def score_citation(answer: str, expected_citation: str, example: str | None = None) -> dict:
     """``cite_passage`` metrics: ``correct`` and ``n_candidates``, plus ``segment_match`` for a
     segment-indexed citation. ``correct`` is the existing matcher's verdict OR the equivalence
     verdict; ``n_candidates`` changes only on a cell the equivalence credits. ``example`` (the
     prompt's form example, #118) is not counted as a candidate beside another citation. A bare-Ang
-    expected (#135) is scored by :func:`_score_at_ang` instead."""
+    expected (#135) is scored by :func:`_score_at_ang` instead, a bare daf+amud (#147) by
+    :func:`_score_at_daf`."""
     if _BARE_ANG.fullmatch(expected_citation):
         return _score_at_ang(answer, expected_citation, example)
+    if _is_bare_daf(expected_citation):
+        return _score_at_daf(answer, expected_citation, example)
     correct, n = _single_citation_correct(answer, expected_citation, example)
     metrics = {"correct": correct, "n_candidates": n}
     text = canonical_citation_text(answer, expected_citation)
