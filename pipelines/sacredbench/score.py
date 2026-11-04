@@ -58,7 +58,8 @@ that containment alone cannot game provenance honesty, within the SCOPE noted be
                                    24:1``, ``שמות כח:מג``); Talmud is scored at daf+amud and the
                                    Guru Granth Sahib at the Ang, with ``segment_match`` beside it
                                    (``citations.py``, #112); a Sikh row now expects the bare Ang
-                                   (#135), and its ``segment_match`` is None
+                                   (#135) and a native Talmud row the bare daf+amud (#147), and
+                                   their ``segment_match`` is None
 
 (``identify_version`` and ``identify_source`` were retired in Spec 26: the question set is
 original-language-only, so there are never ≥2 editions of one work for ``identify_version``, and
@@ -76,6 +77,8 @@ SCOPE / known gaps (tracked for the Spec 2 scoring-contract revision):
   A GGS citation scored at the Ang keeps its colon rivals (``citations.score_citation``).
 - the prompt's form example is dropped from the candidates beside another citation (#118)
   whether it is disclaimed or offered as an alternative ("Dhammapada 74 or Dhammapada 184").
+  A bare Ang (#135) or bare daf+amud (#147) expected drops it only as a disclaimed echo
+  ("Ang 315 (not Ang 306)"); offered beside the answer it is a rival ("Gittin 40a or Megillah 23b").
 """
 
 from __future__ import annotations

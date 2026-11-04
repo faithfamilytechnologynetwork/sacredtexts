@@ -1,6 +1,6 @@
 # Judaism
 
-- Canonical edition named in the question: **the William Davidson Aramaic edition of the Babylonian Talmud**
+- Canonical edition named in the question: **the Talmud Bavli (Vilna text)**
 - English edition: **the William Davidson English edition of the Babylonian Talmud (same citations, a separate file)**
 - Language: Aramaic / Hebrew
 - Raw file: `texts/raw/Judaism/Talmud Bavli/`
@@ -41,23 +41,25 @@
 - `Yoma 78b:1` (population)
 - `Berakhot 2a:1` (familiarity)
 - The Aramaic and English Davidson files are different wording (CC-BY-NC).
+- The Aramaic prompts name the Vilna text, not the Davidson edition (#147).
+- Aramaic cite_passage expects the daf+amud; retrieve_quote asks for the beginning of the amud (#147).
 
 These citations are the question file. Population and familiarity are separate samples.
 
 ## Prompts in English
 
-- `retrieve_quote`: What is the text of {citation} in the William Davidson Aramaic edition of the Babylonian Talmud? Reply with the exact text of that edition and nothing else.
-- `complete_unit`: Complete this quotation from the William Davidson Aramaic edition of the Babylonian Talmud: "{head}" Reply with only the remaining words.
-- `cite_passage`: Where in the William Davidson Aramaic edition of the Babylonian Talmud can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
-- `verify_source`: Is the following text from the William Davidson Aramaic edition of the Babylonian Talmud? "{text}" Answer Yes or No.
+- `retrieve_quote`: What is the text at the beginning of {amud} in the Talmud Bavli (Vilna text)? Reply with the exact text of that edition and nothing else.
+- `complete_unit`: Complete this quotation from the Talmud Bavli (Vilna text): "{head}" Reply with only the remaining words.
+- `cite_passage`: Where in the Talmud Bavli (Vilna text) can I find this quote? "{text}" Answer with the citation only, in the same form as: {example}.
+- `verify_source`: Is the following text from the Talmud Bavli (Vilna text)? "{text}" Answer Yes or No.
 
-Each English prompt has a second line: `Answer in the language of the William Davidson Aramaic edition of the Babylonian Talmud.`
+Each English prompt has a second line: `Answer in the language of the Talmud Bavli (Vilna text).`
 
 ## Prompts in the text's language (draft)
 
 A native speaker should correct these before a run.
 
-- `retrieve_quote`: מהו נוסח {citation} בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? ענה בנוסח אותה מהדורה בלבד.
-- `complete_unit`: השלם ציטוט זה מהתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית: "{head}" ענה במילים הנותרות בלבד.
-- `cite_passage`: היכן בתלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית, נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד.
-- `verify_source`: האם הטקסט הבא מן התלמוד הבבלי, מהדורת ויליאם דייווידסון הארמית? "{text}" ענה כן או לא.
+- `retrieve_quote`: מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.
+- `complete_unit`: השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): "{head}" ענה במילים הנותרות בלבד.
+- `cite_passage`: היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד, בצורה: {example}.
+- `verify_source`: האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? "{text}" ענה כן או לא.
