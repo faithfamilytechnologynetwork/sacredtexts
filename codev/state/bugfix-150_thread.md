@@ -30,3 +30,13 @@
 - Gotcha: `pytest -n auto` is not available here (no xdist); my first "baseline green" never ran.
 - Side effect to note in PR: `jev.string_settled` goes through score_answer, so newly-correct cells
   count as string-settled (Jev is not called on them).
+
+## PR (2026-11-04)
+- PR #152. The Gurmukhi registry row fix had already landed on main as #143 (6f05422), so per the
+  architect I dropped my duplicate commit (rebase --onto, byte-identical content) and merged
+  origin/main; the PR diff is now only #150.
+- CMAP: gemini APPROVE; codex REQUEST_CHANGES (wants `normalized` = head OR full so a strict-only
+  exact-head answer scores; this conflicts with the architect-approved design, so I rebutted and
+  surfaced it to the architect); claude pending at time of writing.
+- Gotcha: `consult` in a builder needs `--issue 150 --project-id bugfix-150` here; auto-detect sees
+  every project in codev/projects and refuses ("Multiple projects found").
