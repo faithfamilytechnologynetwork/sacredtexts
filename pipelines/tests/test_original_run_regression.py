@@ -6,7 +6,8 @@ generator guard (`test_first_run_regression.py`). Two invariants:
 
 - **Scoring invariance (always runs):** re-scoring the committed `answers.jsonl` to a scratch
   path reproduces the committed `scores.jsonl` byte-for-byte (except the one cell issue #117
-  registers in `testdata/native_decline_movers.tsv`) — proof that scoring changes did
+  registers in `testdata/native_decline_movers.tsv` and the 18 completions issue #150 registers in
+  `testdata/completion_head_movers.tsv`) — proof that scoring changes did
   not move the only committed evidence that exercises Arabic/Aramaic `normalize()`, the
   leading-stance `parse_yes_no`, and `cite_passage`/`complete_unit` over 1,428 real answers.
 - **Generation invariance (skips if `texts/standardized/` is absent, i.e. in a fresh clone /
@@ -78,7 +79,7 @@ SURVEY_SHA256 = "8244e9fb6c6b4d44ed067c3e0f6a75504f6bf28031259fe3ec334a90f24c506
 CONTRACT_MOVERS = Path(__file__).parent / "testdata" / "original_run_cite_contract_movers.jsonl"
 
 
-def test_rescoring_committed_original_run_reproduces_scores(tmp_path, native_decline_movers):
+def test_rescoring_committed_original_run_reproduces_scores(tmp_path, native_decline_movers, completion_head_movers):
     answers = RUN / "answers.jsonl"
     committed = RUN / "scores.jsonl"
     if not answers.exists() or not committed.exists():
@@ -93,6 +94,17 @@ def test_rescoring_committed_original_run_reproduces_scores(tmp_path, native_dec
         cell = json.loads(old[row])
         assert cell["question_id"] == qid and cell["metrics"]["outcome"] == "incorrect"
         cell["metrics"]["outcome"] = "refused"
+        old[row] = json.dumps(cell, ensure_ascii=False)
+    # issue #150: a completion holding the first ten words of the continuation is now contained
+    head_moved = [r for f, r, _ in completion_head_movers if f == "archive/original-2026-10-21"]
+    assert len(head_moved) == 18
+    for folder, row, qid in completion_head_movers:
+        if folder != "archive/original-2026-10-21":
+            continue
+        cell = json.loads(old[row])
+        assert cell["question_id"] == qid and cell["metrics"]["outcome"] == "incorrect"
+        assert cell["metrics"]["contains_reference"] == 0
+        cell["metrics"].update(contains_reference=1, correct=1, outcome="correct")
         old[row] = json.dumps(cell, ensure_ascii=False)
     movers = {
         m["row"]: m
