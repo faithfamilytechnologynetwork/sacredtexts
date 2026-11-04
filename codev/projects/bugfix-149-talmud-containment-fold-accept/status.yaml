@@ -1,0 +1,14 @@
+id: bugfix-149
+title: talmud-containment-fold-accept
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-04T00:43:20.285Z'
+updated_at: '2026-11-04T00:43:20.286Z'
