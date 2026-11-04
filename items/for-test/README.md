@@ -99,6 +99,17 @@ What is the text of Exodus 28:43 in the New Revised Standard Version (NRSV)? Rep
 
 **Native edition, two calls** (Islam, Sikhism, and the Aramaic half of Judaism). The same question is not stacked in one prompt. `prompt-english/` is the English question plus one line saying which language to answer in. `prompt-native/` is only the question in the text's language. Those native lines are drafts for a native speaker.
 
+The Aramaic Talmud is asked at daf+amud (#147). `Megillah 23b:3` is Sefaria's own segment number, which no model can know. `retrieve_quote` asks for the text at the beginning of the amud and expects its segments from the first (`Megillah 23b:1`) on, joined until there are at least ten words: an amud often opens with a few words carried over from the one before. `cite_passage` expects `Megillah 23b`. The prompts name "the Talmud Bavli (Vilna text)" / "התלמוד הבבלי (נוסח וילנא)": with Sefaria's William Davidson edition named, some 200 retrieve answers per arm were refusals (219 and 196). Only 35 and 10 of them cite copyright or licence. Most decline on the segment divisions and orthography of a specific digital edition.
+
+```
+What is the text at the beginning of Megillah 23b in the Talmud Bavli (Vilna text)? Reply with the exact text of that edition and nothing else.
+Answer in the language of the Talmud Bavli (Vilna text).
+```
+
+```
+מהו הנוסח בתחילת Megillah 23b בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.
+```
+
 ```
 What is the text of Ang 306:13 in the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib? Reply with the exact text of that edition and nothing else.
 Answer in the language of the Shabad OS (SGPC Shabadaarth) edition of the Sri Guru Granth Sahib.
@@ -110,7 +121,7 @@ Ang 306:13 ਦਾ ਪਾਠ ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹ�
 
 **English edition of a non-English work** (Judaism). One English line, the same shape as Christianity. It names the English edition. It does not repeat the question in Hebrew, and it does not warn that the translation can differ.
 
-Judaism's native edition is one text, the Aramaic Davidson edition. Hebrew and Aramaic are mixed in that text; they are not two scored languages. The English Davidson edition is a second scored answer. `complete_unit` cuts each edition at half of its own words (`split_quote` in `generate.py`, the same cut the main generator uses). The two remainders are the same fraction of each wording. They are not the same point in the passage, because the translation is not the same length.
+Judaism's native edition is one text, the Aramaic Vilna text (Sefaria's William Davidson edition, which `source.version` and the licence note still name). Hebrew and Aramaic are mixed in that text; they are not two scored languages. The English Davidson edition (the Steinsaltz translation) is a second scored answer, still named and cited by segment. `complete_unit` cuts each edition at half of its own words (`split_quote` in `generate.py`, the same cut the main generator uses). The two remainders are the same fraction of each wording. They are not the same point in the passage, because the translation is not the same length.
 
 Islam's English edition is Saheeh International, the same 30 citations, one English call. Sikhism and Buddhism do not have this third prompt. This corpus has no English Guru Granth Sahib and no English Dhammapada. Hinduism asks the same 30 verses in Besant's English as well as in Sanskrit.
 

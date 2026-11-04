@@ -40,7 +40,7 @@ _GREEK = "the Greek New Testament (Scrivener 1894)"
 # catalogue version -> the work an English prompt must name (#90); an encyclical names its own work
 _WORK = {
     "2013 edition": "Book of Mormon",
-    "William Davidson Edition - Aramaic": "Babylonian Talmud",
+    "William Davidson Edition - Aramaic": "Talmud Bavli",  # the Vilna text, by name (#147)
     "William Davidson Edition - English": "Babylonian Talmud",
     "Shabad OS (SGPC Shabadaarth)": "Sri Guru Granth Sahib",
     "Stotra Samhita (Gita Press text)": "Bhagavad Gita",

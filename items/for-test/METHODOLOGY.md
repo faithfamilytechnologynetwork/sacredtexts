@@ -85,9 +85,8 @@ speakers, so a Pali-language prompt would not measure what the other native
 prompts measure (owner decision, issue #113).
 
 The prompt names the work as well as the edition: "the 2013 edition of the
-Book of Mormon", "the William Davidson Aramaic edition of the Babylonian
-Talmud", "the Vatican English text of the encyclical Fides et Ratio (John Paul
-II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
+Book of Mormon", "the Talmud Bavli (Vilna text)", "the Vatican English text of
+the encyclical Fides et Ratio (John Paul II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
 edition?") left the model guessing which work was meant, and that cost 16-28
 points on `verify_source` for the traditions it hit (issue #90). The names are
 `_EDITION_DISPLAY` in `review/build_questions.py`; a new edition without one
@@ -126,6 +125,31 @@ or raag the model adds beside the Ang is ignored; a second Ang is a hedge.
 `retrieve_quote` asks for the first or last pankti of the Ang, never a
 heading or a multi-tuk record, for the same reason. An Ang asks at most two such questions, so
 a passage drawn from an Ang that already has two gets no retrieve row.
+
+The Aramaic Talmud is asked and scored at daf+amud (issue #147). The `:3` of
+`Megillah 23b:3` is Sefaria's paragraph split, which no model can know.
+`retrieve_quote` asks for the text at the beginning of the drawn passage's
+amud. The expected text is the amud's segments from the first, which starts at
+the amud's first word, joined as they read until there are at least ten words.
+An amud often opens with a few words carried over from the one before
+(`Megillah 23b:1` is four), and so short a text could be contained in a wrong
+answer by accident. The opening is not held to the 16-word floor of the draw
+(8 of the 62 are 10 to 15 words). The row's source citation is the first segment
+(`Megillah 23b:1`). An amud asks one
+retrieve question. The pool holds one passage per amud, so no drawn passage
+loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds
+is ignored, as is a line or Mishnah number. Spelled-out Hebrew
+(`מסכת מגילה, דף כ"ג עמוד ב`) is read, and so is the printed form, where a period
+after the daf is amud alef and a colon amud bet (`מגילה כג:` is Megillah 23b). A
+second daf is a hedge, with or without its tractate, and so is the prompt's
+example offered beside the answer. The Aramaic prompts name "the Talmud
+Bavli (Vilna text)", not Sefaria's William Davidson edition. With that edition
+named, some 200 retrieve answers per prompt arm were refusals (219 and 196), only
+35 and 10 of them explicitly on copyright or licence grounds; most decline on the
+segment divisions and orthography of a specific digital edition.
+The catalogue `version` and the licence note still name the Davidson edition.
+The English Talmud is that edition's Steinsaltz translation, named and cited by
+segment as before. Its refusals are on licence grounds.
 
 Within each sample, half of the `verify_source` questions quote a real passage
 from a different work and expect `no`. The donor is the same language as the
