@@ -86,7 +86,7 @@
 {"question_id": "f17ff1bf647e47bb", "model_id": "haiku", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 1, "token_f1": 1.0, "token_f1_base": 1.0, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "8bdd0bf65b90afdb", "model_id": "haiku", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "2850f76512dbc099", "model_id": "haiku", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
-{"question_id": "9dd2de1e4b69a498", "model_id": "haiku", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9333, "token_f1_base": 0.9333, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "9dd2de1e4b69a498", "model_id": "haiku", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9333, "token_f1_base": 0.9333, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "75a870f3cc7a3008", "model_id": "haiku", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5532, "token_f1_base": 0.5532, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "efc20ebbae5c612a", "model_id": "haiku", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9333, "token_f1_base": 0.9333, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "d6b8b933d4b89fd7", "model_id": "haiku", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}

@@ -26,63 +26,63 @@
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 29,
-     "omission": 1
+     "paraphrase": 1,
+     "wrong_passage": 29
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0607,
-    "token_f1_base": 0.0607,
+    "token_f1": 0.0674,
+    "token_f1_base": 0.0674,
     "contains_reference": 0.0
    },
    "retrieve_quote": {
     "n": 30,
     "accuracy": 0.0,
-    "coverage": 0.9333,
+    "coverage": 1.0,
     "correct": 0,
-    "incorrect": 28,
+    "incorrect": 30,
     "minor": 0,
-    "major": 28,
-    "refused": 2,
-    "refused_rate": 0.0667,
+    "major": 30,
+    "refused": 0,
+    "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 28
+     "wrong_passage": 30
     },
     "exact": 0.0,
     "normalized": 0.0,
-    "token_f1": 0.0242,
-    "token_f1_base": 0.0242,
+    "token_f1": 0.0306,
+    "token_f1_base": 0.0306,
     "contains_reference": 0.0
    },
    "verify_source": {
     "n": 30,
-    "accuracy": 0.6,
+    "accuracy": 0.8,
     "coverage": 1.0,
-    "correct": 18,
-    "incorrect": 12,
+    "correct": 24,
+    "incorrect": 6,
     "minor": 0,
-    "major": 12,
+    "major": 6,
     "refused": 0,
     "refused_rate": 0.0,
     "kinds": {
-     "wrong_verdict": 12
+     "wrong_verdict": 6
     }
    },
    "_overall": {
     "n": 120,
-    "accuracy": 0.1525,
-    "coverage": 0.9833,
-    "correct": 18,
-    "incorrect": 100,
+    "accuracy": 0.2,
+    "coverage": 1.0,
+    "correct": 24,
+    "incorrect": 96,
     "minor": 1,
-    "major": 99,
-    "refused": 2,
-    "refused_rate": 0.0167,
+    "major": 95,
+    "refused": 0,
+    "refused_rate": 0.0,
     "kinds": {
-     "wrong_passage": 57,
-     "omission": 1,
+     "paraphrase": 1,
+     "wrong_passage": 59,
      "wrong_locus": 30,
-     "wrong_verdict": 12
+     "wrong_verdict": 6
     }
    }
   }
@@ -111,29 +111,29 @@
     "retrieve_quote": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.9333,
+     "coverage": 1.0,
      "correct": 0,
-     "incorrect": 28,
-     "refused": 2,
-     "refused_rate": 0.0667
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.6,
+     "accuracy": 0.8,
      "coverage": 1.0,
-     "correct": 18,
-     "incorrect": 12,
+     "correct": 24,
+     "incorrect": 6,
      "refused": 0,
      "refused_rate": 0.0
     },
     "_overall": {
      "n": 120,
-     "accuracy": 0.1525,
-     "coverage": 0.9833,
-     "correct": 18,
-     "incorrect": 100,
-     "refused": 2,
-     "refused_rate": 0.0167
+     "accuracy": 0.2,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 96,
+     "refused": 0,
+     "refused_rate": 0.0
     }
    }
   }
@@ -166,53 +166,53 @@
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 29,
-      "omission": 1
+      "paraphrase": 1,
+      "wrong_passage": 29
      }
     },
     "retrieve_quote": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.9333,
+     "coverage": 1.0,
      "correct": 0,
-     "incorrect": 28,
+     "incorrect": 30,
      "minor": 0,
-     "major": 28,
-     "refused": 2,
-     "refused_rate": 0.0667,
+     "major": 30,
+     "refused": 0,
+     "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 28
+      "wrong_passage": 30
      }
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.6,
+     "accuracy": 0.8,
      "coverage": 1.0,
-     "correct": 18,
-     "incorrect": 12,
+     "correct": 24,
+     "incorrect": 6,
      "minor": 0,
-     "major": 12,
+     "major": 6,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "wrong_verdict": 12
+      "wrong_verdict": 6
      }
     },
     "_overall": {
      "n": 120,
-     "accuracy": 0.1525,
-     "coverage": 0.9833,
-     "correct": 18,
-     "incorrect": 100,
+     "accuracy": 0.2,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 96,
      "minor": 1,
-     "major": 99,
-     "refused": 2,
-     "refused_rate": 0.0167,
+     "major": 95,
+     "refused": 0,
+     "refused_rate": 0.0,
      "kinds": {
-      "wrong_passage": 57,
-      "omission": 1,
+      "paraphrase": 1,
+      "wrong_passage": 59,
       "wrong_locus": 30,
-      "wrong_verdict": 12
+      "wrong_verdict": 6
      }
     }
    }
@@ -242,29 +242,29 @@
     "retrieve_quote": {
      "n": 30,
      "accuracy": 0.0,
-     "coverage": 0.9333,
+     "coverage": 1.0,
      "correct": 0,
-     "incorrect": 28,
-     "refused": 2,
-     "refused_rate": 0.0667
+     "incorrect": 30,
+     "refused": 0,
+     "refused_rate": 0.0
     },
     "verify_source": {
      "n": 30,
-     "accuracy": 0.6,
+     "accuracy": 0.8,
      "coverage": 1.0,
-     "correct": 18,
-     "incorrect": 12,
+     "correct": 24,
+     "incorrect": 6,
      "refused": 0,
      "refused_rate": 0.0
     },
     "_overall": {
      "n": 120,
-     "accuracy": 0.1525,
-     "coverage": 0.9833,
-     "correct": 18,
-     "incorrect": 100,
-     "refused": 2,
-     "refused_rate": 0.0167
+     "accuracy": 0.2,
+     "coverage": 1.0,
+     "correct": 24,
+     "incorrect": 96,
+     "refused": 0,
+     "refused_rate": 0.0
     }
    }
   }
@@ -282,10 +282,10 @@
    },
    "yes": {
     "n": 15,
-    "accuracy": 0.2,
+    "accuracy": 0.6,
     "coverage": 1.0,
-    "correct": 3,
-    "incorrect": 12,
+    "correct": 9,
+    "incorrect": 6,
     "refused": 0,
     "refused_rate": 0.0
    }
@@ -295,14 +295,14 @@
   "per_model": {
    "gemma-31b": {
     "calls": 120,
-    "in": 13127,
-    "out": 5051
+    "in": 12167,
+    "out": 7049
    }
   },
   "total": {
    "calls": 120,
-   "in": 13127,
-   "out": 5051
+   "in": 12167,
+   "out": 7049
   }
  },
  "evaluators": [
@@ -310,5 +310,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T21:02:19.631644+00:00"
+ "generated_at": "2026-11-04T03:39:51.124054+00:00"
 }

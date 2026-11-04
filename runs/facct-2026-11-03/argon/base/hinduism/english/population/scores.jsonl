@@ -102,7 +102,7 @@
 {"question_id": "9de20fc989fb34e8", "model_id": "argon", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
 {"question_id": "030b04e43497a4b7", "model_id": "argon", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9697, "token_f1_base": 0.9697, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "dbf8d7f068d5b037", "model_id": "argon", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
-{"question_id": "d0456e157eba6a24", "model_id": "argon", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.6923, "token_f1_base": 0.7692, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d0456e157eba6a24", "model_id": "argon", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.6923, "token_f1_base": 0.7692, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "69b72cbb0d374792", "model_id": "argon", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
 {"question_id": "6a3bf02fa19a9833", "model_id": "argon", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.8627, "token_f1_base": 0.902, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "53ddbe12f8208703", "model_id": "argon", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}

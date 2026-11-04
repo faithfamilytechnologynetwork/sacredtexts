@@ -11,7 +11,7 @@
 {"question_id": "5dfaa8347488156d", "model_id": "kimi", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.401, "token_f1_base": 0.401, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "56e07e35d8574f4e", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
 {"question_id": "5f7f140736d3794b", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
-{"question_id": "c0cd712e436b6f8c", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9958, "token_f1_base": 0.9958, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "c0cd712e436b6f8c", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9958, "token_f1_base": 0.9958, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "a16d2fc34c880a51", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1875, "token_f1_base": 0.1875, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "86e2d4aa354f0d06", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
 {"question_id": "76870f345d2abc56", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
@@ -26,7 +26,7 @@
 {"question_id": "ce043d112b986452", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
 {"question_id": "3806993612a2931d", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "03b9b62a1f41f96b", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
-{"question_id": "7012f3311440aca9", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5075, "token_f1_base": 0.5075, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "7012f3311440aca9", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5075, "token_f1_base": 0.5075, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "f60ec3e57e4d3c64", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "af42f183c44f9f30", "model_id": "kimi", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9899, "token_f1_base": 0.9899, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "6eeb39fbcd955b0c", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
@@ -62,7 +62,7 @@
 {"question_id": "9f032738a939698d", "model_id": "kimi", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3024, "token_f1_base": 0.3024, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "a04faa399ae4ce4f", "model_id": "kimi", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1182, "token_f1_base": 0.1182, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "28c3eef427e499d9", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
-{"question_id": "bd81ad75c6918d8d", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5814, "token_f1_base": 0.5814, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "bd81ad75c6918d8d", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5814, "token_f1_base": 0.5814, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "98fd3ffcdb09ff9f", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "1e3c804ad819cfb8", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1702, "token_f1_base": 0.1702, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "209ef917e08a2b5a", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}
@@ -89,7 +89,7 @@
 {"question_id": "e7b65a6ea6211cc9", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "827b11b82fd2da7b", "model_id": "kimi", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3053, "token_f1_base": 0.3053, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "a1c8c7c29a5173ae", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
-{"question_id": "4a995503ae5d5510", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9792, "token_f1_base": 0.9792, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "4a995503ae5d5510", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9792, "token_f1_base": 0.9792, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "6805e928a0342412", "model_id": "kimi", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "19d827697c5390ce", "model_id": "kimi", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0706, "token_f1_base": 0.0706, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "bfe5af41808886c5", "model_id": "kimi", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "outcome": "incorrect"}}

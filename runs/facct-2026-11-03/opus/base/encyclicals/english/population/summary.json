@@ -17,25 +17,25 @@
    },
    "complete_unit": {
     "n": 30,
-    "accuracy": 0.0909,
+    "accuracy": 0.5,
     "coverage": 0.7333,
-    "correct": 2,
-    "incorrect": 20,
-    "minor": 14,
-    "major": 6,
+    "correct": 11,
+    "incorrect": 11,
+    "minor": 6,
+    "major": 5,
     "refused": 8,
     "refused_rate": 0.2667,
     "kinds": {
      "near_copy": 2,
-     "paraphrase": 4,
-     "wrong_passage": 6,
-     "omission": 8
+     "paraphrase": 2,
+     "wrong_passage": 5,
+     "omission": 2
     },
     "exact": 0.0455,
     "normalized": 0.0909,
     "token_f1": 0.4526,
     "token_f1_base": 0.4526,
-    "contains_reference": 0.0909
+    "contains_reference": 0.5
    },
    "retrieve_quote": {
     "n": 30,
@@ -74,20 +74,20 @@
    },
    "_overall": {
     "n": 120,
-    "accuracy": 0.5455,
+    "accuracy": 0.6477,
     "coverage": 0.7333,
-    "correct": 48,
-    "incorrect": 40,
-    "minor": 18,
-    "major": 22,
+    "correct": 57,
+    "incorrect": 31,
+    "minor": 10,
+    "major": 21,
     "refused": 32,
     "refused_rate": 0.2667,
     "kinds": {
      "edition_variant": 1,
      "near_copy": 3,
-     "paraphrase": 6,
-     "wrong_passage": 6,
-     "omission": 8,
+     "paraphrase": 4,
+     "wrong_passage": 5,
+     "omission": 2,
      "wrong_locus": 12,
      "wrong_verdict": 4
     }
@@ -108,10 +108,10 @@
     },
     "complete_unit": {
      "n": 30,
-     "accuracy": 0.0909,
+     "accuracy": 0.5,
      "coverage": 0.7333,
-     "correct": 2,
-     "incorrect": 20,
+     "correct": 11,
+     "incorrect": 11,
      "refused": 8,
      "refused_rate": 0.2667
     },
@@ -135,10 +135,10 @@
     },
     "_overall": {
      "n": 120,
-     "accuracy": 0.5455,
+     "accuracy": 0.6477,
      "coverage": 0.7333,
-     "correct": 48,
-     "incorrect": 40,
+     "correct": 57,
+     "incorrect": 31,
      "refused": 32,
      "refused_rate": 0.2667
     }
@@ -230,17 +230,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "paraphrase": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -268,16 +266,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.3333,
+     "accuracy": 0.6667,
      "coverage": 0.75,
-     "correct": 1,
-     "incorrect": 2,
-     "minor": 1,
+     "correct": 2,
+     "incorrect": 1,
+     "minor": 0,
      "major": 1,
      "refused": 1,
      "refused_rate": 0.25,
      "kinds": {
-      "paraphrase": 1,
       "wrong_locus": 1
      }
     }
@@ -702,17 +699,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -740,17 +735,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.6667,
+     "accuracy": 1.0,
      "coverage": 0.75,
-     "correct": 2,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 3,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 1,
      "refused_rate": 0.25,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     }
    },
    "Ecclesiam Suam\u0000Vatican English text (Paul VI, 1964-08-06)\u0000en": {
@@ -903,17 +896,15 @@
     },
     "complete_unit": {
      "n": 2,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 2,
-     "minor": 2,
+     "correct": 2,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 2
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 2,
@@ -943,17 +934,16 @@
     },
     "_overall": {
      "n": 8,
-     "accuracy": 0.625,
+     "accuracy": 0.875,
      "coverage": 1.0,
-     "correct": 5,
-     "incorrect": 3,
-     "minor": 3,
+     "correct": 7,
+     "incorrect": 1,
+     "minor": 1,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "edition_variant": 1,
-      "omission": 2
+      "edition_variant": 1
      }
     }
    },
@@ -972,17 +962,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -1010,17 +998,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.75,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 3,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 4,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     }
    },
    "Meminisse Iuvat\u0000Vatican English text (Pius XII, 1958-07-14)\u0000en": {
@@ -1106,17 +1092,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "paraphrase": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -1146,16 +1130,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.0,
+     "accuracy": 0.3333,
      "coverage": 0.75,
-     "correct": 0,
-     "incorrect": 3,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 2,
+     "minor": 0,
      "major": 2,
      "refused": 1,
      "refused_rate": 0.25,
      "kinds": {
-      "paraphrase": 1,
       "wrong_locus": 1,
       "wrong_verdict": 1
      }
@@ -1310,17 +1293,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
+     "correct": 1,
+     "incorrect": 0,
      "minor": 0,
-     "major": 1,
+     "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "wrong_passage": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -1348,17 +1329,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.6667,
+     "accuracy": 1.0,
      "coverage": 0.75,
-     "correct": 2,
-     "incorrect": 1,
+     "correct": 3,
+     "incorrect": 0,
      "minor": 0,
-     "major": 1,
+     "major": 0,
      "refused": 1,
      "refused_rate": 0.25,
-     "kinds": {
-      "wrong_passage": 1
-     }
+     "kinds": {}
     }
    },
    "Orientales Omnes Ecclesias\u0000Vatican English text (Pius XII, 1945-12-23)\u0000en": {
@@ -1645,17 +1624,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -1683,17 +1660,15 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.6667,
+     "accuracy": 1.0,
      "coverage": 0.75,
-     "correct": 2,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 3,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 1,
      "refused_rate": 0.25,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     }
    },
    "Sacerdotalis Caelibatus\u0000Vatican English text (Paul VI, 1967-06-24)\u0000en": {
@@ -1846,17 +1821,15 @@
     },
     "complete_unit": {
      "n": 1,
-     "accuracy": 0.0,
+     "accuracy": 1.0,
      "coverage": 1.0,
-     "correct": 0,
-     "incorrect": 1,
-     "minor": 1,
+     "correct": 1,
+     "incorrect": 0,
+     "minor": 0,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
-     "kinds": {
-      "omission": 1
-     }
+     "kinds": {}
     },
     "retrieve_quote": {
      "n": 1,
@@ -1886,17 +1859,16 @@
     },
     "_overall": {
      "n": 4,
-     "accuracy": 0.5,
+     "accuracy": 0.75,
      "coverage": 1.0,
-     "correct": 2,
-     "incorrect": 2,
-     "minor": 2,
+     "correct": 3,
+     "incorrect": 1,
+     "minor": 1,
      "major": 0,
      "refused": 0,
      "refused_rate": 0.0,
      "kinds": {
-      "near_copy": 1,
-      "omission": 1
+      "near_copy": 1
      }
     }
    }
@@ -1916,10 +1888,10 @@
     },
     "complete_unit": {
      "n": 30,
-     "accuracy": 0.0909,
+     "accuracy": 0.5,
      "coverage": 0.7333,
-     "correct": 2,
-     "incorrect": 20,
+     "correct": 11,
+     "incorrect": 11,
      "refused": 8,
      "refused_rate": 0.2667
     },
@@ -1943,10 +1915,10 @@
     },
     "_overall": {
      "n": 120,
-     "accuracy": 0.5455,
+     "accuracy": 0.6477,
      "coverage": 0.7333,
-     "correct": 48,
-     "incorrect": 40,
+     "correct": 57,
+     "incorrect": 31,
      "refused": 32,
      "refused_rate": 0.2667
     }
@@ -1994,5 +1966,5 @@
   "containment"
  ],
  "headline_drops_segment": true,
- "generated_at": "2026-11-03T21:01:16.684546+00:00"
+ "generated_at": "2026-11-04T03:39:32.154308+00:00"
 }

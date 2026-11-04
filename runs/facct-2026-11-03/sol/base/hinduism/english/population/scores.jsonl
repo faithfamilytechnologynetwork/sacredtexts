@@ -38,11 +38,11 @@
 {"question_id": "b3069ec074752160", "model_id": "sol", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.8571, "token_f1_base": 0.8571, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "78c00ec990333cda", "model_id": "sol", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "e93a06603c6315fe", "model_id": "sol", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.8929, "token_f1_base": 0.8929, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
-{"question_id": "2968459657ed1db7", "model_id": "sol", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.7857, "token_f1_base": 0.7857, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "2968459657ed1db7", "model_id": "sol", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.7857, "token_f1_base": 0.7857, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "1e33ec77e1ed0b3f", "model_id": "sol", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "7fd66389a7680b42", "model_id": "sol", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}
 {"question_id": "4e9a34438076bdae", "model_id": "sol", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.8519, "token_f1_base": 0.8519, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
-{"question_id": "78cc8fbf72b2e0d2", "model_id": "sol", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.96, "token_f1_base": 0.96, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "78cc8fbf72b2e0d2", "model_id": "sol", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.96, "token_f1_base": 0.96, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "2346691c917bd9ad", "model_id": "sol", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.9286, "token_f1_base": 0.9286, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "4f7d229bc449a32a", "model_id": "sol", "task": "verify_source", "metrics": {"parsed": "yes", "expected": "yes", "correct": 1, "outcome": "correct"}}
 {"question_id": "323e0a3ecf0dcbbb", "model_id": "sol", "task": "cite_passage", "metrics": {"correct": 1, "n_candidates": 1, "outcome": "correct"}}

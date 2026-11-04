@@ -1,0 +1,53 @@
+Traceback (most recent call last):
+  File "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/items/for-test/join_run.py", line 382, in <module>
+    main()
+  File "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/items/for-test/join_run.py", line 312, in main
+    reconcile_usage(args.model, run_dir)
+  File "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/items/for-test/join_run.py", line 146, in reconcile_usage
+    _write_card(path, card)
+  File "/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/items/for-test/join_run.py", line 120, in _write_card
+    tmp.replace(path)
+  File "/Users/mwk/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/pathlib.py", line 1188, in replace
+    os.replace(self, target)
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/model.json.tmp' -> '/Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/model.json'
+carry judaism/native/population/prompt-english: 0 answers from /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03-pre147/qwen3-32b/base/judaism/native/population/prompt-english/answers.jsonl
+collect judaism/native/population/prompt-english -> runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/answers.jsonl (120 questions, 48 to call)
+judaism/native/population/prompt-english:   0%|          | 0/48 [00:00<?, ?call/s]judaism/native/population/prompt-english:   2%|▏         | 1/48 [00:01<01:17,  1.64s/call]judaism/native/population/prompt-english:   4%|▍         | 2/48 [00:10<04:31,  5.91s/call, usd=0.0208]judaism/native/population/prompt-english:   6%|▋         | 3/48 [00:15<04:09,  5.54s/call, usd=0.0215]judaism/native/population/prompt-english:   8%|▊         | 4/48 [00:21<04:02,  5.51s/call, usd=0.0225]judaism/native/population/prompt-english:  10%|█         | 5/48 [00:22<02:55,  4.09s/call, usd=0.0227]judaism/native/population/prompt-english:  12%|█▎        | 6/48 [00:23<02:06,  3.01s/call, usd=0.0231]judaism/native/population/prompt-english:  15%|█▍        | 7/48 [00:29<02:37,  3.84s/call, usd=0.0233]judaism/native/population/prompt-english:  17%|█▋        | 8/48 [00:31<02:18,  3.46s/call, usd=0.0237]judaism/native/population/prompt-english:  19%|█▉        | 9/48 [00:36<02:32,  3.92s/call, usd=0.0242]judaism/native/population/prompt-english:  21%|██        | 10/48 [00:40<02:22,  3.75s/call, usd=0.0245]judaism/native/population/prompt-english:  23%|██▎       | 11/48 [00:41<01:55,  3.11s/call, usd=0.0247]judaism/native/population/prompt-english:  25%|██▌       | 12/48 [00:42<01:30,  2.52s/call, usd=0.0248]judaism/native/population/prompt-english:  27%|██▋       | 13/48 [00:48<01:55,  3.30s/call, usd=0.0248]judaism/native/population/prompt-english:  29%|██▉       | 14/48 [00:48<01:22,  2.44s/call, usd=0.0253]judaism/native/population/prompt-english:  31%|███▏      | 15/48 [00:51<01:23,  2.54s/call, usd=0.0255]judaism/native/population/prompt-english:  33%|███▎      | 16/48 [00:54<01:32,  2.89s/call, usd=0.0259]judaism/native/population/prompt-english:  35%|███▌      | 17/48 [00:58<01:39,  3.20s/call, usd=0.0260]judaism/native/population/prompt-english:  38%|███▊      | 18/48 [01:04<02:00,  4.02s/call, usd=0.0262]judaism/native/population/prompt-english:  40%|███▉      | 19/48 [01:05<01:31,  3.17s/call, usd=0.0264]judaism/native/population/prompt-english:  42%|████▏     | 20/48 [01:12<01:56,  4.18s/call, usd=0.0271]judaism/native/population/prompt-english:  44%|████▍     | 21/48 [01:16<01:51,  4.14s/call, usd=0.0273]judaism/native/population/prompt-english:  46%|████▌     | 22/48 [01:19<01:37,  3.75s/call, usd=0.0277]judaism/native/population/prompt-english:  48%|████▊     | 23/48 [01:19<01:06,  2.67s/call, usd=0.0279]judaism/native/population/prompt-english:  50%|█████     | 24/48 [01:22<01:08,  2.87s/call, usd=0.0280]judaism/native/population/prompt-english:  52%|█████▏    | 25/48 [01:25<01:04,  2.79s/call, usd=0.0281]judaism/native/population/prompt-english:  54%|█████▍    | 26/48 [01:27<00:57,  2.60s/call, usd=0.0284]judaism/native/population/prompt-english:  56%|█████▋    | 27/48 [01:36<01:32,  4.42s/call, usd=0.0286]judaism/native/population/prompt-english:  58%|█████▊    | 28/48 [01:37<01:11,  3.58s/call, usd=0.0304]judaism/native/population/prompt-english:  60%|██████    | 29/48 [01:39<00:56,  2.97s/call, usd=0.0310]judaism/native/population/prompt-english:  62%|██████▎   | 30/48 [01:41<00:46,  2.57s/call, usd=0.0311]judaism/native/population/prompt-english:  65%|██████▍   | 31/48 [01:41<00:31,  1.83s/call, usd=0.0312]judaism/native/population/prompt-english:  67%|██████▋   | 32/48 [01:48<00:55,  3.45s/call, usd=0.0315]judaism/native/population/prompt-english:  69%|██████▉   | 33/48 [01:51<00:50,  3.39s/call, usd=0.0331]judaism/native/population/prompt-english:  71%|███████   | 34/48 [01:53<00:40,  2.89s/call, usd=0.0334]judaism/native/population/prompt-english:  73%|███████▎  | 35/48 [01:55<00:34,  2.67s/call, usd=0.0338]judaism/native/population/prompt-english:  75%|███████▌  | 36/48 [01:58<00:32,  2.69s/call, usd=0.0340]judaism/native/population/prompt-english:  77%|███████▋  | 37/48 [02:00<00:28,  2.57s/call, usd=0.0345]judaism/native/population/prompt-english:  79%|███████▉  | 38/48 [02:04<00:29,  2.92s/call, usd=0.0348]judaism/native/population/prompt-english:  81%|████████▏ | 39/48 [02:08<00:30,  3.42s/call, usd=0.0350]judaism/native/population/prompt-english:  83%|████████▎ | 40/48 [02:13<00:29,  3.75s/call, usd=0.0351]judaism/native/population/prompt-english:  85%|████████▌ | 41/48 [02:15<00:22,  3.23s/call, usd=0.0355]judaism/native/population/prompt-english:  88%|████████▊ | 42/48 [02:23<00:27,  4.57s/call, usd=0.0359]judaism/native/population/prompt-english:  92%|█████████▏| 44/48 [02:23<00:10,  2.58s/call, usd=0.0364]judaism/native/population/prompt-english:  94%|█████████▍| 45/48 [02:30<00:10,  3.52s/call, usd=0.0365]judaism/native/population/prompt-english:  96%|█████████▌| 46/48 [02:31<00:05,  2.89s/call, usd=0.0367]judaism/native/population/prompt-english:  98%|█████████▊| 47/48 [03:32<00:18, 18.92s/call, usd=0.0370]judaism/native/population/prompt-english: 100%|██████████| 48/48 [03:55<00:00, 19.91s/call, usd=0.0436]judaism/native/population/prompt-english: 100%|██████████| 48/48 [03:55<00:00,  4.90s/call, usd=0.0454]
+wrote /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/scores.jsonl and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/summary.json and /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/summary.md
+
+| model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|
+| qwen3-32b | 3% cov 100% (n=30; c/i/r 1/29/0; minor/major 0/29) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 1/29) | 0% cov 100% (n=30; c/i/r 0/30/0; minor/major 0/30) | 87% cov 100% (n=30; c/i/r 26/4/0; minor/major 0/4) | **22%** cov 100% (c/i/r 27/93/0; minor/major 1/92) |
+
+_Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
+
+### Failure kinds (per task)
+| model | task | incorrect | minor | major | kinds |
+|---|---|---|---|---|---|
+| qwen3-32b | cite_passage | 29 | 0 | 29 | wrong_locus 28, no_citation 1 |
+| qwen3-32b | complete_unit | 30 | 1 | 29 | wrong_passage 29, omission 1 |
+| qwen3-32b | retrieve_quote | 30 | 0 | 30 | wrong_passage 30 |
+| qwen3-32b | verify_source | 4 | 0 | 4 | wrong_verdict 4 |
+
+_A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
+
+### By tradition (each observation counts once per listed tradition)
+| model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
+|---|---|---|---|---|---|---|
+| qwen3-32b | Judaism | 3% cov 100% (n=30; c/i/r 1/29/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 0% cov 100% (n=30; c/i/r 0/30/0) | 87% cov 100% (n=30; c/i/r 26/4/0) | **22%** cov 100% (n=120; c/i/r 27/93/0) |
+
+### By text (one text = one work · version · language)
+
+**qwen3-32b**
+| text | n | accuracy | coverage | refused | missing | minor | major | kinds |
+|---|---|---|---|---|---|---|---|---|
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 22% | 100% | 0 | — | 1 | 92 | wrong_passage 59, omission 1, wrong_locus 28, no_citation 1, wrong_verdict 4 |
+
+### Token usage
+| model_id | calls | in | out |
+|---|---|---|---|
+| qwen3-32b | 120 | 13,482 | 102,353 |
+| **total** | 120 | 13,482 | 102,353 |
+
+  collected 48, pending 0
+/Users/mwk/.cache/uv/builds-v0/.tmp7w7iRF/bin/python -m sacredbench score /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/answers.jsonl --scores-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/scores.jsonl --summary-out /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/summary.json --summary-md /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/runs/facct-2026-11-03/qwen3-32b/base/judaism/native/population/prompt-english/summary.md

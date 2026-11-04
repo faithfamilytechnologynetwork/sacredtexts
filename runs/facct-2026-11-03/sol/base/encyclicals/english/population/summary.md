@@ -1,6 +1,6 @@
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| sol | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 0/13) | 0% cov 37% (n=30; c/i/r 0/11/19; minor/major 3/8) | 0% cov 13% (n=30; c/i/r 0/4/26; minor/major 3/1) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **60%** cov 62% (c/i/r 45/30/45; minor/major 6/24) |
+| sol | 57% cov 100% (n=30; c/i/r 17/13/0; minor/major 0/13) | 9% cov 37% (n=30; c/i/r 1/10/19; minor/major 2/8) | 0% cov 13% (n=30; c/i/r 0/4/26; minor/major 3/1) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **61%** cov 62% (c/i/r 46/29/45; minor/major 5/24) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
@@ -8,7 +8,7 @@ _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). a
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
 | sol | cite_passage | 13 | 0 | 13 | wrong_locus 13 |
-| sol | complete_unit | 11 | 3 | 8 | near_copy 1, paraphrase 2, wrong_passage 8 |
+| sol | complete_unit | 10 | 2 | 8 | paraphrase 2, wrong_passage 8 |
 | sol | retrieve_quote | 4 | 3 | 1 | near_copy 1, paraphrase 2, wrong_passage 1 |
 | sol | verify_source | 2 | 0 | 2 | wrong_verdict 2 |
 
@@ -17,7 +17,7 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| sol | Encyclicals | 57% cov 100% (n=30; c/i/r 17/13/0) | 0% cov 37% (n=30; c/i/r 0/11/19) | 0% cov 13% (n=30; c/i/r 0/4/26) | 93% cov 100% (n=30; c/i/r 28/2/0) | **60%** cov 62% (n=120; c/i/r 45/30/45) |
+| sol | Encyclicals | 57% cov 100% (n=30; c/i/r 17/13/0) | 9% cov 37% (n=30; c/i/r 1/10/19) | 0% cov 13% (n=30; c/i/r 0/4/26) | 93% cov 100% (n=30; c/i/r 28/2/0) | **61%** cov 62% (n=120; c/i/r 46/29/45) |
 
 ### By text (one text = one work · version · language)
 
@@ -43,7 +43,7 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | Non Abbiamo Bisogno (Vatican English text (Pius XI, 1931-06-29), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
 | Octobri Mense (Vatican English text (Leo XIII, 1891-09-22), en) | 4 | 67% | 75% | 1 | — | 0 | 1 | wrong_passage 1 |
 | Orientales Omnes Ecclesias (Vatican English text (Pius XII, 1945-12-23), en) | 4 | 0% | 75% | 1 | — | 0 | 3 | wrong_passage 1, wrong_locus 1, wrong_verdict 1 |
-| Quadragesimo Anno (Vatican English text (Pius XI, 1931-05-15), en) | 8 | 57% | 88% | 1 | — | 1 | 2 | near_copy 1, wrong_passage 2 |
+| Quadragesimo Anno (Vatican English text (Pius XI, 1931-05-15), en) | 8 | 71% | 88% | 1 | — | 0 | 2 | wrong_passage 2 |
 | Quod Anniversarius (Vatican English text (Leo XIII, 1888-04-01), en) | 4 | 50% | 50% | 2 | — | 0 | 1 | wrong_locus 1 |
 | Quod Multum (Vatican English text (Leo XIII, 1886-08-22), en) | 4 | 50% | 50% | 2 | — | 0 | 1 | wrong_locus 1 |
 | Redemptoris Mater (Vatican English text (John Paul II, 1987-03-25), en) | 4 | 100% | 50% | 2 | — | 0 | 0 | — |

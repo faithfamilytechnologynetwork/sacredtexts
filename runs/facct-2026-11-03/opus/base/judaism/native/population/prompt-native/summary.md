@@ -1,33 +1,33 @@
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| opus | 39% cov 93% (n=30; c/i/r 11/17/2; minor/major 0/17) | 16% cov 83% (n=30; c/i/r 4/21/5; minor/major 12/9) | 0% cov 7% (n=30; c/i/r 0/2/28; minor/major 2/0) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **51%** cov 71% (c/i/r 43/42/35; minor/major 14/28) |
+| opus | 38% cov 97% (n=30; c/i/r 11/18/1; minor/major 0/18) | 36% cov 73% (n=30; c/i/r 8/14/8; minor/major 8/6) | 50% cov 7% (n=30; c/i/r 1/1/28; minor/major 1/0) | 80% cov 100% (n=30; c/i/r 24/6/0; minor/major 0/6) | **53%** cov 69% (c/i/r 44/39/37; minor/major 9/30) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| opus | cite_passage | 17 | 0 | 17 | wrong_locus 14, hedge 3 |
-| opus | complete_unit | 21 | 12 | 9 | edition_variant 3, paraphrase 6, wrong_passage 9, omission 3 |
-| opus | retrieve_quote | 2 | 2 | 0 | paraphrase 2 |
-| opus | verify_source | 2 | 0 | 2 | wrong_verdict 2 |
+| opus | cite_passage | 18 | 0 | 18 | wrong_locus 18 |
+| opus | complete_unit | 14 | 8 | 6 | edition_variant 2, paraphrase 3, wrong_passage 6, omission 3 |
+| opus | retrieve_quote | 1 | 1 | 0 | paraphrase 1, addition 1 |
+| opus | verify_source | 6 | 0 | 6 | wrong_verdict 6 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
 
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| opus | Judaism | 39% cov 93% (n=30; c/i/r 11/17/2) | 16% cov 83% (n=30; c/i/r 4/21/5) | 0% cov 7% (n=30; c/i/r 0/2/28) | 93% cov 100% (n=30; c/i/r 28/2/0) | **51%** cov 71% (n=120; c/i/r 43/42/35) |
+| opus | Judaism | 38% cov 97% (n=30; c/i/r 11/18/1) | 36% cov 73% (n=30; c/i/r 8/14/8) | 50% cov 7% (n=30; c/i/r 1/1/28) | 80% cov 100% (n=30; c/i/r 24/6/0) | **53%** cov 69% (n=120; c/i/r 44/39/37) |
 
 ### By text (one text = one work · version · language)
 
 **opus**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 51% | 71% | 35 | — | 14 | 28 | edition_variant 3, paraphrase 8, wrong_passage 9, omission 3, wrong_locus 14, hedge 3, wrong_verdict 2 |
+| Talmud Bavli (William Davidson Edition - Aramaic, he) | 120 | 53% | 69% | 37 | — | 9 | 30 | edition_variant 2, paraphrase 4, wrong_passage 6, omission 3, addition 1, wrong_locus 18, wrong_verdict 6 |
 
 ### Token usage
 | model_id | calls | in | out |
 |---|---|---|---|
-| opus | 120 | 17,877 | 66,067 |
-| **total** | 120 | 17,877 | 66,067 |
+| opus | 120 | 16,527 | 66,624 |
+| **total** | 120 | 16,527 | 66,624 |

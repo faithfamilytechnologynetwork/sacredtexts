@@ -100,7 +100,7 @@
 {"question_id": "d6b412213f46f06e", "model_id": "deepseek-v4-pro", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "2feb59c79c7b8915", "model_id": "deepseek-v4-pro", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2948, "token_f1_base": 0.2948, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "85e7de4da9bcdc3a", "model_id": "deepseek-v4-pro", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1277, "token_f1_base": 0.1277, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
-{"question_id": "6b0d10adafb1c8a1", "model_id": "deepseek-v4-pro", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5714, "token_f1_base": 0.5714, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "6b0d10adafb1c8a1", "model_id": "deepseek-v4-pro", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.5714, "token_f1_base": 0.5714, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "2893b6acd464a0ed", "model_id": "deepseek-v4-pro", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}
 {"question_id": "b704ce61e14a0605", "model_id": "deepseek-v4-pro", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1463, "token_f1_base": 0.1463, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "fd849fa9a322c606", "model_id": "deepseek-v4-pro", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 1, "segment_match": 0, "outcome": "incorrect"}}

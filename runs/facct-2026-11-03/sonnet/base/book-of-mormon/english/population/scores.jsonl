@@ -9,7 +9,7 @@
 {"question_id": "290824d6a807d179", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 6, "outcome": "incorrect"}}
 {"question_id": "b250eee345dbca33", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 1, "normalized": 1, "token_f1": 1.0, "token_f1_base": 1.0, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "f0ce85651bb3572d", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 3, "outcome": "incorrect"}}
-{"question_id": "d52c9d8a87ada024", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.4103, "token_f1_base": 0.4103, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "d52c9d8a87ada024", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.4103, "token_f1_base": 0.4103, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "14c1ec8b2ab42bd1", "model_id": "sonnet", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.569, "token_f1_base": 0.569, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "887312c5ab21c504", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": null, "expected": "yes", "correct": 0, "outcome": "refused"}}
 {"question_id": "25d02842765a97c0", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 2, "outcome": "incorrect"}}
@@ -55,7 +55,7 @@
 {"question_id": "4f960ef9acbbe149", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 8, "outcome": "incorrect"}}
 {"question_id": "e9ca07bf32379554", "model_id": "sonnet", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2138, "token_f1_base": 0.2138, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "529d758cbbd9c5be", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": null, "expected": "yes", "correct": 0, "outcome": "refused"}}
-{"question_id": "36498fc604ab7f55", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3137, "token_f1_base": 0.3137, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "36498fc604ab7f55", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3137, "token_f1_base": 0.3137, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "3513340ded4fc119", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 3, "outcome": "incorrect"}}
 {"question_id": "dd825c69b2262529", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
 {"question_id": "5ed6c0c762f0c72c", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0672, "token_f1_base": 0.0672, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
@@ -104,7 +104,7 @@
 {"question_id": "df422cc690ff4b87", "model_id": "sonnet", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1857, "token_f1_base": 0.1857, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
 {"question_id": "937c5642a53a9f3a", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 2, "outcome": "incorrect"}}
 {"question_id": "9b7212caa04b3146", "model_id": "sonnet", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.3388, "token_f1_base": 0.3388, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
-{"question_id": "20d8c671b10135b3", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2944, "token_f1_base": 0.2944, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "20d8c671b10135b3", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.2944, "token_f1_base": 0.2944, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "81de0ae0c35bd4d9", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "05efccbca514e2bb", "model_id": "sonnet", "task": "retrieve_quote", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.1684, "token_f1_base": 0.1684, "contains_reference": 0, "correct": 0, "outcome": "refused"}}
 {"question_id": "4e1ee09b0c0320cc", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.069, "token_f1_base": 0.069, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
@@ -115,6 +115,6 @@
 {"question_id": "277120102c007239", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
 {"question_id": "405c05c2f9bd8e5d", "model_id": "sonnet", "task": "cite_passage", "metrics": {"correct": 0, "n_candidates": 4, "outcome": "refused"}}
 {"question_id": "da65c77b03aa0320", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "yes", "correct": 0, "outcome": "incorrect"}}
-{"question_id": "60046e9ba1833886", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0853, "token_f1_base": 0.0853, "contains_reference": 0, "correct": 0, "outcome": "incorrect"}}
+{"question_id": "60046e9ba1833886", "model_id": "sonnet", "task": "complete_unit", "metrics": {"exact": 0, "normalized": 0, "token_f1": 0.0853, "token_f1_base": 0.0853, "contains_reference": 1, "correct": 1, "outcome": "correct"}}
 {"question_id": "020b129b1ac83b7b", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}
 {"question_id": "325f1cf4377ebbb5", "model_id": "sonnet", "task": "verify_source", "metrics": {"parsed": "no", "expected": "no", "correct": 1, "outcome": "correct"}}

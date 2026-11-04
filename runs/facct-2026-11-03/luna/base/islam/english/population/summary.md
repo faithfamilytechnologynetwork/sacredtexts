@@ -1,13 +1,13 @@
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| luna | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 50% cov 100% (n=30; c/i/r 15/15/0; minor/major 13/2) | 63% cov 63% (n=30; c/i/r 12/7/11; minor/major 6/1) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **78%** cov 91% (c/i/r 85/24/11; minor/major 19/5) |
+| luna | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | 60% cov 100% (n=30; c/i/r 18/12/0; minor/major 10/2) | 63% cov 63% (n=30; c/i/r 12/7/11; minor/major 6/1) | 93% cov 100% (n=30; c/i/r 28/2/0; minor/major 0/2) | **81%** cov 91% (c/i/r 88/21/11; minor/major 16/5) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
 ### Failure kinds (per task)
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
-| luna | complete_unit | 15 | 13 | 2 | edition_variant 3, near_copy 5, paraphrase 3, wrong_passage 2, omission 2 |
+| luna | complete_unit | 12 | 10 | 2 | edition_variant 2, near_copy 4, paraphrase 3, wrong_passage 2, omission 1 |
 | luna | retrieve_quote | 7 | 6 | 1 | edition_variant 2, near_copy 3, paraphrase 1, wrong_passage 1 |
 | luna | verify_source | 2 | 0 | 2 | wrong_verdict 2 |
 
@@ -16,14 +16,14 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| luna | Islam | 100% cov 100% (n=30; c/i/r 30/0/0) | 50% cov 100% (n=30; c/i/r 15/15/0) | 63% cov 63% (n=30; c/i/r 12/7/11) | 93% cov 100% (n=30; c/i/r 28/2/0) | **78%** cov 91% (n=120; c/i/r 85/24/11) |
+| luna | Islam | 100% cov 100% (n=30; c/i/r 30/0/0) | 60% cov 100% (n=30; c/i/r 18/12/0) | 63% cov 63% (n=30; c/i/r 12/7/11) | 93% cov 100% (n=30; c/i/r 28/2/0) | **81%** cov 91% (n=120; c/i/r 88/21/11) |
 
 ### By text (one text = one work · version · language)
 
 **luna**
 | text | n | accuracy | coverage | refused | missing | minor | major | kinds |
 |---|---|---|---|---|---|---|---|---|
-| The Qur'an (Saheeh International (QUL), en) | 120 | 78% | 91% | 11 | — | 19 | 5 | edition_variant 5, near_copy 8, paraphrase 4, wrong_passage 3, omission 2, wrong_verdict 2 |
+| The Qur'an (Saheeh International (QUL), en) | 120 | 81% | 91% | 11 | — | 16 | 5 | edition_variant 4, near_copy 7, paraphrase 4, wrong_passage 3, omission 1, wrong_verdict 2 |
 
 ### Token usage
 | model_id | calls | in | out |

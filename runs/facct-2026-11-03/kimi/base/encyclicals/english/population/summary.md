@@ -1,6 +1,6 @@
 | model | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|
-| kimi | 30% cov 100% (n=30; c/i/r 9/21/0; minor/major 0/21) | 13% cov 100% (n=30; c/i/r 4/26/0; minor/major 9/17) | 8% cov 83% (n=30; c/i/r 2/23/5; minor/major 3/20) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **39%** cov 96% (c/i/r 45/70/5; minor/major 12/58) |
+| kimi | 30% cov 100% (n=30; c/i/r 9/21/0; minor/major 0/21) | 27% cov 100% (n=30; c/i/r 8/22/0; minor/major 5/17) | 8% cov 83% (n=30; c/i/r 2/23/5; minor/major 3/20) | 100% cov 100% (n=30; c/i/r 30/0/0; minor/major 0/0) | **43%** cov 96% (c/i/r 49/66/5; minor/major 8/58) |
 
 _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). accuracy = correct/(correct+incorrect) — refusals excluded; coverage = (correct+incorrect)/n; refused_rate = refused/n. `−N` = roster cells that produced no answer (distinct from refused). minor/major splits incorrect by failure kind: minor stays on the passage asked for, major replaces it._
 
@@ -8,7 +8,7 @@ _Cells: accuracy cov coverage (n answered; c/i/r = correct/incorrect/refused). a
 | model | task | incorrect | minor | major | kinds |
 |---|---|---|---|---|---|
 | kimi | cite_passage | 21 | 0 | 21 | wrong_locus 21 |
-| kimi | complete_unit | 26 | 9 | 17 | edition_variant 2, paraphrase 3, wrong_passage 17, omission 4 |
+| kimi | complete_unit | 22 | 5 | 17 | paraphrase 2, wrong_passage 17, omission 3 |
 | kimi | retrieve_quote | 23 | 3 | 20 | edition_variant 1, paraphrase 2, wrong_passage 20 |
 
 _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_only (none — only vowel signs, accents or pointing differ), edition_variant (1–2 tokens — another edition or spelling), near_copy (more). addition is a correct quote that runs past the reference._
@@ -16,7 +16,7 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 ### By tradition (each observation counts once per listed tradition)
 | model | tradition | cite_passage | complete_unit | retrieve_quote | verify_source | overall |
 |---|---|---|---|---|---|---|
-| kimi | Encyclicals | 30% cov 100% (n=30; c/i/r 9/21/0) | 13% cov 100% (n=30; c/i/r 4/26/0) | 8% cov 83% (n=30; c/i/r 2/23/5) | 100% cov 100% (n=30; c/i/r 30/0/0) | **39%** cov 96% (n=120; c/i/r 45/70/5) |
+| kimi | Encyclicals | 30% cov 100% (n=30; c/i/r 9/21/0) | 27% cov 100% (n=30; c/i/r 8/22/0) | 8% cov 83% (n=30; c/i/r 2/23/5) | 100% cov 100% (n=30; c/i/r 30/0/0) | **43%** cov 96% (n=120; c/i/r 49/66/5) |
 
 ### By text (one text = one work · version · language)
 
@@ -34,7 +34,7 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | Dominum et vivificantem (Vatican English text (John Paul II, 1986-05-18), en) | 4 | 25% | 100% | 0 | — | 1 | 2 | paraphrase 1, wrong_passage 1, wrong_locus 1 |
 | Ecclesiam Suam (Vatican English text (Paul VI, 1964-08-06), en) | 4 | 25% | 100% | 0 | — | 0 | 3 | wrong_passage 2, wrong_locus 1 |
 | Fides et Ratio (Vatican English text (John Paul II, 1998-09-14), en) | 4 | 50% | 100% | 0 | — | 0 | 2 | wrong_passage 2 |
-| Fratelli tutti (Vatican English text (Francis, 2020-10-03), en) | 8 | 62% | 100% | 0 | — | 2 | 1 | edition_variant 1, wrong_passage 1, omission 1 |
+| Fratelli tutti (Vatican English text (Francis, 2020-10-03), en) | 8 | 75% | 100% | 0 | — | 1 | 1 | edition_variant 1, wrong_passage 1 |
 | Laudato si' (Vatican English text (Francis, 2015-05-24), en) | 4 | 100% | 75% | 1 | — | 0 | 0 | — |
 | Meminisse Iuvat (Vatican English text (Pius XII, 1958-07-14), en) | 4 | 33% | 75% | 1 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
 | Musicae Sacrae (Vatican English text (Pius XII, 1955-12-25), en) | 4 | 50% | 100% | 0 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
@@ -45,10 +45,10 @@ _A near copy (token-F1 ≥ 0.85) is split by base-letter token edits: diacritic_
 | Quadragesimo Anno (Vatican English text (Pius XI, 1931-05-15), en) | 8 | 25% | 100% | 0 | — | 1 | 5 | wrong_passage 3, omission 1, wrong_locus 2 |
 | Quod Anniversarius (Vatican English text (Leo XIII, 1888-04-01), en) | 4 | 25% | 100% | 0 | — | 0 | 3 | wrong_passage 2, wrong_locus 1 |
 | Quod Multum (Vatican English text (Leo XIII, 1886-08-22), en) | 4 | 25% | 100% | 0 | — | 0 | 3 | wrong_passage 2, wrong_locus 1 |
-| Redemptoris Mater (Vatican English text (John Paul II, 1987-03-25), en) | 4 | 50% | 100% | 0 | — | 1 | 1 | edition_variant 1, wrong_passage 1 |
+| Redemptoris Mater (Vatican English text (John Paul II, 1987-03-25), en) | 4 | 75% | 100% | 0 | — | 0 | 1 | wrong_passage 1 |
 | Sacerdotalis Caelibatus (Vatican English text (Paul VI, 1967-06-24), en) | 8 | 25% | 100% | 0 | — | 1 | 5 | wrong_passage 3, omission 1, wrong_locus 2 |
-| Ut Unum Sint (Vatican English text (John Paul II, 1995-05-25), en) | 4 | 25% | 100% | 0 | — | 1 | 2 | paraphrase 1, wrong_passage 1, wrong_locus 1 |
-| Veritatis Splendor (Vatican English text (John Paul II, 1993-08-06), en) | 4 | 50% | 100% | 0 | — | 2 | 0 | edition_variant 1, paraphrase 1 |
+| Ut Unum Sint (Vatican English text (John Paul II, 1995-05-25), en) | 4 | 50% | 100% | 0 | — | 0 | 2 | wrong_passage 1, wrong_locus 1 |
+| Veritatis Splendor (Vatican English text (John Paul II, 1993-08-06), en) | 4 | 75% | 100% | 0 | — | 1 | 0 | paraphrase 1 |
 
 ### Token usage
 | model_id | calls | in | out |
