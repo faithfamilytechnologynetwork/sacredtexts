@@ -19,8 +19,15 @@ the rule written for it here. An unknown row fails the load. ``review only`` and
 normalize`` rows stay in the file and are skipped. Niqqud and cantillation are removed by
 ``strip_script_marks``, as in ``normalize()``.
 
-Scoring only: ``score.fold_aware_contains`` calls this when the cell's work is the Talmud Bavli and
-the reference is in Hebrew script. ``normalize()`` and the equality submetrics do not change.
+Numbers: a number word or letter numeral reads as its value, so it matches another numeral of the
+same value and, through its own spelling, the same word. ``ד׳``/``ה׳`` are also divine names; that
+reading is tagged by letter, so ``ד׳ אמות`` never matches ``ה׳ אמות``, while ``השם`` and ``יי`` match
+either. Numbers are summed only as the guide says: a ``ו``-joined pair of different magnitude
+(``עשרים ואחד`` = 21), plus the teen form (``שלש עשרה`` = 13). ``עשרים שנים`` stays twenty years.
+
+Scoring only: ``score.fold_aware_contains`` calls this when the cell's work is the Talmud Bavli, its
+language is Hebrew or Aramaic, and the reference is in Hebrew script. ``normalize()`` and the
+equality submetrics do not change.
 
 Accepted collisions (credit-only; every other word of the passage must still line up). The guide's
 ``-ים``/``-ין`` rule covers words of 3+ letters, so ``מים`` (water) reads as ``מין`` and ``ימים`` (days)
@@ -28,6 +35,10 @@ as ``ימין`` (right hand). The guide spells
 8 ``שמנה`` as well as ``שמונה``, so the tens rule reads ``שמנים`` (oils) as 80. The censorship rows
 fold ``כותי`` and ``ארמאי`` everywhere, though their notes say "check per passage". These are the
 owner's rules, kept as written; ``test_talmud_fold.py`` pins them so a change is deliberate.
+
+Known gaps, also pinned. ``י״א`` reads only as 11, not also as ``יש אומרים`` (the guide has no such
+row). ``שתין`` (Aramaic 60, written without the yod of ``שיתין``) folds onto ``שתים`` (2) through the
+``-ים``/``-ין`` rule.
 """
 from __future__ import annotations
 
@@ -129,6 +140,19 @@ def guide() -> Guide:
             raise TalmudGuideError(f"{TERMS_PATH.name}: no rule for row {form!r} ({category!r})")
         if r["ambiguous"] == "yes" and form in readings:
             readings[form].add((form,))  # no reading matches the other side: the form stays as is
+    # ד׳ / ה׳ are numerals and divine names. Tag that divine reading with the form, so two of them
+    # never match each other as divine names (4 cubits ≠ 5 cubits); השם / יי carry every tag.
+    tags: dict[str, set] = {}
+    for form, rs in readings.items():
+        if any(r[0].isdigit() for r in rs):
+            for (c,) in [r for r in rs if r[0].startswith("@")]:
+                rs.discard((c,))
+                rs.add((f"{c}:{form}",))
+                tags.setdefault(c, set()).add(f"{c}:{form}")
+    for rs in readings.values():
+        for c, tagged in tags.items():
+            if (c,) in rs:
+                rs.update((t,) for t in tagged)
     if "tens" in rules:  # שלשה → שלשים (30), עשרה → עשרים (20); the ים→ין fold gives תלתין
         for w, v in list(numbers.items()):
             if 3 <= v <= 10:
@@ -210,22 +234,26 @@ def _drop_et_ha(units: list[Unit]) -> list[Unit]:
     return out
 
 
-def _compounds(units: list[Unit]) -> list[Unit]:
-    """Adjacent round numbers of different magnitude are summed: עשרים ואחד = 21, שלש עשרה = 13.
-    A prefix stays on the first number: בעשרים ואחד = ב21, as בכ״א reads."""
+def _compounds(units: list[Unit], joined: list[bool]) -> list[Unit]:
+    """Numbers summed as the guide says: a ``ו``-joined number of a new magnitude (עשרים ואחד = 21,
+    מאה ועשרים ושלשה = 123), and the teen form, a unit then ten (שלש עשרה = 13). ``joined[i]``: the
+    word of ``units[i]`` was written with a leading ``ו``. A prefix stays on the first number:
+    בעשרים ואחד = ב21, as בכ״א reads."""
     out: list[Unit] = []
-    runs: list[tuple[str, int, set] | None] = []  # per unit of out: (prefix, sum, magnitudes) or None
-    for u in units:
+    runs: list[tuple[str, int, set, int] | None] = []  # per unit of out: (prefix, sum, magnitudes, n)
+    for u, vav in zip(units, joined):
         w = _word(u)
         m = _ROUND_NUMBER.fullmatch(w) if w else None
         run = runs[-1] if runs else None
-        if m and run and not m[1] and len(m[2]) not in run[2]:
-            prefix, total, mags = run
-            runs[-1] = (prefix, total + int(m[2]), mags | {len(m[2])})
-            out[-1] = Unit({(f"{prefix}{total + int(m[2])}",)})
-        else:
-            out.append(u)
-            runs.append((m[1], int(m[2]), {len(m[2])}) if m else None)
+        if m and run and not m[1]:
+            prefix, total, mags, n = run
+            teen = n == 1 and mags == {1} and m[2] == "10"
+            if teen or (vav and len(m[2]) not in mags):
+                runs[-1] = (prefix, total + int(m[2]), mags | {len(m[2])}, n + 1)
+                out[-1] = Unit({(f"{prefix}{total + int(m[2])}",)})
+                continue
+        out.append(u)
+        runs.append((m[1], int(m[2]), {len(m[2])}, 1) if m else None)
     return out
 
 
@@ -256,11 +284,12 @@ def talmud_units(text: str) -> list[Unit]:
                 return head + g.words[rest]
         return f
 
-    units = [Unit(tuple(map(canon, alt)) for alt in u) for u in units]
+    joined = [(_word(u) or "").startswith("ו") for u in units]
+    units = _compounds([Unit(tuple(map(canon, alt)) for alt in u) for u in units], joined)
     units = _phrases(units, g)
     if "et_ha" in g.rules:
         units = _drop_et_ha(units)
-    return _compounds(units)
+    return units
 
 
 def _lattice(units: list[Unit]) -> dict:

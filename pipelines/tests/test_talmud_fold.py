@@ -32,7 +32,7 @@ ARGON = "לו מעקה גבוה עשרה טפחים רבי יהודה אומר �
 
 
 def talmud(answer: str, expected: str) -> bool:
-    return fold_aware_contains(answer, expected, work=TALMUD_WORK)
+    return fold_aware_contains(answer, expected, work=TALMUD_WORK, language="he")
 
 
 def test_the_reported_cell_is_credited():
@@ -78,6 +78,8 @@ def test_score_file_passes_the_work(tmp_path):
         ("לגוי", "לנכרי"),
         ("אמר ה׳", "אמר השם"),  # divine name
         ("אמר יי", "אמר ה׳"),
+        ("ברוך ד׳", "ברוך השם"),  # ד׳ is a divine name beside a divine form
+        ("מאה ועשרים ושלשה", "מאה ועשרים ושלש"),
         ("אלקים", "אלהים"),
         ("ה׳ אמות", "חמש אמות"),  # ה׳ / ד׳ also numerals, read by the other side
         ("ד׳ אמות", "ארבע אמות"),
@@ -118,6 +120,9 @@ def test_guide_forms_match_in_both_directions(a, b):
         ("רבי יוסי אומר", "רבי יהודה אומר"),  # full names are never collapsed to ר״י
         ("ר״י אומר", "רבי מאיר אומר"),  # ר״מ is רבי מאיר; ר״י is not
         ("ד׳ אמות", "חמש אמות"),
+        ("ד׳ אמות", "ה׳ אמות"),  # two letter numerals never match as divine names
+        ("עשרים שנים", "כ״ב"),  # twenty years: not ו-joined, so not summed
+        ("עשרים שנים", "עשרים ושנים"),
         ("בשלשה", "בארבעה"),
         ("בשלשה", "שלשה"),  # the prefix is part of the word
         ("בעשרים ואחד", "בכ״ב"),
@@ -143,6 +148,9 @@ def test_accepted_collisions_are_pinned():
     assert talmud("מים", "מין") and talmud("ימים", "ימין")  # -ים/-ין on words of 3+ letters
     assert talmud("שמנים", "שמונים")  # שמנה is a listed spelling of 8, so שמנים reads as 80
     assert talmud("כותי", "נכרי") and talmud("ארמאי", "גוי")  # notes say "check per passage"
+    # Known gaps: י״א is only 11, not also יש אומרים; שתין (60) folds onto שתים (2).
+    assert not talmud("י״א", "יש אומרים") and talmud("י״א", "אחד עשר")
+    assert talmud("שתין", "שתים") and not talmud("שתין", "ששים")
 
 
 def test_half_a_reference_still_fails():
@@ -152,14 +160,19 @@ def test_half_a_reference_still_fails():
 def test_only_the_talmud_is_folded():
     # The Masoretic Bible is Hebrew script too: the work, not the script, turns the fold on.
     verse = "ויאמר אלהים יהי אור ויהי אור"
-    assert not fold_aware_contains("ויאמר אלקים יהי אור ויהי אור", verse, work="The Bible")
+    assert not fold_aware_contains("ויאמר אלקים יהי אור ויהי אור", verse, work="The Bible", language="he")
     assert not fold_aware_contains("ויאמר אלקים יהי אור ויהי אור", verse)
-    assert fold_aware_contains("ויאמר אלקים יהי אור ויהי אור", verse, work=TALMUD_WORK)
+    assert talmud("ויאמר אלקים יהי אור ויהי אור", verse)
+    # The English Davidson edition is the same work in `en`: a Hebrew gloss in its reference does not
+    # route the English passage through the fold.
+    gloss = ("Rabbi Yoḥanan said: אע״פ so", "Rabbi Yoḥanan said: אף על פי")
+    assert not fold_aware_contains(*gloss, work=TALMUD_WORK, language="en")
+    assert talmud(*gloss)
     # The English Davidson edition shares the work name; a Latin reference keeps today's rule, and
     # an Arabic one keeps the Spec 52 fold.
     for answer, expected in [("R. Yohanan said", "Rabbi Yohanan said"), ("Rabbi Yohanan said so", "Rabbi Yohanan said"),
                              ("الكتاب", "ٱلْكِتَٰبِ"), ("الكتب", "ٱلْكِتَٰبِ")]:
-        assert fold_aware_contains(answer, expected, work=TALMUD_WORK) == fold_aware_contains(answer, expected)
+        assert talmud(answer, expected) == fold_aware_contains(answer, expected)
 
 
 def test_normalize_is_unchanged():
@@ -171,7 +184,8 @@ def test_the_guide_loads_every_row():
     assert g.rules == set(talmud_fold._RULE_ROWS.values())
     assert g.readings["א״ר"] == {("אמר", "רבי"), ("אמר", "רב"), ("א״ר",)}
     assert g.readings["ר׳"] == {("רבי",), ("רב",), ("ר׳",)}  # no 200
-    assert g.readings["ה׳"] == {("@DIVINE",), ("5",), ("ה׳",)}
+    assert g.readings["ה׳"] == {("@DIVINE:ה׳",), ("5",), ("ה׳",)}  # the divine reading is tagged by letter
+    assert g.readings["השם"] >= {("@DIVINE",), ("@DIVINE:ה׳",), ("@DIVINE:ד׳",)}
     assert len(_rows()) == 182  # the guide is committed whole, review-only rows included
 
 
@@ -224,7 +238,8 @@ def test_committed_cells_move_only_as_registered():
             if row["task"] not in _TEXT_TASKS or source.get("work") != TALMUD_WORK:
                 continue
             answer, expected = row["answer"] or "", row["question"]["expected"]
-            if fold_aware_contains(answer, expected["text"]) == fold_aware_contains(answer, expected["text"], work=TALMUD_WORK):
+            on_args = {"work": TALMUD_WORK, "language": source.get("language")}
+            if fold_aware_contains(answer, expected["text"]) == fold_aware_contains(answer, expected["text"], **on_args):
                 continue
             off = score_answer(row["task"], answer, expected, language=source.get("language"))
             on = score_answer(row["task"], answer, expected, language=source.get("language"), work=TALMUD_WORK)

@@ -55,3 +55,16 @@
   two-letter numerals (`בי״ג`, `בכ״ב`, `בט״ו`) — numeral read on the remainder after every table
   lookup, so `בר״ה` stays an abbreviation. P3 `ימים`/`ימין` documented + pinned with `מים`/`מין`.
   Oracle unchanged: still exactly the 64 registered cells. Suite 1405 passed, 35 skipped.
+- Merged origin/main (#148, Talmud daf scoring) in 69caf39; one conflict in arch-critical's
+  scoring bullet, resolved by taking main's line plus the one-sentence Talmud-fold clause.
+- Architect consult round (3 P2s, none touching the 64 movers):
+  1. Gate on language too: fold only for work == Talmud Bavli AND language in (he, arc) — an English
+     Davidson reference with a Hebrew gloss never routes through the lattice. `language` threaded
+     into fold_aware_contains / _with_outcome / classify_refusal.
+  2. `ד׳`/`ה׳` no longer match each other: their divine reading is tagged by letter
+     (`@DIVINE:ד׳`), and `השם`/`יי` carry every tag, so either still matches them.
+  3. Compounds only as the guide says: a ו-joined pair of a new magnitude, plus the teen form
+     (unit then ten). `עשרים שנים` (twenty years) is no longer 22. A standalone `שנים` still matches
+     another numeral 2 (`שתים`, `ב׳`) — that is the "other side has a numeral" case.
+  P3s documented + pinned: `י״א` only 11 (no יש אומרים row in the guide); `שתין` folds onto `שתים`.
+  Oracle: still exactly the 64 registered cells.

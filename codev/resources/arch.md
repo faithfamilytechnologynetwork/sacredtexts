@@ -191,14 +191,14 @@ round-trip that proves no invention/reordering.
   (Stotra Samhita `चाऽऽचारो` = printed Gita Press `चाचारो`). One more OR, so still a superset.
   Witnessed by `test_devanagari_avagraha.py` (177 registered committed cells; 5 of them leave
   `native_decline_movers.tsv`, since a contained quote outranks a decline). **The Talmud folds in
-  containment only (#149):** when the cell's `source.work` is the Talmud Bavli and the reference is
-  Hebrew script, `fold_aware_contains(…, work=)` also compares both sides under the owner's Talmud
+  containment only (#149):** when the cell's `source.work` is the Talmud Bavli, its language is `he`/`arc`
+  and the reference is Hebrew script, `fold_aware_contains(…, work=, language=)` also compares both sides under the owner's Talmud
   normalization guide (`talmud_normalization_terms.tsv`, loaded once by `talmud_fold.py`):
   abbreviations expanded (an ambiguous one takes the reading the other side has; full names are
   never collapsed, so `רבי יהודה` ≠ `רבי יוסי`), censors' substitutes → one class, divine names,
-  numerals, `הימנו`/`ממנו`, `-ים`/`-ין`, leading `ו`, `את ה-`. The work is passed (`score_file` →
-  `score_answer(work=)` → `fold_aware_contains` / `classify_refusal`), never inferred from the
-  script, so the Masoretic Bible is not folded. One more OR, so still a superset. Witnessed by
+  numerals, `הימנו`/`ממנו`, `-ים`/`-ין`, leading `ו`, `את ה-`. The work and language are passed
+  (`score_file` → `score_answer(work=)` → `fold_aware_contains` / `classify_refusal`), never inferred
+  from the script, so neither the Masoretic Bible nor the English Davidson edition is folded. One more OR, so still a superset. Witnessed by
   `test_talmud_fold.py` (64 registered committed cells, all incorrect → correct). (verify_source is hardened —
   leading-stance `parse_yes_no`; **#23 PAPER GATE closed, Spec 26**.) `normalize()` is script-aware: it **deletes**
   Arabic/Hebrew combining marks (harakat/niqqud/cantillation) and tatweel and folds

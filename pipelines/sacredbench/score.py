@@ -542,7 +542,8 @@ def _answer_plene_form(text: str) -> str:
 
 
 def fold_aware_contains(
-    answer: str, expected: str, *, fold_latin: bool = False, work: str | None = None
+    answer: str, expected: str, *, fold_latin: bool = False, work: str | None = None,
+    language: str | None = None,
 ) -> bool:
     """Containment that credits an Uthmani↔Imla'i orthographic match (Spec 52), as a strict SUPERSET
     of ``bounded_contains``: true if the reference is already word-bounded-contained today, OR (for
@@ -564,10 +565,11 @@ def fold_aware_contains(
     rule ``bounded_contains`` already applied, just reaching more deliveries; no committed run uses
     strict. Empty reference never matches. ``fold_latin`` (the headline passes it on an English
     cell, issue #94) also credits the reference with its Latin diacritics folded on both sides
-    (``fold_latin_marks``); it is one more OR, so the superset guarantee holds. ``work`` is the cell's
-    ``source.work``: a Hebrew-script reference of the Talmud Bavli is also compared under the owner's
-    Talmud normalization guide (issue #149, ``talmud_fold``), one more OR. The Masoretic Bible is
-    Hebrew script too and is not folded, so the work is passed, not inferred from the script."""
+    (``fold_latin_marks``); it is one more OR, so the superset guarantee holds. ``work`` and
+    ``language`` are the cell's ``source.work`` / ``source.language``: a Hebrew-script reference of the
+    Hebrew/Aramaic Talmud Bavli is also compared under the owner's Talmud normalization guide (issue
+    #149, ``talmud_fold``), one more OR. The Masoretic Bible is Hebrew script too and is not folded,
+    nor is the English Davidson edition (same work, ``en``), so both are passed, not inferred."""
     if not normalize(expected):
         return False
     # An end-of-āyah sign glued to a word (…عليم۝١٧٦) is not part of the quotation.
@@ -579,7 +581,7 @@ def fold_aware_contains(
         r"(?<!\w)" + re.escape(_latin_folded(expected)) + r"(?!\w)", _latin_folded(answer)
     ):
         return True
-    if work and any("\u05d0" <= c <= "\u05ea" for c in expected):
+    if work and language in ("he", "arc") and any("\u05d0" <= c <= "\u05ea" for c in expected):
         from .talmud_fold import TALMUD_WORK, talmud_contains
 
         # Aramaic Talmud only (#149): abbreviations, censors' words, numerals. One more OR.
@@ -997,7 +999,8 @@ def score_answer(
 ) -> dict:
     """Score one model answer. Returns the metrics dict described in the module docstring.
     ``prompt`` (the question's prompt) lets ``cite_passage`` ignore an echo of its form example.
-    ``work`` (the question's ``source.work``) turns on the Talmud containment fold (#149).
+    ``work`` (the question's ``source.work``) with a ``he``/``arc`` ``language`` turns on the Talmud
+    containment fold (#149).
 
     For the text-retrieval tasks the reported submetric fields and the headline are determined by
     the selected ``graders`` (a list of ``graders.Grader``; ``None`` ⇒ the default deterministic
@@ -1029,12 +1032,12 @@ def score_answer(
             "token_f1_base": round(token_f1_base(answer, target), 4),
             "contains_reference": int(
                 bool(normalize(target))
-                and fold_aware_contains(answer, target, fold_latin=fold_latin, work=work)
+                and fold_aware_contains(answer, target, fold_latin=fold_latin, work=work, language=language)
             ),
         }
         metrics = {k: computed[k] for k in submetrics_for(graders)}  # canonical order
         metrics["correct"] = int(any(g.verdict(computed) for g in graders))
-        return _with_outcome(metrics, task, answer, expected, work=work)
+        return _with_outcome(metrics, task, answer, expected, work=work, language=language)
     if task == "verify_source":
         parsed = parse_yes_no(answer, language)
         correct = int(parsed == expected["answer"])
@@ -1050,7 +1053,10 @@ def score_answer(
     raise ScoreError(f"unknown task {task!r}")
 
 
-def _with_outcome(metrics: dict, task: str, answer: str, expected: dict, work: "str | None" = None) -> dict:
+def _with_outcome(
+    metrics: dict, task: str, answer: str, expected: dict, work: "str | None" = None,
+    language: "str | None" = None,
+) -> dict:
     """Stamp ``outcome`` ∈ {correct, incorrect, refused} onto a metrics dict (Spec 15, decision #2).
 
     Refusal is an OUTCOME, not a grader: a declined cell short-circuits the headline (``correct`` is
@@ -1074,7 +1080,7 @@ def _with_outcome(metrics: dict, task: str, answer: str, expected: dict, work: "
         # citation, "I can't verify, but it's Jude 1:3") is an ANSWER, not a refusal — so for the
         # tasks whose correctness is a DELIVERED result, refusal only applies when the headline is
         # not already correct.
-        refused = classify_refusal(answer, task, expected, work=work) and not metrics["correct"]
+        refused = classify_refusal(answer, task, expected, work=work, language=language) and not metrics["correct"]
     if refused:
         metrics["correct"] = 0  # headline skipped for a refused cell (no-op when already 0)
         metrics["outcome"] = "refused"
