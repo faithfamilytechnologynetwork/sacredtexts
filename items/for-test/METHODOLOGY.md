@@ -127,7 +127,8 @@ amud. The expected text is the amud's segments from the first, which starts at
 the amud's first word, joined as they read until there are at least ten words.
 An amud often opens with a few words carried over from the one before
 (`Megillah 23b:1` is four), and so short a text could be contained in a wrong
-answer by accident. The row's source citation is the first segment
+answer by accident. The opening is not held to the 16-word floor of the draw
+(8 of the 62 are 10 to 15 words). The row's source citation is the first segment
 (`Megillah 23b:1`). An amud asks one
 retrieve question. The pool holds one passage per amud, so no drawn passage
 loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds

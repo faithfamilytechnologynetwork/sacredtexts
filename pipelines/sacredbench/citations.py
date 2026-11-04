@@ -280,7 +280,13 @@ def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> d
     would count a hedge where there is none and credit a citation it did not extract. A colon citation
     of another work is not a candidate, as before #112 (``score.py`` known gaps): counting one would
     mark wrong a committed right answer that names the verse the passage quotes (``Numbers 3:45``).
-    There is no segment to match: ``segment_match`` is None."""
+    There is no segment to match: ``segment_match`` is None.
+
+    Known limits, shared with #112's daf+amud stage: a qualifier word is not read (``Megillah daf 23b``,
+    ``מגילה דף כג ע״ב``: one committed answer names the right daf this way), and a number in prose
+    beside the citation is a second candidate (``Megillah 23b. This is from chapter 3``). With no
+    containment fallback, a comma between tractate and daf (``Tractate Megillah, 23b``) leaves no
+    candidate; #112 credited that form by containment, and no committed answer uses it."""
     def at_daf(t: str) -> str:
         return _DAF_COLON.sub(r"\1", _drop_segment(canonical_citation_text(t, expected_citation), expected_citation))
 

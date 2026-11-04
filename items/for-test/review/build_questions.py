@@ -132,6 +132,12 @@ def sggs_ang(citation: str) -> str:
 TALMUD_EN_RETRIEVE = (
     "What is the text at the beginning of {amud} in {version}? Reply with the exact text of that edition and nothing else."
 )
+TALMUD_HE = {
+    "retrieve_quote": "מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.",
+    "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): "{head}" ענה במילים הנותרות בלבד.',
+    "cite_passage": 'היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד, בצורה: {example}.',
+    "verify_source": 'האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? "{text}" ענה כן או לא.',
+}
 # An amud often opens with the tail of a clause from the one before (``Megillah 23b:1`` is four words), and
 # a few words can be contained in a wrong answer by accident. The opening runs on to this many words.
 TALMUD_OPENING_WORDS = 10
@@ -470,12 +476,6 @@ def judaism() -> list[dict]:
         for c in text
     ]
     drawn = population_draw(ordinary, famous, seed=20261030)
-    he = {
-        "retrieve_quote": "מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.",
-        "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): "{head}" ענה במילים הנותרות בלבד.',
-        "cite_passage": 'היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? "{text}" ענה בציון המקום בלבד, בצורה: {example}.',
-        "verify_source": 'האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? "{text}" ענה כן או לא.',
-    }
     he_en = {
         "retrieve_quote": "מהו הנוסח האנגלי של {citation} בתלמוד הבבלי, מהדורת ויליאם דייווידסון האנגלית? ענה בנוסח אותה מהדורה בלבד.",
         "complete_unit": 'השלם ציטוט זה מהתלמוד הבבלי, מהדורת ויליאם דייווידסון האנגלית: "{head}" ענה במילים הנותרות בלבד.',
@@ -487,7 +487,7 @@ def judaism() -> list[dict]:
     version = "William Davidson Edition - Aramaic"
     rows = rows_for(
         items, tradition="Judaism", version=version,
-        native_tmpl={**he, "retrieve_quote": "{citation}"}, english_version="William Davidson Edition - English",
+        native_tmpl={**TALMUD_HE, "retrieve_quote": "{citation}"}, english_version="William Davidson Edition - English",
         english_native_tmpl=he_en, cited_as=talmud_amud,
     )
     # rows_for renders a native retrieve_quote row at the passage's segment; the loop asks it of the amud.
@@ -507,7 +507,7 @@ def judaism() -> list[dict]:
         if row["condition"] == "ask_english":
             tmpl, suffix = TALMUD_EN_RETRIEVE, f"\nAnswer in the language of {name}."
         else:
-            tmpl, suffix = he["retrieve_quote"], ""
+            tmpl, suffix = TALMUD_HE["retrieve_quote"], ""
         row.update(prompt_for(tmpl, {"amud": amud, "version": name, "text": opening}, suffix))
         row["citation"] = f"{amud}:1"
         row["expected"] = {"text": opening}

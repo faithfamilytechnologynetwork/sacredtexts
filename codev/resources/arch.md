@@ -128,7 +128,7 @@ round-trip that proves no invention/reordering.
   reads `Megillah 23b:3` as `megillah 23` and never reads Hebrew notation); no colon rivals, as before
   #112 (one committed right answer names the verse its passage quotes). `segment_match: null`, so
   out of the aggregate; witnessed by a 0-mover oracle over the committed cells (`test_talmud_daf_amud.py`).
-  Both are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
+  The #112 and #118 layers are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
   not rewritten, and every mover is pinned by identity (`test_citation_equivalence.py`,
   `test_citation_example_echo.py`, and the 21 registered rows of `test_original_run_regression.py`). Every
   answered cell also carries an **outcome** (correct/incorrect/**refused**): a deterministic decline

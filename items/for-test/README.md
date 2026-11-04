@@ -5,7 +5,7 @@ This folder is the test set for the six traditions. The population sample is 30 
 | Tradition | Native text | English prompt | Native prompt | English text | Missing |
 |---|---|---|---|---|---|
 | Christianity | Yes | Yes | Yes | Yes | The Book of Mormon and the encyclicals are their own categories, 30 English passages each, not part of this row |
-| Judaism | Yes | Yes | Yes | Yes | —. The Aramaic prompts name the Vilna text and ask at daf+amud (#147) |
+| Judaism | Yes | Yes | Yes | Yes | — |
 | Islam | Yes | Yes | Yes | Yes | — |
 | Sikhism | Yes | Yes | Yes | No | English text |
 | Hinduism | Yes | Yes | Yes | Yes | — |

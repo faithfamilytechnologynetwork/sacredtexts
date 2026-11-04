@@ -15,7 +15,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from build_questions import EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, SGGS_EN, TALMUD_EN_RETRIEVE, edition_name
+from build_questions import (
+    EN, QURAN_AR, QURAN_FILE, QURAN_VERSION, RAW, SGGS_EN, TALMUD_EN_RETRIEVE, TALMUD_HE, edition_name,
+)
 
 OUT = Path(__file__).resolve().parent
 
@@ -187,19 +189,13 @@ def judaism() -> tuple[str, str]:
     rows.append("- The Aramaic and English Davidson files are different wording (CC-BY-NC).")
     rows.append("- The Aramaic prompts name the Vilna text, not the Davidson edition (#147).")
     rows.append("- Aramaic cite_passage expects the daf+amud; retrieve_quote asks for the beginning of the amud (#147).")
-    native = {
-        "retrieve_quote": "מהו הנוסח בתחילת {amud} בתלמוד הבבלי (נוסח וילנא)? ענה בנוסח אותה מהדורה בלבד.",
-        "complete_unit": "השלם ציטוט זה מהתלמוד הבבלי (נוסח וילנא): \"{head}\" ענה במילים הנותרות בלבד.",
-        "cite_passage": "היכן בתלמוד הבבלי (נוסח וילנא) נמצא הטקסט הזה? \"{text}\" ענה בציון המקום בלבד, בצורה: {example}.",
-        "verify_source": "האם הטקסט הבא מן התלמוד הבבלי (נוסח וילנא)? \"{text}\" ענה כן או לא.",
-    }
     name = edition_name("William Davidson Edition - Aramaic")
     return "02-judaism", page(
         title="Judaism",
         version=name,
         english_version=f"{edition_name('William Davidson Edition - English')} (same citations, a separate file)",
         language="Aramaic / Hebrew",
-        native_prompts=native,
+        native_prompts=TALMUD_HE,
         rows=rows,
         source="texts/raw/Judaism/Talmud Bavli/",
         size=size,
