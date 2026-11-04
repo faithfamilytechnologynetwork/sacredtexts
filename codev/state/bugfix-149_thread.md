@@ -49,3 +49,9 @@
   off/on from answers.jsonl only. Talmud branch rewritten as `… and talmud_contains(): return True`.
 - Handoff: the registry keys cells by (folder, row, qid); the #147 Talmud re-collect changes the
   answers, so the movers TSV must be regenerated in that commit (as #143 did for Gurmukhi).
+- Architect review (P2): prefixed number words didn't fold (`משלשה`/`מג׳`, `בעשרים ואחד`/`בכ״א`).
+  `canon()` now splits a 1–2 letter prefix like `_readings` (head + words[rest]); a prefixed number
+  can start a compound (`ב20`+`1` = `ב21`). Codex round 2 (on that working tree) added prefixed
+  two-letter numerals (`בי״ג`, `בכ״ב`, `בט״ו`) — numeral read on the remainder after every table
+  lookup, so `בר״ה` stays an abbreviation. P3 `ימים`/`ימין` documented + pinned with `מים`/`מין`.
+  Oracle unchanged: still exactly the 64 registered cells. Suite 1405 passed, 35 skipped.

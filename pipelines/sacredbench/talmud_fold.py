@@ -23,7 +23,8 @@ Scoring only: ``score.fold_aware_contains`` calls this when the cell's work is t
 the reference is in Hebrew script. ``normalize()`` and the equality submetrics do not change.
 
 Accepted collisions (credit-only; every other word of the passage must still line up). The guide's
-``-ים``/``-ין`` rule covers words of 3+ letters, so ``מים`` (water) reads as ``מין``. The guide spells
+``-ים``/``-ין`` rule covers words of 3+ letters, so ``מים`` (water) reads as ``מין`` and ``ימים`` (days)
+as ``ימין`` (right hand). The guide spells
 8 ``שמנה`` as well as ``שמונה``, so the tens rule reads ``שמנים`` (oils) as 80. The censorship rows
 fold ``כותי`` and ``ארמאי`` everywhere, though their notes say "check per passage". These are the
 owner's rules, kept as written; ``test_talmud_fold.py`` pins them so a change is deliberate.
@@ -62,7 +63,7 @@ _TOKEN = re.compile(rf"[\w{GERESH}{GERSHAYIM}]+")
 _MARKS = re.compile(f"[{GERESH}{GERSHAYIM}]+")
 # Tens letter + units letter, and ט״ו / ט״ז, the usual spellings of 15 and 16.
 _TWO_LETTER_NUMERAL = re.compile(f"[י-צ]{GERSHAYIM}[א-ט]|ט{GERSHAYIM}[וז]")
-_ROUND_NUMBER = re.compile(r"[1-9]0*")
+_ROUND_NUMBER = re.compile(r"([והבכלמשד]{0,2})([1-9]0*)")  # a prefix may lead: ב20 from בעשרים
 
 Unit = frozenset  # of readings; a reading is a tuple of words
 
@@ -155,8 +156,11 @@ def _readings(token: str, g: Guide) -> Unit | None:
         head, rest = token[:n], token[n:]
         if len(rest) >= 2 and set(head) <= _PREFIX_LETTERS and rest in g.readings:
             return Unit((head + alt[0], *alt[1:]) for alt in g.readings[rest])
-    if "gershayim_numeral" in g.rules and _TWO_LETTER_NUMERAL.fullmatch(token):
-        return Unit({(str(hebrew_numeral(token)),)})
+    if "gershayim_numeral" in g.rules:  # after every table lookup, so בר״ה stays ב + ראש השנה
+        for n in (0, 1, 2):  # a prefix may lead: בי״ג = ב13, as בשלשה עשר reads
+            head, rest = token[:n], token[n:]
+            if set(head) <= _PREFIX_LETTERS and _TWO_LETTER_NUMERAL.fullmatch(rest):
+                return Unit({(head + str(hebrew_numeral(rest)),)})
     return None
 
 
@@ -207,18 +211,21 @@ def _drop_et_ha(units: list[Unit]) -> list[Unit]:
 
 
 def _compounds(units: list[Unit]) -> list[Unit]:
-    """Adjacent round numbers of different magnitude are summed: עשרים ואחד = 21, שלש עשרה = 13."""
+    """Adjacent round numbers of different magnitude are summed: עשרים ואחד = 21, שלש עשרה = 13.
+    A prefix stays on the first number: בעשרים ואחד = ב21, as בכ״א reads."""
     out: list[Unit] = []
-    mags: list[set | None] = []
+    runs: list[tuple[str, int, set] | None] = []  # per unit of out: (prefix, sum, magnitudes) or None
     for u in units:
         w = _word(u)
-        m = len(w) if w and _ROUND_NUMBER.fullmatch(w) else None
-        if m and mags and mags[-1] and m not in mags[-1]:
-            out[-1] = Unit({(str(int(_word(out[-1])) + int(w)),)})
-            mags[-1].add(m)
+        m = _ROUND_NUMBER.fullmatch(w) if w else None
+        run = runs[-1] if runs else None
+        if m and run and not m[1] and len(m[2]) not in run[2]:
+            prefix, total, mags = run
+            runs[-1] = (prefix, total + int(m[2]), mags | {len(m[2])})
+            out[-1] = Unit({(f"{prefix}{total + int(m[2])}",)})
         else:
             out.append(u)
-            mags.append({m} if m else None)
+            runs.append((m[1], int(m[2]), {len(m[2])}) if m else None)
     return out
 
 
@@ -241,7 +248,13 @@ def talmud_units(text: str) -> list[Unit]:
 
     def canon(w: str) -> str:
         f = _fold_word(w, g.rules)
-        return g.words.get(f, f)
+        if f in g.words:
+            return g.words[f]
+        for n in (1, 2):  # a prefix glued to the word: משלשה = מ + 3, as מג׳ reads
+            head, rest = f[:n], f[n:]
+            if len(rest) >= 2 and set(head) <= _PREFIX_LETTERS and rest in g.words:
+                return head + g.words[rest]
+        return f
 
     units = [Unit(tuple(map(canon, alt)) for alt in u) for u in units]
     units = _phrases(units, g)

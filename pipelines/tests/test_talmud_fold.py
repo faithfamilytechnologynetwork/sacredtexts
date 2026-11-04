@@ -89,6 +89,16 @@ def test_score_file_passes_the_work(tmp_path):
         ("ט״ז יום", "ששה עשר יום"),
         ("תרי ותלתא", "שנים ושלשה"),  # Aramaic number words
         ("שלוש", "שלש"),
+        ("משלשה פסוקים", "מג׳ פסוקים"),  # a prefixed number word
+        ("בשלשה", "בג׳"),
+        ("לעשרה", "לי׳"),
+        ("בעשרים ואחד", "בכ״א"),
+        ("בשלשה עשר", "בי״ג"),  # a prefixed two-letter numeral
+        ("בעשרים ושנים", "בכ״ב"),
+        ("בט״ו", "בחמשה עשר"),
+        ("ובי״ג", "בשלש עשרה"),
+        ("משלשה", "משלושה"),
+        ("לאלקים", "לאלהים"),
         ("והמקבל ממנו", "והמקבל הימנו"),  # lexical variants
         ("הללו", "האלו"),
         ("וחייבין עליו", "וחייבים עליו"),  # orthography
@@ -108,6 +118,9 @@ def test_guide_forms_match_in_both_directions(a, b):
         ("רבי יוסי אומר", "רבי יהודה אומר"),  # full names are never collapsed to ר״י
         ("ר״י אומר", "רבי מאיר אומר"),  # ר״מ is רבי מאיר; ר״י is not
         ("ד׳ אמות", "חמש אמות"),
+        ("בשלשה", "בארבעה"),
+        ("בשלשה", "שלשה"),  # the prefix is part of the word
+        ("בעשרים ואחד", "בכ״ב"),
         ("ר׳ יוחנן", "מאתים יוחנן"),  # ר׳ reads as רבי / רב; the abbreviation wins over 200
         ("של גוי", "של ישראל"),
         ("והמקבל ממנו", "והמקבל לו"),
@@ -127,7 +140,7 @@ def test_bar_rosh_hashana_is_not_a_number():
 
 def test_accepted_collisions_are_pinned():
     # The owner's rules as written (see talmud_fold's docstring); change them deliberately.
-    assert talmud("מים", "מין")  # -ים/-ין on a 3-letter word
+    assert talmud("מים", "מין") and talmud("ימים", "ימין")  # -ים/-ין on words of 3+ letters
     assert talmud("שמנים", "שמונים")  # שמנה is a listed spelling of 8, so שמנים reads as 80
     assert talmud("כותי", "נכרי") and talmud("ארמאי", "גוי")  # notes say "check per passage"
 
