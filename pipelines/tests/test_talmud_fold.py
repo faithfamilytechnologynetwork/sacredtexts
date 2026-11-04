@@ -249,4 +249,4 @@ def test_committed_cells_move_only_as_registered():
             assert {k for k in off if off[k] != on[k]} <= {"contains_reference", "correct", "outcome"}
             moved[(folder, i, row["question_id"])] = row["task"]
     assert moved == _registered()
-    assert sum(folder.startswith("facct-2026-11-03/") for folder, _, _ in moved) == 42
+    assert sum(folder.startswith("facct-2026-11-03/") for folder, _, _ in moved) == 41

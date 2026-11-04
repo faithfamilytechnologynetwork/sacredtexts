@@ -1,7 +1,7 @@
 # Committed complete_unit cells that #150 moves: the answer holds the first ten words of the
 # continuation (score.completion_head) but not all of it, so containment now credits it.
 # Every row goes incorrect -> correct; only contains_reference, correct and outcome change, and
-# no cell loses credit. 403 rows: 177 in facct-2026-11-03, 21 under archive/, the rest in
+# no cell loses credit. 404 rows: 178 in facct-2026-11-03, 21 under archive/, the rest in
 # runs/<model>/base. The committed scores.jsonl are not rewritten here.
 # A cell is (folder, 0-based row in answers.jsonl, question_id): a committed file can hold one
 # question twice, so the question id alone is not unique.
@@ -122,16 +122,19 @@ facct-2026-11-03/argon/base/islam/english/population	44	b13b1b87cc981187
 facct-2026-11-03/argon/base/islam/english/population	61	e9353d1570e2202d
 facct-2026-11-03/argon/base/judaism/english/population	6	73a56f1de55e9374
 facct-2026-11-03/argon/base/judaism/english/population	34	fae77ec6b68a17d1
-facct-2026-11-03/argon/base/judaism/native/population/prompt-english	14	a44228c43989905e
-facct-2026-11-03/argon/base/judaism/native/population/prompt-english	60	c27efcf355bf0717
-facct-2026-11-03/argon/base/judaism/native/population/prompt-native	1	54d34a8f18c8f922
-facct-2026-11-03/argon/base/judaism/native/population/prompt-native	11	1ff038c4ec1903f0
-facct-2026-11-03/argon/base/judaism/native/population/prompt-native	58	15a538be6a990b2c
+facct-2026-11-03/argon/base/judaism/native/population/prompt-english	12	9bde5c5dafa069b8
+facct-2026-11-03/argon/base/judaism/native/population/prompt-english	64	40915978f0163c24
+facct-2026-11-03/argon/base/judaism/native/population/prompt-native	12	f3b5be940d10273b
+facct-2026-11-03/argon/base/judaism/native/population/prompt-native	64	b59eb6b3b1bdc056
+facct-2026-11-03/argon/base/judaism/native/population/prompt-native	107	c0042ba35e518c3d
 facct-2026-11-03/astra/base/hinduism/english/population	42	2968459657ed1db7
 facct-2026-11-03/astra/base/hinduism/english/population	106	d0456e157eba6a24
-facct-2026-11-03/astra/base/judaism/native/population/prompt-english	11	a44228c43989905e
-facct-2026-11-03/astra/base/judaism/native/population/prompt-native	11	1ff038c4ec1903f0
-facct-2026-11-03/astra/base/judaism/native/population/prompt-native	80	f2b06cd809788950
+facct-2026-11-03/astra/base/judaism/native/population/prompt-english	2	d4bb0a560c584876
+facct-2026-11-03/astra/base/judaism/native/population/prompt-english	55	85dd541d6adde08e
+facct-2026-11-03/astra/base/judaism/native/population/prompt-english	86	bb66685855b79ece
+facct-2026-11-03/astra/base/judaism/native/population/prompt-native	2	01701ee4adaea2d3
+facct-2026-11-03/astra/base/judaism/native/population/prompt-native	62	b59eb6b3b1bdc056
+facct-2026-11-03/astra/base/judaism/native/population/prompt-native	89	af0a32fcbda1159b
 facct-2026-11-03/beam/base/book-of-mormon/english/population	20	d52c9d8a87ada024
 facct-2026-11-03/beam/base/book-of-mormon/english/population	108	20d8c671b10135b3
 facct-2026-11-03/beam/base/book-of-mormon/english/population	112	60046e9ba1833886
@@ -178,11 +181,10 @@ facct-2026-11-03/fable/base/islam/english/population	39	b13b1b87cc981187
 facct-2026-11-03/fable/base/judaism/english/population	3	73a56f1de55e9374
 facct-2026-11-03/fable/base/judaism/english/population	31	fae77ec6b68a17d1
 facct-2026-11-03/fable/base/judaism/english/population	35	3ade6e76d866bcb2
-facct-2026-11-03/fable/base/judaism/native/population/prompt-english	48	4cd2a9972941263c
-facct-2026-11-03/fable/base/judaism/native/population/prompt-english	49	5f665f192515da3b
-facct-2026-11-03/fable/base/judaism/native/population/prompt-english	63	fe2a6fc435027c06
-facct-2026-11-03/fable/base/judaism/native/population/prompt-native	32	b4ad3328d6c2356d
-facct-2026-11-03/fable/base/judaism/native/population/prompt-native	65	5c182d4631609bb1
+facct-2026-11-03/fable/base/judaism/native/population/prompt-english	54	cbe33e9b446be7d9
+facct-2026-11-03/fable/base/judaism/native/population/prompt-english	72	b7cb64ab92b861b1
+facct-2026-11-03/fable/base/judaism/native/population/prompt-native	54	05e45b8bc7d0a99f
+facct-2026-11-03/fable/base/judaism/native/population/prompt-native	72	1aff216841a39b2e
 facct-2026-11-03/gemini-flash/base/book-of-mormon/english/population	16	7cf95cc0c6c0191c
 facct-2026-11-03/gemini-flash/base/book-of-mormon/english/population	95	02861db99f0309c3
 facct-2026-11-03/gemini-flash/base/encyclicals/english/population	15	a16d2fc34c880a51
@@ -191,10 +193,9 @@ facct-2026-11-03/gemini-flash/base/hinduism/english/population	17	eece083b00f555
 facct-2026-11-03/gemini-flash/base/hinduism/english/population	38	2968459657ed1db7
 facct-2026-11-03/gemini-flash/base/hinduism/english/population	108	d0456e157eba6a24
 facct-2026-11-03/gemini-flash/base/islam/english/population	35	fd2b666b5be88605
-facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	21	a44228c43989905e
-facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	31	82fad8c4aefdf19e
-facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	57	c27efcf355bf0717
-facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-native	32	b4ad3328d6c2356d
+facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-english	63	40915978f0163c24
+facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-native	32	47cad5b80a8bac42
+facct-2026-11-03/gemini-flash/base/judaism/native/population/prompt-native	64	b59eb6b3b1bdc056
 facct-2026-11-03/gemma-31b/base/christianity/english/population	93	b015d23fa49f77fd
 facct-2026-11-03/gemma-31b/base/islam/native/population/prompt-native	71	c7da62ded0de88a5
 facct-2026-11-03/haiku/base/islam/english/population	9	cb9c13736e4b06ed
@@ -211,7 +212,7 @@ facct-2026-11-03/kimi/base/hinduism/english/population	43	78cc8fbf72b2e0d2
 facct-2026-11-03/kimi/base/hinduism/english/population	49	2968459657ed1db7
 facct-2026-11-03/kimi/base/hinduism/english/population	119	d0456e157eba6a24
 facct-2026-11-03/kimi/base/islam/english/population	119	662c0ca71db883f5
-facct-2026-11-03/kimi/base/judaism/native/population/prompt-english	57	c27efcf355bf0717
+facct-2026-11-03/kimi/base/judaism/native/population/prompt-english	62	40915978f0163c24
 facct-2026-11-03/luna/base/book-of-mormon/english/population	94	02861db99f0309c3
 facct-2026-11-03/luna/base/encyclicals/english/population	58	542071af1e8f8765
 facct-2026-11-03/luna/base/encyclicals/english/population	90	4a995503ae5d5510
@@ -239,9 +240,9 @@ facct-2026-11-03/opus/base/islam/english/population	117	662c0ca71db883f5
 facct-2026-11-03/opus/base/judaism/english/population	36	3ade6e76d866bcb2
 facct-2026-11-03/opus/base/judaism/english/population	40	bb7a646925abde41
 facct-2026-11-03/opus/base/judaism/english/population	88	7026d0176bfaf990
-facct-2026-11-03/opus/base/judaism/native/population/prompt-english	31	82fad8c4aefdf19e
-facct-2026-11-03/opus/base/judaism/native/population/prompt-english	36	ab3788c364d1cdbe
-facct-2026-11-03/opus/base/judaism/native/population/prompt-native	31	b4ad3328d6c2356d
+facct-2026-11-03/opus/base/judaism/native/population/prompt-english	32	291c305e62e3e655
+facct-2026-11-03/opus/base/judaism/native/population/prompt-english	88	bb66685855b79ece
+facct-2026-11-03/opus/base/judaism/native/population/prompt-native	89	af0a32fcbda1159b
 facct-2026-11-03/qwen3-32b/base/christianity/english/population	53	38b8e54cfa78bcd8
 facct-2026-11-03/qwen3-32b/base/christianity/english/population	89	b015d23fa49f77fd
 facct-2026-11-03/qwen3-32b/base/christianity/english/population	98	388b498061c2a9a6
@@ -249,10 +250,9 @@ facct-2026-11-03/qwen3-32b/base/islam/english/population	91	387d8e078c2f6cf2
 facct-2026-11-03/sol/base/encyclicals/english/population	69	1e3c804ad819cfb8
 facct-2026-11-03/sol/base/hinduism/english/population	40	2968459657ed1db7
 facct-2026-11-03/sol/base/hinduism/english/population	44	78cc8fbf72b2e0d2
-facct-2026-11-03/sol/base/judaism/native/population/prompt-english	77	1c44a7789026b75c
-facct-2026-11-03/sol/base/judaism/native/population/prompt-native	10	1ff038c4ec1903f0
-facct-2026-11-03/sol/base/judaism/native/population/prompt-native	46	bce6135cff0acf8b
-facct-2026-11-03/sol/base/judaism/native/population/prompt-native	78	f2b06cd809788950
+facct-2026-11-03/sol/base/judaism/native/population/prompt-english	1	d4bb0a560c584876
+facct-2026-11-03/sol/base/judaism/native/population/prompt-english	12	9bde5c5dafa069b8
+facct-2026-11-03/sol/base/judaism/native/population/prompt-native	52	106220f1e5c091b4
 facct-2026-11-03/sonnet/base/book-of-mormon/english/population	11	d52c9d8a87ada024
 facct-2026-11-03/sonnet/base/book-of-mormon/english/population	57	36498fc604ab7f55
 facct-2026-11-03/sonnet/base/book-of-mormon/english/population	106	20d8c671b10135b3
@@ -273,7 +273,7 @@ facct-2026-11-03/sonnet/base/islam/english/population	98	d9f7adf2ed7e16a4
 facct-2026-11-03/sonnet/base/islam/english/population	106	8f2dd57ab7c4a402
 facct-2026-11-03/sonnet/base/islam/english/population	109	0b195ba15eb609bc
 facct-2026-11-03/sonnet/base/islam/english/population	117	662c0ca71db883f5
-facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english	41	ab3788c364d1cdbe
+facct-2026-11-03/sonnet/base/judaism/native/population/prompt-english	42	376cce359d96fcf1
 facct-2026-11-03/terra/base/book-of-mormon/english/population	108	20d8c671b10135b3
 facct-2026-11-03/terra/base/encyclicals/english/population	57	542071af1e8f8765
 facct-2026-11-03/terra/base/encyclicals/english/population	92	4a995503ae5d5510
@@ -282,6 +282,7 @@ facct-2026-11-03/terra/base/hinduism/english/population	43	2968459657ed1db7
 facct-2026-11-03/terra/base/hinduism/english/population	106	d0456e157eba6a24
 facct-2026-11-03/terra/base/islam/english/population	41	b13b1b87cc981187
 facct-2026-11-03/terra/base/judaism/english/population	43	bb7a646925abde41
+facct-2026-11-03/terra/base/judaism/native/population/prompt-english	62	40915978f0163c24
 gemini-flash/base/book-of-mormon/english/population	3	5a1cff31eea56377
 gemini-flash/base/book-of-mormon/english/population	91	24b14d70c73b7571
 gemini-flash/base/christianity/native/masoretic/population/prompt-english	1	0f0d85fe6db19f4e

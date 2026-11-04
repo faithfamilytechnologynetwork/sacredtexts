@@ -139,7 +139,7 @@ def test_registered_mover_counts(completion_head_movers):
     facct = by_run.pop("facct-2026-11-03")
     archive = {k: by_run.pop(k) for k in list(by_run) if k.startswith("archive/")}
     assert (facct, sum(by_run.values()), archive) == (
-        177, 205, {"archive/original-2026-10-21": 18, "archive/exp-provider-native-search-2026-10-29": 3},
+        178, 205, {"archive/original-2026-10-21": 18, "archive/exp-provider-native-search-2026-10-29": 3},
     )
 
 
