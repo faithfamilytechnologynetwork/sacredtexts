@@ -13,7 +13,10 @@ segment is dropped, so ``Megillah 23b:3`` and ``מגילה כ״ג ב:ג`` are Me
 verdict alone (no containment fallback) and ``segment_match`` is None.
 
 The oracle at the bottom re-scores every committed native Talmud cite cell against the bare daf+amud
-(its form example too): no outcome moves from the #112 daf+amud headline. Read-only.
+(its form example too). Exactly the two cells in ``AT_DAF_MOVERS`` move from the #112 daf+amud headline,
+correct -> incorrect: their Hebrew reasoning names other dafs with no tractate (``דף כד ע"א``), which
+#112 could not see and which are hedges under the contract, as in a Latin answer (architect, option B
+on PR #148). Read-only.
 """
 from __future__ import annotations
 
@@ -49,20 +52,51 @@ def _cite(answer: str, citation: str = "Megillah 23b", prompt: str | None = PROM
         "Megillah 23b", "Megillah 23b.", "Megillah 23b:3", "Megillah 23b:1, Megillah 23b:4",
         "This passage is in Megillah 23b.", "Megillah 23b: the Mishnah on reading the Torah",
         "מגילה כ״ג ב", "מגילה כג ע״ב", "מגילה כ״ג ב:ג", 'מגילה כ"ג ע"ב:ג׳', "Megillah 23b (not Gittin 40a)",
+        # spelled out (architect review on PR #148): מסכת, דף/daf, עמוד, a comma after the tractate
+        "מגילה דף כג עמוד ב", 'מסכת מגילה, דף כ"ג ע"ב', "מסכת מגילה דף כ״ג ע״ב:ג", "מגילה, דף כג ע׳ב",
+        "Megillah, 23b", "Megillah daf 23b", "Megillah 23b (מסכת מגילה דף כ״ג ע״ב)",
     ],
 )
 def test_the_daf_and_amud_is_the_citation(answer):
     assert _cite(answer) == AT_DAF
 
 
-@pytest.mark.parametrize("answer", ["Megillah 23a", "Megillah 24b", "מגילה כג א", "Gittin 23b", "Megillah 23", "Gittin 40a"])
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Megillah 23a", "Megillah 24b", "מגילה כג א", "מגילה דף כג עמוד א", "Gittin 23b", "Megillah 23", "Gittin 40a",
+        # known limits (_score_at_daf): a page label, an abbreviation and a range are other candidates
+        "Tractate Megillah, page 23b", "Meg. 23b", "Megillah 23a-b",
+    ],
+)
 def test_another_daf_amud_or_tractate_is_wrong(answer):
     assert _cite(answer)["outcome"] == "incorrect"
 
 
-@pytest.mark.parametrize("answer", ["Megillah 23b or Megillah 24a", "Megillah 23b:3 or Megillah 23a:3", "מגילה כ״ג ב או מגילה כ״ד א"])
+@pytest.mark.parametrize("answer", ["מגילה כג:", "Megillah, in the Mishnah about 23 elders"])
+def test_a_daf_with_no_amud_is_not_this_citation(answer):
+    assert _cite(answer)["correct"] == 0
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Megillah 23b or Megillah 24a", "Megillah 23b:3 or Megillah 23a:3", "מגילה כ״ג ב או מגילה כ״ד א",
+        # a Hebrew daf with no tractate, marked by דף or by ע״א / ע״ב, is a candidate of its own
+        "מגילה דף כ״ג עמוד ב או דף כ״ד עמוד א", "מגילה כ״ג ע״ב או כ״ד ע״א", "מגילה כ״ג ע״ב, וגם בדף כ״ד ע״א",
+    ],
+)
 def test_a_second_daf_is_a_hedge(answer):
     assert _cite(answer) == {"correct": 0, "n_candidates": 2, "segment_match": None, "outcome": "incorrect"}
+
+
+@pytest.mark.parametrize("answer", ["Megillah 23b (דף כ״ג ע״ב)", "מסכת מגילה, דף כ״ג ע״ב (Megillah 23b)", "מגילה כ״ג ע״ב, ובקיצור: כ״ג ע״ב"])
+def test_an_unlabeled_daf_restating_the_named_one_is_not_a_rival(answer):
+    assert _cite(answer) == AT_DAF
+
+
+def test_an_unlabeled_daf_alone_names_no_tractate():
+    assert _cite("דף כ״ג ע״ב") == {"correct": 0, "n_candidates": 1, "segment_match": None, "outcome": "incorrect"}
 
 
 def test_the_granularity_switch_does_not_apply_to_a_bare_daf(monkeypatch):
@@ -108,7 +142,7 @@ def _segments() -> dict[str, list[str]]:
         tract = path.name.split(" - he - ")[0]
         for i, section in enumerate(json.loads(path.read_text(encoding="utf-8"))["text"]):
             out[f"{tract} {i // 2 + 1}{'ab'[i % 2]}"] = [
-                re.sub(r"\s+", " ", html.unescape(tag.sub("", s))).strip() for s in section if isinstance(s, str)
+                re.sub(r"\s+", " ", html.unescape(tag.sub("", s))).strip() if isinstance(s, str) else None for s in section
             ]
     return out
 
@@ -142,6 +176,7 @@ def test_native_talmud_retrieve_rows_ask_for_the_beginning_of_the_amud():
             amud = m[1] or m[2]
             text, k = "", 0
             while len(text.split()) < 10:
+                assert isinstance(segments[amud][k], str), (amud, k)  # the builder fails fast here too
                 text, k = f"{text} {segments[amud][k]}".strip(), k + 1
             assert q["expected"] == {"text": text}, q["id"]
             assert text.startswith(segments[amud][0]) and len(text.split()) >= 10, q["id"]
@@ -178,10 +213,20 @@ def test_the_english_talmud_arm_keeps_its_segments():
 
 # --- oracle over the committed facct-2026-11-03 run ---------------------------------------------
 
+# Rescored at the bare daf+amud, the two committed cells that move. Each names the right daf+amud as its
+# final answer after Hebrew reasoning that names another daf with no tractate (8b61fe7f: דף כד ע"א and
+# כא ע"א before Megillah 23b:12; 4d1aa754: דף י ע"א before Bekhorot 2a:1). #112 could not read an unlabeled
+# Hebrew daf, so it saw one citation; the contract counts a second daf as a hedge, as in a Latin answer.
+# Architect decision on PR #148 (option B): register both.
+AT_DAF_MOVERS = {
+    ("sonnet/base/judaism/native/population/prompt-native/scores.jsonl", "8b61fe7f3a394509"): ("correct", "incorrect"),
+    ("sonnet/base/judaism/native/population/prompt-native/scores.jsonl", "4d1aa7544bb0eabb"): ("correct", "incorrect"),
+}
 # Cells whose outcome holds at the bare daf+amud but whose n_candidates differs: the #112 headline took
-# n from the raw matcher, which reads "Megillah 23b:3" as "megillah 23" and never reads Hebrew notation.
-# failure_kind reads n_candidates (hedge / wrong_locus / no_citation), so a change here must show up.
-AT_DAF_N_ONLY = 106
+# n from the raw matcher, which reads "Megillah 23b:3" as "megillah 23" and never reads Hebrew notation
+# (spelled-out or with no tractate). failure_kind reads n_candidates (hedge / wrong_locus / no_citation),
+# so a change here must show up.
+AT_DAF_N_ONLY = 118
 
 
 def _at_daf(citation: str) -> str:
@@ -190,7 +235,7 @@ def _at_daf(citation: str) -> str:
 
 def test_no_committed_native_talmud_cite_cell_moves_at_the_daf():
     """Every committed native Talmud cite cell, rescored against its bare daf+amud with the form example
-    at the daf too, keeps its committed #112 outcome. Once the run is re-collected with bare expecteds,
+    at the daf too, keeps its committed #112 outcome, except AT_DAF_MOVERS. Once the run is re-collected with bare expecteds,
     ``test_sggs_ang_only.test_no_committed_cite_cell_moves``'s identity check is the whole check."""
     score_files = sorted(RUN.glob("*/base/judaism/native/**/scores.jsonl"))
     if not score_files:
@@ -222,5 +267,5 @@ def test_no_committed_native_talmud_cite_cell_moves_at_the_daf():
     assert n["segment"] + n["daf"] == 960, n
     assert n["segment"] in (0, 960), n
     if n["segment"]:
-        assert moved == {}
+        assert moved == AT_DAF_MOVERS
         assert n_only == AT_DAF_N_ONLY

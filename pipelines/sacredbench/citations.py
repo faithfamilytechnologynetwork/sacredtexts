@@ -268,12 +268,61 @@ def _is_bare_daf(expected_citation: str) -> bool:
     return m is not None and m[1].casefold() in _tables().segmented
 
 
+@dataclass(frozen=True)
+class _DafForms:
+    lead: re.Pattern  # a tractate, then an optional comma and דף/daf before its daf
+    amud: re.Pattern  # עמוד א / עמוד ב, the amud spelled out
+    named: re.Pattern  # a tractate's daf+amud, once rewritten (megillah 23b)
+    bare: re.Pattern  # a Hebrew daf+amud with no tractate, marked by דף or by ע״א / ע״ב
+
+
+@lru_cache(maxsize=1)
+def _daf_forms() -> _DafForms:
+    label = _alternation(_tables().segmented)
+    daf_word = _fold("דף")
+    amud = f"(?:\\s*,\\s*|\\s+)(?:ע{_GERESH}?)?([אב]){_GERESH}?(?![א-ת])"
+    return _DafForms(
+        lead=re.compile(f"{_START}({label})\\s*,?\\s*(?:(?:{daf_word}|daf)\\s+)?(?=\\d|[א-ת])"),
+        amud=re.compile(f"{_fold('עמוד')}\\s*(?=[אב]{_GERESH}?(?![א-ת]))"),
+        named=re.compile(f"{_START}(?:{label})\\s+(\\d+[ab]){_END}"),
+        bare=re.compile(
+            f"(?<![א-ת]){daf_word}\\s+({_HEB_NUM}){amud}"
+            f"|(?<![א-ת])({_HEB_NUM})(?:\\s*,\\s*|\\s+)ע{_GERESH}([אב]){_GERESH}?(?![א-ת])"
+        ),
+    )
+
+
+def _daf_text(text: str, expected_citation: str) -> str:
+    """``text`` in the expected's daf+amud notation, every segment dropped. Spelled-out forms are read:
+    ``מסכת מגילה, דף כ"ג ע"ב``, ``מגילה דף כג עמוד ב`` and ``Megillah, 23b`` are all ``megillah 23b``. A
+    Hebrew daf with no tractate (``… או דף כ״ד ע״א``) is a candidate of its own, ``daf 24a``, unless it
+    restates a daf the answer names (``Megillah 23b (דף כ״ג ע״ב)``), as a bare ``N:k`` restating a named
+    Ang is its line (#135)."""
+    forms = _daf_forms()
+    text = forms.amud.sub("ע", forms.lead.sub(r"\1 ", canonical_citation_text(text, expected_citation)))
+    text = _tables().daf_rx.sub(_daf, text)
+    named = set(forms.named.findall(text))
+
+    def bare(m: re.Match) -> str:
+        daf = hebrew_numeral(m[1] or m[3])
+        if daf is None:
+            return m[0]
+        cited = f"{daf}{'a' if (m[2] or m[4]) == 'א' else 'b'}"
+        return " " if cited in named else f" daf {cited} "
+
+    text = forms.bare.sub(bare, text)
+    return _DAF_COLON.sub(r"\1", _drop_segment(text, expected_citation))
+
+
 def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> dict:
     """``cite_passage`` against a bare daf+amud (#147): #112's daf+amud stage alone. The answer is
-    rewritten into the expected's notation (``מגילה כ״ג ב`` is ``megillah 23b``) and every segment it
+    rewritten into the expected's notation (``מגילה כ״ג ב`` is ``megillah 23b``; ``מסכת``, ``דף``/``daf``,
+    ``עמוד`` and a comma after the tractate are read too, :func:`_daf_text`) and every segment it
     volunteers is dropped, in the answer and the form example alike, as is a colon after a daf with no
     segment after it (``Megillah 23b: the Mishnah on …``). It is correct when the expected
-    is its one candidate, after an echo of the example beside another citation is set aside (#118).
+    is its one candidate, after an echo of the example beside another citation is set aside (#118). A
+    Hebrew daf with no tractate is a candidate too (:func:`_daf_text`), so Hebrew reasoning that names
+    another daf is a hedge, as a Latin answer written that way is.
 
     The raw matcher is not consulted, nor its containment fallback: on the raw answer the number
     extractor reads ``Megillah 23b:3`` as ``megillah 23`` and never reads Hebrew notation, so it
@@ -282,17 +331,13 @@ def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> d
     mark wrong a committed right answer that names the verse the passage quotes (``Numbers 3:45``).
     There is no segment to match: ``segment_match`` is None.
 
-    Known limits, shared with #112's daf+amud stage: a qualifier word is not read (``Megillah daf 23b``,
-    ``מגילה דף כג ע״ב``: one committed answer names the right daf this way), and a number in prose
-    beside the citation is a second candidate (``Megillah 23b. This is from chapter 3``). With no
-    containment fallback, a comma between tractate and daf (``Tractate Megillah, 23b``) leaves no
-    candidate; #112 credited that form by containment, and no committed answer uses it."""
-    def at_daf(t: str) -> str:
-        return _DAF_COLON.sub(r"\1", _drop_segment(canonical_citation_text(t, expected_citation), expected_citation))
-
-    text = at_daf(answer)
+    Known limits: a number in prose beside the citation is a second candidate (``Megillah 23b. This is
+    from chapter 3``), as under #112. A page label is another candidate (``Tractate Megillah, page 23b`` is
+    a wrong locus), as is an abbreviated tractate (``Meg. 23b``) and a range (``Megillah 23a-b`` is not
+    an amud); a daf with no amud (``מגילה כג:``) is no citation."""
+    text = _daf_text(answer, expected_citation)
     if example is not None:
-        example = at_daf(example)
+        example = _daf_text(example, expected_citation)
     _, n = _single_citation_correct(text, expected_citation, example)
     target = re.compile(r"(?<!\w)" + re.escape(normalize(expected_citation)) + r"(?!\w)")
     named = any(target.search(c) for c in _citation_candidates(text, expected_citation))

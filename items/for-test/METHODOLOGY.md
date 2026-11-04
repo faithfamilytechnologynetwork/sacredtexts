@@ -85,8 +85,8 @@ speakers, so a Pali-language prompt would not measure what the other native
 prompts measure (owner decision, issue #113).
 
 The prompt names the work as well as the edition: "the 2013 edition of the
-Book of Mormon", "the Talmud Bavli (Vilna text)", "the Vatican English text of the encyclical Fides et Ratio (John Paul
-II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
+Book of Mormon", "the Talmud Bavli (Vilna text)", "the Vatican English text of
+the encyclical Fides et Ratio (John Paul II, 1998-09-14)". A bare catalogue version ("Is the following text from 2013
 edition?") left the model guessing which work was meant, and that cost 16-28
 points on `verify_source` for the traditions it hit (issue #90). The names are
 `_EDITION_DISPLAY` in `review/build_questions.py`; a new edition without one
@@ -132,7 +132,8 @@ answer by accident. The opening is not held to the 16-word floor of the draw
 (`Megillah 23b:1`). An amud asks one
 retrieve question. The pool holds one passage per amud, so no drawn passage
 loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds
-is ignored, and a second daf is a hedge. The Aramaic prompts name "the Talmud
+is ignored, spelled-out Hebrew (`מסכת מגילה, דף כ"ג עמוד ב`) is read, and a
+second daf is a hedge, with or without its tractate. The Aramaic prompts name "the Talmud
 Bavli (Vilna text)", not Sefaria's William Davidson edition. Naming that edition
 drew some 200 copyright refusals per prompt arm on the public-domain Vilna text.
 The catalogue `version` and the licence note still name the Davidson edition.
