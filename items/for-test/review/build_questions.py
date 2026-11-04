@@ -126,16 +126,33 @@ def sggs_ang(citation: str) -> str:
 # copyright refusals per arm on the public-domain Vilna text, so the prompts name the Vilna text. And the
 # ":3" of "Megillah 23b:3" is Sefaria's own paragraph split, which no model can know, so a row asks at
 # daf+amud: retrieve_quote asks for the text at the beginning of the drawn passage's amud and expects the
-# amud's first segment (it starts at the amud's first word; the row's source citation is that segment),
-# and cite_passage expects the daf+amud. The English (Davidson/Steinsaltz) arm is unchanged.
+# amud's opening (``talmud_opening``; the row's source citation is its first segment, where the opening
+# starts), and cite_passage
+# expects the daf+amud. The English (Davidson/Steinsaltz) arm is unchanged.
 TALMUD_EN_RETRIEVE = (
     "What is the text at the beginning of {amud} in {version}? Reply with the exact text of that edition and nothing else."
 )
+# An amud often opens with the tail of a clause from the one before (``Megillah 23b:1`` is four words), and
+# a few words can be contained in a wrong answer by accident. The opening runs on to this many words.
+TALMUD_OPENING_WORDS = 10
 
 
 def talmud_amud(citation: str) -> str:
     """``Megillah 23b`` for the segment ``Megillah 23b:3``."""
     return citation.rpartition(":")[0]
+
+
+def talmud_opening(amud: str, segments: list) -> str:
+    """The text at the beginning of an amud: its segments from the first, space-joined as they read on
+    the page, until there are at least TALMUD_OPENING_WORDS words."""
+    text = ""
+    for n, segment in enumerate(segments, start=1):
+        if not isinstance(segment, str):
+            raise SystemExit(f"{amud}:{n} is not text; the opening cannot run past it")
+        text = f"{text} {clean_html(segment)}".strip()
+        if len(text.split()) >= TALMUD_OPENING_WORDS:
+            return text
+    raise SystemExit(f"{amud} has fewer than {TALMUD_OPENING_WORDS} words")
 
 
 # English display names the model sees in a prompt. Each names the work as well as
@@ -417,7 +434,7 @@ def sikhism() -> list[dict]:
 def judaism() -> list[dict]:
     root = RAW / "Judaism" / "Talmud Bavli"
     pairs = []
-    opening: dict[str, str] = {}  # amud -> its first segment, the text a retrieve row asks for (#147)
+    sections: dict[str, list] = {}  # amud -> its Aramaic segments, for the opening a retrieve row asks for (#147)
     for he_path in sorted(root.glob("* - he - William Davidson Edition - Aramaic.json")):
         tract = he_path.name.split(" - he - ")[0]
         en_path = root / f"{tract} - en - William Davidson Edition - English.json"
@@ -432,8 +449,7 @@ def judaism() -> list[dict]:
                 continue
             daf = (i // 2) + 1
             side = "a" if i % 2 == 0 else "b"
-            if isinstance(sec_h[0], str):
-                opening[f"{tract} {daf}{side}"] = clean_html(sec_h[0])
+            sections[f"{tract} {daf}{side}"] = sec_h
             # A daf side can end with one extra segment in one edition. Pair only
             # the shared indexes. An unpaired tail has no wording in the other edition.
             paired = min(len(sec_h), len(sec_e))
@@ -487,15 +503,14 @@ def judaism() -> list[dict]:
             row["unasked"] = True
             continue
         asked.add((row["sample"], row["condition"], amud))
-        if not opening.get(amud):
-            raise SystemExit(f"{amud}: no first segment to ask for")
+        opening = talmud_opening(amud, sections[amud])
         if row["condition"] == "ask_english":
             tmpl, suffix = TALMUD_EN_RETRIEVE, f"\nAnswer in the language of {name}."
         else:
             tmpl, suffix = he["retrieve_quote"], ""
-        row.update(prompt_for(tmpl, {"amud": amud, "version": name, "text": opening[amud]}, suffix))
+        row.update(prompt_for(tmpl, {"amud": amud, "version": name, "text": opening}, suffix))
         row["citation"] = f"{amud}:1"
-        row["expected"] = {"text": opening[amud]}
+        row["expected"] = {"text": opening}
     note = "William Davidson Edition on Sefaria, CC-BY-NC. Attribute Sefaria and the William Davidson Edition."
     for row in rows:
         row["license"] = note

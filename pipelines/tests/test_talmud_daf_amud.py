@@ -4,8 +4,9 @@ Naming Sefaria's "William Davidson Aramaic edition" drew some 200 copyright refu
 ``runs/facct-2026-11-03`` on what is the public-domain Vilna text, so every native Talmud prompt names
 "the Talmud Bavli (Vilna text)" / "התלמוד הבבלי (נוסח וילנא)". The ``:3`` of ``Megillah 23b:3`` is
 Sefaria's own paragraph split, which no model can know, so retrieve_quote asks for the text at the
-beginning of the amud (expecting its first segment, ``Megillah 23b:1``, which is the row's source
-citation) and cite_passage expects ``Megillah 23b``. The English (Davidson/Steinsaltz) arm is unchanged.
+beginning of the amud (expecting its segments from ``Megillah 23b:1`` on, space-joined until at least ten
+words, since an amud often opens with a clause carried over from the one before; ``:1`` is the row's
+source citation) and cite_passage expects ``Megillah 23b``. The English (Davidson/Steinsaltz) arm is unchanged.
 
 Scoring a bare daf+amud (``citations._score_at_daf``): Hebrew notation is rewritten and a volunteered
 segment is dropped, so ``Megillah 23b:3`` and ``מגילה כ״ג ב:ג`` are Megillah 23b; the headline is that
@@ -99,15 +100,16 @@ def _rows(kind: str) -> dict[Path, list[dict]]:
     return {p: [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines()] for p in paths}
 
 
-def _first_segments() -> dict[str, str]:
-    """Each amud's first segment, read straight from the Sefaria payload (Aramaic)."""
+def _segments() -> dict[str, list[str]]:
+    """Each amud's segments, read straight from the Sefaria payload (Aramaic), tags stripped."""
     tag = re.compile(r"<[^>]+>")
     out = {}
     for path in TALMUD_RAW.glob("* - he - William Davidson Edition - Aramaic.json"):
         tract = path.name.split(" - he - ")[0]
         for i, section in enumerate(json.loads(path.read_text(encoding="utf-8"))["text"]):
-            if section and isinstance(section[0], str):
-                out[f"{tract} {i // 2 + 1}{'ab'[i % 2]}"] = re.sub(r"\s+", " ", html.unescape(tag.sub("", section[0]))).strip()
+            out[f"{tract} {i // 2 + 1}{'ab'[i % 2]}"] = [
+                re.sub(r"\s+", " ", html.unescape(tag.sub("", s))).strip() for s in section if isinstance(s, str)
+            ]
     return out
 
 
@@ -126,7 +128,9 @@ AMUD = re.compile(r"(?:the text at the beginning of (.+? \d+[ab]) in )|(?:מהו
 
 
 def test_native_talmud_retrieve_rows_ask_for_the_beginning_of_the_amud():
-    first = _first_segments()
+    """The expected is the amud's first segments, joined until it has ten words: a four-word clause carried
+    over from the previous amud (``Megillah 23b:1``) could be contained in a wrong answer by accident."""
+    segments = _segments()
     n = 0
     for path, rows in _rows("native").items():
         retrieve = [q for q in rows if q["task"] == "retrieve_quote"]
@@ -136,7 +140,12 @@ def test_native_talmud_retrieve_rows_ask_for_the_beginning_of_the_amud():
             m = AMUD.search(q["prompt"])
             assert m, q["id"]
             amud = m[1] or m[2]
-            assert q["expected"] == {"text": first[amud]}, q["id"]
+            text, k = "", 0
+            while len(text.split()) < 10:
+                text, k = f"{text} {segments[amud][k]}".strip(), k + 1
+            assert q["expected"] == {"text": text}, q["id"]
+            assert text.startswith(segments[amud][0]) and len(text.split()) >= 10, q["id"]
+            assert k == 1 or len(" ".join(segments[amud][:k - 1]).split()) < 10, q["id"]  # no further than needed
             assert q["source"]["citation"] == f"{amud}:1", q["id"]  # the citation names the text expected
             amudim.append(amud)
         assert len(amudim) == len(set(amudim)), path  # one retrieve row per amud

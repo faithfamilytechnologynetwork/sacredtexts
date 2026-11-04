@@ -43,3 +43,13 @@
   so the 3-passage smoke covers 2 Talmud passages (8 rows), all rows of each.
 - Review point: Vilna amudim open mid-sentence, so some expecteds are short (`כנגדו נמי לא בעי`, 4
   words; range 4–78). Retrieval is containment-scored, so a longer reply that includes them is credited.
+
+## 2026-11-04 amend (architect, 00:25Z)
+
+- Short openings: 7 of 30 amudim open with under 10 words, a clause carried over from the previous
+  amud (`Megillah 23b:1` is 4). The retrieve expected is now `talmud_opening`: segments :1, :2, …
+  space-joined until ≥10 words. Prompt unchanged; `source.citation` stays `<amud>:1`. No natural
+  field for the segment span in the row schema, so it is not recorded (recoverable from the raw file:
+  the shortest run of segments from :1 reaching 10 words, which the test re-derives).
+- Rebuild: only the two population files move (the familiarity Berakhot 2a:1 is 17 words); 7 retrieve
+  rows per arm change expected text; lengths now 10–78 words.

@@ -99,7 +99,7 @@ What is the text of Exodus 28:43 in the New Revised Standard Version (NRSV)? Rep
 
 **Native edition, two calls** (Islam, Sikhism, and the Aramaic half of Judaism). The same question is not stacked in one prompt. `prompt-english/` is the English question plus one line saying which language to answer in. `prompt-native/` is only the question in the text's language. Those native lines are drafts for a native speaker.
 
-The Aramaic Talmud is asked at daf+amud (#147). `Megillah 23b:3` is Sefaria's own segment number, which no model can know. `retrieve_quote` asks for the text at the beginning of the amud and expects its first segment (`Megillah 23b:1`). `cite_passage` expects `Megillah 23b`. The prompts name "the Talmud Bavli (Vilna text)" / "התלמוד הבבלי (נוסח וילנא)": naming Sefaria's William Davidson edition drew copyright refusals on the public-domain Vilna text.
+The Aramaic Talmud is asked at daf+amud (#147). `Megillah 23b:3` is Sefaria's own segment number, which no model can know. `retrieve_quote` asks for the text at the beginning of the amud and expects its segments from the first (`Megillah 23b:1`) on, joined until there are at least ten words: an amud often opens with a few words carried over from the one before. `cite_passage` expects `Megillah 23b`. The prompts name "the Talmud Bavli (Vilna text)" / "התלמוד הבבלי (נוסח וילנא)": naming Sefaria's William Davidson edition drew copyright refusals on the public-domain Vilna text.
 
 ```
 What is the text at the beginning of Megillah 23b in the Talmud Bavli (Vilna text)? Reply with the exact text of that edition and nothing else.

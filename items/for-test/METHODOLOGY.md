@@ -123,8 +123,12 @@ a passage drawn from an Ang that already has two gets no retrieve row.
 The Aramaic Talmud is asked and scored at daf+amud (issue #147). The `:3` of
 `Megillah 23b:3` is Sefaria's paragraph split, which no model can know.
 `retrieve_quote` asks for the text at the beginning of the drawn passage's
-amud and expects the amud's first segment, which starts at its first word; the
-row's source citation is that segment (`Megillah 23b:1`). An amud asks one
+amud. The expected text is the amud's segments from the first, which starts at
+the amud's first word, joined as they read until there are at least ten words.
+An amud often opens with a few words carried over from the one before
+(`Megillah 23b:1` is four), and so short a text could be contained in a wrong
+answer by accident. The row's source citation is the first segment
+(`Megillah 23b:1`). An amud asks one
 retrieve question. The pool holds one passage per amud, so no drawn passage
 loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds
 is ignored, and a second daf is a hedge. The Aramaic prompts name "the Talmud

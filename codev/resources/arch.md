@@ -119,7 +119,9 @@ round-trip that proves no invention/reordering.
   left out of the `segment_match` aggregate; `HEADLINE_DROPS_SEGMENT` does not apply.
   **Talmud bare daf+amud (#147)**: Sefaria's segment index is that edition's own paragraph split, so
   the native Talmud cite rows expect `Megillah 23b` (the passage stays in `source.citation`; the
-  English arm keeps its segments). `score_citation` sends a bare daf+amud of a `segment_indexed`
+  English arm keeps its segments), and retrieve asks for "the text at the beginning of" the amud,
+  expecting its segments from `:1` joined to ≥10 words (`build_questions.talmud_opening`;
+  `source.citation` = `:1`). `score_citation` sends a bare daf+amud of a `segment_indexed`
   tractate to `_score_at_daf`: #112's daf+amud stage alone (Hebrew notation rewritten, every volunteered
   segment dropped in answer and example, a colon after a daf with no segment dropped), correct iff the
   expected is the single extracted candidate. Containment-free, like `_score_at_ang` (the raw matcher
