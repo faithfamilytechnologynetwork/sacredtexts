@@ -122,8 +122,10 @@ def sggs_ang(citation: str) -> str:
     return citation.partition(":")[0]
 
 
-# Issue #147: the native Talmud arms. Naming Sefaria's "William Davidson Aramaic edition" drew some 200
-# copyright refusals per arm on the public-domain Vilna text, so the prompts name the Vilna text. And the
+# Issue #147: the native Talmud arms. With Sefaria's "William Davidson Aramaic edition" named, some 200
+# retrieve answers per arm were refusals (219 and 196), only 35 and 10 of them explicitly on copyright or
+# licence grounds; most decline on the segment divisions and orthography of a specific digital edition. So
+# the prompts name the Vilna text. And the
 # ":3" of "Megillah 23b:3" is Sefaria's own paragraph split, which no model can know, so a row asks at
 # daf+amud: retrieve_quote asks for the text at the beginning of the drawn passage's amud and expects the
 # amud's opening (``talmud_opening``; the row's source citation is its first segment, where the opening

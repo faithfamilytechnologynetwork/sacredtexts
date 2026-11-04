@@ -132,10 +132,15 @@ answer by accident. The opening is not held to the 16-word floor of the draw
 (`Megillah 23b:1`). An amud asks one
 retrieve question. The pool holds one passage per amud, so no drawn passage
 loses its row. `cite_passage` expects `Megillah 23b`. A segment the model adds
-is ignored, spelled-out Hebrew (`מסכת מגילה, דף כ"ג עמוד ב`) is read, and a
-second daf is a hedge, with or without its tractate. The Aramaic prompts name "the Talmud
-Bavli (Vilna text)", not Sefaria's William Davidson edition. Naming that edition
-drew some 200 copyright refusals per prompt arm on the public-domain Vilna text.
+is ignored, as is a line or Mishnah number. Spelled-out Hebrew
+(`מסכת מגילה, דף כ"ג עמוד ב`) is read, and so is the printed form, where a period
+after the daf is amud alef and a colon amud bet (`מגילה כג:` is Megillah 23b). A
+second daf is a hedge, with or without its tractate, and so is the prompt's
+example offered beside the answer. The Aramaic prompts name "the Talmud
+Bavli (Vilna text)", not Sefaria's William Davidson edition. With that edition
+named, some 200 retrieve answers per prompt arm were refusals (219 and 196), only
+35 and 10 of them explicitly on copyright or licence grounds; most decline on the
+segment divisions and orthography of a specific digital edition.
 The catalogue `version` and the licence note still name the Davidson edition.
 The English Talmud is that edition's Steinsaltz translation, named and cited by
 segment as before. Its refusals are on licence grounds.

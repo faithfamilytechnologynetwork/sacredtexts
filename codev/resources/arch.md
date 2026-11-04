@@ -123,15 +123,20 @@ round-trip that proves no invention/reordering.
   expecting its segments from `:1` joined to ≥10 words (`build_questions.talmud_opening`;
   `source.citation` = `:1`). `score_citation` sends a bare daf+amud of a `segment_indexed`
   tractate to `_score_at_daf`: #112's daf+amud stage alone (Hebrew notation rewritten, spelled-out forms
-  too: `מסכת`, `דף`/`daf`, `עמוד א/ב`, a comma after the tractate; every volunteered segment dropped in
-  answer and example; a colon after a daf with no segment dropped), correct iff the expected is the
-  single extracted candidate. A Hebrew daf with no tractate (`… או דף כ״ד ע״א`, marked by `דף` or
-  `ע״א/ע״ב`) is a candidate of its own unless it restates a named daf, so Hebrew is scored like Latin.
+  too: `מסכת`, `דף`/`daf`, `עמוד א/ב`, a comma after the tractate, a decimal daf (`מגילה 23 ע״ב`), and the
+  print convention `מגילה כג.`/`כג:` = 23a/23b when no digit follows; every volunteered segment dropped in
+  answer and example; a colon after a daf with no segment dropped; a line/Mishnah/segment qualifier
+  ignored), correct iff the expected is the single extracted candidate. A Hebrew daf with no tractate
+  (`… או דף כ״ד ע״א`, marked by `דף` or `ע״א/ע״ב`) is a candidate of its own unless it restates a named
+  daf, so Hebrew is scored like Latin. The form example is dropped only as a disclaimed echo, as at the
+  Ang (`Gittin 40a or Megillah 23b` is a hedge).
   Containment-free, like `_score_at_ang` (the raw matcher reads `Megillah 23b:3` as `megillah 23` and
   never reads Hebrew notation); no colon rivals, as before #112 (one committed right answer names the
   verse its passage quotes). `segment_match: null`, so out of the aggregate. Witnessed by an oracle over
-  the committed cells (`test_talmud_daf_amud.py`): 2 registered movers, correct→incorrect, Hebrew
-  reasoning naming another daf with no tractate (a hedge, as in Latin; architect, PR #148).
+  the committed cells (`test_talmud_daf_amud.py`): 5 registered movers. 2 are correct→incorrect, Hebrew
+  reasoning naming another daf with no tractate (a hedge, as in Latin; architect, PR #148); 1 is
+  correct→refused, a decline that offers the form example undisclaimed; 2 are incorrect→correct, the
+  print convention (`גיטין מ.`, `בבא קמא קיא:`).
   The #112 and #118 layers are credit-only (`correct` = the #111 matcher OR equivalence); committed `scores.jsonl` are
   not rewritten, and every mover is pinned by identity (`test_citation_equivalence.py`,
   `test_citation_example_echo.py`, and the 21 registered rows of `test_original_run_regression.py`). Every

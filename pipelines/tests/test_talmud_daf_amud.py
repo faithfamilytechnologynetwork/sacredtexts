@@ -1,7 +1,9 @@
 """Issue #147: the native Talmud arms name the Vilna text and ask at daf+amud.
 
-Naming Sefaria's "William Davidson Aramaic edition" drew some 200 copyright refusals per native arm in
-``runs/facct-2026-11-03`` on what is the public-domain Vilna text, so every native Talmud prompt names
+With Sefaria's "William Davidson Aramaic edition" named, some 200 retrieve answers per native arm in
+``runs/facct-2026-11-03`` were refusals (219 and 196), only 35 and 10 of them explicitly on copyright or
+licence grounds; most decline on the segment divisions and orthography of a specific digital edition. So
+every native Talmud prompt names
 "the Talmud Bavli (Vilna text)" / "התלמוד הבבלי (נוסח וילנא)". The ``:3`` of ``Megillah 23b:3`` is
 Sefaria's own paragraph split, which no model can know, so retrieve_quote asks for the text at the
 beginning of the amud (expecting its segments from ``Megillah 23b:1`` on, space-joined until at least ten
@@ -9,14 +11,14 @@ words, since an amud often opens with a clause carried over from the one before;
 source citation) and cite_passage expects ``Megillah 23b``. The English (Davidson/Steinsaltz) arm is unchanged.
 
 Scoring a bare daf+amud (``citations._score_at_daf``): Hebrew notation is rewritten and a volunteered
-segment is dropped, so ``Megillah 23b:3`` and ``מגילה כ״ג ב:ג`` are Megillah 23b; the headline is that
-verdict alone (no containment fallback) and ``segment_match`` is None.
+segment, line or Mishnah number is dropped, so ``Megillah 23b:3``, ``מגילה כ״ג ב:ג`` and the printed
+``מגילה כג:`` are Megillah 23b; the form example counts unless disclaimed; the headline is that verdict
+alone (no containment fallback) and ``segment_match`` is None.
 
 The oracle at the bottom re-scores every committed native Talmud cite cell against the bare daf+amud
-(its form example too). Exactly the two cells in ``AT_DAF_MOVERS`` move from the #112 daf+amud headline,
-correct -> incorrect: their Hebrew reasoning names other dafs with no tractate (``דף כד ע"א``), which
-#112 could not see and which are hedges under the contract, as in a Latin answer (architect, option B
-on PR #148). Read-only.
+(its form example too). Exactly the five cells in ``AT_DAF_MOVERS`` move from the #112 daf+amud headline:
+two hedges in Hebrew reasoning (option B on PR #148), one decline that offers the example undisclaimed,
+and two printed citations now read. Read-only.
 """
 from __future__ import annotations
 
@@ -55,6 +57,14 @@ def _cite(answer: str, citation: str = "Megillah 23b", prompt: str | None = PROM
         # spelled out (architect review on PR #148): מסכת, דף/daf, עמוד, a comma after the tractate
         "מגילה דף כג עמוד ב", 'מסכת מגילה, דף כ"ג ע"ב', "מסכת מגילה דף כ״ג ע״ב:ג", "מגילה, דף כג ע׳ב",
         "Megillah, 23b", "Megillah daf 23b", "Megillah 23b (מסכת מגילה דף כ״ג ע״ב)",
+        # a decimal daf with a Hebrew amud (CMAP on PR #148)
+        "מגילה דף 23 עמוד ב", "מסכת מגילה, דף 23 ע״ב", "מגילה 23 ע״ב",
+        # the print convention, a colon after the daf is amud bet (Daniel Slate, via the architect)
+        "מגילה כג:", 'מסכת מגילה דף כ"ג:', "מגילה כג: הדין של קריאת התורה", "מגילה כג, ב", "מגילה כג ב",
+        # a line, Mishnah or segment number is a qualifier
+        "Megillah 23b, line 4", "Megillah 23b, Mishnah 3", "Megillah 23b:3 (segment 3)", "Megillah 23b, lines 4-6",
+        # the form example disclaimed
+        "Megillah 23b (Gittin 40a)", "Megillah 23b, לא גיטין מ׳ ע״א",
     ],
 )
 def test_the_daf_and_amud_is_the_citation(answer):
@@ -65,6 +75,7 @@ def test_the_daf_and_amud_is_the_citation(answer):
     "answer",
     [
         "Megillah 23a", "Megillah 24b", "מגילה כג א", "מגילה דף כג עמוד א", "Gittin 23b", "Megillah 23", "Gittin 40a",
+        "מגילה 23 ע״א", "מגילה כג.", "מגילה כג, א",  # a period after the daf is amud alef
         # known limits (_score_at_daf): a page label, an abbreviation and a range are other candidates
         "Tractate Megillah, page 23b", "Meg. 23b", "Megillah 23a-b",
     ],
@@ -73,9 +84,15 @@ def test_another_daf_amud_or_tractate_is_wrong(answer):
     assert _cite(answer)["outcome"] == "incorrect"
 
 
-@pytest.mark.parametrize("answer", ["מגילה כג:", "Megillah, in the Mishnah about 23 elders"])
+@pytest.mark.parametrize("answer", ["מגילה כג:3", "Megillah, in the Mishnah about 23 elders"])
 def test_a_daf_with_no_amud_is_not_this_citation(answer):
+    """A colon followed by a digit is a Sefaria segment, not the printed amud bet."""
     assert _cite(answer)["correct"] == 0
+
+
+@pytest.mark.parametrize("answer, citation", [("מגילה כג.", "Megillah 23a"), ('גיטין מ.:י"ג', "Gittin 40a"), ("בבא קמא קיא:", "Bava Kamma 111b")])
+def test_the_printed_period_is_amud_alef_and_the_colon_amud_bet(answer, citation):
+    assert _cite(answer, citation) == AT_DAF
 
 
 @pytest.mark.parametrize(
@@ -84,13 +101,20 @@ def test_a_daf_with_no_amud_is_not_this_citation(answer):
         "Megillah 23b or Megillah 24a", "Megillah 23b:3 or Megillah 23a:3", "מגילה כ״ג ב או מגילה כ״ד א",
         # a Hebrew daf with no tractate, marked by דף or by ע״א / ע״ב, is a candidate of its own
         "מגילה דף כ״ג עמוד ב או דף כ״ד עמוד א", "מגילה כ״ג ע״ב או כ״ד ע״א", "מגילה כ״ג ע״ב, וגם בדף כ״ד ע״א",
+        "מגילה 23 ע״ב או 24 ע״א", "מגילה כג: או מגילה כד.",
+        # the form example offered beside the answer is a rival, as at the Ang
+        "Gittin 40a or Megillah 23b", "Megillah 23b or Gittin 40a",
     ],
 )
 def test_a_second_daf_is_a_hedge(answer):
     assert _cite(answer) == {"correct": 0, "n_candidates": 2, "segment_match": None, "outcome": "incorrect"}
 
 
-@pytest.mark.parametrize("answer", ["Megillah 23b (דף כ״ג ע״ב)", "מסכת מגילה, דף כ״ג ע״ב (Megillah 23b)", "מגילה כ״ג ע״ב, ובקיצור: כ״ג ע״ב"])
+@pytest.mark.parametrize(
+    "answer",
+    ["Megillah 23b (דף כ״ג ע״ב)", "מסכת מגילה, דף כ״ג ע״ב (Megillah 23b)", "מגילה כ״ג ע״ב, ובקיצור: כ״ג ע״ב",
+     "Megillah 23b (דף 23 ע״ב)", "Megillah 23b (מגילה כג:)"],
+)
 def test_an_unlabeled_daf_restating_the_named_one_is_not_a_rival(answer):
     assert _cite(answer) == AT_DAF
 
@@ -196,6 +220,7 @@ def test_native_talmud_cite_rows_expect_the_daf_and_amud():
         for q in [q for q in rows if q["task"] == "cite_passage"]:
             expected = q["expected"]["citation"]
             assert re.fullmatch(r".+? \d+[ab]", expected), q["id"]
+            assert citations._is_bare_daf(expected), q["id"]  # score_citation routes it to _score_at_daf
             assert q["source"]["citation"].rpartition(":")[0] == expected, q["id"]  # the passage keeps its segment
             example = example_citation(q["prompt"])
             assert re.fullmatch(r".+? \d+[ab]", example) and example != expected, q["id"]
@@ -213,20 +238,28 @@ def test_the_english_talmud_arm_keeps_its_segments():
 
 # --- oracle over the committed facct-2026-11-03 run ---------------------------------------------
 
-# Rescored at the bare daf+amud, the two committed cells that move. Each names the right daf+amud as its
-# final answer after Hebrew reasoning that names another daf with no tractate (8b61fe7f: דף כד ע"א and
-# כא ע"א before Megillah 23b:12; 4d1aa754: דף י ע"א before Bekhorot 2a:1). #112 could not read an unlabeled
-# Hebrew daf, so it saw one citation; the contract counts a second daf as a hedge, as in a Latin answer.
-# Architect decision on PR #148 (option B): register both.
+# Rescored at the bare daf+amud, the five committed cells that move.
+# - The two sonnet cells name the right daf+amud as their final answer after Hebrew reasoning that names
+#   another daf with no tractate (8b61fe7f: דף כד ע"א and כא ע"א before Megillah 23b:12; 4d1aa754: דף י ע"א
+#   before Bekhorot 2a:1). #112 could not read an unlabeled Hebrew daf, so it saw one citation; the
+#   contract counts a second daf as a hedge, as in a Latin answer. Architect decision on PR #148 (option B).
+# - The haiku cell declines, then names Rosh HaShanah 11a "ולא במסכת מגילה 23b" and quotes the example form
+#   "Megillah 23b:3" in a note. Neither is a disclaimed echo (the ולא is not next to the example), so the
+#   example is a rival, as at the Ang; with no single right citation the decline makes it refused.
+# - The two fable cells answer in the print convention, a period after the daf for amud alef and a colon
+#   for amud bet (גיטין מ.:י"ג is Gittin 40a, בבא קמא קיא: is Bava Kamma 111b), which #112 did not read.
 AT_DAF_MOVERS = {
     ("sonnet/base/judaism/native/population/prompt-native/scores.jsonl", "8b61fe7f3a394509"): ("correct", "incorrect"),
     ("sonnet/base/judaism/native/population/prompt-native/scores.jsonl", "4d1aa7544bb0eabb"): ("correct", "incorrect"),
+    ("haiku/base/judaism/native/population/prompt-native/scores.jsonl", "84b1fbf0f644a6b0"): ("correct", "refused"),
+    ("fable/base/judaism/native/population/prompt-english/scores.jsonl", "628ae4244baf8af0"): ("incorrect", "correct"),
+    ("fable/base/judaism/native/population/prompt-english/scores.jsonl", "f02605da2216134c"): ("incorrect", "correct"),
 }
 # Cells whose outcome holds at the bare daf+amud but whose n_candidates differs: the #112 headline took
 # n from the raw matcher, which reads "Megillah 23b:3" as "megillah 23" and never reads Hebrew notation
 # (spelled-out or with no tractate). failure_kind reads n_candidates (hedge / wrong_locus / no_citation),
 # so a change here must show up.
-AT_DAF_N_ONLY = 118
+AT_DAF_N_ONLY = 127
 
 
 def _at_daf(citation: str) -> str:

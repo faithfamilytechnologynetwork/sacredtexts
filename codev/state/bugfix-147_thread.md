@@ -53,3 +53,27 @@
   the shortest run of segments from :1 reaching 10 words, which the test re-derives).
 - Rebuild: only the two population files move (the familiarity Berakhot 2a:1 is 17 words); 7 retrieve
   rows per arm change expected text; lengths now 10–78 words.
+
+## 2026-11-04 review rounds (architect 00:41Z, 00:44Z, 00:54Z, 00:56Z; CMAP round 3)
+
+- 00:41Z P2s: spelled-out Hebrew (`מסכת`, `דף`/`daf`, `עמוד א/ב`, a comma after the tractate) and
+  `Megillah, 23b` read in `_daf_text`. Reading them opened a false-credit hedge (an unlabeled second daf),
+  so 00:44Z option B: an unlabeled Hebrew daf marked by `דף` or `ע״א/ע״ב` is its own candidate unless it
+  restates a named daf. 2 sonnet movers registered (correct→incorrect, hedges in Hebrew reasoning).
+- 00:54Z consult findings: (1) the disclaimed-echo rule from `_score_at_ang` adopted (`Gittin 40a or
+  Megillah 23b` is a hedge); (2) refusal claim reworded everywhere: 219 and 196 retrieve refusals per arm,
+  only 35 and 10 on copyright/licence, most on the segment divisions and orthography of a specific digital
+  edition (recounted from the run: all Talmud); (3) line/Mishnah/segment qualifiers ignored, and the
+  rebuild test asserts `_is_bare_daf` on every native cite expected.
+- CMAP round 3 (e2b152a): gemini APPROVE, claude APPROVE, codex REQUEST_CHANGES. P2: a decimal daf with a
+  Hebrew amud (`מגילה 23 ע״ב`, `דף 23 עמוד ב`) scored incorrect; now read (named, unlabeled rival,
+  restatement). P3: commit 5b2531d uses a `[bugfix-147]` prefix; left as is (rewriting needs a force-push).
+- 00:56Z (the project's Talmud scholar, via the architect): the print convention, a period after the daf
+  is amud alef and a colon amud bet, when no digit follows (`מגילה כג:` = 23b; `כג:3` stays a segment
+  form, so no amud). Tractate-labelled Hebrew numerals only: a decimal `Megillah 23.` and a bare `כד.`
+  with no tractate are not read (too easily a sentence end). `כג, א` / `כג ב` already read.
+- Oracle after all of these: 5 movers, registered by identity. 2 sonnet hedges as above; haiku 84b1fbf0
+  correct→refused (a decline naming Rosh HaShanah 11a "ולא במסכת מגילה 23b", non-adjacent, plus the
+  example form quoted in a note, so the example is a rival); fable 628ae424 `גיטין מ.:י"ג` and f02605da
+  `בבא קמא קיא:` incorrect→correct (print convention). n_candidates-only: 127.
+- Question files rebuild byte-identical (scorer + comments only this round).

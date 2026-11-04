@@ -272,8 +272,11 @@ def _is_bare_daf(expected_citation: str) -> bool:
 class _DafForms:
     lead: re.Pattern  # a tractate, then an optional comma and דף/daf before its daf
     amud: re.Pattern  # עמוד א / עמוד ב, the amud spelled out
+    digits: re.Pattern  # a tractate, a decimal daf and a Hebrew amud (מגילה 23 ע״ב)
+    printed: re.Pattern  # the print convention: a period is amud alef, a colon amud bet (מגילה כג:)
     named: re.Pattern  # a tractate's daf+amud, once rewritten (megillah 23b)
     bare: re.Pattern  # a Hebrew daf+amud with no tractate, marked by דף or by ע״א / ע״ב
+    qualifier: re.Pattern  # a line / Mishnah / segment number right after a daf+amud (megillah 23b, line 4)
 
 
 @lru_cache(maxsize=1)
@@ -284,34 +287,63 @@ def _daf_forms() -> _DafForms:
     return _DafForms(
         lead=re.compile(f"{_START}({label})\\s*,?\\s*(?:(?:{daf_word}|daf)\\s+)?(?=\\d|[א-ת])"),
         amud=re.compile(f"{_fold('עמוד')}\\s*(?=[אב]{_GERESH}?(?![א-ת]))"),
+        digits=re.compile(f"{_START}({label})\\s+(\\d+){amud}"),
+        printed=re.compile(f"{_START}({label})\\s+({_HEB_NUM})([.:])(?!\\s*\\d)"),
         named=re.compile(f"{_START}(?:{label})\\s+(\\d+[ab]){_END}"),
         bare=re.compile(
-            f"(?<![א-ת]){daf_word}\\s+({_HEB_NUM}){amud}"
-            f"|(?<![א-ת])({_HEB_NUM})(?:\\s*,\\s*|\\s+)ע{_GERESH}([אב]){_GERESH}?(?![א-ת])"
+            f"(?<![א-ת]){daf_word}\\s+({_HEB_NUM}|\\d+){amud}"
+            f"|(?<![א-ת\\d])({_HEB_NUM}|\\d+)(?:\\s*,\\s*|\\s+)ע{_GERESH}([אב]){_GERESH}?(?![א-ת])"
+        ),
+        qualifier=re.compile(
+            f"({_START}(?:{label})\\s+\\d+[ab])(?:[\\s,;(\\[]*(?:lines?|mishnah|segments?|seg\\.?)\\s*\\d+"
+            f"(?:\\s*[-–]\\s*\\d+)?[)\\]]?)+"
         ),
     )
 
 
+_DAF_NEGATION = _alternation(_fold(w) for w in ("not", "לא", "ולא"))
+
+
+def _daf_echo_rx(example: str) -> re.Pattern:
+    """A disclaimed echo of the form example (``gittin 40a`` once rewritten): ``not Gittin 40a``, a bare
+    ``(Gittin 40a)``, or ``לא`` / ``ולא`` before or after it."""
+    a = re.escape(example) + _END
+    return re.compile(
+        f"{_START}(?:{_DAF_NEGATION})\\s+{a}|\\(\\s*{a}\\s*\\)|{_START}{a}\\s+(?:{_DAF_NEGATION}){_END}"
+    )
+
+
+def _printed(m: re.Match) -> str:
+    daf = hebrew_numeral(m[2])
+    return m[0] if daf is None else f"{m[1]} {daf}{'a' if m[3] == '.' else 'b'} "
+
+
 def _daf_text(text: str, expected_citation: str) -> str:
     """``text`` in the expected's daf+amud notation, every segment dropped. Spelled-out forms are read:
-    ``מסכת מגילה, דף כ"ג ע"ב``, ``מגילה דף כג עמוד ב`` and ``Megillah, 23b`` are all ``megillah 23b``. A
-    Hebrew daf with no tractate (``… או דף כ״ד ע״א``) is a candidate of its own, ``daf 24a``, unless it
-    restates a daf the answer names (``Megillah 23b (דף כ״ג ע״ב)``), as a bare ``N:k`` restating a named
-    Ang is its line (#135)."""
+    ``מסכת מגילה, דף כ"ג ע"ב``, ``מגילה דף כג עמוד ב``, ``מגילה 23 ע״ב``, ``Megillah, 23b`` and the print
+    convention ``מגילה כג:`` (a colon after the daf is amud bet, a period amud alef, when no digit follows:
+    ``מגילה כג:3`` is no amud) are all ``megillah 23b``. A Hebrew daf with no tractate (``… או דף כ״ד
+    ע״א``) is a candidate of its own, ``daf 24a``, unless it restates a daf the answer names (``Megillah
+    23b (דף כ״ג ע״ב)``), as a bare ``N:k`` restating a named Ang is its line (#135). A line, Mishnah or segment number after a daf is a qualifier, not a candidate
+    (``Megillah 23b, line 4``), as a line or Mehl beside an Ang is."""
     forms = _daf_forms()
     text = forms.amud.sub("ע", forms.lead.sub(r"\1 ", canonical_citation_text(text, expected_citation)))
     text = _tables().daf_rx.sub(_daf, text)
+    text = forms.digits.sub(lambda m: f"{m[1]} {m[2]}{'a' if m[3] == 'א' else 'b'}", text)
+    text = forms.printed.sub(_printed, text)
     named = set(forms.named.findall(text))
 
     def bare(m: re.Match) -> str:
-        daf = hebrew_numeral(m[1] or m[3])
+        token = m[1] or m[3]
+        daf = int(token) if token.isdigit() else hebrew_numeral(token)
         if daf is None:
             return m[0]
         cited = f"{daf}{'a' if (m[2] or m[4]) == 'א' else 'b'}"
         return " " if cited in named else f" daf {cited} "
 
     text = forms.bare.sub(bare, text)
-    return _DAF_COLON.sub(r"\1", _drop_segment(text, expected_citation))
+    text = _DAF_COLON.sub(r"\1", _drop_segment(text, expected_citation))
+    return re.sub(r"\s+", " ", forms.qualifier.sub(r"\1", text))
 
 
 def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> dict:
@@ -320,9 +352,13 @@ def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> d
     ``עמוד`` and a comma after the tractate are read too, :func:`_daf_text`) and every segment it
     volunteers is dropped, in the answer and the form example alike, as is a colon after a daf with no
     segment after it (``Megillah 23b: the Mishnah on …``). It is correct when the expected
-    is its one candidate, after an echo of the example beside another citation is set aside (#118). A
-    Hebrew daf with no tractate is a candidate too (:func:`_daf_text`), so Hebrew reasoning that names
-    another daf is a hedge, as a Latin answer written that way is.
+    is its one candidate. A Hebrew daf with no tractate is a candidate too (:func:`_daf_text`), so Hebrew
+    reasoning that names another daf is a hedge, as a Latin answer written that way is.
+
+    The form example is dropped only as a disclaimed echo (``Megillah 23b (not Gittin 40a)``, a bare
+    ``(Gittin 40a)``, ``לא`` beside it), as at the Ang (#138): offered beside the answer (``Gittin 40a or
+    Megillah 23b``) it is a rival, because nearly every native Talmud cite prompt shows the same example.
+    An answer whose only citation is the example is a wrong locus.
 
     The raw matcher is not consulted, nor its containment fallback: on the raw answer the number
     extractor reads ``Megillah 23b:3`` as ``megillah 23`` and never reads Hebrew notation, so it
@@ -334,11 +370,14 @@ def _score_at_daf(answer: str, expected_citation: str, example: str | None) -> d
     Known limits: a number in prose beside the citation is a second candidate (``Megillah 23b. This is
     from chapter 3``), as under #112. A page label is another candidate (``Tractate Megillah, page 23b`` is
     a wrong locus), as is an abbreviated tractate (``Meg. 23b``) and a range (``Megillah 23a-b`` is not
-    an amud); a daf with no amud (``מגילה כג:``) is no citation."""
+    an amud); a decimal daf with a period or colon (``Megillah 23.``) and a Hebrew daf with no tractate in
+    the print convention (``… או כד.``) are not read."""
     text = _daf_text(answer, expected_citation)
     if example is not None:
-        example = _daf_text(example, expected_citation)
-    _, n = _single_citation_correct(text, expected_citation, example)
+        echo = _daf_text(example, expected_citation).strip()
+        if echo != expected_citation.casefold():  # an example equal to the answer is never disclaimed away
+            text = _daf_echo_rx(echo).sub(" ", text)
+    _, n = _single_citation_correct(text, expected_citation)
     target = re.compile(r"(?<!\w)" + re.escape(normalize(expected_citation)) + r"(?!\w)")
     named = any(target.search(c) for c in _citation_candidates(text, expected_citation))
     return {"correct": int(named and n == 1), "n_candidates": n, "segment_match": None}
