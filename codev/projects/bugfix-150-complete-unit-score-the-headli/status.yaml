@@ -1,0 +1,14 @@
+id: bugfix-150
+title: complete-unit-score-the-headli
+protocol: bugfix
+phase: investigate
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: pending
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-04T00:43:55.187Z'
+updated_at: '2026-11-04T00:43:55.188Z'
