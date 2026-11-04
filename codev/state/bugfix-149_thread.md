@@ -37,3 +37,15 @@
   review-only rows (`באתרא`/`באתריה`, `כפלגא`, `אמרו`/`אמרי`).
 - Regression: with the Talmud branch disabled 36/51 new tests fail.
 - Size: ~280-line module + ~25 lines threading — at the BUGFIX ceiling.
+
+## PR #151 + CMAP (2026-11-03)
+- First consult run failed for all three ("Multiple projects found"); rerun with `--issue 149`.
+- gemini APPROVE. claude APPROVE (notes). codex REQUEST_CHANGES:
+  - `ט״ו`/`ט״ז` (15/16) not read as numerals — fixed (within the guide's 11–99 range); no new movers.
+  - `-ים`→`-ין` on 3-letter words folds `מים`→`מין` — the guide's own threshold; kept, documented
+    as accepted residue with `שמנים` (oils) → 80 and the unconditional `כותי`/`ארמאי` fold, pinned in
+    `test_accepted_collisions_are_pinned`. Owner's call to change; flagged to the architect.
+- claude: oracle read committed outcomes (would go red after the facct re-score) — now derives
+  off/on from answers.jsonl only. Talmud branch rewritten as `… and talmud_contains(): return True`.
+- Handoff: the registry keys cells by (folder, row, qid); the #147 Talmud re-collect changes the
+  answers, so the movers TSV must be regenerated in that commit (as #143 did for Gurmukhi).

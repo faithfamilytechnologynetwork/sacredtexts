@@ -21,6 +21,12 @@ normalize`` rows stay in the file and are skipped. Niqqud and cantillation are r
 
 Scoring only: ``score.fold_aware_contains`` calls this when the cell's work is the Talmud Bavli and
 the reference is in Hebrew script. ``normalize()`` and the equality submetrics do not change.
+
+Accepted collisions (credit-only; every other word of the passage must still line up). The guide's
+``-ים``/``-ין`` rule covers words of 3+ letters, so ``מים`` (water) reads as ``מין``. The guide spells
+8 ``שמנה`` as well as ``שמונה``, so the tens rule reads ``שמנים`` (oils) as 80. The censorship rows
+fold ``כותי`` and ``ארמאי`` everywhere, though their notes say "check per passage". These are the
+owner's rules, kept as written; ``test_talmud_fold.py`` pins them so a change is deliberate.
 """
 from __future__ import annotations
 
@@ -54,7 +60,8 @@ _RULE_ROWS = {
 }
 _TOKEN = re.compile(rf"[\w{GERESH}{GERSHAYIM}]+")
 _MARKS = re.compile(f"[{GERESH}{GERSHAYIM}]+")
-_TWO_LETTER_NUMERAL = re.compile(f"[י-צ]{GERSHAYIM}[א-ט]")
+# Tens letter + units letter, and ט״ו / ט״ז, the usual spellings of 15 and 16.
+_TWO_LETTER_NUMERAL = re.compile(f"[י-צ]{GERSHAYIM}[א-ט]|ט{GERSHAYIM}[וז]")
 _ROUND_NUMBER = re.compile(r"[1-9]0*")
 
 Unit = frozenset  # of readings; a reading is a tuple of words

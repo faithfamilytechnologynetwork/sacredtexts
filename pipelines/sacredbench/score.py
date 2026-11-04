@@ -579,8 +579,9 @@ def fold_aware_contains(
     if work and any("\u05d0" <= c <= "\u05ea" for c in expected):
         from .talmud_fold import TALMUD_WORK, talmud_contains
 
-        if work == TALMUD_WORK:  # Aramaic Talmud only (#149): abbreviations, censors' words, numerals
-            return talmud_contains(answer, expected)
+        # Aramaic Talmud only (#149): abbreviations, censors' words, numerals. One more OR.
+        if work == TALMUD_WORK and talmud_contains(answer, expected):
+            return True
     if any("\u0a00" <= c <= "\u0a7f" for c in expected):  # Gurmukhi reference only
         # The printed verse counter is not part of the quotation. One more OR: still a superset.
         stripped = _GURMUKHI_VERSE_COUNTER.sub(" ", answer)

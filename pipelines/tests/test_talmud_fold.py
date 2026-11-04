@@ -85,6 +85,8 @@ def test_score_file_passes_the_work(tmp_path):
         ("כ״א יום", "עשרים ואחד יום"),
         ("כ״א יום", "כל אחד יום"),
         ("י״ב שבטים", "שנים עשר שבטים"),
+        ("ט״ו בשבט", "חמשה עשר בשבט"),  # 15 and 16 are written ט״ו / ט״ז
+        ("ט״ז יום", "ששה עשר יום"),
         ("תרי ותלתא", "שנים ושלשה"),  # Aramaic number words
         ("שלוש", "שלש"),
         ("והמקבל ממנו", "והמקבל הימנו"),  # lexical variants
@@ -121,6 +123,13 @@ def test_different_words_still_differ(a, b):
 def test_bar_rosh_hashana_is_not_a_number():
     assert all(not r[0].isdigit() for r in talmud_units("בר״ה")[0])
     assert talmud_units("י״ב") == [frozenset({("12",)})]  # a numeral that is not an abbreviation
+
+
+def test_accepted_collisions_are_pinned():
+    # The owner's rules as written (see talmud_fold's docstring); change them deliberately.
+    assert talmud("מים", "מין")  # -ים/-ין on a 3-letter word
+    assert talmud("שמנים", "שמונים")  # שמנה is a listed spelling of 8, so שמנים reads as 80
+    assert talmud("כותי", "נכרי") and talmud("ארמאי", "גוי")  # notes say "check per passage"
 
 
 def test_half_a_reference_still_fails():
@@ -186,6 +195,8 @@ def _registered() -> dict[tuple[str, int, str], str]:
 
 
 def test_committed_cells_move_only_as_registered():
+    # Fold off and fold on are both derived from answers.jsonl, never from the committed scores, so
+    # the oracle still holds after the sanctioned re-score writes these cells as correct.
     score_files = sorted(RUNS.glob("**/scores.jsonl"))
     if not score_files:
         pytest.skip("runs/ evidence not present")
@@ -195,8 +206,7 @@ def test_committed_cells_move_only_as_registered():
             continue
         folder = scores.parent.relative_to(RUNS).as_posix()
         answers = [json.loads(l) for l in scores.with_name("answers.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-        committed = [json.loads(l) for l in scores.read_text(encoding="utf-8").splitlines() if l.strip()]
-        for i, (row, old) in enumerate(zip(answers, committed)):
+        for i, row in enumerate(answers):
             source = row["question"].get("source", {})
             if row["task"] not in _TEXT_TASKS or source.get("work") != TALMUD_WORK:
                 continue
@@ -205,7 +215,7 @@ def test_committed_cells_move_only_as_registered():
                 continue
             off = score_answer(row["task"], answer, expected, language=source.get("language"))
             on = score_answer(row["task"], answer, expected, language=source.get("language"), work=TALMUD_WORK)
-            assert old["metrics"]["outcome"] == off["outcome"] == "incorrect", (folder, i)
+            assert off["outcome"] == "incorrect", (folder, i)
             assert on["outcome"] == "correct" and on["contains_reference"] == 1, (folder, i)  # credit-only
             moved[(folder, i, row["question_id"])] = row["task"]
     assert moved == _registered()
