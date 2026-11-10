@@ -66,3 +66,15 @@
   railway.json left untouched; Phase 6 split → new Phase 7 (local e2e + docs); env table.
 - Rebutted claude's "audit the committed sample" — owner ruling 5 explicitly removed copyright
   audit-scan extensions (counsel: fair use). Documented in review/README + arch docs instead.
+
+## 2026-11-10 — plan approved; phase 1 done
+
+- Architect relayed human plan approval (56375ec4); audit-scan rebuttal stands; hosting NOT approved.
+  Ran `porch approve 154 plan-approval --a-human-explicitly-approved-this` per the relay.
+- Phase 1 (a70314ce + nits feb19864): `sacredbench review-sample` → review/samples/facct-2026-11-03-k10.json
+  (seed `spec-154`, k=10: 1,423 cells / 151 strata / 13 texts, 2.8 MB; NRSV 111 cells / 29 verses).
+  Pin test regenerates it byte-for-byte; review/ → pipelines lane in test.sh. Full pipelines suite
+  green (1520 passed). Consult: codex + claude APPROVE; took claude's nits (load_sample shape checks,
+  refuse --out under runs/, texts[].cells → texts[].drawn, error-path tests).
+- Note for later phases: test.sh diffs COMMITTED changes vs origin/main — commit a phase before
+  `porch done` or the gate tests nothing.
