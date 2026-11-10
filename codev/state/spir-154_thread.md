@@ -78,3 +78,22 @@
   refuse --out under runs/, texts[].cells → texts[].drawn, error-path tests).
 - Note for later phases: test.sh diffs COMMITTED changes vs origin/main — commit a phase before
   `porch done` or the gate tests nothing.
+
+## 2026-11-10 — phase 2: gold-set format + review-compare (5de80e3d)
+
+- `pipelines/sacredbench/review_compare.py` + `sacredbench review-compare GOLD... --version V [--version …] [--json P]`.
+  Versions: `committed` (row's scores_path from repo root), `current` (score_answer exactly as score_file
+  calls it; no provider import — subprocess test with a socket guard), or a run dir (runs/<run>/ prefix
+  swap; mixed-run gold + dir version fails). Movers are over judged rows only, so
+  Δagree = fixed − broken (pinned by a test).
+- **Format decision Phase 5 must honour:** canonical gold bytes = compact JSON, keys sorted at every
+  level, non-ASCII raw, numbers as `JSON.stringify` writes them. The sample file holds Python floats
+  like `1.0` (token_f1); JS parses them to `1`, so `dumps_gold_rows` writes integral floats as ints
+  and fails on floats whose shortest form differs between the languages (<1e-4). The fixture
+  exercises this (`"token_f1":1`).
+- Fixtures: `fixtures/review_sample.json` (8 cells, built by the real `build_sample` at k=1 from a
+  scratch run: real FAccT prompts/expected for islam/native + hinduism/english, made-up answers and
+  run `fixture-run`) + `fixtures/review_gold_set.jsonl`. Movers under committed→current are
+  realistic: #118 undisclaimed form-example echo `34:46 أو 3:140` = broken; #94 `Yogi`/`Yogî` = fixed.
+- Real data fact: on the committed FAccT sample, `current` == `committed` for all 1,423 cells
+  (no scorer drift since the run was scored). Smoke (first 20 cells, labels = shown): 100% / no movers.
