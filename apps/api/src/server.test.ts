@@ -63,6 +63,14 @@ describe('server startup', () => {
     expect(wrongFormat.output()).toMatch(/unsupported sample format 2/);
   }, 20_000);
 
+  it('exits 1 when PORT is set but is not a TCP port (including empty)', async () => {
+    for (const PORT of ['', 'abc', '0', '70000', '80.5']) {
+      const s = startServer({ SAMPLE_PATH: goodSample, PORT });
+      expect(await s.exited, `PORT=${JSON.stringify(PORT)}`).toBe(1);
+      expect(s.output()).toMatch(/PORT is not a valid port/);
+    }
+  }, 60_000);
+
   it('exits 1 when VIEWER_DIST has no index.html', async () => {
     const empty = mkdtempSync(join(dir, 'dist-empty-'));
     const s = startServer({ SAMPLE_PATH: goodSample, VIEWER_DIST: empty });

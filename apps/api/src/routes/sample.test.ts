@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { gunzipSync } from 'node:zlib';
 import { createApp } from '../app';
 import { createTestDb } from '../testing/pglite';
 import { testSample } from '../testing/sample';
@@ -31,5 +32,12 @@ describe('GET /api/sample', () => {
     const body = await res.text();
     expect(body).toBe(sample.json);
     expect(JSON.parse(body).sample_id).toBe('sample-under-test');
+
+    // The real sample is ~2.8 MB; a client that accepts gzip gets it compressed, byte-identical inside.
+    const gz = await app.request('/api/sample', {
+      headers: { Cookie: cookieHeader(signup), 'Accept-Encoding': 'gzip' },
+    });
+    expect(gz.headers.get('content-encoding')).toBe('gzip');
+    expect(gunzipSync(Buffer.from(await gz.arrayBuffer())).toString('utf8')).toBe(sample.json);
   });
 });

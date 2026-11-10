@@ -31,9 +31,10 @@ if (!inviteCode) {
   console.log('REVIEW_INVITE_CODE is unset — signup is CLOSED until it is configured.');
 }
 
-const port = Number(process.env.PORT ?? 8080);
-if (!Number.isFinite(port)) {
-  console.error(`PORT is not a valid number: ${process.env.PORT}`);
+// Unset ⇒ 8080. Set but not a TCP port (including empty, which Number() reads as 0) ⇒ exit.
+const port = process.env.PORT === undefined ? 8080 : Number(process.env.PORT);
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  console.error(`PORT is not a valid port: ${JSON.stringify(process.env.PORT)}`);
   process.exit(1);
 }
 

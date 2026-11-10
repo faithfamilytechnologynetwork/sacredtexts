@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { compress } from 'hono/compress';
 import { cors } from 'hono/cors';
 import type { AppDb } from './db';
 import { healthRoute } from './routes/health';
@@ -29,6 +30,10 @@ export interface AppOptions {
  */
 export function createApp(db: AppDb, opts: AppOptions): Hono {
   const app = new Hono();
+
+  // gzip/deflate for a client that accepts it: the sample is ~2.8 MB of JSON and the viewer's
+  // assets are ~0.8 MB, and the hosted origin serves them with no CDN in front.
+  app.use('*', compress());
 
   // Credentialed cross-site CORS: echo only allow-listed origins (never a wildcard with
   // credentials), and allow the CSRF header so a listed client can complete the double-submit check.

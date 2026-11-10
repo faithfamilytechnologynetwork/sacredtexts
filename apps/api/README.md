@@ -60,6 +60,10 @@ The static serving ports the in-repo viewer host (`apps/viewer/server/index.mjs`
 an `index.html` fallback). The differences are that `/api/*` is excluded from both, and only `GET`
 and `HEAD` are served.
 
+Responses are gzip- or deflate-compressed for a client that accepts it (`hono/compress`). That matters
+for the sample (2.8 MB, about 0.5 MB gzipped) and the viewer bundle, because nothing sits in front of
+the service.
+
 **One active sample.** `SAMPLE_PATH` names it. Drafts and submissions are accepted for that sample
 id only. A save or submit for any other id gets 404 `{error: "unknown sample"}`. Reading, listing and
 discarding drafts still work for every id, so a draft from an earlier sample stays visible and can be
@@ -84,11 +88,11 @@ the service starts in, which is `apps/api` under `pnpm -C apps/api start`.
 | Variable | Required | Behaviour |
 |---|---|---|
 | `DATABASE_URL` | yes | Postgres connection string. The server and the migrator exit if it is unset. |
-| `SAMPLE_PATH` | yes | The committed review sample to serve. The server exits if it is unset, unreadable, not JSON, not `format: 1`, or missing a required key. |
+| `SAMPLE_PATH` | yes | The committed review sample to serve. The server exits if it is unset, unreadable, not JSON, not `format: 1`, missing a required key, or has no cells. |
 | `VIEWER_DIST` | no | The built viewer (`apps/viewer/dist`). When set, it is served beside `/api`, and the server exits if its `index.html` is missing. Unset ⇒ API only (local dev behind the Vite proxy). |
 | `REVIEW_INVITE_CODE` | no | Shared signup code. **Fail-closed:** unset ⇒ signup is disabled (login still works). |
 | `ALLOWED_ORIGINS` | no | Comma-separated CORS allow-list for credentialed requests. Empty is correct when the UI is same-origin; never `*`. |
-| `PORT` | no | Listen port, default 8080. |
+| `PORT` | no | Listen port, default 8080. Set but not a port from 1 to 65535 (including empty) ⇒ exit. |
 
 At startup the server logs the active sample id, whether it is serving the viewer, the CORS
 allow-list, and whether signup is open.

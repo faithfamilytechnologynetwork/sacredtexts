@@ -48,6 +48,8 @@ export function parseSample(text: string, origin: string): ActiveSample {
       throw new SampleError(`${origin}: ${key} must be a list of objects`);
     }
   }
+  // A sample with no cells would start a service with nothing to review.
+  if ((sample.cells as unknown[]).length === 0) throw new SampleError(`${origin}: cells is empty`);
   return { sampleId: sample.sample_id, json: text };
 }
 

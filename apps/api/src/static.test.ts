@@ -3,6 +3,7 @@ import type { Hono } from 'hono';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { createApp } from './app';
 import { createTestDb } from './testing/pglite';
 import { testSample } from './testing/sample';
@@ -11,6 +12,8 @@ import { isApiPath, loadViewerDist } from './static';
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 const SHELL = '<!doctype html><html><body><div id="root"></div><!-- spa-shell --></body></html>';
 const ASSET = 'console.log("asset a");';
+// Above hono/compress's 1 KiB threshold.
+const BIG_ASSET = `export const words = ${JSON.stringify('בראשית ברא אלהים '.repeat(200))};`;
 
 describe('the built viewer beside /api', () => {
   let dist: string;
@@ -21,6 +24,7 @@ describe('the built viewer beside /api', () => {
     writeFileSync(join(dist, 'index.html'), SHELL);
     mkdirSync(join(dist, 'assets'));
     writeFileSync(join(dist, 'assets', 'a.js'), ASSET);
+    writeFileSync(join(dist, 'assets', 'big.js'), BIG_ASSET);
     // A dist folder named `api` must never shadow or leak through /api.
     mkdirSync(join(dist, 'api'));
     writeFileSync(join(dist, 'api', 'secret.txt'), 'not for /api');
@@ -47,6 +51,20 @@ describe('the built viewer beside /api', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/javascript/);
     expect(await res.text()).toBe(ASSET);
+  });
+
+  it('gzips a file for a client that accepts it, and only then', async () => {
+    const gz = await app.request('/assets/big.js', { headers: { 'Accept-Encoding': 'gzip' } });
+    expect(gz.status).toBe(200);
+    expect(gz.headers.get('content-encoding')).toBe('gzip');
+    expect(gz.headers.get('vary')).toMatch(/Accept-Encoding/i);
+    const packed = Buffer.from(await gz.arrayBuffer());
+    expect(packed.length).toBeLessThan(Buffer.byteLength(BIG_ASSET));
+    expect(gunzipSync(packed).toString('utf8')).toBe(BIG_ASSET);
+
+    const plain = await app.request('/assets/big.js');
+    expect(plain.headers.get('content-encoding')).toBeNull();
+    expect(await plain.text()).toBe(BIG_ASSET);
   });
 
   it('answers HEAD for the shell and for a file', async () => {

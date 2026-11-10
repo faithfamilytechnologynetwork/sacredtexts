@@ -75,6 +75,10 @@ describe('parseSample', () => {
     expect(() => parse({ ...sampleObject(), sample_id: 7 })).toThrow(/sample_id/);
   });
 
+  it('rejects a sample with no cells', () => {
+    expect(() => parse({ ...sampleObject(), cells: [] })).toThrow(/cells is empty/);
+  });
+
   it('rejects cells, strata or texts that are not lists of objects', () => {
     for (const key of ['cells', 'strata', 'texts']) {
       expect(() => parse({ ...sampleObject(), [key]: {} })).toThrow(new RegExp(`${key} must be a list`));

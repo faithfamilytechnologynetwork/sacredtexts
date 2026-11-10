@@ -173,3 +173,15 @@
   which is not approved.
 - The README mentions the viewer's Vite `/api` proxy for API-only dev. The proxy itself lands in
   Phase 6 (`vite.config.ts`), per the plan.
+- Phase 4 consult iter 1: codex APPROVE (no issues), claude APPROVE (non-blocking). I took all three of
+  claude's notes, because the hosting go-ahead (below) makes the first one real:
+  - (1) `hono/compress` on every response. The sample is 2.8 MB → ~0.5 MB gzipped; on the real server
+    the JS bundle is 689 KB → 187 KB, and it round-trips byte-identical.
+  - (2) `PORT=""` used to bind port 0. Now any set PORT that isn't an integer from 1 to 65535 exits 1.
+  - (3) a sample with zero cells fails at startup.
+  - Each has a test. Not done: an ETag on `/api/sample`, since compression covers most of the cost.
+- **Hosting go-ahead, 2026-11-10T21:34Z** (the owner, via the architect): provision is included, after the
+  phase-7 local walk passes, in phase order. A new Railway project, one service + Postgres, smallest
+  tiers, daily backup. The invite code lives only in Railway and the gitignored root `.env`. The
+  multibench Railway project and `apps/viewer/railway.json` are not to be touched. The README's "NOT
+  approved" banner stays until provision time, when it's rewritten to say what was actually provisioned.
