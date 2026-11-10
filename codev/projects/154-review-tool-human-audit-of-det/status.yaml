@@ -1,9 +1,30 @@
 id: '154'
 title: review-tool-human-audit-of-det
 protocol: spir
-phase: plan
-plan_phases: []
-current_plan_phase: null
+phase: implement
+plan_phases:
+  - id: phase_1
+    title: Review sample builder and committed FAccT sample
+    status: in_progress
+  - id: phase_2
+    title: Gold-set format and version-comparison CLI
+    status: pending
+  - id: phase_3
+    title: API service with accounts and sample-keyed drafts
+    status: pending
+  - id: phase_4
+    title: 'One-service hosting: sample endpoint and built-UI serving'
+    status: pending
+  - id: phase_5
+    title: Viewer review store, API client, sample and gold-set libraries
+    status: pending
+  - id: phase_6
+    title: Viewer review pages
+    status: pending
+  - id: phase_7
+    title: Local end-to-end verification and documentation
+    status: pending
+current_plan_phase: phase_1
 gates:
   spec-approval:
     status: approved
@@ -18,7 +39,7 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-11-10T03:45:40.348Z'
-updated_at: '2026-11-10T19:26:54.814Z'
+updated_at: '2026-11-10T19:26:57.724Z'
