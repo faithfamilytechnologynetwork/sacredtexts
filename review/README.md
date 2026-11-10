@@ -33,8 +33,8 @@ That gives 1,423 cells from 151 strata across 13 texts.
 - **Cell id.** A cell's id is `<run>:<model_id>:<question_id>`.
 - **Contents.** Each cell carries everything needed to show and re-score it: prompt,
   expected, answer, source, and the scorer's metrics, outcome and grader path. The sample
-  also records the seed, `k`, the source run, and each stratum's population and drawn
-  count.
+  also records the seed, `k`, the source run, each text's drawn count, and each stratum's
+  population and drawn count.
 
 Grader path, from the recorded metrics:
 

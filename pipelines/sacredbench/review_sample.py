@@ -183,7 +183,7 @@ def build_sample(run_dir: Path, seed: str, per_stratum: int, sample_id: str, roo
     for cell in drawn:
         drawn_per_text[cell["text"]] += 1
     texts = [
-        {"cells": drawn_per_text[text_id], "id": text_id, "label": _text_label(text_id, works[text_id])}
+        {"drawn": drawn_per_text[text_id], "id": text_id, "label": _text_label(text_id, works[text_id])}
         for text_id in sorted(drawn_per_text)
     ]
     run_rel = Path(run_dir).resolve().relative_to(Path(root).resolve()).as_posix()
@@ -222,6 +222,11 @@ def load_sample(path: Path) -> dict:
     missing = [k for k in TOP_KEYS if k not in sample]
     if missing:
         raise ReviewSampleError(f"{path}: missing keys {missing}")
+    for key in ("cells", "strata", "texts"):
+        if not isinstance(sample[key], list) or not all(isinstance(x, dict) for x in sample[key]):
+            raise ReviewSampleError(f"{path}: {key!r} must be a list of objects")
+    if not all(isinstance(t.get("id"), str) and isinstance(t.get("label"), str) for t in sample["texts"]):
+        raise ReviewSampleError(f"{path}: every text needs a string 'id' and 'label'")
     text_ids = {t["id"] for t in sample["texts"]}
     seen: set[str] = set()
     for cell in sample["cells"]:

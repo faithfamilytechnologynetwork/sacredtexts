@@ -54332,67 +54332,67 @@
   ],
   "texts": [
     {
-      "cells": 116,
+      "drawn": 116,
       "id": "book-of-mormon/english",
       "label": "Book of Mormon — 2013 edition"
     },
     {
-      "cells": 100,
+      "drawn": 100,
       "id": "buddhism/native",
       "label": "Dhammapada — Chaṭṭha Saṅgāyana (VRI)"
     },
     {
-      "cells": 111,
+      "drawn": 111,
       "id": "christianity/english",
       "label": "The Bible — NRSV"
     },
     {
-      "cells": 100,
+      "drawn": 100,
       "id": "christianity/native/greek",
       "label": "The Bible — the Greek New Testament (Scrivener 1894)"
     },
     {
-      "cells": 99,
+      "drawn": 99,
       "id": "christianity/native/masoretic",
       "label": "The Bible — the Masoretic Text (Westminster Leningrad Codex)"
     },
     {
-      "cells": 118,
+      "drawn": 118,
       "id": "encyclicals/english",
       "label": "Encyclicals — 26 works"
     },
     {
-      "cells": 114,
+      "drawn": 114,
       "id": "hinduism/english",
       "label": "Bhagavad Gita — Annie Besant (1922)"
     },
     {
-      "cells": 105,
+      "drawn": 105,
       "id": "hinduism/native",
       "label": "Bhagavad Gita — Stotra Samhita (Gita Press text)"
     },
     {
-      "cells": 111,
+      "drawn": 111,
       "id": "islam/english",
       "label": "The Qur'an — Saheeh International (QUL)"
     },
     {
-      "cells": 101,
+      "drawn": 101,
       "id": "islam/native",
       "label": "The Qur'an — Uthmani (QUL)"
     },
     {
-      "cells": 110,
+      "drawn": 110,
       "id": "judaism/english",
       "label": "Talmud Bavli — William Davidson Edition - English"
     },
     {
-      "cells": 120,
+      "drawn": 120,
       "id": "judaism/native",
       "label": "Talmud Bavli — William Davidson Edition - Aramaic"
     },
     {
-      "cells": 118,
+      "drawn": 118,
       "id": "sikhism/native",
       "label": "Sri Guru Granth Sahib — Shabad OS (SGPC Shabadaarth)"
     }

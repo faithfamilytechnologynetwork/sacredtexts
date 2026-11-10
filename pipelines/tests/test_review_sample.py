@@ -128,7 +128,7 @@ def test_text_labels_single_and_multi_work(run: Path) -> None:
     texts = {t["id"]: t for t in _build(run, k=100)["texts"]}
     assert texts["islam/native"]["label"] == "The Qur'an — Uthmani"
     assert texts["encyclicals/english"]["label"] == "Encyclicals — 2 works"
-    assert texts["islam/native"]["cells"] == 16 and texts["encyclicals/english"]["cells"] == 8
+    assert texts["islam/native"]["drawn"] == 16 and texts["encyclicals/english"]["drawn"] == 8
 
 
 @pytest.mark.parametrize(
@@ -160,6 +160,41 @@ def test_an_unexpected_layout_fails_loudly(run: Path) -> None:
         _build(run)
 
 
+@pytest.mark.parametrize(("seed", "k", "match"), [("s1", 0, "at least 1"), ("", 5, "non-empty")])
+def test_bad_parameters_fail_loudly(run: Path, seed: str, k: int, match: str) -> None:
+    with pytest.raises(ReviewSampleError, match=match):
+        _build(run, seed=seed, k=k)
+
+
+def test_a_duplicate_answer_row_fails_loudly(run: Path) -> None:
+    answers = run / "m1" / "base" / "encyclicals" / "english" / "population" / "answers.jsonl"
+    first = answers.read_text(encoding="utf-8").splitlines()[0]
+    answers.write_text(answers.read_text(encoding="utf-8") + first + "\n", encoding="utf-8")
+    with pytest.raises(ReviewSampleError, match="duplicate row"):
+        _build(run)
+
+
+def test_a_run_outside_the_root_fails_loudly(run: Path, tmp_path: Path) -> None:
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    with pytest.raises(ReviewSampleError, match="is not under"):
+        build_sample(run, "s1", 5, sample_id="test", root=elsewhere)
+
+
+def test_the_cli_refuses_to_write_under_runs(run: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
+    monkeypatch.chdir(run.parents[1])
+    result = CliRunner().invoke(
+        app, ["review-sample", "--run-dir", "runs/test-run", "--seed", "s1", "--out", "runs/test-run/s.json"]
+    )
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ReviewSampleError)
+    assert not (run / "s.json").exists()
+
+
 def test_load_sample_round_trips_and_rejects_bad_files(run: Path, tmp_path: Path) -> None:
     out = tmp_path / "s.json"
     write_sample(_build(run), out)
@@ -173,6 +208,10 @@ def test_load_sample_round_trips_and_rejects_bad_files(run: Path, tmp_path: Path
     del bad["cells"][0]["answer"]
     out.write_text(json.dumps(bad), encoding="utf-8")
     with pytest.raises(ReviewSampleError, match="missing"):
+        load_sample(out)
+    bad["cells"] = {"not": "a list"}
+    out.write_text(json.dumps(bad), encoding="utf-8")
+    with pytest.raises(ReviewSampleError, match="list of objects"):
         load_sample(out)
 
 

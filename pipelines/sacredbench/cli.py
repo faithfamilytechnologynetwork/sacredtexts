@@ -890,6 +890,8 @@ def review_sample_cmd(
     The sample id is the output file's stem. Run from the repo root: recorded paths are relative
     to the current directory.
     """
+    if out.resolve().is_relative_to((Path.cwd() / "runs").resolve()):
+        raise ReviewSampleError(f"{out}: committed run evidence under runs/ is read-only; write the sample elsewhere")
     sample = build_sample(run_dir, seed, per_stratum, sample_id=out.stem, root=Path.cwd())
     write_sample(sample, out)
     typer.echo(
