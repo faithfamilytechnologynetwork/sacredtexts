@@ -8,6 +8,7 @@ const NAV = [
   { to: "/standings", label: "Standings" },
   { to: "/judge", label: "Judge" },
   { to: "/gaps", label: "Gaps" },
+  { to: "/review", label: "Review" },
 ] as const;
 
 export function RootLayout() {

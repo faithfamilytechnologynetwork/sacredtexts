@@ -24,7 +24,6 @@ describe("app shell", () => {
     expect(await screen.findByRole("link", { name: /SacredBench/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /traditions on GitHub/i })).toBeNull();
     expect(screen.queryByRole("link", { name: /^Results$/ })).toBeNull();
-    expect(screen.queryByRole("link", { name: /^Review$/ })).toBeNull();
   });
 
   it("lists every primary page in the header", async () => {
@@ -32,7 +31,7 @@ describe("app shell", () => {
     renderApp("/");
     const nav = await screen.findByRole("navigation", { name: "Primary" });
     const hrefs = [...nav.querySelectorAll("a")].map((a) => a.getAttribute("href"));
-    expect(hrefs).toEqual(["/", "/errors", "/findings", "/standings", "/judge", "/gaps"]);
+    expect(hrefs).toEqual(["/", "/errors", "/findings", "/standings", "/judge", "/gaps", "/review"]);
   });
 });
 

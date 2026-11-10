@@ -18,13 +18,16 @@
 //     shown, and the labels stay in memory. The next edit tries again;
 //   • the wipe also covers requests already in flight: each reset starts a new `session`, and a load,
 //     list, save, delete or init that started in an earlier one drops its result when it lands.
+// The store also holds the active sample (`loadReviewSample`, fetched once per session) and the hooks
+// the review pages gate on (`useReviewSample`, `useSampleDraft`).
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
 import {
   deleteDraft,
   fetchCsrf,
   getDraft,
+  getSample,
   isCsrfError,
   listDrafts,
   login as apiLogin,
@@ -38,6 +41,7 @@ import {
   type Reviewer,
 } from "./reviewApi";
 import { RUBRIC_VERSION } from "./rubric";
+import type { ReviewSample } from "./reviewSample";
 
 export { setReviewFetch };
 export type { Reviewer };
@@ -508,6 +512,27 @@ export function ensureSampleLoaded(sid: string): Promise<boolean> {
   return p;
 }
 
+/**
+ * A review page's editing gate for one sample: `loaded` once its saved draft has loaded (the
+ * `ensureSampleLoaded` rule: no editing before that), `failed` if the load failed, and `retry` to
+ * try again. Already loaded on mount (e.g. moving between cells) means enabled at once.
+ */
+export function useSampleDraft(sid: string): { loaded: boolean; failed: boolean; retry: () => void } {
+  const [state, setState] = useState<LoadState>(() => (loadState.get(sid) === "ok" ? "ok" : "loading"));
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    if (loadState.get(sid) !== "ok") setState("loading");
+    void ensureSampleLoaded(sid).then((ok) => {
+      if (alive) setState(ok ? "ok" : "error");
+    });
+    return () => {
+      alive = false;
+    };
+  }, [sid, attempt]);
+  return { loaded: state === "ok", failed: state === "error", retry: () => setAttempt((n) => n + 1) };
+}
+
 let prefetched = false;
 
 /**
@@ -551,12 +576,82 @@ export async function prefetchDrafts(): Promise<void> {
   }
 }
 
+// --- the sample ---
+
+let sampleLoad: Promise<ReviewSample> | null = null;
+let loadedSample: ReviewSample | null = null;
+
+/**
+ * The active review sample (`GET /api/sample`), fetched once per session and shared by every review
+ * page, so moving between cells doesn't refetch it. A failed load isn't kept: the next call tries
+ * again. A 401 signs the reviewer out, like every other expired-session response.
+ */
+export function loadReviewSample(): Promise<ReviewSample> {
+  if (sampleLoad) return sampleLoad;
+  const started = session;
+  const p = getSample().then(
+    (sample) => {
+      if (started === session) loadedSample = sample;
+      return sample;
+    },
+    (e: unknown) => {
+      if (sampleLoad === p) sampleLoad = null;
+      if (started === session) handleAuthError(e);
+      throw e;
+    },
+  );
+  sampleLoad = p;
+  return p;
+}
+
+export type SampleLoad =
+  | { state: "loading" }
+  | { state: "ok"; sample: ReviewSample }
+  /** `unavailable`: the sample request got a non-JSON answer (no review service at this origin). */
+  | { state: "error"; message: string; unavailable: boolean };
+
+/** The active sample for a review page, with a `retry` for a failed load. */
+export function useReviewSample(): SampleLoad & { retry: () => void } {
+  const [load, setLoad] = useState<SampleLoad>(() =>
+    loadedSample ? { state: "ok", sample: loadedSample } : { state: "loading" },
+  );
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    loadReviewSample().then(
+      (sample) => {
+        if (alive) setLoad({ state: "ok", sample });
+      },
+      (e: unknown) => {
+        if (!alive) return;
+        setLoad({
+          state: "error",
+          message: e instanceof Error ? e.message : "couldn't load the sample",
+          unavailable: e instanceof ReviewUnavailableError,
+        });
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [attempt]);
+  return {
+    ...load,
+    retry: () => {
+      setLoad({ state: "loading" });
+      setAttempt((n) => n + 1);
+    },
+  };
+}
+
 /**
  * Drop the in-memory store and start a new session (does not touch the server). Requests still in
  * flight from the old session are ignored when they resolve.
  */
 export function resetReviewStore(): void {
   session += 1;
+  sampleLoad = null;
+  loadedSample = null;
   current = emptyState();
   status = initialStatus();
   versions.clear();

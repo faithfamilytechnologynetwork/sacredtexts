@@ -85,3 +85,25 @@
   --color-success-800: color-mix(in oklab, var(--success) 52%, var(--foreground));
   --color-success-900: color-mix(in oklab, var(--success) 42%, var(--foreground));
 }
+
+/*
+ * Scripture in its own script (Spec 154 review pages; the explorer's cell card).
+ *
+ * Local and system fonts only — no web-font download. Together these cover Arabic,
+ * Hebrew/Aramaic, Gurmukhi, Devanagari, Greek and romanized Pali on macOS, Windows, and
+ * Linux with Noto installed; the browser falls through per glyph, and sans-serif is last.
+ */
+.script-text {
+  font-family:
+    system-ui,
+    "Noto Sans",
+    "Noto Naskh Arabic",
+    "Geeza Pro",
+    "Noto Sans Hebrew",
+    "Arial Hebrew",
+    "Noto Sans Gurmukhi",
+    "Gurmukhi MN",
+    "Noto Sans Devanagari",
+    "Kohinoor Devanagari",
+    sans-serif;
+}

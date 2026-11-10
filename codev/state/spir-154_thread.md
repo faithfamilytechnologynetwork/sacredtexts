@@ -237,3 +237,42 @@
     reviewer is still signed in could send A's not-yet-sent edit with B's new cookie. No UI path reaches
     that: the form only shows while signed out, and every signed-out state follows a reset.
   - Viewer 358/358, three runs in a row.
+
+## Phase 6 — viewer review pages (2026-11-10)
+
+- New routes `/review` and `/review/cell/$cellId`, and a "Review" nav link. New components:
+  `QuestionCard` (extracted from `QuestionList`), `ReviewAuthGate` (with `ReviewerBadge`, `ReviewSaveStatus`,
+  `ReviewUnavailable`), `ReviewLabelControl`, `ReviewProgress`, `ReviewSampleError`. Also `lib/reviewLinks.ts`,
+  the `.script-text` font stack, and the dev proxy from `/api` to `API_ORIGIN` (default `http://localhost:8080`).
+- **Store additions (`review.ts`):** `loadReviewSample()` fetches the sample once per session. A failed load is
+  not kept, a 401 signs the reviewer out, and a reset clears it. Two hooks: `useReviewSample()` and
+  `useSampleDraft(sid)`, which is the ported editing gate, plus a retry when the draft load failed.
+  - Both cache guards were mutation-checked.
+- **Cell links.** TanStack Router already encodes a path param with `encodeURIComponent` and decodes it once on
+  match, so `reviewLinks` leaves that to the router:
+  - `cellLink(id)` gives the props for `<Link>`;
+  - `cellHref(id)` is the URL the router builds (a test pins the two equal);
+  - `cellIdFromParam` is the identity on the router's decoded param.
+  - A test round-trips ids with `:`, `/`, `%`, space, `#`, `?` and Hebrew through `buildLocation` and
+    `matchRoutes`. A mutation that decodes a second time turns it red.
+  - One quirk: the router's `location.pathname` shows a decoded space. The href and the matched cell are both
+    right.
+- **`lang` on `QuestionCard`** is an optional prop. The review page passes `source.language`; the explorer passes
+  nothing, because `QuestionResult` carries no language. The explorer still gets `dir="auto"` and `script-text`.
+  `QuestionList.test.tsx` is unchanged and green.
+- **Gate states:**
+  - `auth: "unavailable"` renders "Review service unavailable", never the sign-in form. This is the static Pages
+    build, whose `/api/*` answers are HTML.
+  - A non-JSON sample response does the same.
+  - The draft-load error copy no longer says "retrying", because nothing retries a load with no edits. It says
+    editing stays off, and there's a retry button.
+  - `errorKind "rejected"` reads "Not saved: …", with no retry promise.
+- **Colours:** HeroUI v3 has no `primary` token. multibench's `bg-primary`/`text-primary` became
+  `bg-accent text-accent-foreground`/`text-accent`. Every new class was checked to exist in the built CSS.
+- **Deviation (test):** `app.test.tsx` had a Spec-2 purge guard asserting that there is no "Review" link, and
+  the nav hrefs list. The plan's "Review" nav link reverses that on purpose. I dropped that one assertion and
+  added `/review` to the hrefs. Every other existing test is unchanged.
+- **Gold-set download:** the test reads the saved Blob and compares it byte for byte with
+  `fixtures/review_gold_set.jsonl`, twice, as `gold-review_sample.jsonl`. A label on a cell that isn't in the
+  sample shows the `GoldSetError` and saves nothing.
+- Tests: viewer 397/397 (358 + 39 new, 7 of them the auto-added no-invisible-text checks). `check-types`, `build` and `build:pages` are all green.

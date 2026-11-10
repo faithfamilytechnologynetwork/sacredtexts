@@ -21,12 +21,20 @@ function serveRuns(): Plugin {
   };
 }
 
+// Dev-only: forward /api to a locally running review service (apps/api), so the review pages work
+// under `vite dev` the way they do on the one-service deploy, same origin and all. Override the
+// target with API_ORIGIN. `server.proxy` applies to the dev server only, never to a build.
+const apiOrigin = process.env.API_ORIGIN ?? "http://localhost:8080";
+
 // Pure client-side SPA. `base: '/'` (absolute asset URLs) so a deep link such as
 // `/some/nested/route` resolves `/assets/...` correctly on a root-served host (Railway).
 // A relative base ('./') would break asset loading on nested routes.
 export default defineConfig({
   base: "/",
   plugins: [react(), tailwindcss(), serveRuns()],
+  server: {
+    proxy: { "/api": { target: apiOrigin } },
+  },
   test: {
     environment: "jsdom",
     globals: true,
