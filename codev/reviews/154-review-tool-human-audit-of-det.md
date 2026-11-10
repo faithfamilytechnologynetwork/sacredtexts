@@ -224,6 +224,14 @@ Postgres, the smallest tiers, a daily backup, and nothing ingested beyond the co
   - A missing `/assets/*` is now a 404 (deferred from Phase 7).
   - `.codev/checks/test.sh` maps `apps/api` changes to the viewer lane too, because the viewer
     pins the API's body cap.
+  - The integration review's four fixes:
+    - a body cap on the auth routes;
+    - logout fails loudly, with a CSRF retry;
+    - `current` needs the default graders;
+    - the spec says "run directory".
+
+    Two of these change behaviour inherited from multibench on purpose: the auth body cap and the
+    logout check.
 
 ## Consultation Feedback
 
@@ -333,6 +341,40 @@ Both APPROVE.
 - **Concern**: the defect-flag counts don't reconcile between walk steps 4 and 8; NRSV "29 distinct verses"; the `PassageSource` gate → **Addressed** (160c42ae).
 - **Concern**: a missing `/assets/*` gets the shell with a 200 → **Addressed** in the review phase (dab6fbb8).
 
+### PR review (Round 1) and the architect's integration review
+
+Codex REQUEST_CHANGES. Claude APPROVE (HIGH, with notes). The architect's integration review drew
+on its own consults (the Gemini lane was skipped, `agy` exit 3) and named four fixes (26956177).
+
+#### Codex
+- **Concern**: the signup and login bodies have no `bodyLimit` → **Addressed**: a 16 KiB cap (`AUTH_BODY_MAX_BYTES`) before parsing, with 413 tests. Removing the cap turns 3 tests red.
+- **Concern**: the hosted sign-up → label → reload → download check isn't done → **N/A** for the builder: it needs a human account on the production host. The architect ruled that it doesn't block the merge, but it does gate inviting reviewers.
+- **Concern**: the consult files for phases 2–7 are untracked, while those for the spec, the plan and phase 1 are committed → **N/A**, raised with the architect. Untracked was a standing order of this builder, but the repo's other projects commit theirs.
+
+#### Claude
+- **Notes** (none blocking) → **N/A**, follow-ups:
+  - `SameSite=None` → `Lax`;
+  - re-affirm "no rate limiting" now that the service is public;
+  - the submissions routes have no client caller;
+  - the TS `canonicalJson` lacks the Python divergent-float guard;
+  - the `load_gold` order check covers `cell_id` only.
+- **Concern**: narrow the `review/` audit exemption to an NRSV allowlist → **Rebutted** by the architect: the owner ruled it fair use, with no copyright machinery.
+
+#### Architect (integration review)
+- **1. Unbounded bodies on the public auth routes** → **Addressed**, as in codex's point above.
+- **2. Logout reports success when the server refused it** → **Addressed**:
+  - `reviewApi.logout()` throws on a non-2xx.
+  - `logoutReview()` refreshes a stale CSRF token and retries once. Any other refusal, or a second
+    one, leaves the reviewer signed in, and the badge says "Couldn't sign out".
+  - Tests: a stale-token retry signs out, and a persistent refusal stays signed in. Each half is
+    mutation-checked.
+- **3. `review-compare --version current` with a non-default evaluator** → **Addressed**:
+  - `current` reads each row's run `summary.json` `evaluators`. It fails fast when they aren't the
+    default `strict` + `containment` (in any order) or the summary is missing.
+  - `committed` and run-directory versions read recorded verdicts and are unaffected.
+- **4. Spec wording** → **Addressed**: a version is `committed`, `current`, or a run directory
+  laid out like `runs/<run>/`.
+
 ## Lessons Learned
 
 ### What Went Well
@@ -417,10 +459,7 @@ Both APPROVE.
   for breakdowns only, never a verdict.
 - **The NRSV figure** in `review/README.md` (105 cells, 28 distinct verses) is not pinned and can go
   stale if the sample is regenerated.
-- **The signup/login bodies have no `bodyLimit`**, inherited from multibench.
 - **No ETag on `/api/sample`.**
-- **`logout()` ignores `res.ok`**, as multibench does. A stale CSRF token shows signed-out while
-  the server session survives.
 - **The sign-in-while-signed-in residual window.** No UI path reaches it today.
 - **`persistSample`'s early returns skip the `saving: false` cleanup.** This is unreachable today,
   because a delete always follows.
@@ -431,3 +470,15 @@ Both APPROVE.
   "Christianity".
 - **Spec nice-to-knows:** `SameSite=None` → `Lax` now that everything is on one origin; pruning
   expired sessions; finer grader-path labels.
+- **From the PR review:**
+  - Tests for the two unpinned store guards: the in-flight edit on the LWW retry, and the CSRF
+    refresh on the delete path.
+  - The dead `dirty.size === 0` check.
+  - Name the lost label when a double conflict discards it.
+  - Re-affirm "no rate limiting" now that the service is public.
+  - The unused submissions routes.
+  - The TS `canonicalJson` divergent-float guard.
+  - `load_gold`'s order check on the full sort key.
+
+  All of these, plus the ETag, `SameSite=Lax`, session pruning and connecting the service to
+  `main`, are tracked in **#156**.
