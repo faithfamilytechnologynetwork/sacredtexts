@@ -312,3 +312,14 @@
 - Docs: `apps/viewer/README.md` (a Review section, and the intro and Status updated),
   `review/README.md` (the end-to-end workflow, and that the review is not blind, per the owner's
   ruling), and `apps/api/README.md` (restart after a rebuild).
+- **Phase 7 consult, iteration 1:** codex APPROVE (no issues), claude APPROVE (HIGH, nits only). Taken:
+  - The review doc's step 4 now says both SGGS cells carry the defect flag, which matches step 8's
+    "2 excluded".
+  - `review/README.md`'s NRSV figure was 29 distinct verses, which counted the blank citation of the
+    6 "No" items as a verse. It now reads: 105 cells cite 28 distinct verses. This closes deferred
+    item (d)'s wording; the figure is still unpinned.
+  - `PassageSource` gates on `task === "verify_source"`, and builds its parts after the guard.
+  - The "Passage source" line was in fact seen in Chrome after the rebuild and restart. The review
+    doc now says so.
+  - Deferred: a missing `/assets/*` should 404 instead of getting the SPA shell with a 200. I'll take
+    this with the hosting work, since it matters most for stale tabs after a redeploy.

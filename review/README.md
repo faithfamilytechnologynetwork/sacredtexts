@@ -170,4 +170,5 @@ The samples include NRSV cells. NRSV is a `restricted` catalogue edition, and
 `review/` is deliberately **outside** that audit. This is the owner's ruling at the
 Spec 154 spec gate (2026-11-10): counsel's position is that this research is fair use. So
 the review tool includes NRSV and adds no copyright exclusion or audit machinery. This is
-not an oversight. The FAccT sample's NRSV cells cite 29 distinct verses.
+not an oversight. Of the FAccT sample's 111 NRSV cells, 105 cite 28 distinct verses. The other 6
+are `verify_source` "No" items, which quote another text.

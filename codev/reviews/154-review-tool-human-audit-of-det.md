@@ -33,7 +33,7 @@ extension), as the plan's phase 7 sets out. Nothing was provisioned.
 | 1 | Sign up with the invite code | Pass. "Create a reviewer account" accepted the code and signed Reviewer A in. The page showed the sample header (`facct-2026-11-03-k10`, 1,423 cells, seed `spec-154`, 10 per stratum) and the 13 texts. |
 | 2 | Pick the Qur'an (Uthmani), the Talmud (Aramaic) and the Sri Guru Granth Sahib | Pass. The pass became 339 cells (101 + 120 + 118), in sample order, with a progress bar per text. |
 | 3 | Arabic, Hebrew and Gurmukhi render legibly and in the right direction | Pass. Hebrew prompts and answers render right-to-left and right-aligned. Arabic inside an English prompt is embedded right-to-left with its marks intact. Gurmukhi renders left-to-right with correct shaping. The Arabic note typed into the notes box runs right-to-left (`dir="auto"`). |
-| 4 | Label 5 cells, with notes in Arabic and a defect flag | Pass, with 6 cells labelled: 3 Talmud, 1 Qur'an, 2 SGGS. The Qur'an `verify_source` cell has a refusal ("نعم" only at the end), labelled `refused` with an Arabic note. One SGGS cell has the defect flag and a note. The server's draft held all 6 labels byte for byte, the Arabic note included. |
+| 4 | Label 5 cells, with notes in Arabic and a defect flag | Pass, with 6 cells labelled: 3 Talmud, 1 Qur'an, 2 SGGS. The Qur'an `verify_source` cell has a refusal ("نعم" only at the end), labelled `refused` with an Arabic note. Both SGGS cells carry the defect flag: the first with a note, the second set while checking the dropped clicks (below). The server's draft held all 6 labels byte for byte, the Arabic note included. |
 | 5 | Reload, and the labels persist | Pass. After a hard reload of a deep-linked cell and of `/review`, the outcome, the notes (Arabic included), the chosen texts and the progress (6 / 339; 1, 3 and 2 per text) all came back from the server. |
 | 6 | Sign out, sign in as a second account, and it sees none of the first's labels | Pass. Reviewer B signed up in the same tab, without a reload (the cross-reviewer leak path). B saw no chosen texts and 0 labels. The cell A labelled showed no outcome and empty notes. |
 | 7 | Sign back in, download the gold set twice, and the two files are identical | Pass. Signed back in as A: the 6 labels were back. The two downloads were byte-identical: 12,015 bytes, 6 rows, the same SHA-256. |
@@ -54,7 +54,8 @@ unchanged.
   needs that to use the question-defect flag (does the Talmud quote Judges 17:11?). The sample
   already carries it in `expected.true_*`. The cell page now shows "Passage source: <citation>
   · <version> · <tradition>" under the card (`ReviewCellPage.tsx`, with a test). The explorer is
-  unchanged.
+  unchanged. After a rebuild and a service restart, the line showed in Chrome on the Talmud
+  "No" cell that quotes Judges 17:11.
 - **Documented: the service reads `index.html` once.** A viewer rebuilt while the service runs
   gives a blank page: the old shell points at bundles the rebuild deleted, and a missing
   `/assets/*` path gets the SPA shell with a 200. That is a local dev-loop issue only: a deploy

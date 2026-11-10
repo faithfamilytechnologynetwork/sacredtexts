@@ -134,7 +134,7 @@ function ReviewCell({ sample, cell }: { sample: ReviewSample; cell: SampleCell }
       <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-4">
           <QuestionCard r={result} lang={cell.source.language} />
-          <PassageSource expected={cell.expected} />
+          <PassageSource cell={cell} />
           <MatcherVerdict cell={cell} />
         </div>
         <div className="flex flex-col gap-4">
@@ -167,11 +167,14 @@ function metricText(value: unknown): string {
  * the Yes/No, and a "No" item quotes another text: the reviewer needs that origin to judge whether the
  * expected answer is itself wrong (the question-defect flag).
  */
-function PassageSource({ expected }: { expected: Record<string, unknown> }) {
+function PassageSource({ cell }: { cell: SampleCell }) {
+  const { expected } = cell;
+  if (cell.task !== "verify_source" || typeof expected.true_citation !== "string" || expected.true_citation === "") {
+    return null;
+  }
   const parts = [expected.true_citation, expected.true_version, expected.true_tradition].filter(
     (v): v is string => typeof v === "string" && v !== "",
   );
-  if (typeof expected.true_citation !== "string" || expected.true_citation === "") return null;
   return (
     <p className="text-sm text-default-600" data-testid="passage-source">
       <span className="font-medium text-default-700">Passage source:</span> {parts.join(" · ")}
