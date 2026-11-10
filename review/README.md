@@ -75,8 +75,9 @@ JavaScript's `JSON.stringify` writes them (`1.0` is `1`). `review_compare.dumps_
 the Python writer.
 
 Loading a gold set fails loudly on an unknown `format`, a missing or unknown field, an unknown
-label outcome, a `scores_path` that is absolute or contains `..`, rows out of order, or the
-same reviewer labelling the same cell twice (in one file or across files).
+label outcome, an `expected` without the key its task is scored on, a `scores_path` that is
+not a canonical relative path (absolute, `..`, `.`, or a doubled or trailing `/`), rows out of
+order, or the same reviewer labelling the same cell twice (in one file or across files).
 
 `fixtures/review_sample.json` and `fixtures/review_gold_set.jsonl` are a small sample (10
 cells: every task, in `islam/native` and `hinduism/english`) and its gold set. They are the
@@ -109,7 +110,8 @@ For each version it prints:
   `(none)` for a run without arms);
 - every disagreement: cell id, task, text, the human outcome and the version's outcome.
 
-`n` leaves out `cant_judge` and defect-flagged rows. They are counted on their own line.
+`n` leaves out `cant_judge` and defect-flagged rows. They are counted on their own line,
+with how many rows are both.
 
 With two or more versions, the first is the **baseline**. Each other version lists its
 **movers**, the judged cells whose outcome changed against the baseline:

@@ -52,6 +52,10 @@ CELL_FIELDS = (
 COMMITTED = "committed"
 CURRENT = "current"
 MOVER_KINDS = ("fixed", "broken", "neither")
+# The key of ``expected`` that ``score_answer`` reads for each task.
+EXPECTED_KEY = {
+    "retrieve_quote": "text", "complete_unit": "text", "cite_passage": "citation", "verify_source": "answer",
+}
 NO_ARM = "(none)"
 
 
@@ -146,13 +150,16 @@ def _validate_gold_row(row: object, where: str) -> None:
     if row["cell_id"] != f"{row['run']}:{row['model_id']}:{row['question_id']}":
         raise ReviewCompareError(f"{where}: cell_id {row['cell_id']!r} is not <run>:<model_id>:<question_id>")
     scores_path = PurePosixPath(row["scores_path"])
-    if scores_path.is_absolute() or ".." in scores_path.parts:
+    if scores_path.is_absolute() or ".." in scores_path.parts or str(scores_path) != row["scores_path"]:
         raise ReviewCompareError(
-            f"{where}: scores_path {row['scores_path']!r} must be relative to the repo root, without '..'"
+            f"{where}: scores_path {row['scores_path']!r} must be a canonical path relative to the repo root "
+            "(no '..', '.', doubled or trailing '/')"
         )
     for key in ("expected", "source"):
         if not isinstance(row[key], dict):
             raise ReviewCompareError(f"{where}: {key!r} must be an object")
+    if not isinstance(row["expected"].get(EXPECTED_KEY[row["task"]]), str):
+        raise ReviewCompareError(f"{where}: a {row['task']} row needs a string expected.{EXPECTED_KEY[row['task']]}")
 
     shown = row["shown"]
     _require_keys(shown, SHOWN_KEYS, "shown", where)
@@ -292,15 +299,16 @@ def _run_dir_paths(rows: list[dict], run_dir: Path, version: str) -> list[Path]:
             f"version {version!r}: the gold rows come from more than one run {runs}, so a run directory "
             "is ambiguous; compare one run's gold rows at a time"
         )
-    prefix = f"runs/{runs[0]}/"
+    prefix = ("runs", runs[0])
     paths: list[Path] = []
     for row in rows:
-        if not row["scores_path"].startswith(prefix):
+        parts = PurePosixPath(row["scores_path"]).parts
+        if parts[:2] != prefix or len(parts) < 3 or ".." in parts:
             raise ReviewCompareError(
                 f"version {version!r}: cell {row['cell_id']} scores_path {row['scores_path']!r} "
-                f"does not start with {prefix!r}"
+                f"is not a path under 'runs/{runs[0]}/'"
             )
-        paths.append(run_dir / row["scores_path"][len(prefix):])
+        paths.append(run_dir.joinpath(*parts[2:]))
     return paths
 
 
@@ -357,6 +365,7 @@ def _version_report(version: str, rows: list[dict], metrics: list[dict]) -> dict
         "version": version,
         "rows": len(rows),
         "excluded": {
+            "both": sum(row["label"]["outcome"] == "cant_judge" and row["label"]["defect"] for row in rows),
             "cant_judge": sum(row["label"]["outcome"] == "cant_judge" for row in rows),
             "defect": sum(row["label"]["defect"] for row in rows),
             "total": len(rows) - len(judged),
@@ -468,7 +477,8 @@ def format_report(report: dict) -> str:
         lines += [
             "",
             f"== {v['version']} ==",
-            f"judged {v['overall']['n']}; excluded {ex['total']} (cant_judge {ex['cant_judge']}, defect {ex['defect']})",
+            f"judged {v['overall']['n']}; excluded {ex['total']} "
+            f"(cant_judge {ex['cant_judge']}, defect {ex['defect']}, both {ex['both']})",
             f"overall: {_fmt_tally(v['overall'])}",
             "by task:",
             *_table([(k, _fmt_tally(t)) for k, t in v["by_task"].items()]),

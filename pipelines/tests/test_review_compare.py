@@ -142,7 +142,7 @@ def test_gold_numbers_are_written_as_json_stringify_writes_them() -> None:
 def test_committed_counts_match_the_hand_computed_numbers(gold: list[dict], root: Path) -> None:
     v = compare(gold, ["committed"], root)["versions"][0]
     assert v["rows"] == 10
-    assert v["excluded"] == {"cant_judge": 1, "defect": 1, "total": 2}
+    assert v["excluded"] == {"both": 0, "cant_judge": 1, "defect": 1, "total": 2}
     assert v["overall"] == _tally(6, 8)
     assert v["by_task"] == {
         "cite_passage": _tally(2, 2), "complete_unit": _tally(2, 2), "retrieve_quote": _tally(0, 2),
@@ -204,7 +204,7 @@ def test_cant_judge_and_defect_rows_are_counted_apart(gold: list[dict], root: Pa
         if row["cell_id"] == EN_RETRIEVE:
             row["label"]["outcome"] = "cant_judge"
     v = compare(load_gold([_write_gold(tmp_path / "g.jsonl", rows)]), ["committed"], root)["versions"][0]
-    assert v["excluded"] == {"cant_judge": 2, "defect": 2, "total": 3}
+    assert v["excluded"] == {"both": 1, "cant_judge": 2, "defect": 2, "total": 3}
     assert v["overall"] == _tally(6, 7)
     assert EN_RETRIEVE not in {d["cell_id"] for d in v["disagreements"]}
 
@@ -238,8 +238,19 @@ def test_a_run_directory_over_two_runs_is_ambiguous(gold: list[dict], root: Path
 
 def test_a_run_directory_needs_the_runs_prefix(gold: list[dict], root: Path, tmp_path: Path) -> None:
     rows = [dict(r, scores_path=r["scores_path"].replace("runs/", "elsewhere/", 1)) for r in gold]
-    with pytest.raises(ReviewCompareError, match="does not start with 'runs/fixture-run/'"):
+    with pytest.raises(ReviewCompareError, match="is not a path under 'runs/fixture-run/'"):
         compare(rows, [str(root / "runs" / "fixture-run")], root)
+
+
+def test_a_run_directory_lookup_never_leaves_the_directory(gold: list[dict], root: Path) -> None:
+    """Even a row that skipped the loader's canonical-path check resolves inside the directory."""
+    run_dir = root / "runs" / "fixture-run"
+    rows = [dict(gold[0], scores_path="runs/fixture-run//etc/passwd")]
+    with pytest.raises(ReviewCompareError, match=f"scores file {run_dir}/etc/passwd not found"):
+        compare(rows, [str(run_dir)], root)
+    rows = [dict(gold[0], scores_path="runs/fixture-run/../../outside/scores.jsonl")]
+    with pytest.raises(ReviewCompareError, match="is not a path under 'runs/fixture-run/'"):
+        compare(rows, [str(run_dir)], root)
 
 
 @pytest.mark.parametrize("as_directory", [False, True])
@@ -297,6 +308,12 @@ def _mutate(row: dict, change: str) -> None:
         row["scores_path"] = "runs/fixture-run/../../etc/scores.jsonl"
     elif change == "absolute":
         row["scores_path"] = "/etc/scores.jsonl"
+    elif change == "doubled_slash":
+        row["scores_path"] = "runs/fixture-run//etc/passwd"
+    elif change == "dot":
+        row["scores_path"] = "runs/./fixture-run/model-a/scores.jsonl"
+    elif change == "expected_key":
+        row["expected"] = {"unrelated": "x"}
 
 
 @pytest.mark.parametrize(
@@ -313,8 +330,11 @@ def _mutate(row: dict, change: str) -> None:
         ("cell_id", "is not <run>:<model_id>:<question_id>"),
         ("task", "unknown task 'summarise'"),
         ("shown", "unknown shown outcome 'cant_judge'"),
-        ("escape", "must be relative to the repo root, without '..'"),
-        ("absolute", "must be relative to the repo root, without '..'"),
+        ("escape", "must be a canonical path relative to the repo root"),
+        ("absolute", "must be a canonical path relative to the repo root"),
+        ("doubled_slash", "must be a canonical path relative to the repo root"),
+        ("dot", "must be a canonical path relative to the repo root"),
+        ("expected_key", r"row needs a string expected\.(text|citation|answer)"),
     ],
 )
 def test_the_loader_rejects_a_bad_row(tmp_path: Path, change: str, message: str) -> None:
@@ -357,7 +377,7 @@ def test_the_text_report_is_deterministic(gold: list[dict], root: Path) -> None:
     text = format_report(compare(gold, ["committed", "current"], root))
     assert text == format_report(compare(gold, ["committed", "current"], root))
     assert "overall: 6 / 8 (75.0%)" in text
-    assert "judged 8; excluded 2 (cant_judge 1, defect 1)" in text
+    assert "judged 8; excluded 2 (cant_judge 1, defect 1, both 0)" in text
     assert "islam/native      3 / 4 (75.0%)  arms: ask_english 2, ask_native 2" in text
     assert "== movers: current vs committed ==\nfixed 1, broken 1, neither 0" in text
     assert f"  broken   {AR_CITE}  cite_passage  islam/native  human=incorrect  committed=incorrect  current=correct" in text
@@ -467,8 +487,15 @@ runpy.run_module("sacredbench", run_name="__main__")
     assert "== current ==" in proc.stdout and "overall: 6 / 8 (75.0%)" in proc.stdout
 
 
-def test_smoke_first_20_committed_sample_cells_agree_with_themselves(tmp_path: Path) -> None:
-    """Labels equal to what was shown: committed agrees 100%, and current moves nothing."""
+def test_smoke_first_20_committed_sample_cells_agree_with_themselves(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The CLI from the repo root on labels equal to what was shown: committed agrees 100%, and
+    current moves nothing."""
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
     sample = load_sample(COMMITTED_SAMPLE)
     rows = [
         gold_row(cell, sample_id=sample["sample_id"], label={"outcome": cell["outcome"], "defect": False, "notes": ""},
@@ -477,7 +504,14 @@ def test_smoke_first_20_committed_sample_cells_agree_with_themselves(tmp_path: P
     ]
     path = tmp_path / "gold.jsonl"
     path.write_text(dumps_gold_rows(rows), encoding="utf-8")
-    report = compare(load_gold([path]), ["committed", "current"], REPO_ROOT)
-    for v in report["versions"]:
-        assert v["overall"] == _tally(20, 20) and v["disagreements"] == []
+    monkeypatch.chdir(REPO_ROOT)
+    result = CliRunner().invoke(
+        app, ["review-compare", str(path), "--version", "committed", "--version", "current", "--json",
+              str(tmp_path / "report.json")]
+    )
+    assert result.exit_code == 0, result.output
+    assert result.output.count("overall: 20 / 20 (100.0%)") == 2
+    assert "disagreements: 0" in result.output and "fixed 0, broken 0, neither 0" in result.output
+    report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    assert [v["overall"] for v in report["versions"]] == [_tally(20, 20)] * 2
     assert report["movers"][0]["cells"] == []
