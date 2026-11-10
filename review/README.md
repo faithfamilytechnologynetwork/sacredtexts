@@ -8,6 +8,7 @@ version of the matcher can be scored against.
 
 ```text
 review/samples/<sample-id>.json   a committed sample: the cells a reviewer is shown
+gold-<sample-id>.jsonl            a reviewer's labels, downloaded from the review tool (not committed here)
 ```
 
 ## Samples
@@ -48,6 +49,79 @@ The same run, seed and `k` always give the same bytes.
 compares it, so a change to `runs/` that moves the sample fails that test. If that happens
 deliberately (a sanctioned rebaseline), regenerate the sample in the same PR and say so.
 Labels already downloaded stay valid, because they carry their own inputs.
+
+## Gold sets
+
+A reviewer downloads their labels as a **gold set**: a JSONL file with one row per labelled
+cell, sorted by `cell_id`. Each row carries everything needed to re-score its cell, so a gold
+set does not depend on any one version of the matcher.
+
+| Field | What it holds |
+|---|---|
+| `format` | `1` |
+| `sample_id` | the sample the cell came from |
+| `cell_id`, `run`, `model_id`, `question_id` | the cell (`cell_id` is `<run>:<model_id>:<question_id>`) |
+| `scores_path` | the `scores.jsonl` the cell was scored in, relative to the repo root |
+| `task`, `text`, `prompt`, `expected`, `answer`, `source` | the cell, exactly as in the sample |
+| `shown` | what the reviewer saw: `outcome`, `metrics`, `grader_path` |
+| `label` | the human verdict: `outcome` (`correct` / `incorrect` / `refused` / `cant_judge`), `defect` (true if the question itself is wrong), `notes` |
+| `rubric_version` | the rubric version the label was made under |
+| `reviewer_id` | the reviewer's account id (a UUID; no email or name) |
+| `labelled_at` | when the label was last changed (ISO 8601 with a time zone) |
+
+The bytes are fixed so that the review tool and Python write the same file: one compact JSON
+object per line, keys sorted at every level, non-ASCII written as is, and numbers written as
+JavaScript's `JSON.stringify` writes them (`1.0` is `1`). `review_compare.dumps_gold_rows` is
+the Python writer.
+
+Loading a gold set fails loudly on an unknown `format`, a missing or unknown field, an unknown
+label outcome, rows out of order, or the same reviewer labelling the same cell twice (in one
+file or across files).
+
+`fixtures/review_sample.json` and `fixtures/review_gold_set.jsonl` are a small sample (8
+cells: every task, in `islam/native` and `hinduism/english`) and its gold set. They are the
+contract between the two writers: the pipelines tests pin them, and the review tool's download
+must reproduce `review_gold_set.jsonl` byte for byte from them.
+
+## Comparing matcher versions
+
+Score one or more versions of the matcher against gold sets. Run from the repo root:
+
+```bash
+uv --project pipelines run python -m sacredbench review-compare gold-facct-2026-11-03-k10.jsonl \
+  --version committed --version current
+```
+
+Pass several gold-set files to combine reviewers. Each `--version` is one of:
+
+- `committed`: the run's recorded scores, read now from each row's `scores_path`;
+- `current`: a re-score by the scorer code in this checkout, exactly as `sacredbench score`
+  would score it. It makes no network calls;
+- a **run directory** laid out like `runs/<run>/`, for example a copy of the run re-scored
+  with `sacredbench score` on another branch. Each row's `scores_path` has its
+  `runs/<run>/` prefix replaced by the directory. All the gold rows must come from one run.
+
+For each version it prints:
+
+- agreement with the human as `agree / n (pct)`: overall, per task, per text and per grader
+  path (the path is worked out from that version's own metrics);
+- for each text, how many of its rows came from each prompt arm (`source.condition`);
+- every disagreement: cell id, task, text, the human outcome and the version's outcome.
+
+`n` leaves out `cant_judge` and defect-flagged rows. They are counted on their own line.
+
+With two or more versions, the first is the **baseline**. Each other version lists its
+**movers**, the judged cells whose outcome changed against the baseline:
+
+- `fixed`: it now agrees with the human;
+- `broken`: it agreed with the human and no longer does;
+- `neither`: it agrees with the human under neither version.
+
+So a version's agreement minus the baseline's is always `fixed` minus `broken`.
+
+`--json <path>` also writes the same numbers as JSON. Both outputs are the same every time
+for the same inputs. A missing scores file or row, a scores file with two rows for one cell,
+or an unknown version stops the command with an error.
 
 ## Copyright
 

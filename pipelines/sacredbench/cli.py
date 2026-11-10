@@ -36,6 +36,7 @@ from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
 from sacredbench.jev import JevError
 from sacredbench.jev_agreement import AgreementError
+from sacredbench.review_compare import ReviewCompareError, compare, dumps_report, format_report, load_gold
 from sacredbench.review_sample import ReviewSampleError, build_sample, write_sample
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
@@ -900,13 +901,37 @@ def review_sample_cmd(
     )
 
 
+@app.command("review-compare")
+def review_compare_cmd(
+    gold: list[Path] = typer.Argument(..., help="gold-set JSONL file(s) downloaded from the review tool"),
+    version: list[str] = typer.Option(
+        ..., "--version",
+        help="'committed', 'current', or a run directory laid out like runs/<run>/; repeat it, "
+             "and the first is the baseline for movers",
+    ),
+    json_out: Path = typer.Option(None, "--json", help="also write the report as JSON to this path"),
+) -> None:
+    """Score matcher versions against human labels (Spec 154): agreement overall, per task, per
+    text and per grader path, every disagreement, and the movers against the first version.
+
+    Run from the repo root: each gold row's scores_path is relative to the current directory.
+    """
+    if json_out is not None and json_out.resolve().is_relative_to((Path.cwd() / "runs").resolve()):
+        raise ReviewCompareError(f"{json_out}: committed run evidence under runs/ is read-only; write elsewhere")
+    report = compare(load_gold(gold), version, root=Path.cwd())
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(dumps_report(report), encoding="utf-8")
+    typer.echo(format_report(report), nl=False)
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
         gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
-        FacctError, JevError, AgreementError, ReviewSampleError,
+        FacctError, JevError, AgreementError, ReviewSampleError, ReviewCompareError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)
