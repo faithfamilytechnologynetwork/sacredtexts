@@ -107,6 +107,21 @@ describe("/review/cell/$cellId: what the reviewer sees", () => {
     }
   });
 
+  it("shows where a verify_source passage really comes from, and nothing for other tasks", async () => {
+    installFakeReviewApi({ drafts: draftOf(["hinduism/english", "islam/native"]) });
+    const no = cellOf("fixture-run:model-a:44fef84fa1aef80b");
+    expect(no.expected.answer).toBe("no");
+    const { unmount } = renderApp(cellHref(no.cell_id));
+    expect(await screen.findByTestId("passage-source")).toHaveTextContent(
+      "Passage source: Aeterni Patris, para. 16 · Vatican English text (Leo XIII, 1879-08-04) · Encyclicals",
+    );
+    unmount();
+
+    renderApp(cellHref(ISLAM_QUOTE));
+    expect(await screen.findByTestId("question-card")).toBeInTheDocument();
+    expect(screen.queryByTestId("passage-source")).toBeNull();
+  });
+
   it("shows a not-found message for a cell id that isn't in the sample", async () => {
     installFakeReviewApi();
     renderApp(cellHref("fixture-run:model-a:not-a-cell"));

@@ -11,6 +11,41 @@ review/samples/<sample-id>.json   a committed sample: the cells a reviewer is sh
 gold-<sample-id>.jsonl            a reviewer's labels, downloaded from the review tool (not committed here)
 ```
 
+## The workflow, end to end
+
+1. **Draw a sample** (an operator, once per run). `review-sample` picks cells from a run and
+   writes `review/samples/<sample-id>.json`. Commit it. See [Samples](#samples).
+2. **Serve it.** The review service (`apps/api`) serves one sample, named by `SAMPLE_PATH`,
+   together with the review pages. To run it on your machine, follow "Local run" in
+   `apps/api/README.md`.
+3. **Label** (each reviewer).
+   1. Open `/review`, create an account with the invite code, and tick the texts you know.
+   2. Work through your pass. For each cell, pick the true outcome, following the rubric shown
+      beside it. Tick **Question defect** if the expected text or the prompt is itself wrong.
+      Add notes in any language.
+   3. Labels save as you go. You can stop and pick up later, on any device.
+4. **Download** your labels: **Download gold set** at the bottom of `/review` saves
+   `gold-<sample-id>.jsonl`. Downloading twice gives the same file. See [Gold sets](#gold-sets).
+5. **Compare** matcher versions against the labels, from the repo root:
+
+   ```bash
+   uv --project pipelines run python -m sacredbench review-compare gold-<sample-id>.jsonl \
+     --version committed --version current
+   ```
+
+   See [Comparing matcher versions](#comparing-matcher-versions).
+
+What a reviewer sees on each cell:
+
+- the text and its citation, the task, and the model;
+- the prompt, the expected text and the model's answer;
+- the matcher's verdict, its submetrics and the grader path;
+- for `verify_source`, where the passage really comes from (a "No" item quotes another text).
+
+The review is not blind: the matcher's verdict is shown with the cell. That is the owner's
+ruling at the Spec 154 spec gate, because this is a tool for checking matcher versions, not a
+study of independent raters.
+
 ## Samples
 
 A sample is drawn from one run directory and committed. The FAccT one:

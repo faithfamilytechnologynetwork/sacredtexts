@@ -202,6 +202,10 @@ curl -s localhost:8080/api/sample    # {"error":"unauthorized"} until you sign i
 Then open <http://localhost:8080/> in **Chrome**. The session cookies are `Secure; SameSite=None`;
 Chrome treats `http://localhost` as secure and accepts them, but Safari does not.
 
+The server reads `index.html` once, at startup. If you rebuild the viewer while it runs,
+restart it. Otherwise it keeps serving the old shell, which points at bundles the rebuild
+deleted, and the page is blank.
+
 For viewer development with hot reload, leave `VIEWER_DIST` unset (API only) and run the viewer's
 Vite dev server, which proxies `/api` to `:8080`.
 

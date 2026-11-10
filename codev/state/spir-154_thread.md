@@ -288,3 +288,27 @@
     the button in between. It now waits for the button: 5/5 full runs green, 398/398.
   - The known `ExplorerPage.test.tsx` flake (the wrong-answer filter test, a missing `waitFor`) failed once in
     these runs. It is pre-existing and not touched here.
+
+## Phase 7 — local end-to-end walk and docs (2026-11-10)
+
+- **Walk: all 9 steps pass.** Local Postgres `sacredtexts_review_dev` (the only database created;
+  `dropdb sacredtexts_review_dev` removes it), the plain viewer build, Chrome. Full record in
+  `codev/reviews/154-…md` § Local end-to-end walk.
+  - Highlights: Hebrew is RTL, Arabic is embedded RTL with its marks, Gurmukhi shapes correctly; an
+    Arabic note round-trips byte for byte; reviewer B, signed up in the same tab with no reload, sees
+    none of A's labels; two downloads are byte-identical (12,015 B, 6 rows); `review-compare
+    committed/current` gives 4/4, with 2 defect rows excluded; `/api/sample` is 401 when signed out.
+  - The downloads were captured in-page (a hook on the anchor click posts the Blob's bytes to a
+    scratchpad receiver), so nothing landed in ~/Downloads.
+- **Fix from the walk:** a `verify_source` "No" cell showed only `Expected: no`, so a reviewer couldn't
+  see which text the passage really quotes (needed for the defect flag). The cell page now shows
+  "Passage source: <true_citation> · <true_version> · <true_tradition>" from the sample's `expected`.
+  The explorer is unchanged; there's a test.
+- **Documented, not changed:** the service reads `index.html` once at startup, so a viewer rebuilt
+  under a running service gives a blank page (an unknown `/assets/*` gets the shell with a 200). It's
+  local-only, since a deploy builds before it starts. The local runbook says to restart.
+- **Browser-automation note:** back-to-back clicks sometimes never reached the page (an event log
+  showed no pointer events). Leaving a second between clicks fixed it. It's not an app defect.
+- Docs: `apps/viewer/README.md` (a Review section, and the intro and Status updated),
+  `review/README.md` (the end-to-end workflow, and that the review is not blind, per the owner's
+  ruling), and `apps/api/README.md` (restart after a rebuild).

@@ -3,7 +3,8 @@
 A local-only single-page app for exploring benchmark runs: a leaderboard of which models
 were tested and how they scored per task and per tradition, a drill-in error explorer for
 any model's per-question failures, and a cross-run "current standings" view. It reads a
-run's artifacts directly — no GitHub data layer, no backend API.
+run's artifacts directly — no GitHub data layer, no backend API. The one exception is the
+**review** pages (below), which need the review API in `apps/api`.
 
 ## What it reads
 
@@ -133,13 +134,47 @@ the only run present; `src/local/realRun.test.ts` pins it through `loadRun`,
 `src/routes/StandingsPage.test.tsx` rolls it up as standings — all in the test gate, so the
 committed evidence can't drift out of the viewer's schema.
 
+## Review
+
+The review pages (Spec 154) let a reviewer who knows a text check the matcher by hand: they
+see a sample of scored cells and record each one's true outcome. The workflow, from drawing
+a sample to comparing matcher versions, is in `review/README.md`.
+
+| Route | What it shows |
+|---|---|
+| `/review` | Sign in. Pick the texts you know. Your pass (the sample's cells from those texts, in sample order), progress per text, and the **Download gold set** button. |
+| `/review/cell/<cell id>` | One cell: the explorer's card (prompt, expected, answer), the matcher's verdict with every submetric and its grader path, the task's rubric, and the label control (true outcome, question-defect flag, notes). Previous / next walk your pass. A `verify_source` cell also shows where its passage really comes from. |
+
+Labels save to your account as you go and come back on any device. Each account sees only
+its own labels.
+
+**Where it runs.** The pages call `/api/*` on their own origin, so they work only where the
+review API serves the viewer: the one service in `apps/api` (see its README for the local run
+and the deployment). That service serves a plain `pnpm build`, with **no runs baked in**:
+the review pages read the sample from the API, not from `runs/`.
+
+**Developing the pages.** Run the API on `:8080` without `VIEWER_DIST`, then
+`pnpm -C apps/viewer dev`. The dev server proxies `/api` to `API_ORIGIN`
+(default `http://localhost:8080`). Open the review pages in Chrome: the session cookies are
+`Secure`, and Chrome accepts them on `http://localhost`, Safari doesn't.
+
+**On the static Pages build** there is no API: `/api/*` answers with the SPA shell (HTML).
+The review pages then say "Review service unavailable" instead of showing a sign-in form.
+The rest of the viewer is unaffected.
+
+The code: `src/lib/review.ts` (the store: labels, saving, sign-in state),
+`src/lib/reviewApi.ts` (the API client), `src/lib/reviewSample.ts` (sample parsing and the
+pass), `src/lib/goldSet.ts` (writes the gold-set file), `src/lib/rubric.ts`, and the pages in
+`src/routes/Review*.tsx`.
+
 ## Status
 
 The multibrowser surface this app was seeded from (`/t/...` traditions, the
-GitHub-data-layer `/results`/`/raw` views, the `/review*` flows, and their components and
+GitHub-data-layer `/results`/`/raw` views, its `/review*` flows, and their components and
 data layer) has been **removed**. The viewer is the three Spec 2 surfaces over local
-`runs/`: the **leaderboard home + run selector**, the **error explorer**, and the
-**cross-run standings** view.
+`runs/` (the **leaderboard home + run selector**, the **error explorer**, and the
+**cross-run standings** view) plus the Spec 154 **review** pages, which are a new port
+backed by `apps/api`, not the removed flows.
 
 ## Provenance
 
