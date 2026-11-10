@@ -1,7 +1,12 @@
+import { resolve } from 'node:path';
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
 import { parseAllowedOrigins } from './cors';
 import { nodePgDatabase } from './db';
+import { loadSample } from './sample';
+import type { ActiveSample } from './sample';
+import { loadViewerDist } from './static';
+import type { ViewerDist } from './static';
 
 // Fail fast on missing config rather than starting a half-working service (no silent fallbacks).
 const databaseUrl = process.env.DATABASE_URL;
@@ -32,9 +37,41 @@ if (!Number.isFinite(port)) {
   process.exit(1);
 }
 
+// The one active review sample. Required: without it there is nothing to review.
+const samplePath = process.env.SAMPLE_PATH;
+if (!samplePath) {
+  console.error('SAMPLE_PATH is required (the committed review sample, e.g. review/samples/<id>.json)');
+  process.exit(1);
+}
+let sample: ActiveSample;
+try {
+  sample = loadSample(resolve(samplePath));
+} catch (err) {
+  console.error((err as Error).message);
+  process.exit(1);
+}
+console.log(`active sample: ${sample.sampleId} (${resolve(samplePath)})`);
+
+// The built viewer. Optional: unset ⇒ API-only, for local dev behind the Vite proxy.
+let viewer: ViewerDist | undefined;
+const viewerDist = process.env.VIEWER_DIST;
+if (viewerDist) {
+  try {
+    viewer = loadViewerDist(viewerDist);
+  } catch (err) {
+    console.error((err as Error).message);
+    process.exit(1);
+  }
+  console.log(`serving the viewer from ${viewer.root}`);
+} else {
+  console.log('VIEWER_DIST is unset — API only (no viewer is served).');
+}
+
 const app = createApp(nodePgDatabase(databaseUrl), {
   allowedOrigins,
   auth: { inviteCode, secureCookies: true },
+  sample,
+  viewer,
 });
 
 serve({ fetch: app.fetch, port }, (info) => {

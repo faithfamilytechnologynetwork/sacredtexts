@@ -36,10 +36,16 @@ async function currentDraft(
  * conflicts: a save carrying a stale version is rejected 409 with the current `{state, version}` so
  * the client can reconcile. All routes require auth (and, being non-GET, the PUT/POST/DELETE also
  * pass the CSRF check inside `requireAuth`).
+ *
+ * Only the active sample (`activeSampleId`) can gain a draft or a submission: a save or submit for
+ * any other id is 404 `{error: "unknown sample"}`, so the store never holds rows for a sample this
+ * service does not serve. Reads, the list and discard stay open for every id, so drafts from an
+ * earlier active sample remain visible and removable.
  */
-export function reviewRoutes(db: AppDb): Hono<AppEnv> {
+export function reviewRoutes(db: AppDb, activeSampleId: string): Hono<AppEnv> {
   const route = new Hono<AppEnv>();
   route.use('*', requireAuth(db));
+  const unknownSample = (sampleId: string) => sampleId !== activeSampleId;
 
   // List all of this reviewer's drafts (so a landing page can show real cross-device progress
   // without opening each sample). Returns [{sampleId, state, version}].
@@ -64,6 +70,7 @@ export function reviewRoutes(db: AppDb): Hono<AppEnv> {
   route.put('/:sampleId', bodyLimit({ maxSize: REVIEW_BODY_MAX_BYTES }), async (c) => {
     const reviewerId = c.get('reviewerId');
     const sampleId = c.req.param('sampleId');
+    if (unknownSample(sampleId)) return c.json({ error: 'unknown sample' }, 404);
     const body = await c.req.json().catch(() => null);
     if (
       !body ||
@@ -111,6 +118,7 @@ export function reviewRoutes(db: AppDb): Hono<AppEnv> {
   route.post('/:sampleId/submit', bodyLimit({ maxSize: REVIEW_BODY_MAX_BYTES }), async (c) => {
     const reviewerId = c.get('reviewerId');
     const sampleId = c.req.param('sampleId');
+    if (unknownSample(sampleId)) return c.json({ error: 'unknown sample' }, 404);
     const body = await c.req.json().catch(() => null);
     if (
       !body ||

@@ -4,13 +4,14 @@ import { eq, sql } from 'drizzle-orm';
 import { createApp } from '../app';
 import type { AppDb } from '../db';
 import { createTestDb } from '../testing/pglite';
+import { TEST_SAMPLE_ID, testSample } from '../testing/sample';
 import { CSRF_COOKIE, CSRF_HEADER } from '../auth/cookies';
 import { reviewers, reviews, sessions, submissions } from '../schema';
 import { REVIEW_BODY_MAX_BYTES } from './review';
 
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 const json = { 'Content-Type': 'application/json' };
-const SAMPLE = 'facct-2026-11-03-k10';
+const SAMPLE = TEST_SAMPLE_ID;
 const OTHER_SAMPLE = 'fixture-sample';
 
 function readCookies(res: Response): Record<string, string> {
@@ -29,7 +30,7 @@ const cookieHeader = (jar: Record<string, string>) =>
 
 async function makeApp(): Promise<{ app: Hono; db: AppDb }> {
   const db = await createTestDb();
-  return { app: createApp(db, { allowedOrigins: [], auth }), db };
+  return { app: createApp(db, { allowedOrigins: [], auth, sample: testSample() }), db };
 }
 
 async function signedIn(app: Hono, email = 'rev@example.com') {
@@ -178,14 +179,51 @@ describe('review drafts', () => {
   });
 
   it('lists all of the reviewer\'s drafts, keyed by sample id', async () => {
-    const { app } = await makeApp();
+    const { app, db } = await makeApp();
     const jar = await signedIn(app);
     await put(app, jar, SAMPLE, { state: sampleState('a'), version: 0 });
-    await put(app, jar, OTHER_SAMPLE, { state: sampleState('b'), version: 0 });
+    // A draft left from an earlier active sample (the API no longer accepts saves for it).
+    const reviewerId = (await db.select({ id: reviewers.id }).from(reviewers))[0]!.id;
+    await db.insert(reviews).values({ reviewerId, sampleId: OTHER_SAMPLE, state: sampleState('b'), version: 1 });
     const res = await app.request('/api/review', { headers: { Cookie: cookieHeader(jar) } });
     const body = (await res.json()) as any;
     expect(body.drafts.map((d: any) => d.sampleId).sort()).toEqual([SAMPLE, OTHER_SAMPLE].sort());
     expect(body.drafts.every((d: any) => d.version === 1)).toBe(true);
+  });
+
+  it('saves and submits only for the active sample; other ids stay readable and removable', async () => {
+    const { app, db } = await makeApp();
+    const jar = await signedIn(app);
+    const saved = await put(app, jar, OTHER_SAMPLE, { state: sampleState('stray'), version: 0 });
+    expect(saved.status).toBe(404);
+    expect(await saved.json()).toEqual({ error: 'unknown sample' });
+    const submitted = await submit(app, jar, OTHER_SAMPLE, { review: sampleState('stray') });
+    expect(submitted.status).toBe(404);
+    expect(await submitted.json()).toEqual({ error: 'unknown sample' });
+    expect(await db.select().from(reviews)).toHaveLength(0);
+    expect(await db.select().from(submissions)).toHaveLength(0);
+
+    // The guard sits behind auth and CSRF: signed out is still 401, a missing CSRF header still 403.
+    const signedOut = await app.request(`/api/review/${OTHER_SAMPLE}`, {
+      method: 'PUT',
+      headers: json,
+      body: JSON.stringify({ state: sampleState(), version: 0 }),
+    });
+    expect(signedOut.status).toBe(401);
+    const noCsrf = await app.request(`/api/review/${OTHER_SAMPLE}`, {
+      method: 'PUT',
+      headers: { Cookie: cookieHeader(jar), ...json },
+      body: JSON.stringify({ state: sampleState(), version: 0 }),
+    });
+    expect(noCsrf.status).toBe(403);
+
+    // A draft from an earlier active sample can still be read and discarded.
+    const reviewerId = (await db.select({ id: reviewers.id }).from(reviewers))[0]!.id;
+    await db.insert(reviews).values({ reviewerId, sampleId: OTHER_SAMPLE, state: sampleState('old'), version: 3 });
+    expect(await get(app, jar, OTHER_SAMPLE)).toEqual({ state: sampleState('old'), version: 3 });
+    const del = await app.request(`/api/review/${OTHER_SAMPLE}`, { method: 'DELETE', headers: authed(jar) });
+    expect(del.status).toBe(200);
+    expect(await get(app, jar, OTHER_SAMPLE)).toEqual({ state: null, version: 0 });
   });
 
   it('deletes a draft (start over), idempotently', async () => {
@@ -401,15 +439,16 @@ describe('account delete cascades', () => {
     const { app, db } = await makeApp();
     const jarA = await signedIn(app, 'a@example.com');
     const jarB = await signedIn(app, 'b@example.com');
-    for (const jar of [jarA, jarB]) {
-      await put(app, jar, SAMPLE, { state: sampleState('draft'), version: 0 });
-      await put(app, jar, OTHER_SAMPLE, { state: sampleState('draft'), version: 0 });
-      await submit(app, jar, SAMPLE, { review: sampleState('submitted') });
-    }
     const idOf = async (email: string) =>
       (await db.select({ id: reviewers.id }).from(reviewers).where(eq(reviewers.email, email)))[0]!.id;
     const idA = await idOf('a@example.com');
     const idB = await idOf('b@example.com');
+    for (const [jar, reviewerId] of [[jarA, idA], [jarB, idB]] as const) {
+      await put(app, jar, SAMPLE, { state: sampleState('draft'), version: 0 });
+      // A draft from an earlier active sample (saves for it are no longer accepted).
+      await db.insert(reviews).values({ reviewerId, sampleId: OTHER_SAMPLE, state: sampleState('draft'), version: 1 });
+      await submit(app, jar, SAMPLE, { review: sampleState('submitted') });
+    }
     const counts = async (reviewerId: string) => ({
       sessions: (await db.select().from(sessions).where(eq(sessions.reviewerId, reviewerId))).length,
       reviews: (await db.select().from(reviews).where(eq(reviews.reviewerId, reviewerId))).length,

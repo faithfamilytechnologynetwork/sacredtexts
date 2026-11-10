@@ -5,6 +5,9 @@ one review draft per reviewer per sample, and immutable submissions. Reviewers l
 committed review sample (`review/samples/<sample_id>.json`); their labels live here and come out as
 a gold-set file that `sacredbench review-compare` reads.
 
+The same service is the whole review deployment: it serves `/api`, the active sample, and the built
+viewer from **one origin** (see [Topology](#topology)).
+
 It is ported nearly verbatim from multibench's `apps/api` (its Spec 92), including the fixes in its
 history. The changes from multibench:
 
@@ -13,6 +16,8 @@ history. The changes from multibench:
 - The draft and submit body cap is **8 MB** (bytes), up from 512 KB.
 - The cookies are named `st_session` / `st_csrf`. Browsers scope cookies by host, not port, so
   multibench's `mb_*` names would collide with a multibench API running on `localhost` too.
+- There is no edge proxy. multibench needed one so a separate SPA host and the API could share an
+  origin; here this service serves the built viewer itself.
 
 Run evidence under `runs/` is never read or written by this service.
 
@@ -41,17 +46,52 @@ Run from `apps/api` (or `pnpm -C apps/api <script>` from the repo root). Install
 The suite is registered in the porch test gate (`.codev/checks/test.sh`), so it runs whenever a
 branch touches `apps/api/`.
 
+## Topology
+
+One Hono process, one origin:
+
+| Path | Served by |
+|---|---|
+| `/api/*` | The API routes below. An unmatched `/api` path is always a JSON 404 `{error: "not found"}`, never the viewer. |
+| `GET /api/sample` | The active sample file, as committed (validated once at startup). |
+| any other `GET`/`HEAD` | With `VIEWER_DIST` set: a file from the built viewer, else `index.html` (the SPA history fallback, so `/review/...` deep-links work). Without it: a JSON 404. |
+
+The static serving ports the in-repo viewer host (`apps/viewer/server/index.mjs`: `serveStatic` plus
+an `index.html` fallback). The differences are that `/api/*` is excluded from both, and only `GET`
+and `HEAD` are served.
+
+**One active sample.** `SAMPLE_PATH` names it. Drafts and submissions are accepted for that sample
+id only. A save or submit for any other id gets 404 `{error: "unknown sample"}`. Reading, listing and
+discarding drafts still work for every id, so a draft from an earlier sample stays visible and can be
+removed.
+
+**What the review origin shows.** The deployment builds the viewer with `pnpm build`, not
+`build:pages`, so it bakes in no runs. The browsing pages (`/`, `/errors`, `/standings`) on this
+origin show their usual "no runs" empty state. That is expected: this origin is for review. The
+public browsing viewer is the Cloudflare Pages build, which this service does not change.
+
+**The viewer's own host is untouched.** `apps/viewer/server/index.mjs` (its `pnpm start`), its
+smoke test and `apps/viewer/railway.json` are the pre-existing static-only host and stay as they are.
+Whether any live service still uses that config is the owner's call. The **review** deployment uses
+`apps/api/railway.json`, not the viewer's.
+
 ## Configuration
 
 Copy `.env.example` to `.env`, or set the variables in the environment. Secrets (the database URL
-and the invite code) come from the environment only.
+and the invite code) come from the environment only. A relative path resolves against the directory
+the service starts in, which is `apps/api` under `pnpm -C apps/api start`.
 
-| Variable | Required | Meaning |
+| Variable | Required | Behaviour |
 |---|---|---|
 | `DATABASE_URL` | yes | Postgres connection string. The server and the migrator exit if it is unset. |
+| `SAMPLE_PATH` | yes | The committed review sample to serve. The server exits if it is unset, unreadable, not JSON, not `format: 1`, or missing a required key. |
+| `VIEWER_DIST` | no | The built viewer (`apps/viewer/dist`). When set, it is served beside `/api`, and the server exits if its `index.html` is missing. Unset ⇒ API only (local dev behind the Vite proxy). |
 | `REVIEW_INVITE_CODE` | no | Shared signup code. **Fail-closed:** unset ⇒ signup is disabled (login still works). |
 | `ALLOWED_ORIGINS` | no | Comma-separated CORS allow-list for credentialed requests. Empty is correct when the UI is same-origin; never `*`. |
 | `PORT` | no | Listen port, default 8080. |
+
+At startup the server logs the active sample id, whether it is serving the viewer, the CORS
+allow-list, and whether signup is open.
 
 ## Endpoints
 
@@ -66,11 +106,12 @@ All live under `/api`.
 | `POST /api/auth/logout` | CSRF | Deletes the session row and clears both cookies. |
 | `GET /api/auth/me` | session | The signed-in reviewer `{id, email, name, background}`. |
 | `DELETE /api/account` | session + CSRF | Deletes the reviewer; the database cascades to their sessions, drafts and submissions. |
+| `GET /api/sample` | session | The active sample, byte-for-byte as committed (`application/json`). |
 | `GET /api/review` | session | All of the reviewer's drafts: `{drafts: [{sampleId, state, version}]}`. |
 | `GET /api/review/:sampleId` | session | The reviewer's draft for a sample: `{state, version}`, or `{state: null, version: 0}`. |
-| `PUT /api/review/:sampleId` | session + CSRF | Save `{state, version}` (below). |
+| `PUT /api/review/:sampleId` | session + CSRF | Save `{state, version}` (below). Active sample only, else 404 `{error: "unknown sample"}`. |
 | `DELETE /api/review/:sampleId` | session + CSRF | Discard the draft ("start over"). Idempotent. |
-| `POST /api/review/:sampleId/submit` | session + CSRF | Freeze `{review}` as a new immutable submission. Returns `{submission: {id, submittedAt}}`. |
+| `POST /api/review/:sampleId/submit` | session + CSRF | Freeze `{review}` as a new immutable submission. Returns `{submission: {id, submittedAt}}`. Active sample only, else 404 `{error: "unknown sample"}`. |
 | `GET /api/review/:sampleId/submissions` | session | The reviewer's submissions for the sample, newest first (metadata only). |
 
 **Drafts.** `state` is the viewer's per-sample review state (the chosen texts and the per-cell
@@ -134,22 +175,73 @@ on reviewer + sample) and `submissions`, with `ON DELETE CASCADE` from each to `
 
 ## Local run
 
-You need a Postgres you can create a database in.
+You need a Postgres you can create a database in. Run these from the repo root. They use absolute
+paths, so they don't depend on where `pnpm -C` starts the process.
 
 ```bash
-cd apps/api
-pnpm install --frozen-lockfile
-createdb sacredtexts_review
-export DATABASE_URL=postgres://localhost:5432/sacredtexts_review
+createdb sacredtexts_review_dev
+export DATABASE_URL=postgres://localhost:5432/sacredtexts_review_dev
 export REVIEW_INVITE_CODE=pick-a-code
-pnpm migrate
-pnpm start          # api listening on :8080
+export SAMPLE_PATH="$PWD/review/samples/facct-2026-11-03-k10.json"
+export VIEWER_DIST="$PWD/apps/viewer/dist"
+
+pnpm -C apps/api install --frozen-lockfile
+pnpm -C apps/viewer install --frozen-lockfile
+pnpm -C apps/api migrate
+pnpm -C apps/viewer build      # not build:pages: the review origin bakes in no runs
+pnpm -C apps/api start         # api listening on :8080
+
 curl -s localhost:8080/api/health    # {"status":"ok","db":"up"}
+curl -s localhost:8080/api/sample    # {"error":"unauthorized"} until you sign in
 ```
 
-The session cookies are `Secure`. Chrome treats `http://localhost` as secure and accepts them;
-Safari does not, so use Chrome for a local walk.
+Then open <http://localhost:8080/> in **Chrome**. The session cookies are `Secure; SameSite=None`;
+Chrome treats `http://localhost` as secure and accepts them, but Safari does not.
+
+For viewer development with hot reload, leave `VIEWER_DIST` unset (API only) and run the viewer's
+Vite dev server, which proxies `/api` to `:8080`.
+
+To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 
 ## Hosting
 
-Not provisioned. Hosting needs an explicit go-ahead because it costs money.
+> **Requires an explicit go-ahead. NOT approved.** Hosting costs money. Nothing below has been
+> provisioned or run. Until a go-ahead, the review tool runs locally only.
+
+The deployment is one Railway service plus a managed Postgres:
+
+- **Service root:** the repo root, so the build can see `apps/viewer`, `apps/api` and
+  `review/samples/`.
+- **Config path:** `apps/api/railway.json` (config as code):
+  - Build: `pnpm -C apps/viewer install --frozen-lockfile && pnpm -C apps/viewer build &&
+    pnpm -C apps/api install --frozen-lockfile`.
+  - Pre-deploy: `pnpm -C apps/api migrate`. It applies the committed, reviewed migrations on every
+    deploy, before the new version goes live, and a failed migration fails the deploy. It is
+    idempotent and never `db:push`.
+  - Start: `pnpm -C apps/api start`. Health check: `/api/health` (503 when Postgres is unreachable,
+    so a deploy that can't reach the database fails).
+
+Provisioning steps, for when a go-ahead is given:
+
+1. Create a Railway project with a managed **Postgres** and one empty service connected to this
+   repository. Set the service's root directory to the repo root and its config path to
+   `apps/api/railway.json`.
+2. Set the service variables. The paths are relative to `apps/api`, where the start command runs:
+   - `DATABASE_URL`: a reference to the Postgres service's URL.
+   - `REVIEW_INVITE_CODE`: the shared code, given to reviewers out of band.
+   - `SAMPLE_PATH=../../review/samples/facct-2026-11-03-k10.json`
+   - `VIEWER_DIST=../viewer/dist`
+   - Leave `ALLOWED_ORIGINS` empty: the UI and `/api` share the origin.
+3. Deploy. Confirm the logs show the active sample id, `serving the viewer from …` and
+   `api listening on :8080`, and that the four tables exist.
+4. Generate the one public domain. The service needs no other domain.
+5. **Completion check:** through that domain, in real Chrome and Safari, sign up with the invite
+   code, pick texts, label a cell, reload to confirm it persists, and download the gold set.
+
+**Unverified until then.** The repo root has no `package.json`, so check on the first deploy that
+the builder detects Node and pnpm (Node 24, pnpm 10.30.2, as in `package.json`'s `engines` and
+`packageManager`). If it does not, the build needs an explicit Node setup before this config can be
+used.
+
+To switch the active sample, commit the new sample file, point `SAMPLE_PATH` at it and redeploy.
+Drafts for the old sample stay in the store and can be read or discarded, but no longer saved.

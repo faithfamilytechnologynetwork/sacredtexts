@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createApp } from './app';
 import { parseAllowedOrigins } from './cors';
 import { createTestDb } from './testing/pglite';
+import { testSample } from './testing/sample';
 
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 
@@ -23,7 +24,7 @@ describe('CORS (credentialed cross-site)', () => {
   const allowedOrigins = ['https://review.example'];
 
   it('echoes an allow-listed origin with credentials enabled', async () => {
-    const app = createApp(await createTestDb(), { allowedOrigins, auth });
+    const app = createApp(await createTestDb(), { allowedOrigins, auth, sample: testSample() });
     const res = await app.request('/api/health', {
       headers: { Origin: 'https://review.example' },
     });
@@ -32,7 +33,7 @@ describe('CORS (credentialed cross-site)', () => {
   });
 
   it('sends no allow-origin for an unlisted origin (never a wildcard with credentials)', async () => {
-    const app = createApp(await createTestDb(), { allowedOrigins, auth });
+    const app = createApp(await createTestDb(), { allowedOrigins, auth, sample: testSample() });
     const res = await app.request('/api/health', {
       headers: { Origin: 'https://evil.app' },
     });
@@ -42,7 +43,7 @@ describe('CORS (credentialed cross-site)', () => {
   });
 
   it('handles a credentialed preflight (OPTIONS) from an allow-listed origin', async () => {
-    const app = createApp(await createTestDb(), { allowedOrigins, auth });
+    const app = createApp(await createTestDb(), { allowedOrigins, auth, sample: testSample() });
     const res = await app.request('/api/health', {
       method: 'OPTIONS',
       headers: {

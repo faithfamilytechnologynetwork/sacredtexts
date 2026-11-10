@@ -3,6 +3,7 @@ import type { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
 import { createApp } from '../app';
 import { createTestDb } from '../testing/pglite';
+import { testSample } from '../testing/sample';
 import { CSRF_COOKIE, SESSION_COOKIE, CSRF_HEADER } from '../auth/cookies';
 import { createSession, SESSION_TTL_MS } from '../auth/session';
 import { reviewers, sessions } from '../schema';
@@ -11,7 +12,7 @@ const auth = { inviteCode: 'test-invite', secureCookies: false };
 const jsonHeaders = { 'Content-Type': 'application/json' };
 
 async function makeApp(): Promise<Hono> {
-  return createApp(await createTestDb(), { allowedOrigins: [], auth });
+  return createApp(await createTestDb(), { allowedOrigins: [], auth, sample: testSample() });
 }
 
 function readCookies(res: Response): Record<string, string> {
@@ -81,6 +82,7 @@ describe('signup (invite-gated)', () => {
       const app = createApp(await createTestDb(), {
         allowedOrigins: [],
         auth: { inviteCode, secureCookies: false },
+        sample: testSample(),
       });
       for (const supplied of ['test-invite', 'anything', '', undefined]) {
         const res = await signup(app, { inviteCode: supplied });
@@ -159,7 +161,7 @@ describe('login / me / logout', () => {
 describe('session validity', () => {
   it('rejects an expired session and a revoked one', async () => {
     const db = await createTestDb();
-    const app = createApp(db, { allowedOrigins: [], auth });
+    const app = createApp(db, { allowedOrigins: [], auth, sample: testSample() });
     await signup(app);
     const reviewerId = (await db.select({ id: reviewers.id }).from(reviewers))[0]!.id;
     const me = (token: string) =>

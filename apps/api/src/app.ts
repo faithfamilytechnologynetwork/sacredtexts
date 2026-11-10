@@ -6,12 +6,20 @@ import { authRoutes } from './routes/auth';
 import type { AuthConfig } from './routes/auth';
 import { accountRoutes } from './routes/account';
 import { reviewRoutes } from './routes/review';
+import { sampleRoute } from './routes/sample';
+import type { ActiveSample } from './sample';
+import { mountViewer, notFoundHandler } from './static';
+import type { ViewerDist } from './static';
 
 export interface AppOptions {
   /** Browser origins allowed to make credentialed cross-site requests. */
   allowedOrigins: string[];
   /** Auth configuration (invite code, cookie Secure flag). */
   auth: AuthConfig;
+  /** The one active review sample: served by `GET /api/sample`; the only one drafts may be saved for. */
+  sample: ActiveSample;
+  /** The built viewer to serve beside `/api`. Absent ⇒ API-only (local dev behind the Vite proxy). */
+  viewer?: ViewerDist;
 }
 
 /**
@@ -37,7 +45,12 @@ export function createApp(db: AppDb, opts: AppOptions): Hono {
   app.route('/api/health', healthRoute(db));
   app.route('/api/auth', authRoutes(db, opts.auth));
   app.route('/api/account', accountRoutes(db, { secureCookies: opts.auth.secureCookies }));
-  app.route('/api/review', reviewRoutes(db));
+  app.route('/api/sample', sampleRoute(db, opts.sample));
+  app.route('/api/review', reviewRoutes(db, opts.sample.sampleId));
+
+  // The built viewer goes after every API route, so a real API route always wins.
+  if (opts.viewer) mountViewer(app, opts.viewer);
+  app.notFound(notFoundHandler(opts.viewer));
 
   return app;
 }
