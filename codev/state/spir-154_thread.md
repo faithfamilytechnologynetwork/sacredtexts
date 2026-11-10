@@ -276,3 +276,15 @@
   `fixtures/review_gold_set.jsonl`, twice, as `gold-review_sample.jsonl`. A label on a cell that isn't in the
   sample shows the `GoldSetError` and saves nothing.
 - Tests: viewer 397/397 (358 + 39 new, 7 of them the auto-added no-invisible-text checks). `check-types`, `build` and `build:pages` are all green.
+- **Phase 6 consult, iteration 1:** codex APPROVE (no issues), claude COMMENT (high confidence), with one real
+  issue, which I took:
+  - **The issue.** A cell page opened directly (reload, pasted link) said "This cell's text isn't one of your
+    chosen texts" until the draft loaded, and for good if the load failed. The chosen texts come from the
+    draft, so before it loads they are unknown, not empty.
+  - **The fix.** The pass position, prev/next and that note now wait for `draft.loaded`.
+  - **Tests.** Two tests cover the loading and the failed-load states. Reverting the fix turns both red.
+  - **A race in my own test.** The load-failure test was flaky in about 1 of 6 full runs. The store's error
+    banner renders a tick before the page's own load state shows the retry button, and the test looked for
+    the button in between. It now waits for the button: 5/5 full runs green, 398/398.
+  - The known `ExplorerPage.test.tsx` flake (the wrong-answer filter test, a missing `waitFor`) failed once in
+    these runs. It is pre-existing and not touched here.

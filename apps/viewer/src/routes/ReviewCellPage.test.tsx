@@ -175,17 +175,43 @@ describe("/review/cell/$cellId: labelling", () => {
       path === `/api/review/${SAMPLE_ID}` && method === "GET" ? json({ error: "db down" }, 503) : undefined,
     );
     renderApp(cellHref(ISLAM_CITE));
-    expect(await screen.findByTestId("review-save-status")).toHaveTextContent(
+    // The page's own load state (which shows the retry button) settles a tick after the store's error.
+    const retry = await screen.findByRole("button", { name: "Try loading your labels again" });
+    expect(screen.getByTestId("review-save-status")).toHaveTextContent(
       "Couldn't load your saved labels (db down). Editing stays off until they load.",
     );
     for (const name of ["Correct", "Incorrect", "Refused", "Can't judge"]) expect(outcomeButton(name)).toBeDisabled();
     expect(screen.getByRole("checkbox", { name: /Question defect/ })).toBeDisabled();
     expect(screen.getByRole("textbox", { name: /Notes/ })).toBeDisabled();
+    // The chosen texts are unknown, not empty: no false "outside your texts" note, no pass position.
+    expect(screen.queryByTestId("outside-pass")).toBeNull();
+    expect(screen.queryByTestId("pass-position")).toBeNull();
 
     api.override(() => undefined);
-    await userEvent.click(screen.getByRole("button", { name: "Try loading your labels again" }));
+    await userEvent.click(retry);
     await whenEditable();
     expect(screen.queryByTestId("review-save-status")).toBeNull();
+    expect(screen.getByTestId("pass-position")).toHaveTextContent("cell 3 of 5 in your pass");
+  });
+
+  it("claims nothing about the pass while the saved labels are still loading", async () => {
+    const api = installFakeReviewApi({ drafts: draftOf(["islam/native"]) });
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    api.override((path, method) =>
+      path === `/api/review/${SAMPLE_ID}` && method === "GET"
+        ? gate.then(() => json({ state: { texts: ["islam/native"], labels: {} }, version: 1 }))
+        : undefined,
+    );
+    renderApp(cellHref(ISLAM_CITE));
+    expect(await screen.findByTestId("review-cell-page")).toBeInTheDocument();
+    expect(outcomeButton("Incorrect")).toBeDisabled();
+    expect(screen.queryByTestId("outside-pass")).toBeNull();
+    expect(screen.queryByTestId("pass-position")).toBeNull();
+    release();
+    await whenEditable();
+    expect(screen.getByTestId("pass-position")).toHaveTextContent("cell 3 of 5 in your pass");
+    expect(screen.queryByTestId("outside-pass")).toBeNull();
   });
 
   it("shows a save the server refuses for good as 'Not saved', with no promise of a retry", async () => {

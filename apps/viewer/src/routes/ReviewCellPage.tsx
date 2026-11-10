@@ -66,8 +66,10 @@ function ReviewCell({ sample, cell }: { sample: ReviewSample; cell: SampleCell }
   const texts = review.samples[sid]?.texts;
   const label = review.samples[sid]?.labels[cell.cell_id] ?? emptyLabel();
 
+  // The chosen texts come from the saved draft, so until it loads the pass is unknown, not empty:
+  // no position, no prev/next and no "outside your texts" note until then.
   const pass = useMemo(() => passCells(sample, texts ?? []), [sample, texts]);
-  const pos = pass.findIndex((c) => c.cell_id === cell.cell_id);
+  const pos = draft.loaded ? pass.findIndex((c) => c.cell_id === cell.cell_id) : -1;
   const prev = pos > 0 ? pass[pos - 1] : undefined;
   const next = pos >= 0 && pos < pass.length - 1 ? pass[pos + 1] : undefined;
   const result = useMemo(() => toQuestionResult(cell), [cell]);
@@ -105,7 +107,7 @@ function ReviewCell({ sample, cell }: { sample: ReviewSample; cell: SampleCell }
             </div>
           )}
         </nav>
-        {pos < 0 && (
+        {draft.loaded && pos < 0 && (
           <p className="text-xs text-warning-700" data-testid="outside-pass">
             This cell&rsquo;s text isn&rsquo;t one of your chosen texts. You can still label it; the label is
             downloaded with the rest.
