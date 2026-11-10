@@ -17,6 +17,7 @@ test_cmd_for() {
   case "$1" in
     pipelines)   echo "uv --project pipelines run pytest pipelines" ;;
     apps/viewer) echo "pnpm -C apps/viewer test" ;;
+    apps/api)    echo "pnpm -C apps/api test" ;;
     items)       echo "uv --project pipelines run --with tqdm pytest items/for-test" ;;
     *)           echo "" ;;
   esac
