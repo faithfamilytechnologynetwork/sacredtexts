@@ -117,3 +117,23 @@
   two reviewers counts twice in `n`; (c) grader_path reads default-grader metrics, so a version scored
   with a non-default grader set gets an approximate path label (breakdown only, never a verdict);
   (d) review/README's "29 distinct verses" NRSV figure is unpinned and can go stale on a regeneration.
+
+## 2026-11-10 — phase 3: apps/api ported (f7b45af0)
+
+- New `apps/api` = multibench `apps/api` @ 14f6c9d4 (its fixes included), re-keyed tradition → sample:
+  `/api/review[/:sampleId[/submit|/submissions]]`, columns `sample_id`; `published_issue_url` gone;
+  body cap 8 MB in bytes (`REVIEW_BODY_MAX_BYTES`). Migration generated with
+  `drizzle-kit generate --name review_store` (SQL reviewed: 4 tables, FKs cascade). 59 vitest on PGlite.
+- **Deviation, deliberate:** cookies renamed `mb_*` → `st_session`/`st_csrf`. Cookies are host-scoped,
+  not port-scoped, so a local multibench API on `localhost` would clobber our session. Attributes unchanged.
+- **Beyond the plan's file list:** added an `api` job to `.github/workflows/tests.yml` (typecheck +
+  vitest), otherwise GitHub CI never runs the suite. Registered `apps/api` in `.codev/checks/test.sh`.
+- Real-Postgres smoke (throwaway initdb cluster in scratchpad on :55432, NOT the user's :5432 server;
+  stopped after): `pnpm migrate` applies and re-runs as a no-op; `pnpm start` walk signup → PUT v0 →
+  stale 409 with current → GET → submit 201 → 413 over 8 MB → account delete leaves 0 rows everywhere.
+- **For Phase 5:** JSONB does not preserve object key order (labels came back `notes, defect, outcome…`),
+  so the store must not rely on key order of the round-tripped draft; the gold-set builder already uses
+  a fixed key order.
+- Worst-case draft (1,500 × 1,000 four-byte chars + metadata) measures 6,245,326 bytes (~6.2 MB), under
+  the 8 MiB cap. The plan's "about 6.5 MB" estimate holds.
+- For Phase 7 docs: lessons-critical's dispatcher registry line still lists only pipelines + viewer.
