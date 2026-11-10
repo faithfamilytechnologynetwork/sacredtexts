@@ -15,3 +15,17 @@
   with overlap, server-enforced blind-before-reveal, per-cell drafts + immutable submissions)
   → viewer review routes → pseudonymous committed export → Python agreement report.
 - Critical OQs for the gate: the human rubric per task (draft in spec), NRSV inclusion.
+
+## 2026-11-09 — spec consult iter 1 (codex + claude: both REQUEST_CHANGES), folded
+
+- claude verified every factual claim exact against the run + port source.
+- Folded: rubric now aligned to Spec 48 class A/B + #23 leading stance + #150 head + containment,
+  with a post-reveal rubric-problem flag for contract disagreement (claude's main point);
+  explicit Defaults D1–D10 (codex: settle defaults); deterministic allocation/overlap/order rules
+  (sha256(seed‖cell id)); edition language added to strata (language gaps would otherwise bias
+  post-stratified estimates); proper estimands (precision/FDR, missed-credit, weighted recall,
+  post-stratified weights, Wilson + stratified bootstrap, Krippendorff α, uncovered mass);
+  trust anchor for ingest = digest pinned in repo + recomputed; review set + exports must be wired
+  into test_audit.py's scan and the dispatcher (test_audit only scans runs/ — fixtures-gap class);
+  keyed (HMAC) pseudonyms + languages snapshot; account delete stays cascading (port unchanged),
+  figures tied to a committed export; claim-race criterion; #41 worklist in report; local e2e scope.
