@@ -8,8 +8,9 @@ import type { AppEnv } from '../middleware/auth';
 
 /**
  * Byte cap on a draft save or a submit body. Sized from a maximal serialized draft: 1,500 labels,
- * each with a 1,000-character note of 4-byte UTF-8 characters plus ids and metadata, is about
- * 6.5 MB. The client enforces the 1,000-character note limit and checks this cap before sending.
+ * each with a 1,000-character note of 4-byte UTF-8 characters plus ids and metadata, measures about
+ * 6.2 MB (pinned by a test). The client enforces the 1,000-character note limit and checks this cap
+ * before sending.
  */
 export const REVIEW_BODY_MAX_BYTES = 8 * 1024 * 1024;
 

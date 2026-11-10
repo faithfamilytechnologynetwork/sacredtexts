@@ -137,3 +137,8 @@
 - Worst-case draft (1,500 × 1,000 four-byte chars + metadata) measures 6,245,326 bytes (~6.2 MB), under
   the 8 MiB cap. The plan's "about 6.5 MB" estimate holds.
 - For Phase 7 docs: lessons-critical's dispatcher registry line still lists only pipelines + viewer.
+- Phase 3 consult iter 1: codex APPROVE (no issues), claude APPROVE (non-blocking). Took the nit: the
+  worst-case size comment in `review.ts` now says ~6.2 MB (measured), matching the README.
+  Carried forward: (1) **Phase 4** should reject a draft PUT/submit whose `sampleId` isn't the active
+  sample (two-line guard once the sample is loaded); (2) signup/login bodies have no `bodyLimit`
+  (inherited from multibench verbatim) — a cheap follow-up, listed for the Phase 7 review doc.
