@@ -6,7 +6,7 @@ This spec defines WHAT and WHY. The plan defines HOW and WHEN.
 -->
 
 Issue #154. Ported from the multibench reviewer (its Specs 83 and 92). Revised to the
-owner's rulings at the spec gate (2026-11-10).
+owner's rulings at the spec gate (2026-11-10). **Approved 2026-11-10.**
 
 ## Problem Statement
 
@@ -290,9 +290,10 @@ None.
 
 ### Important
 
-1. **Per-stratum count.** k = 10 gives about 1,400 cells, roughly 110 per text. Is that
-   right for one reviewer?
-2. **Hosting go-ahead.** Recurring spend for one Railway service plus Postgres.
+1. **Per-stratum count.** *Settled at the gate:* k = 10 is the default and stays a CLI
+   parameter. That gives about 1,400 cells, roughly 110 per text.
+2. **Hosting go-ahead.** *Settled at the gate:* **not approved.** Build and verify locally
+   only, and provision nothing. The deploy configuration and runbook still ship.
 
 ### Nice-to-know
 
