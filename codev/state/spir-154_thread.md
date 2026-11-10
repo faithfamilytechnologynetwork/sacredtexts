@@ -41,3 +41,17 @@
 - Rewritten spec picks the max-reuse design: multibench draft re-keyed tradition→sample (one draft
   per reviewer per sample holds chosen texts + labels); gold set downloaded client-side; no cell
   tables, no server export. Not approved yet — waiting for architect to relay approval.
+
+## 2026-11-10 — spec approved; plan drafted
+
+- Architect relayed human approval of spec 1ee8cc12 (k=10 default stays a CLI param; hosting NOT
+  approved — local only). Ran `porch approve 154 spec-approval --a-human-explicitly-approved-this`
+  as instructed by the architect.
+- Plan: 6 phases — (1) review-sample builder + committed FAccT sample under review/samples/,
+  dispatcher maps review/ → pipelines; (2) gold-set format + review-compare CLI (committed / current
+  / scores file, movers fixed/broken) with shared fixtures/ contract; (3) apps/api port re-keyed
+  tradition→sample, registered in test.sh; (4) one service: /api/sample + built viewer serving +
+  railway.json (not applied); (5) viewer review store/API client port + sample/rubric/gold-set libs;
+  (6) /review pages + local e2e in Chrome against local Postgres (homebrew pg17 available).
+- Text = edition folder between <model>/base/ and population/ (13 in FAccT; groups encyclicals and
+  Masoretic he+arc with no special cases).
