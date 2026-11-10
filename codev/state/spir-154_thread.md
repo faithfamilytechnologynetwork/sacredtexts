@@ -55,3 +55,14 @@
   (6) /review pages + local e2e in Chrome against local Postgres (homebrew pg17 available).
 - Text = edition folder between <model>/base/ and population/ (13 in FAccT; groups encyclicals and
   Masoretic he+arc with no special cases).
+
+## 2026-11-10 — plan consult iter 1 (codex + claude both REQUEST_CHANGES), folded
+
+- Accepted: labels carry their own rubric_version + labelled_at (stamped only on a real edit) so
+  downloads are clock-free and byte-identical; body cap 8 MB in bytes (sized for 1,000-char 4-byte
+  notes) + client byte guard; 413 / non-retryable 4xx is terminal (multibench retried forever);
+  script-text font stack + Gurmukhi test; run-aware dir versions in review-compare; static host
+  ported from the in-repo apps/viewer/server/index.mjs (not multibench's edge), viewer
+  railway.json left untouched; Phase 6 split → new Phase 7 (local e2e + docs); env table.
+- Rebutted claude's "audit the committed sample" — owner ruling 5 explicitly removed copyright
+  audit-scan extensions (counsel: fair use). Documented in review/README + arch docs instead.

@@ -39,7 +39,8 @@ local end-to-end walk. Each phase is one commit on the single PR branch.
     {"id": "phase_3", "title": "API service with accounts and sample-keyed drafts"},
     {"id": "phase_4", "title": "One-service hosting: sample endpoint and built-UI serving"},
     {"id": "phase_5", "title": "Viewer review store, API client, sample and gold-set libraries"},
-    {"id": "phase_6", "title": "Viewer review pages and local end-to-end verification"}
+    {"id": "phase_6", "title": "Viewer review pages"},
+    {"id": "phase_7", "title": "Local end-to-end verification and documentation"}
   ]
 }
 ```
@@ -106,7 +107,15 @@ FAccT one.
 - [ ] **`load_sample(path)`** validates a sample file (`format`, the required keys, cell
       fields) and fails loudly on anything else. Phase 2 and the fixture tests reuse it.
 - [ ] **Commit the FAccT sample.** It's generated with k = 10 and a recorded seed:
-      about 1,423 cells, 151 strata, NRSV included, about 2 MB.
+      about 1,423 cells, 151 strata, NRSV included, about 2–3.5 MB.
+- [ ] **Copyright, per the owner's ruling (2026-11-10).** Counsel's position is fair
+      use, so NRSV is included. The sample is **not** added to the copyright audit
+      scan, and no restricted-origin machinery is added. The existing gate (`audit.py`
+      over `runs/`) stays green and untouched. The exception is recorded in
+      `review/README.md`, and in arch docs in the review phase, so a future contributor
+      doesn't read the unaudited sample as a violation. For the record, the sample's
+      NRSV cells cite at most the run's 31 distinct verses, which is inside the existing
+      500-verse allowance anyway. No test enforces that.
 - [ ] **Dispatcher.** `.codev/checks/test.sh` maps a `review/` change to the pipelines
       lane, and a comment explains why: the committed sample is pinned by a pipelines test.
 - [ ] Tests for this phase.
@@ -174,13 +183,21 @@ against human labels and list disagreements and movers.
     `(model_id, question_id)`. A missing file or row fails loudly.
   - `current`: `score.score_answer(task, answer, expected, language=source.language,
     prompt=prompt, work=source.work)` with the default graders. No network.
-  - `<path>`: a `scores.jsonl` file or a directory of them, looked up by
-    `(model_id, question_id)`. A missing cell fails loudly.
+  - `<dir>`: a **run directory** with the same layout as `runs/<run>/`, for example a
+    copy re-scored by `sacredbench score` on another branch.
+    - Lookup is run-aware. The row's `scores_path` has its `runs/<run>/` prefix
+      replaced by `<dir>/`, and the row for `(model_id, question_id)` is taken from that
+      file.
+    - Each of these fails loudly: a missing file or row; a duplicate
+      `(model_id, question_id)` inside any scores file that is read; or gold rows from
+      more than one run combined with a directory version (ambiguous).
 - [ ] **Per version.**
   - It derives the grader path from that version's own metrics (the Phase 1 rule).
   - It reports agreement as `agree / n (pct)` overall, per task, per text and per grader
     path. Here `n` excludes `cant_judge` and defect-flagged rows, which are counted on
     their own line.
+  - Each per-text line also shows the count per prompt arm (`source.condition`), so a
+    text whose draw landed mostly in one arm is visible.
   - It lists the disagreements: cell id, task, text, human outcome and version outcome.
 - [ ] **Movers.** With two or more versions, the first version is the baseline. For each
       other version it lists the cells whose outcome changed against the baseline, each
@@ -202,6 +219,9 @@ against human labels and list disagreements and movers.
 - [ ] `cant_judge` and defect rows are excluded from `n` and counted separately.
 - [ ] A duplicate label, an unknown format, or a missing committed row each exits
       non-zero with a clear message.
+- [ ] A directory version resolves through the run-prefix swap. A directory version
+      over gold rows from two runs, and a scores file with a duplicate
+      `(model_id, question_id)`, each fail loudly. Both cases have tests.
 - [ ] `current` makes no network calls (the test runs offline; no provider module is
       imported).
 
@@ -266,9 +286,10 @@ Also modified:
       as-is.
 - [ ] **What's removed:** the GitHub-issue publish column and its validation
       (`published_issue_url`). The spec doesn't need it.
-- [ ] **Body cap.** The draft and submit cap is raised from 512 KB to 2 MB. A full pass
-      of about 1,400 labels with notes capped at 1,000 characters in the client is about
-      1.5 MB in the worst case.
+- [ ] **Body cap, in bytes.** The draft and submit cap is raised from 512 KB to **8 MB**.
+      It is sized from a maximal serialized draft: 1,500 labels, each with a
+      1,000-character note of 4-byte UTF-8 characters, plus ids and metadata, comes to
+      about 6.5 MB. The client enforces the 1,000-character note limit (Phase 5).
 - [ ] **The schema is generated** with `pnpm exec drizzle-kit generate --name
       review_store`, and the SQL is reviewed in the PR. There is no `db:push` script.
 - [ ] Tests for this phase: the ported suites, re-keyed.
@@ -285,8 +306,12 @@ Also modified:
 
 Port `auth.test.ts`, `review.test.ts`, `health.test.ts`, `cors.test.ts` and the
 `auth/*.test.ts` unit tests, with tradition ids becoming sample ids. Add:
-- a 2 MB-boundary body test (just under is accepted; over gets 413);
-- an assertion that `submissions` has no publish column.
+- a maximal multilingual draft (1,500 labels × 1,000-character Gurmukhi/Arabic notes) is
+  accepted;
+- a body over 8 MB gets 413;
+- an assertion that `submissions` has no publish column;
+- an explicit test that signup is refused while `REVIEW_INVITE_CODE` is unset
+  (fail-closed), even with any code supplied.
 
 ### Phase 4: One-service hosting: sample endpoint and built-UI serving
 
@@ -302,8 +327,10 @@ but provision nothing.
 
 - `apps/api/src/sample.ts` (new): load and validate the sample file once at startup
 - `apps/api/src/routes/sample.ts` (new): `GET /api/sample`
-- `apps/api/src/static.ts` (new): serve the built viewer, with the SPA fallback adapted
-  from multibench's edge static half, minus the proxy
+- `apps/api/src/static.ts` (new): serve the built viewer. It ports the **in-repo** host
+  `apps/viewer/server/index.mjs` (`serveStatic({root: DIST})` plus `notFound` →
+  `index.html`, pinned by `apps/viewer/src/deploy.test.ts`). The only addition is that
+  `/api/*` is excluded from the fallback.
 - `apps/api/src/app.ts`, `apps/api/src/server.ts`: wire `SAMPLE_PATH` and `VIEWER_DIST`
 - `apps/api/src/{sample,static}.test.ts` (new)
 - `apps/api/railway.json` (new): config-as-code for the single service, not applied
@@ -321,6 +348,16 @@ but provision nothing.
   - An unmatched `/api/*` always returns a JSON 404, never `index.html`.
   - If `VIEWER_DIST` is set but its `index.html` is missing, the service fails fast.
   - When unset, the service is API-only (local dev with the Vite proxy).
+- [ ] **The existing viewer host and config are left as they are, and documented.**
+      `apps/viewer/server/index.mjs`, its `pnpm start`, its smoke test and
+      `apps/viewer/railway.json` stay unchanged. They are the pre-existing static-only
+      host. Whether any live service still uses that config is the owner's to say, so
+      this project doesn't touch or delete it. The `apps/api` README states that the
+      **review** deployment uses `apps/api/railway.json` and not the viewer's.
+- [ ] **What the review origin shows.** It builds the viewer with `pnpm build`, not
+      `build:pages`, so it ships no baked runs. The browsing pages (`/`, `/errors`,
+      `/standings`) on that origin show their existing "no runs" empty state. That's
+      expected for a review-only origin, and the README and runbook say so.
 - [ ] **Railway config (not applied).** The service root is the repo root, and the config
       path is `apps/api/railway.json`.
   - Build: `pnpm -C apps/viewer install --frozen-lockfile && pnpm -C apps/viewer build &&
@@ -328,11 +365,21 @@ but provision nothing.
   - `preDeployCommand`: `pnpm -C apps/api migrate`.
   - Start: `pnpm -C apps/api start`.
   - Health check: `/api/health`.
+- [ ] **Environment variables**, all named in the README and in `.env.example`:
+
+  | Variable | Required? | Behaviour |
+  |---|---|---|
+  | `DATABASE_URL` | required | exit if unset |
+  | `REVIEW_INVITE_CODE` | — | unset ⇒ signup closed (fail-closed) |
+  | `SAMPLE_PATH` | required | exit if unset or invalid |
+  | `VIEWER_DIST` | optional | — |
+  | `PORT` | — | defaults to 8080 |
+  | `ALLOWED_ORIGINS` | — | kept from the port; empty is correct same-origin |
 - [ ] **Runbook** in the README:
-  - **Local:** `createdb sacredtexts_review_dev`, set the env, `pnpm -C apps/api migrate`,
-    `pnpm -C apps/viewer build`, start with `VIEWER_DIST` and `SAMPLE_PATH`, and open in
-    Chrome. Chrome is used because the ported cookies are `Secure; SameSite=None`, which
-    Chrome accepts on `http://localhost`.
+  - **Local:** `createdb sacredtexts_review_dev`, export the variables above,
+    `pnpm -C apps/api migrate`, `pnpm -C apps/viewer build`, then
+    `pnpm -C apps/api start`, and open in Chrome. Chrome is used because the ported
+    cookies are `Secure; SameSite=None`, which Chrome accepts on `http://localhost`.
   - **Hosted:** documented provisioning steps under a "requires explicit go-ahead —
     NOT approved" banner.
 - [ ] Tests for this phase.
@@ -372,19 +419,26 @@ gold-set builder.
 - `apps/viewer/src/lib/reviewApi.ts` (new, port), plus `getSample()`. A response that
   isn't JSON (the static Pages host's `index.html`) is reported as "review service
   unavailable", not as signed out.
-- `apps/viewer/src/lib/review.ts` (new, port of the async store). `ReviewState.samples`
-  is keyed by sample id. Each `SampleReview` is `{ texts: string[], labels:
-  Record<cellId, CellLabel> }`, and `CellLabel` is `{ outcome, defect, notes }`, with
-  the tolerant zod schema degrading field by field. The pure updaters are `withTexts`,
-  `withLabel` and `withoutSample`.
+- `apps/viewer/src/lib/review.ts` (new, port of the async store).
+  - `ReviewState.samples` is keyed by sample id. Each `SampleReview` is
+    `{ texts: string[], labels: Record<cellId, CellLabel> }`.
+  - `CellLabel` is `{ outcome, defect, notes, rubric_version, labelled_at }`, with the
+    tolerant zod schema degrading field by field.
+  - The pure updaters are `withTexts`, `withLabel` and `withoutSample`. `withLabel(s,
+    sid, cellId, patch, now)` stamps `rubric_version = RUBRIC_VERSION` and
+    `labelled_at = now` **only when** `outcome`, `defect` or `notes` actually changes.
+    So each label keeps the rubric version and time of its last real edit, and an old
+    label isn't relabelled with a newer rubric.
 - `apps/viewer/src/lib/reviewSample.ts` (new): sample types and a strict parse (fail
   loudly on a bad format); `passCells(sample, texts)` (sample order filtered to the
   chosen texts); `progressByText`; `toQuestionResult(cell)` for rendering reuse
 - `apps/viewer/src/lib/rubric.ts` (new): the spec's per-task rubric text, plus
   `RUBRIC_VERSION = "1"`
 - `apps/viewer/src/lib/goldSet.ts` (new): build gold-set JSONL from the sample, the
-  labels, the reviewer id and the clock. Fixed key order, sorted by `cell_id`, notes
-  capped at 1,000 characters.
+  stored labels (including their own `rubric_version` and `labelled_at`) and the
+  reviewer id. It reads **no clock**, so two downloads from unchanged state are
+  byte-identical. Fixed key order, sorted by `cell_id`. Notes are capped at 1,000
+  characters by the label control.
 - Tests (new): `review.test.ts`, `reviewStore.test.ts`, `reviewApi.test.ts`,
   `reviewSample.test.ts` and `goldSet.test.ts`, which asserts parity with
   `fixtures/review_gold_set.jsonl`
@@ -407,6 +461,14 @@ gold-set builder.
 - [ ] Building the gold set from `fixtures/review_sample.json`, with the labels, reviewer
       id and `labelled_at` taken from `fixtures/review_gold_set.jsonl`, reproduces that
       file byte for byte.
+- [ ] **Saves that can't succeed stop retrying.** A 413, or any 4xx that isn't 409,
+      401 or a CSRF 403, is a **terminal** save failure. It isn't retried. It's shown
+      visibly ("this change is too large to save" / the server's message), and the label
+      stays in memory. multibench retries every failed save, which would loop forever on
+      a permanent 413.
+- [ ] **Client-side byte guard.** Before a PUT, the store measures the UTF-8 byte length
+      of the serialized draft. If it's over the 8 MB cap, the store raises the same
+      terminal error without sending.
 - [ ] Tests for this phase.
 
 #### Acceptance Criteria
@@ -425,41 +487,53 @@ Port `reviewStore.test.ts` and `review.test.ts` with a fake fetch through
 - progress counts;
 - tolerant parse of corrupt drafts;
 - a non-JSON 200 becomes "unavailable";
-- gold-set determinism and fixture parity.
+- gold-set determinism (two builds from the same state are byte-equal) and fixture
+  parity;
+- `withLabel` stamps `rubric_version` and `labelled_at` only on a real change, and a
+  no-op edit keeps the old stamp;
+- a 413 from the fake API is terminal: there is no retry timer, the error is visible and
+  the label is kept;
+- the byte guard stops an oversized draft without a request.
 
-### Phase 6: Viewer review pages and local end-to-end verification
+### Phase 6: Viewer review pages
 
-**Dependencies**: Phase 5 (store and libraries), Phase 4 (local service)
+**Dependencies**: Phase 5 (store and libraries)
 
 #### Objective
 
 Give the reviewer the UI: sign in, pick texts, label cells with the rubric beside them,
-see progress, and download the gold set. Then walk the whole path locally.
+see progress, and download the gold set.
 
 #### Files to Create / Modify
 
 - `apps/viewer/src/components/QuestionCard.tsx` (new): one cell's rendering, extracted
-  from `QuestionList` unchanged; `QuestionList` now maps over it. The prompt, expected
-  and answer elements get `dir="auto"` and `lang` from the source language.
+  unchanged from `QuestionList`, which now maps over it. The prompt, expected and answer
+  elements get `dir="auto"`, `lang` from `source.language`, and the `script-text` class.
 - `apps/viewer/src/components/QuestionList.tsx`: use `QuestionCard`
-- `apps/viewer/src/components/ReviewAuthGate.tsx` (new, port): the sign-in / sign-up
-  form, plus `ReviewerBadge` and `ReviewSaveStatus`
+- `apps/viewer/src/styles.css`: a `script-text` font stack. It is local and system fonts
+  only, with no web-font download: `system-ui`, "Noto Sans", "Noto Naskh Arabic",
+  "Geeza Pro", "Noto Sans Hebrew", "Arial Hebrew", "Noto Sans Gurmukhi",
+  "Gurmukhi MN", "Noto Sans Devanagari", "Kohinoor Devanagari", and `sans-serif` last.
+  Together these cover Arabic, Hebrew/Aramaic, Gurmukhi, Devanagari, Greek and
+  romanized Pali on macOS, Windows and Linux with Noto installed.
+- `apps/viewer/src/components/ReviewAuthGate.tsx` (new, port): the sign-in/sign-up form,
+  `ReviewerBadge` and `ReviewSaveStatus` (which also shows the Phase 5 terminal error)
 - `apps/viewer/src/components/ReviewLabelControl.tsx` (new, adapted from
-  `ReviewCheckControl`): a four-way outcome choice, a defect checkbox, and notes with a
+  `ReviewCheckControl`): the four-way outcome choice, a defect checkbox, and notes with a
   1,000-character limit and counter
 - `apps/viewer/src/components/ReviewProgress.tsx` (new, port): labelled / in pass, per
   text and overall
 - `apps/viewer/src/routes/ReviewPage.tsx` (new): `/review`
 - `apps/viewer/src/routes/ReviewCellPage.tsx` (new): `/review/cell/$cellId`
+- `apps/viewer/src/lib/reviewLinks.ts` (new): `cellHref(cellId)` and `cellIdFromParam`.
+  A cell id contains `:`, so it is URL-encoded when building links and decoded when
+  read. One helper is used everywhere.
 - `apps/viewer/src/router.tsx`, `apps/viewer/src/routes/RootLayout.tsx`: the routes and a
   "Review" nav link
 - `apps/viewer/vite.config.ts`: a dev-only proxy from `/api` to `http://localhost:8080`
   (overridable with `API_ORIGIN`)
-- Tests (new): `src/routes/ReviewPage.test.tsx`, `src/routes/ReviewCellPage.test.tsx`;
-  `QuestionList.test.tsx` stays green unchanged
-- `apps/viewer/README.md`: a Review section
-- `codev/reviews/154-review-tool-human-audit-of-det.md`: the local end-to-end steps and
-  their results (filled in during the review phase)
+- Tests (new): `src/routes/ReviewPage.test.tsx`, `src/routes/ReviewCellPage.test.tsx`,
+  `src/lib/reviewLinks.test.ts`. `QuestionList.test.tsx` stays green unchanged.
 
 #### Deliverables
 
@@ -470,28 +544,17 @@ see progress, and download the gold set. Then walk the whole path locally.
     persists in the draft. With nothing chosen, it prompts the reviewer to choose.
   - It shows per-text and overall progress, and the pass list, each item linking to its
     cell with its label state.
-  - It has a "Download gold set" button that saves `gold-<sample_id>-<date>.jsonl`.
+  - It has a "Download gold set" button that saves `gold-<sample_id>.jsonl`. The name
+    uses the sample id, not a cell id or a clock.
 - [ ] **`/review/cell/$cellId`.**
   - It shows the `QuestionCard` (prompt, expected, answer), the matcher's verdict badge,
     its submetrics and grader path, the text label and citation, and the model id.
   - It shows the task's rubric with its version.
   - It has `ReviewLabelControl`, previous/next within the pass, and the save status.
   - Editing is disabled until the draft load succeeds (the ported gate).
+  - An unknown or out-of-sample cell id shows a not-found message.
 - [ ] No `text-white` or `bg-default-900` (the no-invisible-text test covers the new
       files automatically).
-- [ ] **Local end-to-end walk** in Chrome against a local Postgres, with
-      `VIEWER_DIST` = the built viewer and `SAMPLE_PATH` = the FAccT sample:
-  1. Sign up with the invite code.
-  2. Pick the Qur'an (Uthmani) and the Talmud (Aramaic).
-  3. Label 5 cells, including notes and a defect flag.
-  4. Reload and confirm the labels persist.
-  5. Sign out, then sign in with a second account and confirm it doesn't see the first
-     account's labels.
-  6. Download the gold set.
-  7. Run `review-compare` with `--version committed --version current` and get a report.
-
-  The steps and results are recorded in the review document, and screenshots are kept in
-  the scratchpad, not committed.
 - [ ] Tests for this phase.
 
 #### Acceptance Criteria
@@ -500,21 +563,71 @@ see progress, and download the gold set. Then walk the whole path locally.
   - the picker filters the pass;
   - labelling calls the store and updates progress;
   - prev/next follow the pass order;
-  - Arabic and Hebrew cells render with `dir="auto"` and the right `lang`;
+  - Arabic (`ar`), Hebrew (`he`) and **Gurmukhi (`pa`)** cells render with
+    `dir="auto"`, the right `lang` and the `script-text` class;
   - the rubric shown matches the task;
   - the download produces the expected JSONL;
-  - a non-JSON API response shows "review service unavailable".
+  - a non-JSON API response shows "review service unavailable";
+  - a cell id containing `:` round-trips through link and route.
 - [ ] Existing viewer tests (`QuestionList`, explorer, leaderboard, …) pass unchanged.
       `pnpm -C apps/viewer build` and `build:pages` still succeed.
-- [ ] The local end-to-end walk is completed and recorded, and the downloaded file is
-      accepted by `review-compare`.
-- [ ] `bash .codev/checks/test.sh` passes for the full branch.
+- [ ] `pnpm -C apps/viewer test` and `check-types` pass.
 
 #### Test Plan
 
 **Page tests** use `renderApp` with a memory history and a fake fetch serving a small
-fixture sample and draft API. **Manual** (the user path, per lessons-critical): the local
-end-to-end walk above in real Chrome.
+fixture sample (`fixtures/review_sample.json`) and draft API.
+
+### Phase 7: Local end-to-end verification and documentation
+
+**Dependencies**: Phases 1–6
+
+#### Objective
+
+Prove the real user path works locally, against a real Postgres and in a real browser,
+and leave the docs a future operator needs. Per lessons-critical, "tests pass" is not
+"it works".
+
+#### Files to Create / Modify
+
+- `apps/viewer/README.md`: a Review section covering the routes, the dev proxy, the
+  "unavailable" behaviour on the static build, and the review origin having no baked
+  runs
+- `review/README.md`: the end-to-end workflow, from sample through labelling and download
+  to compare
+- `codev/reviews/154-review-tool-human-audit-of-det.md`: the walk's steps and results
+  (finalized in the review phase)
+- Any fixes the walk turns up, in the files they touch
+
+#### Deliverables
+
+- [ ] **Local end-to-end walk** in Chrome against a local Postgres
+      (`createdb sacredtexts_review_dev`). Use the Phase 4 environment, with
+      `VIEWER_DIST` = the built viewer and `SAMPLE_PATH` = the committed FAccT sample.
+  1. Sign up with the invite code.
+  2. Pick the Qur'an (Uthmani), the Talmud (Aramaic) and the Sri Guru Granth Sahib.
+  3. Check that Arabic, Hebrew and Gurmukhi render legibly and in the right direction.
+  4. Label 5 cells, including notes in Arabic and a defect flag.
+  5. Reload and confirm the labels persist.
+  6. Sign out, then sign in with a second account and confirm it doesn't see the first
+     account's labels.
+  7. Sign back in, download the gold set twice, and confirm the two files are identical.
+  8. Run `review-compare --version committed --version current` on it and get a report.
+  9. Confirm `/api/sample` is 401 when signed out.
+
+  The steps and results are recorded in the review document. Screenshots are kept in the
+  scratchpad, not committed. Nothing is provisioned.
+- [ ] The local database is the only one created, and the runbook names how to drop it.
+
+#### Acceptance Criteria
+
+- [ ] Every walk step passes, or a found defect is fixed and the step re-run.
+- [ ] The downloaded file is accepted by `review-compare`.
+- [ ] `bash .codev/checks/test.sh` passes for the full branch.
+
+#### Test Plan
+
+**Manual:** the walk above. **Automated:** the full dispatcher gate.
 
 ## Risks and Mitigation
 
@@ -524,7 +637,11 @@ end-to-end walk above in real Chrome.
 | The gold-set format drifts between TS and Python | Medium | High | One shared fixture in `fixtures/`, asserted by both suites. `fixtures/` already maps to both dispatcher lanes. |
 | `review/` changes run no tests (the dispatcher-gap class) | Medium | Medium | Phase 1 maps `review/` to the pipelines lane, where the pin test lives. |
 | Secure cookies don't stick on `http://localhost` in Safari | High | Low | The local walk uses Chrome, which treats localhost as secure. Cookie config stays unchanged. The hosted Safari check comes with hosting, which isn't approved. |
-| The draft outgrows the body cap | Low | Medium | 2 MB cap, notes capped at 1,000 characters, and a boundary test. |
+| The draft outgrows the body cap | Low | Medium | An 8 MB byte cap sized from a maximal multilingual draft, notes capped at 1,000 characters, and a client-side byte guard. A 413 is terminal and visible, never retried in a loop. |
+| Labels misattributed after a rubric change | Low | Medium | Each label stores its own `rubric_version` and `labelled_at`, stamped only on a real edit. Downloads read no clock. |
+| Version lookup collides across runs | Low | Medium | Directory versions resolve through the run prefix of `scores_path`. Mixed-run gold sets with a directory version, and duplicate keys in a scores file, both fail loudly. |
+| The sample sits outside the copyright audit | — | — | Owner ruling 2026-11-10: counsel's position is fair use, so no audit extension. Recorded in `review/README.md` and arch docs so it isn't mistaken for a violation. |
+| Two viewer deploy configs cause confusion | Medium | Low | `apps/viewer/railway.json` and `server/index.mjs` are left untouched. The `apps/api` README names which config the review deployment uses. |
 | Node version mismatch between `apps/api` and the viewer on one service | Low | Low | Both pin `24.x`. Local node is 26, and the tests don't depend on version-specific APIs. |
 | The sample regeneration pin breaks on a sanctioned rebaseline of committed scores | Low | Medium | The pin test failing is the signal: regenerate the sample deliberately, and state it in that PR. Old gold sets stay valid because they carry their inputs. |
 | The static Pages build misreads the HTML fallback as "signed out" | Medium | Low | `reviewApi` treats non-JSON as "unavailable" (Phase 5), and a page test covers it (Phase 6). |
@@ -540,5 +657,8 @@ end-to-end walk above in real Chrome.
   "unavailable" behaviour on the static build.
 - `codev/resources/arch.md` and `arch-critical.md`: a short entry for the review tool
   (`apps/api` + `/review` + the two CLIs, labels as a matcher-version-independent gold
-  set), done in the review phase with the update-arch-docs skill.
+  set). It also records the owner's ruling that `review/` samples are outside the
+  copyright audit (counsel: fair use), next to the existing "no committed artifact may
+  derive from a restricted source" fact so the two don't read as a contradiction. Done in
+  the review phase with the update-arch-docs skill.
 - `.codev/checks/test.sh`: comments for the `apps/api` and `review/` lines.

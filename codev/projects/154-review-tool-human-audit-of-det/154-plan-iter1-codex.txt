@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: The architecture and sequencing are strong, but the plan does not yet preserve label metadata or guarantee deterministic exports, and it misses several operational edge cases.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `CellLabel` stores only `{ outcome, defect, notes }`. The specification requires each label to record its rubric version and labeling time. Using the current `RUBRIC_VERSION` and clock only during export would misattribute old labels after a rubric change.
+- Gold-set generation takes a clock at download time, so downloading twice can produce different `labelled_at` values. This conflicts with the specified byte-identical repeated-download scenario. Persist `rubric_version` and `labelled_at` with each label, define when timestamps change, and test two exports from unchanged state for byte equality.
+- The claimed 2 MB worst-case draft size assumes single-byte notes. A full sample with 1,000-character Arabic, Hebrew, or Gurmukhi notes can exceed 2 MB after UTF-8 encoding. Size the cap from an actual maximally populated serialized draft or enforce a byte limit, and add a multilingual boundary test.
+- The specification requires a script-capable font and covers Arabic, Hebrew, and Gurmukhi. The current viewer has no explicit font stack, while the plan adds only `dir="auto"`/`lang` and tests Arabic and Hebrew. Add the font strategy and Gurmukhi coverage.
+- External version lookup is keyed only by `(model_id, question_id)`. With multiple gold sets or a directory spanning runs, that key can collide because the actual cell identity includes `run`. Define run-aware resolution or fail loudly on ambiguous duplicate rows, with a collision test.
