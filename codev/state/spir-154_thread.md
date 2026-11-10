@@ -110,3 +110,10 @@
 - **For the architect/owner (from claude iter 2):** the fixture's `broken` mover is a real
   rubric-vs-matcher divergence — the approved rubric discounts only a *disclaimed* form-example echo,
   but #118 drops an undisclaimed one beside another citation (`34:46 أو 3:140` scores correct).
+- Phase 2 consult iter 3: codex APPROVE (no issues), claude APPROVE (non-blocking) — a clean pass, not a
+  max-iteration force-advance. Porch advanced to phase_3 (1c2cbfbf).
+- Follow-ups for the review doc (Phase 7), from claude iter 3: (a) record the AR_CITE rubric-vs-matcher
+  divergence in codev/reviews/154; (b) README: multi-reviewer agreement is per label, so a cell labelled by
+  two reviewers counts twice in `n`; (c) grader_path reads default-grader metrics, so a version scored
+  with a non-default grader set gets an approximate path label (breakdown only, never a verdict);
+  (d) review/README's "29 distinct verses" NRSV figure is unpinned and can go stale on a regeneration.
