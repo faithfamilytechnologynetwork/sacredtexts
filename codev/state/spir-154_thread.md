@@ -97,3 +97,9 @@
   realistic: #118 undisclaimed form-example echo `34:46 أو 3:140` = broken; #94 `Yogi`/`Yogî` = fixed.
 - Real data fact: on the committed FAccT sample, `current` == `committed` for all 1,423 cells
   (no scorer drift since the run was scored). Smoke (first 20 cells, labels = shown): 100% / no movers.
+- Phase 2 consult iter 1: codex REQUEST_CHANGES (real `python -m sacredbench` entrypoint loads
+  `sacredbench.providers` via cli.py's pre-existing imports), claude APPROVE + 4 nits. Fixed in
+  4d1d2f26: real-entrypoint offline test (sockets refused, provider SDK imports blocked); fixture →
+  10 cells (judged verify_source refusal + false-premise rows); scores_path must be relative w/o '..';
+  README/hint nits. Declined the lazy-import refactor of cli.py (touches collect/score/main, out of
+  phase scope; providers module loads no SDK) — rebuttal in 154-phase_2-iter1-rebuttals.md.
