@@ -4,8 +4,9 @@
 #
 #   docker build -f apps/api/Dockerfile -t sacredtexts-review .
 #
-# Railway builds it through apps/api/railway.json (builder DOCKERFILE). A Dockerfile, not Nixpacks:
-# the repo root holds requirements.txt and no package.json, so Nixpacks would detect Python.
+# The Railway service builds it through its `dockerfilePath` setting (apps/api/README.md § Hosting). A
+# Dockerfile, not Nixpacks/Railpack: the repo root holds requirements.txt and no package.json, so
+# auto-detection would build Python.
 #
 # Every COPY names its paths, so no node_modules, dist or run evidence reaches the image, with or
 # without a .dockerignore.

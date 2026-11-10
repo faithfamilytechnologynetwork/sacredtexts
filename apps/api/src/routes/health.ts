@@ -4,7 +4,7 @@ import type { AppDb } from '../db';
 
 /**
  * Liveness/readiness: pings the database. 200 when the DB responds, 503 when it does not — so
- * Railway's health check (railway.json `healthcheckPath`) fails a deploy that can't reach Postgres.
+ * Railway's health check (the service's `healthcheckPath`, `/api/health`) fails a deploy that can't reach Postgres.
  */
 export function healthRoute(db: AppDb): Hono {
   const route = new Hono();
