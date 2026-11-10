@@ -5,10 +5,10 @@ phase: implement
 plan_phases:
   - id: phase_1
     title: Review sample builder and committed FAccT sample
-    status: in_progress
+    status: complete
   - id: phase_2
     title: Gold-set format and version-comparison CLI
-    status: pending
+    status: in_progress
   - id: phase_3
     title: API service with accounts and sample-keyed drafts
     status: pending
@@ -24,7 +24,7 @@ plan_phases:
   - id: phase_7
     title: Local end-to-end verification and documentation
     status: pending
-current_plan_phase: phase_1
+current_plan_phase: phase_2
 gates:
   spec-approval:
     status: approved
@@ -39,7 +39,10 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history: []
 started_at: '2026-11-10T03:45:40.348Z'
-updated_at: '2026-11-10T19:39:40.629Z'
+updated_at: '2026-11-10T19:46:50.712Z'
+context_refreshes:
+  - boundary: plan-phase:phase_2
+    at: '2026-11-10T19:46:50.712Z'
