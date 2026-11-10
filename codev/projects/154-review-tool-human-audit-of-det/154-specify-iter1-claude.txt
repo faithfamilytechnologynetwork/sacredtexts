@@ -1,0 +1,62 @@
+I'll start by reading the actual spec file and the key repo artifacts it claims about, so I can verify its factual assertions rather than trust them.I verified the spec's factual claims directly against the repo and the port source rather than taking them on trust. Everything checkable checked out — which raises my confidence in the rest.
+
+## What I verified (all read-only)
+
+| Claim | Result |
+|---|---|
+| 32,478 scored cells, 304 `scores.jsonl`, 0 duplicate `(run, model, question)` | **Exact** |
+| Outcome table (all 12 task×outcome cells) | **Exact** |
+| Grader paths: rq 449/1,241/**737**; cu 1,035/1,383/**670**; cite `n_candidates=0`→5, `segment_match=0`→102 | **Exact** |
+| Language counts (en 11,520 … arc 128; sums to 32,478) | **Exact** |
+| No `questions.jsonl` in that run; 304 `answers.jsonl` each carrying the full question | **Confirmed** |
+| NRSV: 1,920 cells / 31 distinct verses; `license: restricted`; `_QUOTATION_VERSES = {("The Bible","NRSV","en"): 500}` | **Confirmed** |
+| "Excluding NRSV removes the whole English-Christianity stratum" | **True** — `(Christianity, en, scripture) = 1,920`, exactly the NRSV rows; encyclicals carry tradition `Encyclicals` |
+| `apps/` has only `viewer`; `server/index.mjs` is a Hono static host with the `/api` proxy removed | **Confirmed** |
+| multibench port source + all **7 cited fix commits** (a538310d … 02b59637) | **All exist, messages match** |
+| Template conformance vs `codev-skeleton/protocols/spir/templates/spec.md` | **All 11 headings, in order** |
+
+This is the "derive from the real data, not the docs" lesson applied properly. Three things still need fixing.
+
+## Must fix
+
+**1. The draft rubric (OQ1) contradicts Spec 48's assertion gate, so the headline number would partly measure a definitional mismatch, not scorer error.**
+
+Spec 48 is explicit (lines 121–128): a **class A** answer — "I couldn't find the exact edition, but from memory it is: …" followed by the delivered passage — is *scored on its merits, not refused*. Only **class B** (declined with a substitute/pointer/nothing) stays `refused`. The draft rubric says retrieve_quote is "**Refused** if it declines or says it can't provide the text … even when it offers a summary or translation instead." A reviewer following that text marks class A as `refused`; the scorer marks it `correct`/`incorrect`. That band is not small — retrieve_quote has 1,834 `refused` and Spec 48 found this class dominating its 100-cell survey. The result is a manufactured false-negative signal that no scoring change could fix.
+
+Same shape for *verify_source*: the scorer takes the **leading-stance** verdict within the first sentence / 60 chars (arch-critical, #23). The rubric's "correct if its committed yes/no matches … refused if it never commits" reads as *final* stance, so "This cannot be verified… No." splits human from scorer by definition.
+
+Fix: state the assertion test in the reviewer's words ("did the answer present the passage *as its answer*, however hedged?") and the leading-stance rule for verify_source — or declare the divergence intentional and require the report to separate "definitional divergence" from "scorer error". Either way the spec should name Spec 48 and #23 in OQ1 so the architect settles it knowingly.
+
+**2. "The committed set passes `audit.py` in the test gate" is unsatisfiable as written, and the set's location is unspecified.**
+
+`pipelines/tests/test_audit.py::test_committed_run_evidence_is_clean` audits `git ls-files runs/` only (lines 36–40). The spec requires the set be committed "outside existing run evidence" but never names a path. A new top-level dir would be audited by **nothing** — and would also match no prefix in `.codev/checks/test.sh`'s `grep -oE '^(apps/[^/]+|pipelines|items|runs|texts|configs|CODE_WALKTHROUGH\.md)'`, so a review-set-only change runs **zero tests**. That is precisely the dispatcher blind spot `lessons-critical` records (the `fixtures/` gap closed by PR #44, Spec 48's viewer break as the proof case).
+
+Two clean options: put the set under `runs/<set-id>/` (inherits the audit scan and the pipelines+viewer lanes for free — but verify the viewer's run discovery/`bake-runs.ts` doesn't surface it as a broken run), or pick a new top-level dir **and** add success criteria for extending `test_audit.py`'s committed scan and the dispatcher registry. The spec names only `apps/api` registration today.
+
+**3. Account delete vs. research-record integrity is undecided.**
+
+"Account delete cascades to the reviewer's sessions, assignments, drafts and submissions" collides with "the paper can cite these numbers". A reviewer deleting their account after an export silently invalidates published figures, and the pseudonym can no longer be traced for errata. Decide in the spec: anonymize-and-retain judgements (delete only identity), or hard-delete with the consequence stated in the signup consent text, or block deletion after an export is published. This is a WHAT-level policy question with ethical weight — it shouldn't be found during implementation.
+
+## Worth considering (non-blocking)
+
+- **Power, not just allocation (OQ4).** ~2,000 cells across outcome × task × tradition (×grader path) is ~100–130 strata, ~15 cells each — per-stratum Wilson intervals around ±25pp, uninformative. And with a handful of reviewers the *judged* count may be 200–500, not 2,000. Give OQ4 a target precision ("aggregate FP rate to ±5pp needs ~400 judged `correct` cells") so the architect can answer it arithmetically, and say which breakdowns are expected to be citable vs. descriptive.
+- **#41 adjudication has no success criterion.** The spec says this tool "is the vehicle for that adjudication", but nothing covers resolving an overlap disagreement (third rater, tie-break, adjudicator role). Either add a criterion or scope it out explicitly.
+- **Question-defect flag's effect on the denominator** is unspecified — is a flagged-but-judged cell in the agreement rate, or in its own bucket like `can't judge`?
+- **Claim-race concurrency.** Claim-based assignment needs a documented behaviour (and test) for two reviewers claiming the same cell concurrently. The test list covers "non-overlap cells reach one reviewer" but not the race — and this repo's port source has a race-safe-signup fix for the same class of bug.
+- Scope is large for one spec (Python sampler + stats, a new `apps/api`, viewer routes, export, deploy runbook, committed set). The port de-risks it, but naming an MVP cut — say, set builder + report + local-only service first, hosting second — would help the plan phase gate honestly.
+
+No Baked Decisions section exists in the issue or Constraints; the spec says so correctly, and nothing I raise above contradicts a fixed choice. I made no changes to the worktree.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Exceptionally well-grounded spec (every factual claim verified exact against the run data and port source), but the draft rubric contradicts Spec 48's assertion gate, the audit/test-gate coverage for the committed review set is unsatisfiable as written, and account-delete vs. record integrity is undecided.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- OQ1's retrieve_quote rubric marks Spec 48 **class A** ("from memory it is: …" + delivered text) as `refused`, while the scorer scores it — a large, known band (1,834 refused rq cells) of definitional disagreement that would be misread as scorer error. verify_source has the same mismatch (human "committed" verdict vs. the scorer's leading-stance / 60-char rule).
+- "The committed set passes `audit.py` in the test gate" cannot hold as written: `test_audit.py` audits `git ls-files runs/` only, and the spec commits the set *outside* `runs/` without naming a path. A new top-level dir also matches no prefix in `.codev/checks/test.sh`, so a set-only change runs zero tests — the documented `fixtures/`-gap scar class.
+- Account delete cascading to submissions conflicts with citing the figures in a paper; the spec must choose anonymize-and-retain vs. hard-delete vs. delete-blocked-after-export, and align the signup consent text.
+- OQ4 has no power calculation: ~2,000 cells over ~100+ strata gives per-stratum intervals too wide to cite, and the judged count (not the frame size) drives precision.
+- #41 adjudication of overlap disagreements has no success criterion despite the spec naming this tool as its vehicle; the question-defect flag's effect on the agreement denominator is also unspecified.
+- No test scenario covers concurrent claim races in claim-based assignment.
