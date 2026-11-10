@@ -64,6 +64,14 @@ if printf '%s\n' "$changed" | grep -qE '^(runs|texts)/'; then
   touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
+# review/** holds the committed review sample (Spec 154), pinned byte for byte by the pipelines test
+# pipelines/tests/test_review_sample.py (it must regenerate from runs/). It matches no prefix above, so
+# a sample-only change would otherwise run ZERO tests — the same dispatcher gap as fixtures/. Map it to
+# the pipelines lane.
+if printf '%s\n' "$changed" | grep -qE '^review/'; then
+  touched=$(printf '%s\npipelines\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
 if [ -z "${touched//[$'\n']/}" ]; then
   echo "test-dispatcher: no app/pipeline changed vs ${base} — nothing to test."
   exit 0
