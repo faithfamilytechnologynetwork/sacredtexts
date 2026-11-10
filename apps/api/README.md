@@ -275,7 +275,7 @@ railway up "$stage" --path-as-root --service review --detach
 
 That uploads about 4 MB, where the whole repo is about 345 MB. To deploy on every merge instead,
 connect the service to the repository's `main` branch. That is the owner's call:
-`railway service source connect --repo <owner>/<repo> --branch main --service review`.
+`railway service source connect --repo faithfamilytechnologynetwork/sacredtexts --branch main --service review`.
 
 **Checked on the first deploy (2026-11-10), over HTTPS, without an account:**
 
