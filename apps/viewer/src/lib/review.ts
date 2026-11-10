@@ -12,9 +12,12 @@
 //     draft overwrite the saved one, a CSRF 403 refreshes the token and retries, a prefetch skips
 //     samples already loaded, "start over" is persisted via DELETE, an unreachable service fails
 //     visibly.
-// One addition: a save the server refuses for good (413, or any other 4xx that isn't 401, 409 or a
-// CSRF 403) is TERMINAL. It is not retried (a permanent 413 would otherwise loop forever), the
-// error is shown, and the labels stay in memory. The next edit tries again.
+// Two additions:
+//   • a save the server refuses for good (413, or any other 4xx that isn't 401, 409 or a CSRF 403)
+//     is TERMINAL. It is not retried (a permanent 413 would otherwise loop forever), the error is
+//     shown, and the labels stay in memory. The next edit tries again;
+//   • the wipe also covers requests already in flight: each reset starts a new `session`, and a load,
+//     list, save, delete or init that started in an earlier one drops its result when it lands.
 
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
@@ -186,6 +189,14 @@ const timers = new Map<string, ReturnType<typeof setTimeout>>();
 const retryTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const inflight = new Map<string, Promise<void>>();
 
+/**
+ * The store's session. Every reset (sign-out, a 401, a different reviewer signing in) bumps it. A
+ * request already in flight can't be recalled, so every async path captures the session it started
+ * in and drops its result if the session has moved on. Otherwise reviewer A's slow draft load could
+ * land in reviewer B's state (and be saved under B's account), or A's stale 401 could wipe B's.
+ */
+let session = 0;
+
 const listeners = new Set<() => void>();
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
@@ -260,13 +271,14 @@ function scheduleRetry(sid: string): void {
 /**
  * Serialize operations per sample: a save and a "start over" delete must not race. Chaining them
  * guarantees ordering, so a delete can't clobber a later fresh draft and an in-flight save can't
- * resurrect a deleted one.
+ * resurrect a deleted one. An op still queued when the session resets never runs.
  */
 function enqueue(sid: string, op: () => Promise<void>): Promise<void> {
+  const started = session;
   const prev = inflight.get(sid) ?? Promise.resolve();
   const next = prev
     .catch(() => {})
-    .then(op)
+    .then(() => (started === session ? op() : undefined))
     .finally(() => {
       if (inflight.get(sid) === next) inflight.delete(sid);
     });
@@ -279,6 +291,8 @@ function runSave(sid: string): void {
 }
 
 async function persistSample(sid: string): Promise<void> {
+  const started = session;
+  const stale = () => started !== session;
   const r = current.samples[sid];
   if (!r) {
     dirty.delete(sid);
@@ -289,6 +303,7 @@ async function persistSample(sid: string): Promise<void> {
   // the load first; if it fails, keep the edit dirty and retry later. Never save blind.
   if (loadState.get(sid) !== "ok") {
     const ok = await ensureSampleLoaded(sid);
+    if (stale()) return;
     if (!ok) {
       dirty.add(sid);
       scheduleRetry(sid);
@@ -302,12 +317,14 @@ async function persistSample(sid: string): Promise<void> {
   let version = versions.get(sid) ?? 0;
   try {
     let result = await putDraft(sid, r2, version);
+    if (stale()) return;
     if (!result.ok) {
       // Conflict: another device advanced this sample. Last-write-wins for the active device: retry
       // once with the server's version (our optimistic edits are preserved, not dropped).
       version = result.conflict.version;
       versions.set(sid, version);
       const retry = await putDraft(sid, current.samples[sid] ?? r2, version);
+      if (stale()) return;
       if (retry.ok) {
         result = retry;
         // LWW just overwrote another device's draft. That is the design, but it must not be silent:
@@ -326,7 +343,7 @@ async function persistSample(sid: string): Promise<void> {
     // and stay until the reviewer's next edit.
     setStatus({ error: null, errorKind: null });
   } catch (e) {
-    if (handleAuthError(e)) return;
+    if (stale() || handleAuthError(e)) return;
     if (isTerminalSaveError(e)) {
       // Retrying can't help (e.g. the draft is over the body cap). Keep the labels in memory, arm no
       // retry, and say why. The next edit schedules a fresh save.
@@ -335,13 +352,16 @@ async function persistSample(sid: string): Promise<void> {
     }
     // A CSRF 403 means the token is missing or stale: refresh it so the retry can succeed, instead
     // of looping 403s forever.
-    if (isCsrfError(e)) await fetchCsrf().catch(() => {});
+    if (isCsrfError(e)) {
+      await fetchCsrf().catch(() => {});
+      if (stale()) return;
+    }
     // Keep the optimistic state, leave the sample dirty, and schedule a real retry.
     dirty.add(sid);
     scheduleRetry(sid);
     setStatus({ error: e instanceof Error ? e.message : "save failed", errorKind: "save" });
   } finally {
-    if (dirty.size === 0 && pendingDeletes.size === 0) setStatus({ saving: false });
+    if (!stale() && dirty.size === 0 && pendingDeletes.size === 0) setStatus({ saving: false });
   }
 }
 
@@ -397,22 +417,33 @@ export function updateReviewState(fn: (s: ReviewState) => ReviewState): void {
 // --- delete ("start over") ---
 
 async function persistDelete(sid: string): Promise<void> {
+  const started = session;
+  const stale = () => started !== session;
   dirty.delete(sid);
   pendingDeletes.delete(sid); // in progress: cleared now, re-added only if it fails (like `dirty`)
   try {
     await deleteDraft(sid);
+    if (stale()) return;
     versions.delete(sid);
     loadState.delete(sid);
     setStatus({ error: null, errorKind: null });
   } catch (e) {
-    if (handleAuthError(e)) return;
-    if (isCsrfError(e)) await fetchCsrf().catch(() => {});
+    if (stale() || handleAuthError(e)) return;
+    if (isTerminalSaveError(e)) {
+      // The server refused the delete for good: retrying every few seconds can't change that.
+      setStatus({ error: e.message, errorKind: "rejected" });
+      return;
+    }
+    if (isCsrfError(e)) {
+      await fetchCsrf().catch(() => {});
+      if (stale()) return;
+    }
     // A failed delete leaves the server draft; retry so "start over" actually sticks.
     pendingDeletes.add(sid);
     scheduleRetry(sid);
     setStatus({ error: e instanceof Error ? e.message : "delete failed", errorKind: "save" });
   } finally {
-    if (dirty.size === 0 && pendingDeletes.size === 0) setStatus({ saving: false });
+    if (!stale() && dirty.size === 0 && pendingDeletes.size === 0) setStatus({ saving: false });
   }
 }
 
@@ -439,9 +470,11 @@ export function ensureSampleLoaded(sid: string): Promise<boolean> {
   const existing = loadPromises.get(sid);
   if (existing) return existing;
   loadState.set(sid, "loading");
-  const p = (async () => {
+  const started = session;
+  const p = (async (): Promise<boolean> => {
     try {
       const draft = await getDraft(sid);
+      if (started !== session) return false; // a load for an earlier session: drop it
       versions.set(sid, draft.version);
       if (draft.state !== null) {
         // Adopt the server draft on the FIRST successful load. If a local entry already exists, the
@@ -460,15 +493,18 @@ export function ensureSampleLoaded(sid: string): Promise<boolean> {
       emit();
       return true;
     } catch (e) {
-      if (handleAuthError(e)) return false;
+      if (started !== session || handleAuthError(e)) return false;
       loadState.set(sid, "error");
       setStatus({ error: e instanceof Error ? e.message : "load failed", errorKind: "load" });
       return false;
-    } finally {
-      loadPromises.delete(sid);
     }
   })();
   loadPromises.set(sid, p);
+  // Registered before any caller's await, so it runs first. It removes only this load's own entry:
+  // after a reset, the same sample may already have a newer load in flight. (`p` never rejects.)
+  void p.then(() => {
+    if (loadPromises.get(sid) === p) loadPromises.delete(sid);
+  });
   return p;
 }
 
@@ -481,8 +517,10 @@ let prefetched = false;
 export async function prefetchDrafts(): Promise<void> {
   if (prefetched) return;
   prefetched = true;
+  const started = session;
   try {
     const drafts = await listDrafts();
+    if (started !== session) return; // a list for an earlier session: drop it
     let next = current;
     let reconciledSid: string | null = null;
     for (const d of drafts) {
@@ -505,6 +543,7 @@ export async function prefetchDrafts(): Promise<void> {
     if (reconciledSid) setStatus({ reconciled: reconciledSid });
     emit();
   } catch (e) {
+    if (started !== session) return;
     prefetched = false; // allow a retry
     if (!handleAuthError(e)) {
       setStatus({ error: e instanceof Error ? e.message : "couldn't load your drafts", errorKind: "load" });
@@ -512,8 +551,12 @@ export async function prefetchDrafts(): Promise<void> {
   }
 }
 
-/** Test/reset seam: drop the in-memory store (does not touch the server). */
+/**
+ * Drop the in-memory store and start a new session (does not touch the server). Requests still in
+ * flight from the old session are ignored when they resolve.
+ */
 export function resetReviewStore(): void {
+  session += 1;
   current = emptyState();
   status = initialStatus();
   versions.clear();
@@ -532,20 +575,24 @@ export function resetReviewStore(): void {
 
 // --- auth ---
 
-let initInFlight = false;
+/** The session an init is running for (null: none). Per session, so a reset re-arms it at once. */
+let initFor: number | null = null;
 
 /**
  * Establish the session (call on entering /review): loads the reviewer and a CSRF token. Idempotent:
  * concurrent or repeated calls are coalesced, and a reset re-arms it.
  */
 export async function initReview(): Promise<void> {
-  if (initInFlight || status.auth !== "unknown") return;
-  initInFlight = true;
+  if (initFor === session || status.auth !== "unknown") return;
+  const started = session;
+  initFor = started;
   try {
     await fetchCsrf();
     const reviewer = await apiMe();
+    if (started !== session) return;
     setStatus({ auth: reviewer ? "in" : "out", reviewer, error: null });
   } catch (e) {
+    if (started !== session) return;
     if (e instanceof ReviewUnavailableError) {
       // No review API at this origin (the static viewer build): not a sign-in problem.
       setStatus({ auth: "unavailable", reviewer: null, error: e.message });
@@ -559,7 +606,7 @@ export async function initReview(): Promise<void> {
       });
     }
   } finally {
-    initInFlight = false;
+    if (initFor === started) initFor = null;
   }
 }
 

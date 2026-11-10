@@ -162,11 +162,17 @@ describe("review store: async persistence", () => {
     const server = new Map<string, Draft>([["S", { state: { labels: { c: label("correct", "server work") } }, version: 3 }]]);
     const puts: number[] = [];
     setReviewFetch(
-      fakeFetch((_path, method) => {
+      fakeFetch((_path, method, init) => {
         if (method === "GET") throw new Error("network down"); // the draft load fails
         if (method === "PUT") {
-          puts.push(1);
-          return json({ version: 4 });
+          // A real versioned server: a blind version-0 save would 409, and the last-write-wins retry
+          // on version 3 would then overwrite the saved work.
+          const b = JSON.parse(String(init?.body ?? "{}"));
+          puts.push(b.version);
+          const cur = server.get("S")!;
+          if (b.version !== cur.version) return json({ error: "conflict", ...cur }, 409);
+          server.set("S", { state: b.state, version: cur.version + 1 });
+          return json({ version: cur.version + 1 });
         }
         return json({}, 404);
       }),
@@ -178,8 +184,9 @@ describe("review store: async persistence", () => {
     // The save was HELD (no PUT) because the load failed, so the server draft is intact.
     expect(puts).toEqual([]);
     expect(server.get("S")?.version).toBe(3);
-    expect(peekReviewStatus().error).toBeTruthy();
+    expect((server.get("S")?.state as any).labels.c.notes).toBe("server work");
     expect(peekReviewStatus().errorKind).toBe("load");
+    expect(hasPendingRetry("S")).toBe(true); // the edit is kept and retried once a load succeeds
   });
 
   it("adopts the server draft (not the blip edit) when a load fails then recovers", async () => {
@@ -707,5 +714,259 @@ describe("review store: CSRF and terminal saves", () => {
     expect(peekReviewStatus().error).toBe("this change is too large to save");
     expect(hasPendingRetry("S")).toBe(false);
     expect(peekReviewState().samples.S?.labels.c1?.notes).toHaveLength(REVIEW_BODY_MAX_BYTES);
+  });
+});
+
+describe("review store: requests in flight when the session changes", () => {
+  type Who = "a" | "b";
+  const reviewer = (id: Who) => ({ id, email: `${id}@example.com`, name: id.toUpperCase() });
+  const DRAFTS: Record<Who, Draft> = {
+    a: { state: { texts: ["A-text"], labels: { c: label("correct", "A's note") } }, version: 3 },
+    b: { state: { texts: ["B-text"], labels: {} }, version: 1 },
+  };
+
+  /** Let every pending microtask run, so a request already started has been sent. */
+  const settle = () => new Promise<void>((r) => setTimeout(r, 0));
+
+  /**
+   * Two accounts behind one fake API. Like a browser's cookie, the account a request runs as is
+   * fixed when it is sent. `hold(n)` parks the n-th request matching `path` + `method` until released.
+   */
+  function twoAccounts() {
+    let who: Who = "a";
+    const holds = new Map<string, Promise<void>>();
+    const releases = new Map<string, () => void>();
+    const counts = new Map<string, number>();
+    const sent: string[] = [];
+    const hold = (method: string, path: string, n: number) => {
+      const key = `${method} ${path} #${n}`;
+      holds.set(key, new Promise<void>((r) => releases.set(key, r)));
+      return () => releases.get(key)!();
+    };
+    const impl = fakeFetch(async (path, method, init) => {
+      if (path === "/api/auth/login") {
+        who = String(JSON.parse(String(init?.body)).email).startsWith("b") ? "b" : "a";
+        return json({ reviewer: reviewer(who), csrfToken: "t" });
+      }
+      const caller = who;
+      const n = (counts.get(`${method} ${path}`) ?? 0) + 1;
+      counts.set(`${method} ${path}`, n);
+      sent.push(`${caller} ${method} ${path}`);
+      await holds.get(`${method} ${path} #${n}`);
+      if (path === "/api/auth/me") return json({ reviewer: reviewer(caller) });
+      if (path === "/api/review") return json({ drafts: [{ sampleId: "S", ...DRAFTS[caller] }] });
+      if (method === "GET") return json(DRAFTS[caller]);
+      if (method === "PUT") return json({ error: "conflict", ...DRAFTS[caller] }, 409);
+      return json({}, 404);
+    });
+    return { impl, hold, sent };
+  }
+
+  it("A's draft load that lands after B signs in is dropped, and doesn't unhook B's own load", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releaseA = api.hold("GET", "/api/review/S", 1);
+    const releaseB = api.hold("GET", "/api/review/S", 2);
+
+    await loginReview("a@example.com", "pw");
+    const aLoad = ensureSampleLoaded("S");
+    await loginReview("b@example.com", "pw"); // a different reviewer: the store resets
+    const bLoad = ensureSampleLoaded("S"); // B's own load, not coalesced onto A's
+
+    releaseA();
+    expect(await aLoad).toBe(false);
+    expect(peekReviewState().samples).toEqual({}); // nothing of A's
+    expect(peekVersion("S")).toBe(0);
+    expect(ensureSampleLoaded("S")).toBe(bLoad); // A's settling didn't drop B's in-flight load
+
+    releaseB();
+    expect(await bLoad).toBe(true);
+    expect(peekReviewState().samples.S?.texts).toEqual(["B-text"]);
+    expect(peekVersion("S")).toBe(1);
+    expect(api.sent.filter((s) => s.endsWith("GET /api/review/S"))).toEqual(["a GET /api/review/S", "b GET /api/review/S"]);
+  });
+
+  it("A's draft list that lands after B signs in is dropped, and B can prefetch their own", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releaseA = api.hold("GET", "/api/review", 1);
+
+    await loginReview("a@example.com", "pw");
+    const aPrefetch = prefetchDrafts();
+    await loginReview("b@example.com", "pw");
+    releaseA();
+    await aPrefetch;
+    expect(peekReviewState().samples).toEqual({});
+    expect(peekVersion("S")).toBe(0);
+
+    await prefetchDrafts(); // the reset re-armed it for B
+    expect(peekReviewState().samples.S?.texts).toEqual(["B-text"]);
+  });
+
+  it("A's save conflict that lands after B signs in neither retries nor adopts A's draft", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releasePut = api.hold("PUT", "/api/review/S", 1);
+
+    await loginReview("a@example.com", "pw");
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withLabel(s, "S", "c2", { outcome: "refused" }, NOW));
+    const flush = flushReviewSaves();
+    await settle(); // A's PUT is on the wire, parked on the hold
+    await loginReview("b@example.com", "pw");
+    releasePut(); // A's PUT answers 409 with A's server draft
+    await flush;
+
+    expect(api.sent.filter((s) => s.includes("PUT"))).toEqual(["a PUT /api/review/S"]); // no LWW retry
+    expect(peekReviewState().samples).toEqual({});
+    expect(peekReviewStatus().reconciled).toBeNull();
+    expect(peekReviewStatus().reviewer?.id).toBe("b");
+  });
+
+  it("a save still queued when the session resets never runs", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releasePut = api.hold("PUT", "/api/review/S", 1);
+
+    await loginReview("a@example.com", "pw");
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withLabel(s, "S", "c2", { outcome: "refused" }, NOW));
+    const first = flushReviewSaves();
+    await settle(); // PUT #1 is on the wire, parked on the hold
+    updateReviewState((s) => withLabel(s, "S", "c3", { outcome: "correct" }, NOW));
+    const second = flushReviewSaves(); // a second save queued behind it
+    await loginReview("b@example.com", "pw");
+    releasePut();
+    await Promise.all([first, second]);
+
+    expect(api.sent.filter((s) => s.includes("PUT"))).toEqual(["a PUT /api/review/S"]);
+  });
+
+  it("a start-over still queued when the session resets never deletes the next reviewer's draft", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releasePut = api.hold("PUT", "/api/review/S", 1);
+
+    await loginReview("a@example.com", "pw");
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withLabel(s, "S", "c2", { outcome: "refused" }, NOW));
+    const flush = flushReviewSaves();
+    await settle(); // A's PUT is on the wire, parked on the hold
+    updateReviewState((s) => withoutSample(s, "S")); // A's "start over", queued behind the PUT
+    await loginReview("b@example.com", "pw");
+    releasePut();
+    await flush;
+    await settle();
+
+    expect(api.sent.filter((s) => s.includes("DELETE"))).toEqual([]);
+  });
+
+  it("A's stale 401 doesn't wipe B's session", async () => {
+    let releaseA!: () => void;
+    const gate = new Promise<void>((r) => (releaseA = r));
+    let who: Who = "a";
+    setReviewFetch(
+      fakeFetch(async (path, method, init) => {
+        if (path === "/api/auth/login") {
+          who = String(JSON.parse(String(init?.body)).email).startsWith("b") ? "b" : "a";
+          return json({ reviewer: reviewer(who), csrfToken: "t" });
+        }
+        if (method === "GET" && who === "a") {
+          await gate;
+          return json({ error: "unauthorized" }, 401); // A's session had expired
+        }
+        if (method === "GET") return json({ state: null, version: 0 });
+        return json({ version: 1 });
+      }),
+    );
+
+    await loginReview("a@example.com", "pw");
+    const aLoad = ensureSampleLoaded("S");
+    await loginReview("b@example.com", "pw");
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withTexts(s, "S", ["B-choice"]));
+    releaseA();
+    expect(await aLoad).toBe(false);
+
+    expect(peekReviewStatus().auth).toBe("in");
+    expect(peekReviewStatus().reviewer?.id).toBe("b");
+    expect(peekReviewState().samples.S?.texts).toEqual(["B-choice"]);
+  });
+
+  it("an init still in flight when the store resets can't overwrite the new session", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releaseFirstMe = api.hold("GET", "/api/auth/me", 1);
+
+    const staleInit = initReview(); // runs as A
+    await Promise.resolve();
+    resetReviewStore();
+    await loginReview("b@example.com", "pw");
+    releaseFirstMe();
+    await staleInit;
+    expect(peekReviewStatus().reviewer?.id).toBe("b");
+    expect(peekReviewStatus().auth).toBe("in");
+  });
+
+  it("a reset re-arms init at once, even while the old session's init is still in flight", async () => {
+    const api = twoAccounts();
+    setReviewFetch(api.impl);
+    const releaseFirstMe = api.hold("GET", "/api/auth/me", 1);
+
+    const staleInit = initReview();
+    await Promise.resolve();
+    resetReviewStore();
+    await initReview(); // not blocked by the stale one
+    expect(peekReviewStatus().auth).toBe("in");
+    releaseFirstMe();
+    await staleInit;
+    expect(peekReviewStatus().auth).toBe("in");
+  });
+});
+
+describe("review store: terminal deletes", () => {
+  it("a delete the server refuses for good isn't retried", async () => {
+    let deletes = 0;
+    setReviewFetch(
+      fakeFetch((_path, method) => {
+        if (method === "GET") return json({ state: { texts: ["t"] }, version: 2 });
+        if (method === "DELETE") {
+          deletes += 1;
+          return json({ error: "invalid sample id" }, 400);
+        }
+        return json({}, 404);
+      }),
+    );
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withoutSample(s, "S"));
+    await flushReviewSaves();
+    await flushReviewSaves();
+    expect(deletes).toBe(1);
+    expect(peekReviewStatus().errorKind).toBe("rejected");
+    expect(peekReviewStatus().error).toBe("invalid sample id");
+    expect(peekReviewStatus().saving).toBe(false);
+    expect(hasPendingRetry("S")).toBe(false);
+  });
+
+  it("a delete that fails transiently is retried", async () => {
+    let deletes = 0;
+    setReviewFetch(
+      fakeFetch((_path, method) => {
+        if (method === "GET") return json({ state: { texts: ["t"] }, version: 2 });
+        if (method === "DELETE") {
+          deletes += 1;
+          if (deletes === 1) throw new Error("network blip");
+          return json({ ok: true });
+        }
+        return json({}, 404);
+      }),
+    );
+    await ensureSampleLoaded("S");
+    updateReviewState((s) => withoutSample(s, "S"));
+    await flushReviewSaves();
+    expect(hasPendingRetry("S")).toBe(true);
+    await flushReviewSaves();
+    expect(deletes).toBe(2);
+    expect(peekReviewStatus().error).toBeNull();
   });
 });

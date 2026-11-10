@@ -221,3 +221,19 @@
     lost its stamp, throws instead of writing a file `review-compare` would reject. Labels on texts the
     reviewer has since deselected are still written: they're real judgements.
 - Gate: viewer 348/348 (253 existing + 95 new), `check-types` clean.
+- **Phase 5 consult, iteration 1: both reviewers asked for changes. All taken:**
+  - **codex (real leak).** A reset didn't stop requests already in flight, so reviewer A's slow draft
+    GET could land in B's session and be saved under B's account, and A's stale 401 could wipe B's.
+    Fixed with a `session` counter: every reset bumps it, and each load, list, save, delete or init
+    drops its result if the session moved on. The queue also skips ops queued in an earlier session,
+    which matters for a queued "start over": it would otherwise delete B's draft. 8 regression tests,
+    each guard mutation-checked.
+  - **claude.** Its blocker (two new tests flaky in a full run) came from reviewing my tree mid-edit, and
+    was already fixed: the tests now park A's PUT on the wire before B signs in. I also took two of its
+    minor notes: a delete the server refuses for good is now terminal, and one vacuous test assertion
+    now bites.
+  - **Left as is, on purpose:** `logout()` ignores `res.ok`, as multibench does, so a stale CSRF token
+    shows signed-out locally while the server session survives. Separately, a sign-in while another
+    reviewer is still signed in could send A's not-yet-sent edit with B's new cookie. No UI path reaches
+    that: the form only shows while signed out, and every signed-out state follows a reset.
+  - Viewer 358/358, three runs in a row.
