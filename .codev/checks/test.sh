@@ -17,7 +17,7 @@ test_cmd_for() {
   case "$1" in
     pipelines)   echo "uv --project pipelines run pytest pipelines" ;;
     apps/viewer) echo "pnpm -C apps/viewer test" ;;
-    apps/api)    echo "pnpm -C apps/api test" ;;
+    apps/api)    echo "pnpm -C apps/api test" ;;   # Spec 154 review service: vitest on PGlite, no external DB
     items)       echo "uv --project pipelines run --with tqdm pytest items/for-test" ;;
     *)           echo "" ;;
   esac
@@ -71,6 +71,13 @@ fi
 # the pipelines lane.
 if printf '%s\n' "$changed" | grep -qE '^review/'; then
   touched=$(printf '%s\npipelines\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
+# apps/api/** is asserted by BOTH the api lane and the viewer lane: apps/viewer/src/lib/reviewApi.test.ts
+# reads apps/api/src/routes/review.ts and pins the client's body-size guard equal to the API's cap
+# (Spec 154). An api-only change to the cap would otherwise run only the api lane and let the two drift.
+if printf '%s\n' "$changed" | grep -qE '^apps/api/'; then
+  touched=$(printf '%s\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
 if [ -z "${touched//[$'\n']/}" ]; then

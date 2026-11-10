@@ -11,6 +11,8 @@ Seeded from Spec 1 (Phase 1 benchmark) — the first implementation round.
   TanStack; a benchmark viewer over local `runs/` (leaderboard + error explorer +
   cross-run standings). Originally seeded from multibench's multibrowser; that surface and
   its GitHub data layer have been removed (provenance in `README.multibrowser.md`).
+- `apps/api/` — the review service (Hono + Drizzle + Postgres; see § Review tool).
+  `review/` — committed review samples (`review/samples/<sample_id>.json`).
 - `texts/` — the corpus (two tiers, below). `configs/` — model panels. `runs/` — run
   evidence (gitignored except the committed first run). `codev/` — SPIR artifacts.
 
@@ -234,8 +236,8 @@ round-trip that proves no invention/reordering.
 model_id)`, surfacing un-answered roster questions as missing cells; `loadSummary` reads
 just `summary.json` for the standings rollup). As of the Spec 2 purge the viewer is
 **local-only**: the multibrowser surface (`/t/...` traditions, the GitHub-data-layer
-`/results`/`/raw` explorers, the `/review*` flows, and their data layer/components) is
-gone. The route tree is `/` (the **leaderboard home** — `routes/LeaderboardPage.tsx` +
+`/results`/`/raw` explorers, the multibench `/review*` flows, and their data layer/components) is
+gone. (`/review` is back as the Spec 154 review tool, below; it talks to `apps/api`, not GitHub.) The route tree is `/` (the **leaderboard home** — `routes/LeaderboardPage.tsx` +
 `components/LeaderboardTable.tsx`, ranking by `lib/leaderboard.ts`),
 `/run/$runId/model/$modelId` (the **error explorer** — `routes/ExplorerPage.tsx` +
 `components/QuestionList.tsx`/`ExplorerFilters.tsx`, classification/filters in
@@ -259,6 +261,39 @@ rejected, so symlinked run dirs are omitted). The gate renders the committed run
 `loadRun` (`realRun.test.ts`), the leaderboard (`LeaderboardPage.test.tsx`), the explorer
 (`ExplorerPage.test.tsx`), and the standings rollup (`StandingsPage.test.tsx`). Production
 is a static SPA host (`server/index.mjs`, hono + history fallback; no `/api` proxy).
+
+## Review tool (human audit of the matcher)
+
+Reviewers label a committed **sample** of scored cells with the true outcome. The labels form a
+**gold set** that any matcher version is scored against, so they are independent of the matcher
+version. Detail: `review/README.md`, `apps/api/README.md`, `apps/viewer/README.md` § Review.
+
+- **Sample** — `sacredbench review-sample` draws an even stratified sample (outcome × task × text,
+  k per stratum, seeded, byte-reproducible) from a run, read-only, into `review/samples/`. A test
+  pins it by regenerating it.
+- **Service** — `apps/api` is ported from multibench's reviewer, re-keyed from tradition to
+  `sample_id`. One Hono process serves `/api`, the active sample (`SAMPLE_PATH`, verbatim at
+  `GET /api/sample`, auth only), and the built viewer (`VIEWER_DIST`, with an SPA fallback;
+  `/api/*` and `/assets/*` never fall back). It holds one draft per reviewer per sample, with
+  optimistic concurrency. Saves and submits are accepted for the active sample only. Schema changes
+  go through `drizzle-kit generate` → review → `pnpm migrate`, never `db:push`.
+- **UI** — `/review` (texts picker, progress, gold-set download) and `/review/cell/$cellId` (the
+  explorer's `QuestionCard` plus the rubric and label control) in `apps/viewer`. The store is
+  `lib/review.ts`; its session counter drops in-flight results from a previous reviewer. On the
+  static Pages build `/api` answers HTML, so the review routes show "review service unavailable".
+- **Gold set** — `lib/goldSet.ts` writes canonical JSONL (keys sorted by code point at every level,
+  integral floats as ints) byte-identical to the Python writer. A shared fixture pins the two.
+- **Compare** — `sacredbench review-compare GOLD... --version committed|current|<run dir>` reports
+  agreement overall, per task, per text and per grader path, lists the disagreements, and lists the
+  movers (fixed/broken) between two versions. `current` calls `score_answer` exactly as `score_file`
+  does, offline.
+- **Hosting** — Railway project `sacredtexts-review`: one service built from `apps/api/Dockerfile`
+  (repo-root context) plus a managed Postgres with a daily volume backup. The build/deploy settings
+  are set on the service (Railway rejects a config-as-code path on a new service), so there is no
+  `railway.json` for it. The invite code lives only in Railway and the gitignored root `.env`.
+- **Copyright** — by the owner's ruling (counsel: fair use), `review/` samples are outside the
+  copyright audit, and NRSV cells are included. The audit still scans `runs/`, which is why no
+  review artifact is committed under `runs/`.
 
 ## Run evidence layout
 
@@ -308,8 +343,10 @@ in `test_facct.py`.
 ## Test gate
 
 Per-builder dispatcher `.codev/checks/test.sh` (global `porch.checks` is unsuitable for
-a multi-app repo): routes touched dirs → `pipelines` (`uv … pytest`) and `apps/viewer`
-(`pnpm … vitest`). It diffs `origin/main...HEAD`, so changes must be committed to be
+a multi-app repo): routes touched dirs → `pipelines` (`uv … pytest`), `apps/viewer`
+(`pnpm … vitest`) and `apps/api` (`pnpm … vitest` on PGlite, no external database). `review/`
+maps to the pipelines lane (the sample pin). `apps/api` also runs the viewer lane (the viewer pins
+the API's body cap). It diffs `origin/main...HEAD`, so changes must be committed to be
 tested. The pipelines pytest includes the copyright audit, which content-scans
 `.json`/`.jsonl`/**`.md`** (`audit._AUDITED_SUFFIXES`) — the `.md` inclusion (Spec 32) puts the
 FAccT card inside the gate; the origin layer stays structured-docs-only (a `.md` has no source
