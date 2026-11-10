@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
@@ -15,8 +16,12 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
+// Resolved from this file, not the working directory, so the hosted image's pre-deploy step can run
+// it from anywhere.
+const migrationsFolder = fileURLToPath(new URL('../drizzle', import.meta.url));
+
 const pool = new Pool({ connectionString: databaseUrl });
 const db = drizzle(pool);
-await migrate(db, { migrationsFolder: 'drizzle' });
+await migrate(db, { migrationsFolder });
 await pool.end();
 console.log('migrations applied');

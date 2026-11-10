@@ -7,7 +7,7 @@ import { gunzipSync } from 'node:zlib';
 import { createApp } from './app';
 import { createTestDb } from './testing/pglite';
 import { testSample } from './testing/sample';
-import { isApiPath, loadViewerDist } from './static';
+import { isApiPath, isAssetPath, loadViewerDist } from './static';
 
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 const SHELL = '<!doctype html><html><body><div id="root"></div><!-- spa-shell --></body></html>';
@@ -67,6 +67,18 @@ describe('the built viewer beside /api', () => {
     expect(await plain.text()).toBe(BIG_ASSET);
   });
 
+  it('gives a missing /assets file a JSON 404, never the shell', async () => {
+    for (const path of ['/assets/index-STALE.js', '/assets/', '/assets/deep/missing.css']) {
+      const res = await app.request(path);
+      expect(res.status, path).toBe(404);
+      expect(await res.json(), path).toEqual({ error: 'not found' });
+    }
+    // Only the assets directory: a look-alike client route still gets the shell.
+    const route = await app.request('/assetsfoo');
+    expect(route.status).toBe(200);
+    expect(await route.text()).toBe(SHELL);
+  });
+
   it('answers HEAD for the shell and for a file', async () => {
     expect((await app.request('/review/cell/x', { method: 'HEAD' })).status).toBe(200);
     expect((await app.request('/assets/a.js', { method: 'HEAD' })).status).toBe(200);
@@ -114,6 +126,16 @@ describe('loadViewerDist', () => {
     } finally {
       rmSync(empty, { recursive: true, force: true });
     }
+  });
+});
+
+describe('isAssetPath', () => {
+  it('matches paths under /assets/ only', () => {
+    expect(isAssetPath('/assets/index-abc.js')).toBe(true);
+    expect(isAssetPath('/assets/')).toBe(true);
+    expect(isAssetPath('/assets')).toBe(false);
+    expect(isAssetPath('/assetsfoo')).toBe(false);
+    expect(isAssetPath('/review/assets/x.js')).toBe(false);
   });
 });
 
