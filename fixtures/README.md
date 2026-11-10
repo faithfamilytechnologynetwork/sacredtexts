@@ -28,8 +28,9 @@ download, Spec 154 phase 5) and `pipelines/sacredbench/review_compare.py` (`gold
 `dumps_gold_rows`) — and is read by `review-compare`. They must write the same bytes for the same sample and labels, or
 a downloaded gold set and the Python comparison disagree on what was labelled.
 
-- `review_sample.json` is a sample in the `review-sample` format: 8 cells, one per task in
-  `islam/native` (Arabic, right-to-left) and `hinduism/english`. Its prompts, expected texts and
+- `review_sample.json` is a sample in the `review-sample` format: 10 cells, every task in
+  `islam/native` (Arabic, right-to-left) and `hinduism/english`, with two judged
+  `verify_source` cells (a refusal and a false premise) beside a `cant_judge` and a defect one. Its prompts, expected texts and
   sources are real FAccT questions; the answers and run (`fixture-run`, models `model-a` /
   `model-b`) are made up. Two `shown` verdicts stand for an older matcher, so the current scorer
   moves one cell to `fixed` and one to `broken` (see `pipelines/tests/test_review_compare.py`).

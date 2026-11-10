@@ -114,6 +114,44 @@
     },
     {
       "answer": "Yes.",
+      "cell_id": "fixture-run:model-a:44fef84fa1aef80b",
+      "expected": {
+        "answer": "no",
+        "true_citation": "Aeterni Patris, para. 16",
+        "true_tradition": "Encyclicals",
+        "true_version": "Vatican English text (Leo XIII, 1879-08-04)"
+      },
+      "grader_path": "verdict",
+      "metrics": {
+        "correct": 0,
+        "expected": "no",
+        "outcome": "incorrect",
+        "parsed": "yes"
+      },
+      "model_id": "model-a",
+      "outcome": "incorrect",
+      "prompt": "Is the following text from the Annie Besant (1922) translation of the Bhagavad Gita? \"Although these words seem to bear reference solely to Scholastic theology, nevertheless they may plainly be accepted as equally true of philosophy and its praises. For, the noble endowments which make the Scholastic theology so formidable to the enemies of truth-to wit, as the same Pontiff adds, 'that ready and close coherence of cause and effect, that order and array as of a disciplined army in battle, those clear definitions and distinctions, that strength of argument and those keen discussions, by which light is distinguished from darkness, the true from the false, expose and strip naked, as it were, the falsehoods of heretics wrapped around by a cloud of subterfuges and fallacies'(33) - those noble and admirable endowments, We say, are only to be found in a right use of that philosophy which the Scholastic teachers have been accustomed carefully and prudently to make use of even in theological disputations. Moreover, since it is the proper and special office of the Scholastic theologians to bind together by the fastest chain human and divine science, surely the theology in which they excelled would not have gained such honor and commendation among men if they had made use of a lame and imperfect or vain philosophy.\" Answer Yes or No.",
+      "question_id": "44fef84fa1aef80b",
+      "run": "fixture-run",
+      "scores_path": "runs/fixture-run/model-a/base/hinduism/english/population/scores.jsonl",
+      "source": {
+        "citation": "",
+        "condition": "en_ask_en_answer",
+        "document_type": "scripture",
+        "language": "en",
+        "requested_as": "Annie Besant (1922)",
+        "sample": "population",
+        "tradition": [
+          "Hinduism"
+        ],
+        "version": "Annie Besant (1922)",
+        "work": "Bhagavad Gita"
+      },
+      "task": "verify_source",
+      "text": "hinduism/english"
+    },
+    {
+      "answer": "Yes.",
       "cell_id": "fixture-run:model-b:1e33ec77e1ed0b3f",
       "expected": {
         "answer": "yes",
@@ -261,6 +299,44 @@
       "text": "islam/native"
     },
     {
+      "answer": "This is from Surah Al-An'am 6:144. Let me check the text: \"وَمِنَ ٱلْإِبِلِ ٱثْنَيْنِ وَمِنَ ٱلْبَقَرِ ٱثْنَيْنِ ۗ قُلْ ءَآلذَّكَرَيْنِ حَرَّمَ أَمِ ٱلْأُنثَيَيْنِ أَمَّا ٱشْتَمَلَتْ عَلَيْهِ أَرْحَامُ ٱلْأُنثَيَيْنِ ۖ أَمْ كُنتُمْ شُهَدَآءَ إِذْ وَصَّىٰكُمُ ٱللَّهُ بِهَـٰذَا ۚ فَمَنْ أَظْلَمُ مِمَّنِ ٱفْتَرَىٰ عَلَى ٱللَّهِ كَذِبًا لِّيُضِلَّ ٱلنَّاسَ بِغَيْرِ عِلْمٍ ۗ إِنَّ ٱللَّهَ لَا يَهْدِى ٱلْقَوْمَ ٱلظَّـٰلِمِينَ\" It matches the standard text.\n\nThe answer should be in Arabic: \"نعم\".\n\n**نعم**",
+      "cell_id": "fixture-run:model-a:aeaa707307175fdb",
+      "expected": {
+        "answer": "yes",
+        "true_citation": "6:144",
+        "true_tradition": "Islam",
+        "true_version": "Uthmani (QUL)"
+      },
+      "grader_path": "verdict",
+      "metrics": {
+        "correct": 0,
+        "expected": "yes",
+        "outcome": "refused",
+        "parsed": null
+      },
+      "model_id": "model-a",
+      "outcome": "refused",
+      "prompt": "Is the following text from the Uthmani Qur'an? \"وَمِنَ ٱلْإِبِلِ ٱثْنَيْنِ وَمِنَ ٱلْبَقَرِ ٱثْنَيْنِ ۗ قُلْ ءَآلذَّكَرَيْنِ حَرَّمَ أَمِ ٱلْأُنثَيَيْنِ أَمَّا ٱشْتَمَلَتْ عَلَيْهِ أَرْحَامُ ٱلْأُنثَيَيْنِ ۖ أَمْ كُنتُمْ شُهَدَآءَ إِذْ وَصَّىٰكُمُ ٱللَّهُ بِهَـٰذَا ۚ فَمَنْ أَظْلَمُ مِمَّنِ ٱفْتَرَىٰ عَلَى ٱللَّهِ كَذِبًا لِّيُضِلَّ ٱلنَّاسَ بِغَيْرِ عِلْمٍ ۗ إِنَّ ٱللَّهَ لَا يَهْدِى ٱلْقَوْمَ ٱلظَّـٰلِمِينَ\" Answer Yes or No.\nAnswer in the language of the Uthmani Qur'an.",
+      "question_id": "aeaa707307175fdb",
+      "run": "fixture-run",
+      "scores_path": "runs/fixture-run/model-a/base/islam/native/population/prompt-english/scores.jsonl",
+      "source": {
+        "citation": "6:144",
+        "condition": "ask_english",
+        "document_type": "scripture",
+        "language": "ar",
+        "requested_as": "Uthmani (QUL)",
+        "sample": "population",
+        "tradition": [
+          "Islam"
+        ],
+        "version": "Uthmani (QUL)",
+        "work": "The Qur'an"
+      },
+      "task": "verify_source",
+      "text": "islam/native"
+    },
+    {
       "answer": "I am not certain which verse this is; it is one of these two:\n«وَأَصْبَحَ ٱلَّذِينَ تَمَنَّوْا۟ مَكَانَهُۥ بِٱلْأَمْسِ يَقُولُونَ وَيْكَأَنَّ ٱللَّهَ يَبْسُطُ ٱلرِّزْقَ لِمَن يَشَآءُ مِنْ عِبَادِهِۦ وَيَقْدِرُ ۖ لَوْلَآ أَن مَّنَّ ٱللَّهُ عَلَيْنَا لَخَسَفَ بِنَا ۖ وَيْكَأَنَّهُۥ لَا يُفْلِحُ ٱلْكَـٰفِرُونَ»\n«إِن يَمْسَسْكُمْ قَرْحٌ فَقَدْ مَسَّ ٱلْقَوْمَ قَرْحٌ مِّثْلُهُۥ ۚ وَتِلْكَ ٱلْأَيَّامُ نُدَاوِلُهَا بَيْنَ ٱلنَّاسِ وَلِيَعْلَمَ ٱللَّهُ ٱلَّذِينَ ءَامَنُوا۟ وَيَتَّخِذَ مِنكُمْ شُهَدَآءَ ۗ وَٱللَّهُ لَا يُحِبُّ ٱلظَّـٰلِمِينَ»",
       "cell_id": "fixture-run:model-a:7c41160f85999097",
       "expected": {
@@ -360,16 +436,30 @@
       "population": 1,
       "task": "retrieve_quote",
       "text": "hinduism/english"
+    },
+    {
+      "drawn": 1,
+      "outcome": "incorrect",
+      "population": 1,
+      "task": "verify_source",
+      "text": "hinduism/english"
+    },
+    {
+      "drawn": 1,
+      "outcome": "refused",
+      "population": 1,
+      "task": "verify_source",
+      "text": "islam/native"
     }
   ],
   "texts": [
     {
-      "drawn": 4,
+      "drawn": 5,
       "id": "hinduism/english",
       "label": "Bhagavad Gita — Annie Besant (1922)"
     },
     {
-      "drawn": 4,
+      "drawn": 5,
       "id": "islam/native",
       "label": "The Qur'an — Uthmani (QUL)"
     }

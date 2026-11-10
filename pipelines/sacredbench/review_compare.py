@@ -29,7 +29,7 @@ import math
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from sacredbench.review_sample import OUTCOMES, TASKS, grader_path
 from sacredbench.score import score_answer
@@ -145,6 +145,11 @@ def _validate_gold_row(row: object, where: str) -> None:
         raise ReviewCompareError(f"{where}: unknown task {row['task']!r}")
     if row["cell_id"] != f"{row['run']}:{row['model_id']}:{row['question_id']}":
         raise ReviewCompareError(f"{where}: cell_id {row['cell_id']!r} is not <run>:<model_id>:<question_id>")
+    scores_path = PurePosixPath(row["scores_path"])
+    if scores_path.is_absolute() or ".." in scores_path.parts:
+        raise ReviewCompareError(
+            f"{where}: scores_path {row['scores_path']!r} must be relative to the repo root, without '..'"
+        )
     for key in ("expected", "source"):
         if not isinstance(row[key], dict):
             raise ReviewCompareError(f"{where}: {key!r} must be an object")
@@ -209,7 +214,10 @@ def load_gold(paths: list[Path]) -> list[dict]:
                 )
             first_seen[key] = where
             if row["cell_id"] < previous_cell:
-                raise ReviewCompareError(f"{where}: rows are not sorted by cell_id")
+                raise ReviewCompareError(
+                    f"{where}: rows are not sorted by cell_id (pass each downloaded gold set as its own "
+                    "argument rather than concatenating files)"
+                )
             previous_cell = row["cell_id"]
             rows.append(row)
     if not rows:

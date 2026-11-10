@@ -1,7 +1,7 @@
 """Spec 154 phase 2: gold-set rows and the version comparison (review-compare).
 
-The shared fixture (``fixtures/review_sample.json`` + ``fixtures/review_gold_set.jsonl``) is 8 cells:
-one per task in ``islam/native`` (Arabic, RTL) and in ``hinduism/english``. Its ``shown`` verdicts
+The shared fixture (``fixtures/review_sample.json`` + ``fixtures/review_gold_set.jsonl``) is 10 cells:
+every task in ``islam/native`` (Arabic, RTL) and in ``hinduism/english``. Its ``shown`` verdicts
 stand for the committed scores at labelling time. Two of them are an older matcher's:
 
 - the ``islam/native`` cite cell answers ``34:46 أو 3:140`` (an undisclaimed echo of the form example
@@ -11,7 +11,8 @@ stand for the committed scores at labelling time. Two of them are an older match
   matcher folds English diacritics (#94) and says ``correct``; the human agrees, so ``current`` **fixes** it.
 
 The ``islam/native`` retrieve cell is correct by containment but hedges between two verses, so the human
-says ``incorrect`` under every version. One row is ``cant_judge`` and one is defect-flagged.
+says ``incorrect`` under every version. Two ``verify_source`` cells are judged (a refusal that never opens
+with Yes/No, and a "Yes" to a false premise); two more are ``cant_judge`` and defect-flagged.
 """
 
 from __future__ import annotations
@@ -46,6 +47,7 @@ REVIEWER = "3f2b8c1e-5d4a-4e6f-9b7c-1a2d3e4f5a6b"
 AR_RETRIEVE = "fixture-run:model-a:7c41160f85999097"  # contained, human incorrect
 AR_CITE = "fixture-run:model-a:12e45dddc647beb6"  # broken by current
 AR_VERIFY = "fixture-run:model-b:aeaa707307175fdb"  # cant_judge
+AR_REFUSAL = "fixture-run:model-a:aeaa707307175fdb"  # refused, human refused
 EN_RETRIEVE = "fixture-run:model-a:b9bdeb4400fc2a64"  # fixed by current
 EN_VERIFY = "fixture-run:model-b:1e33ec77e1ed0b3f"  # defect
 
@@ -100,7 +102,7 @@ def test_fixture_gold_rows_are_the_sample_cells_labelled() -> None:
     sample = load_sample(FIXTURE_SAMPLE)
     cells = {c["cell_id"]: c for c in sample["cells"]}
     rows = load_gold([FIXTURE_GOLD])
-    assert len(rows) == len(cells) == 8
+    assert len(rows) == len(cells) == 10
     assert {c["task"] for c in cells.values()} == {"retrieve_quote", "complete_unit", "cite_passage", "verify_source"}
     assert {c["text"] for c in cells.values()} == {"islam/native", "hinduism/english"}
     for row in rows:
@@ -139,16 +141,20 @@ def test_gold_numbers_are_written_as_json_stringify_writes_them() -> None:
 
 def test_committed_counts_match_the_hand_computed_numbers(gold: list[dict], root: Path) -> None:
     v = compare(gold, ["committed"], root)["versions"][0]
-    assert v["rows"] == 8
+    assert v["rows"] == 10
     assert v["excluded"] == {"cant_judge": 1, "defect": 1, "total": 2}
-    assert v["overall"] == _tally(4, 6)
-    assert v["by_task"] == {"cite_passage": _tally(2, 2), "complete_unit": _tally(2, 2), "retrieve_quote": _tally(0, 2)}
+    assert v["overall"] == _tally(6, 8)
+    assert v["by_task"] == {
+        "cite_passage": _tally(2, 2), "complete_unit": _tally(2, 2), "retrieve_quote": _tally(0, 2),
+        "verify_source": _tally(2, 2),
+    }
     assert v["by_text"] == {
-        "hinduism/english": {**_tally(2, 3), "arms": {"en_ask_en_answer": 3}},
-        "islam/native": {**_tally(2, 3), "arms": {"ask_english": 1, "ask_native": 2}},
+        "hinduism/english": {**_tally(3, 4), "arms": {"en_ask_en_answer": 4}},
+        "islam/native": {**_tally(3, 4), "arms": {"ask_english": 2, "ask_native": 2}},
     }
     assert v["by_grader_path"] == {
         "citation": _tally(2, 2), "contained": _tally(0, 1), "exact": _tally(1, 1), "none": _tally(1, 2),
+        "verdict": _tally(2, 2),
     }
     assert [(d["cell_id"], d["human"], d["version"]) for d in v["disagreements"]] == [
         (AR_RETRIEVE, "incorrect", "correct"), (EN_RETRIEVE, "correct", "incorrect"),
@@ -157,14 +163,19 @@ def test_committed_counts_match_the_hand_computed_numbers(gold: list[dict], root
 
 def test_current_rescores_with_the_real_scorer(gold: list[dict], root: Path) -> None:
     v = compare(gold, ["current"], root)["versions"][0]
-    assert v["overall"] == _tally(4, 6)
-    assert v["by_task"] == {"cite_passage": _tally(1, 2), "complete_unit": _tally(2, 2), "retrieve_quote": _tally(1, 2)}
-    assert v["by_text"]["hinduism/english"] == {**_tally(3, 3), "arms": {"en_ask_en_answer": 3}}
-    assert v["by_text"]["islam/native"] == {**_tally(1, 3), "arms": {"ask_english": 1, "ask_native": 2}}
+    assert v["overall"] == _tally(6, 8)
+    assert v["by_task"] == {
+        "cite_passage": _tally(1, 2), "complete_unit": _tally(2, 2), "retrieve_quote": _tally(1, 2),
+        "verify_source": _tally(2, 2),
+    }
+    assert v["by_text"]["hinduism/english"] == {**_tally(4, 4), "arms": {"en_ask_en_answer": 4}}
+    assert v["by_text"]["islam/native"] == {**_tally(2, 4), "arms": {"ask_english": 2, "ask_native": 2}}
     assert v["by_grader_path"] == {
         "citation": _tally(1, 2), "contained": _tally(0, 1), "exact": _tally(1, 1), "none": _tally(1, 1),
-        "normalized": _tally(1, 1),
+        "normalized": _tally(1, 1), "verdict": _tally(2, 2),
     }
+    rows = {r["cell_id"]: r for r in gold}
+    assert rows[AR_REFUSAL]["label"]["outcome"] == "refused" and AR_REFUSAL not in {d["cell_id"] for d in v["disagreements"]}
     assert [(d["cell_id"], d["version"]) for d in v["disagreements"]] == [(AR_CITE, "correct"), (AR_RETRIEVE, "correct")]
 
 
@@ -194,7 +205,7 @@ def test_cant_judge_and_defect_rows_are_counted_apart(gold: list[dict], root: Pa
             row["label"]["outcome"] = "cant_judge"
     v = compare(load_gold([_write_gold(tmp_path / "g.jsonl", rows)]), ["committed"], root)["versions"][0]
     assert v["excluded"] == {"cant_judge": 2, "defect": 2, "total": 3}
-    assert v["overall"] == _tally(4, 5)
+    assert v["overall"] == _tally(6, 7)
     assert EN_RETRIEVE not in {d["cell_id"] for d in v["disagreements"]}
 
 
@@ -210,7 +221,7 @@ def test_a_run_directory_resolves_through_the_run_prefix_swap(gold: list[dict], 
     })
     report = compare(gold, ["committed", str(version_b)], root)
     v = _version(report, str(version_b))
-    assert v["overall"] == _tally(5, 6)
+    assert v["overall"] == _tally(7, 8)
     assert v["by_grader_path"]["normalized"] == _tally(1, 1)
     (movers,) = report["movers"]
     assert movers["counts"] == {"fixed": 1, "broken": 0, "neither": 1}
@@ -282,6 +293,10 @@ def _mutate(row: dict, change: str) -> None:
         row["task"] = "summarise"
     elif change == "shown":
         row["shown"]["outcome"] = "cant_judge"
+    elif change == "escape":
+        row["scores_path"] = "runs/fixture-run/../../etc/scores.jsonl"
+    elif change == "absolute":
+        row["scores_path"] = "/etc/scores.jsonl"
 
 
 @pytest.mark.parametrize(
@@ -298,6 +313,8 @@ def _mutate(row: dict, change: str) -> None:
         ("cell_id", "is not <run>:<model_id>:<question_id>"),
         ("task", "unknown task 'summarise'"),
         ("shown", "unknown shown outcome 'cant_judge'"),
+        ("escape", "must be relative to the repo root, without '..'"),
+        ("absolute", "must be relative to the repo root, without '..'"),
     ],
 )
 def test_the_loader_rejects_a_bad_row(tmp_path: Path, change: str, message: str) -> None:
@@ -320,7 +337,7 @@ def test_unsorted_rows_fail(tmp_path: Path) -> None:
     rows = FIXTURE_GOLD.read_text(encoding="utf-8").splitlines()
     path = tmp_path / "g.jsonl"
     path.write_text("\n".join(reversed(rows)) + "\n", encoding="utf-8")
-    with pytest.raises(ReviewCompareError, match="not sorted by cell_id"):
+    with pytest.raises(ReviewCompareError, match="not sorted by cell_id .*rather than concatenating"):
         load_gold([path])
 
 
@@ -328,8 +345,8 @@ def test_two_reviewers_of_one_cell_are_both_counted(gold: list[dict], root: Path
     second = "9d1e2f3a-4b5c-4d6e-8f70-1a2b3c4d5e6f"
     other = _write_gold(tmp_path / "other.jsonl", [dict(r, reviewer_id=second) for r in gold])
     report = compare(load_gold([FIXTURE_GOLD, other]), ["committed"], root)
-    assert report["rows"] == 16 and report["reviewers"] == sorted([REVIEWER, second])
-    assert report["versions"][0]["overall"] == _tally(8, 12)
+    assert report["rows"] == 20 and report["reviewers"] == sorted([REVIEWER, second])
+    assert report["versions"][0]["overall"] == _tally(12, 16)
     assert f"reviewer={second}" in format_report(report)
 
 
@@ -339,9 +356,9 @@ def test_two_reviewers_of_one_cell_are_both_counted(gold: list[dict], root: Path
 def test_the_text_report_is_deterministic(gold: list[dict], root: Path) -> None:
     text = format_report(compare(gold, ["committed", "current"], root))
     assert text == format_report(compare(gold, ["committed", "current"], root))
-    assert "overall: 4 / 6 (66.7%)" in text
-    assert "judged 6; excluded 2 (cant_judge 1, defect 1)" in text
-    assert "islam/native      2 / 3 (66.7%)  arms: ask_english 1, ask_native 2" in text
+    assert "overall: 6 / 8 (75.0%)" in text
+    assert "judged 8; excluded 2 (cant_judge 1, defect 1)" in text
+    assert "islam/native      3 / 4 (75.0%)  arms: ask_english 2, ask_native 2" in text
     assert "== movers: current vs committed ==\nfixed 1, broken 1, neither 0" in text
     assert f"  broken   {AR_CITE}  cite_passage  islam/native  human=incorrect  committed=incorrect  current=correct" in text
 
@@ -416,7 +433,7 @@ socket.create_connection = refuse
 from pathlib import Path
 from sacredbench.review_compare import compare, load_gold
 report = compare(load_gold([Path({str(FIXTURE_GOLD)!r})]), ["current"], Path({str(tmp_path)!r}))
-assert report["versions"][0]["overall"]["agree"] == 4, report["versions"][0]["overall"]
+assert report["versions"][0]["overall"]["agree"] == 6, report["versions"][0]["overall"]
 loaded = sorted(m for m in sys.modules if m == "sacredbench.providers" or m.split(".")[0] in
                 {{"anthropic", "openai", "google", "httpx", "requests"}})
 assert not loaded, loaded
@@ -425,6 +442,29 @@ print("ok")
     proc = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr
     assert proc.stdout.strip() == "ok"
+
+
+def test_the_real_entrypoint_rescores_offline_without_a_provider_sdk(root: Path) -> None:
+    """``python -m sacredbench review-compare --version current`` with sockets refused and every
+    provider SDK blocked from loading. (The CLI module itself imports ``sacredbench.providers`` for
+    the collect/score commands; that module loads no SDK and opens no connection on import.)"""
+    script = f"""
+import runpy, socket, sys
+class BlockProviderSdks:
+    def find_spec(self, name, path=None, target=None):
+        if name.split(".")[0] in {{"anthropic", "openai", "httpx", "requests"}} or name.startswith("google.genai"):
+            raise ImportError("provider SDK import attempted: " + name)
+sys.meta_path.insert(0, BlockProviderSdks())
+def refuse(*args, **kwargs):
+    raise AssertionError("network call attempted")
+socket.socket.connect = refuse
+socket.create_connection = refuse
+sys.argv = ["sacredbench", "review-compare", {str(FIXTURE_GOLD)!r}, "--version", "current"]
+runpy.run_module("sacredbench", run_name="__main__")
+"""
+    proc = subprocess.run([sys.executable, "-c", script], cwd=root, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    assert "== current ==" in proc.stdout and "overall: 6 / 8 (75.0%)" in proc.stdout
 
 
 def test_smoke_first_20_committed_sample_cells_agree_with_themselves(tmp_path: Path) -> None:
