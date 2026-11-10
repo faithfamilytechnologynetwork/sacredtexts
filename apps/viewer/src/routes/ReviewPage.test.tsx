@@ -103,6 +103,49 @@ describe("/review: the auth gate", () => {
     expect(screen.getByTestId("review-service-error")).toHaveTextContent("your session expired");
   });
 
+  it("sign-out with a stale CSRF token refreshes it, retries once, and signs out", async () => {
+    const api = installFakeReviewApi();
+    const tokens: Array<string | null> = [];
+    let fresh = false;
+    api.override((path, method) => {
+      if (path === "/api/auth/csrf") {
+        fresh = true;
+        return json({ csrfToken: "fresh" });
+      }
+      if (path === "/api/auth/logout" && method === "POST") {
+        tokens.push(fresh ? "fresh" : "stale");
+        return fresh ? json({ ok: true }) : json({ error: "csrf" }, 403);
+      }
+      return undefined;
+    });
+    renderApp("/review");
+    expect(await screen.findByTestId("review-page")).toBeInTheDocument();
+    fresh = false; // the token initReview fetched has gone stale since
+    await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    expect(await screen.findByTestId("review-auth-form")).toBeInTheDocument();
+    expect(tokens).toEqual(["stale", "fresh"]);
+    expect(screen.queryByTestId("sign-out-error")).toBeNull();
+  });
+
+  it("a sign-out the server keeps refusing says so and leaves the reviewer signed in", async () => {
+    const api = installFakeReviewApi();
+    let posts = 0;
+    api.override((path, method) => {
+      if (path === "/api/auth/logout" && method === "POST") {
+        posts += 1;
+        return json({ error: "csrf" }, 403);
+      }
+      return undefined;
+    });
+    renderApp("/review");
+    expect(await screen.findByTestId("review-page")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    expect(await screen.findByTestId("sign-out-error")).toHaveTextContent("Couldn’t sign out (csrf)");
+    expect(screen.getByTestId("review-page")).toBeInTheDocument();
+    expect(screen.getByTestId("reviewer-badge")).toHaveTextContent("Signed in as");
+    expect(posts).toBe(2); // the original and one retry after refreshing the token, no more
+  });
+
   it("fetches the sample once per session, not once per page", async () => {
     const api = installFakeReviewApi({ drafts: draftOf(["islam/native"]) });
     let sampleRequests = 0;

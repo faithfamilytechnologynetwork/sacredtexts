@@ -132,7 +132,10 @@ Pass several gold-set files to combine reviewers. Each `--version` is one of:
 
 - `committed`: the run's recorded scores, read now from each row's `scores_path`;
 - `current`: a re-score by the scorer code in this checkout, exactly as `sacredbench score`
-  would score it. It makes no network calls;
+  would score it with the default graders. It makes no network calls. Each row's run must
+  have been scored with the default graders too (the `evaluators` in the `summary.json`
+  beside its `scores_path`). Otherwise it stops with an error, because the difference
+  would show as matcher movers;
 - a **run directory** laid out like `runs/<run>/`, for example a copy of the run re-scored
   with `sacredbench score` on another branch. Each row's `scores_path` has its
   `runs/<run>/` prefix replaced by the directory. All the gold rows must come from one run.

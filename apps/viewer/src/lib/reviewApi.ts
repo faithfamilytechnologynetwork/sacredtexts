@@ -125,8 +125,14 @@ export function signup(input: {
   return authPost("/api/auth/signup", input);
 }
 
+/**
+ * Sign out. A refusal throws: a stale CSRF token's 403 (`isCsrfError`, which a fresh token fixes) or
+ * any other non-2xx. The server session and its cookie are still live after a refusal, so the caller
+ * must never treat it as signed out.
+ */
 export async function logout(): Promise<void> {
-  await call("/api/auth/logout", { method: "POST" });
+  const res = await call("/api/auth/logout", { method: "POST" });
+  if (!res.ok) throw new ReviewApiError(res.status, (await readJson(res))?.error ?? "sign-out failed");
   csrfToken = null;
 }
 

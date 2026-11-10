@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { eq } from 'drizzle-orm';
 import { setCookie, getCookie } from 'hono/cookie';
 import type { AppDb } from '../db';
@@ -31,6 +32,14 @@ const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 1024;
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+/**
+ * Byte cap on the signup and login bodies, enforced before the JSON is parsed. These routes are public
+ * (no session), so without a cap any caller could make the service buffer an arbitrarily large body.
+ * 16 KiB leaves room for the longest password allowed (1,024 UTF-16 units, at most 3 KiB in UTF-8) plus a name,
+ * a background note, an email and the invite code. Over it ⇒ 413 (hono's bodyLimit).
+ */
+export const AUTH_BODY_MAX_BYTES = 16 * 1024;
+
 /** Auth routes: signup (invite-gated), login, logout, and `me`. */
 export function authRoutes(db: AppDb, config: AuthConfig): Hono<AppEnv> {
   const route = new Hono<AppEnv>();
@@ -47,7 +56,7 @@ export function authRoutes(db: AppDb, config: AuthConfig): Hono<AppEnv> {
     return csrfToken;
   }
 
-  route.post('/signup', requireJsonRequest(), async (c) => {
+  route.post('/signup', requireJsonRequest(), bodyLimit({ maxSize: AUTH_BODY_MAX_BYTES }), async (c) => {
     const body = await c.req.json().catch(() => null);
     if (
       !body ||
@@ -87,7 +96,7 @@ export function authRoutes(db: AppDb, config: AuthConfig): Hono<AppEnv> {
     return c.json({ reviewer, csrfToken }, 201);
   });
 
-  route.post('/login', requireJsonRequest(), async (c) => {
+  route.post('/login', requireJsonRequest(), bodyLimit({ maxSize: AUTH_BODY_MAX_BYTES }), async (c) => {
     const body = await c.req.json().catch(() => null);
     if (!body || typeof body.email !== 'string' || typeof body.password !== 'string') {
       return c.json({ error: 'invalid body' }, 400);

@@ -5,7 +5,10 @@ import {
   fetchCsrf,
   getDraft,
   getSample,
+  isCsrfError,
   listDrafts,
+  login,
+  logout,
   me,
   putDraft,
   REVIEW_BODY_MAX_BYTES,
@@ -107,6 +110,30 @@ describe("reviewApi: requests", () => {
       { sampleId: "S", state: { texts: [] }, version: 2 },
       { sampleId: "T", state: null, version: 1 },
     ]);
+  });
+});
+
+describe("reviewApi: logout", () => {
+  it("clears the CSRF token on success", async () => {
+    const rec = recordingFetch((path) =>
+      path === "/api/auth/login" ? json({ reviewer: { id: "r" }, csrfToken: "tok" }) : json({ ok: true }),
+    );
+    setReviewFetch(rec.impl);
+    await login("a@b.c", "password1");
+    await logout();
+    await logout(); // the second one goes out with no token: the first cleared it
+    const posts = rec.seen.filter((r) => r.path === "/api/auth/logout");
+    expect(posts.map((r) => r.headers.get("X-CSRF-Token"))).toEqual(["tok", null]);
+  });
+
+  it("throws on a refused sign-out instead of reporting success", async () => {
+    setReviewFetch(recordingFetch(() => json({ error: "csrf" }, 403)).impl);
+    const err = await logout().catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ReviewApiError);
+    expect(isCsrfError(err)).toBe(true);
+
+    setReviewFetch(recordingFetch(() => json({ error: "nope" }, 400)).impl);
+    await expect(logout()).rejects.toMatchObject({ status: 400, message: "nope" });
   });
 });
 

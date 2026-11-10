@@ -57,10 +57,12 @@ def _tally(agree: int, n: int) -> dict:
 
 
 def _write_scores(target: Path, rows: list[dict], *, prefix: str = "", override: dict | None = None,
-                  duplicate: str | None = None, omit: str | None = None) -> None:
-    """A scores stand-in: each row's ``shown.metrics`` at ``target/<scores_path minus prefix>``.
-    ``override`` replaces metrics by cell id; ``duplicate`` writes that cell's row twice; ``omit``
-    leaves that cell's row out of its (still written) file."""
+                  duplicate: str | None = None, omit: str | None = None,
+                  evaluators: tuple[str, ...] = ("strict", "containment")) -> None:
+    """A scores stand-in: each row's ``shown.metrics`` at ``target/<scores_path minus prefix>``, with a
+    ``summary.json`` beside it recording ``evaluators``. ``override`` replaces metrics by cell id;
+    ``duplicate`` writes that cell's row twice; ``omit`` leaves that cell's row out of its (still
+    written) file."""
     by_path: dict[Path, list[str]] = {}
     for row in rows:
         metrics = (override or {}).get(row["cell_id"], row["shown"]["metrics"])
@@ -72,6 +74,8 @@ def _write_scores(target: Path, rows: list[dict], *, prefix: str = "", override:
     for path, lines in by_path.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("".join(lines), encoding="utf-8")
+        # The run summary beside each scores file records the graders it was scored with.
+        (path.parent / "summary.json").write_text(json.dumps({"evaluators": list(evaluators)}), encoding="utf-8")
 
 
 def _write_gold(path: Path, rows: list[dict]) -> Path:
@@ -226,6 +230,25 @@ def test_a_run_directory_resolves_through_the_run_prefix_swap(gold: list[dict], 
     (movers,) = report["movers"]
     assert movers["counts"] == {"fixed": 1, "broken": 0, "neither": 1}
     assert [(c["cell_id"], c["kind"]) for c in movers["cells"]] == [(AR_RETRIEVE, "neither"), (EN_RETRIEVE, "fixed")]
+
+
+def test_current_fails_on_a_run_scored_with_non_default_graders(gold: list[dict], tmp_path: Path) -> None:
+    _write_scores(tmp_path, gold, evaluators=("strict",))
+    with pytest.raises(ReviewCompareError, match=r"scored with evaluators \['strict'\].*default graders"):
+        compare(gold, ["current"], tmp_path)
+    # committed and a run directory read recorded verdicts, so they are not affected
+    assert compare(gold, ["committed"], tmp_path)["versions"][0]["overall"]["n"] == 8
+
+
+def test_current_accepts_the_default_graders_in_any_order(gold: list[dict], tmp_path: Path) -> None:
+    _write_scores(tmp_path, gold, evaluators=("containment", "strict"))
+    assert compare(gold, ["current"], tmp_path)["versions"][0]["overall"]["agree"] == 6
+
+
+def test_current_fails_when_the_run_summary_is_missing(gold: list[dict], root: Path) -> None:
+    next(root.rglob("summary.json")).unlink()
+    with pytest.raises(ReviewCompareError, match="summary.json not found, so the graders"):
+        compare(gold, ["current"], root)
 
 
 def test_a_run_directory_over_two_runs_is_ambiguous(gold: list[dict], root: Path, tmp_path: Path) -> None:
@@ -443,7 +466,8 @@ def test_errors_exit_non_zero_with_a_clear_message(gold: list[dict], tmp_path: P
     assert re.search(f"^error: .*{message}", proc.stderr), proc.stderr
 
 
-def test_current_makes_no_network_calls_and_imports_no_provider(tmp_path: Path) -> None:
+def test_current_makes_no_network_calls_and_imports_no_provider(root: Path) -> None:
+    tmp_path = root
     script = f"""
 import socket, sys
 def refuse(*args, **kwargs):

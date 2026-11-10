@@ -7,6 +7,7 @@ import { testSample } from '../testing/sample';
 import { CSRF_COOKIE, SESSION_COOKIE, CSRF_HEADER } from '../auth/cookies';
 import { createSession, SESSION_TTL_MS } from '../auth/session';
 import { reviewers, sessions } from '../schema';
+import { AUTH_BODY_MAX_BYTES } from './auth';
 
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -113,6 +114,49 @@ describe('signup (invite-gated)', () => {
     const app = await makeApp();
     expect((await signup(app, { password: 'x'.repeat(1025) })).status).toBe(400);
     expect((await signup(app, { email: 'not-an-email' })).status).toBe(400);
+  });
+});
+
+describe('body cap on the public auth routes', () => {
+  const post = (app: Hono, path: string, body: unknown) =>
+    app.request(path, { method: 'POST', headers: jsonHeaders, body: JSON.stringify(body) });
+
+  it('rejects a signup body over the cap with 413 and creates no reviewer', async () => {
+    const db = await createTestDb();
+    const app = createApp(db, { allowedOrigins: [], auth, sample: testSample() });
+    const res = await post(app, '/api/auth/signup', signupBody({ background: 'x'.repeat(AUTH_BODY_MAX_BYTES) }));
+    expect(res.status).toBe(413);
+    expect(await db.select().from(reviewers)).toHaveLength(0);
+  });
+
+  it('rejects a login body over the cap with 413', async () => {
+    const app = await makeApp();
+    expect((await signup(app)).status).toBe(201);
+    const res = await post(app, '/api/auth/login', {
+      email: 'reviewer@example.com',
+      password: 'a-good-password',
+      pad: 'x'.repeat(AUTH_BODY_MAX_BYTES),
+    });
+    expect(res.status).toBe(413);
+  });
+
+  it('counts bytes, not characters: 4-byte characters over the cap are rejected', async () => {
+    const app = await makeApp();
+    const emoji = '\u{1F600}'; // 4 bytes in UTF-8, 2 UTF-16 code units
+    const chars = Math.ceil(AUTH_BODY_MAX_BYTES / 4) + 1;
+    expect(emoji.repeat(chars).length * 2).toBeLessThan(AUTH_BODY_MAX_BYTES * 4); // sanity: chars, not bytes, would pass
+    const res = await post(app, '/api/auth/signup', signupBody({ background: emoji.repeat(chars) }));
+    expect(res.status).toBe(413);
+  });
+
+  it('still accepts the longest legal password at its widest in bytes, with a background', async () => {
+    // The password cap counts UTF-16 units, so its widest UTF-8 form is 1,024 three-byte characters.
+    const app = await makeApp();
+    const res = await signup(app, {
+      password: '\u0A15'.repeat(1024), // Gurmukhi ka: 3 bytes in UTF-8
+      background: 'reads Quranic Arabic; hafiz. '.repeat(20),
+    });
+    expect(res.status).toBe(201);
   });
 });
 

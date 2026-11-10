@@ -728,9 +728,21 @@ export async function signupReview(input: {
   setStatus({ auth: "in", reviewer, error: null, errorKind: null });
 }
 
+/**
+ * Sign out. A stale CSRF token (403 `csrf`) is refreshed and the sign-out retried once, as saves and
+ * deletes do. Any other refusal, or a second one, rejects and leaves the reviewer signed in, store and
+ * all: the server session and its cookie are still live, so showing "signed out" would be false. The
+ * caller surfaces the error.
+ */
 export async function logoutReview(): Promise<void> {
   await flushReviewSaves(); // don't drop debounced edits on the way out
-  await apiLogout();
+  try {
+    await apiLogout();
+  } catch (e) {
+    if (!isCsrfError(e)) throw e;
+    await fetchCsrf();
+    await apiLogout();
+  }
   resetReviewStore();
   setStatus({ auth: "out", reviewer: null });
 }

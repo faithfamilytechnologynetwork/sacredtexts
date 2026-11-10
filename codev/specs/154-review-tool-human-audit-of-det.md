@@ -105,8 +105,11 @@ band, wrong citations and other-script rows) uses it as its vehicle.
    **matcher versions**:
    - `committed`: the run's recorded scores;
    - `current`: a re-score of the gold-set answers by the scorer code in this checkout,
-     for example on a candidate branch;
-   - a scores file produced elsewhere.
+     for example on a candidate branch, with the default graders (a run scored with other
+     graders fails fast);
+   - a **run directory** laid out like `runs/<run>/`, for example a copy re-scored elsewhere.
+     Each row's `scores_path` has its `runs/<run>/` prefix replaced by the directory, and all
+     the gold rows must come from one run.
 
    For each version it reports human-vs-matcher agreement as plain counts and percentages:
    overall, per task, per text and per grader path. It lists every disagreement. Given two
@@ -195,7 +198,7 @@ version it was made under.
       human outcome, notes, defect flag, rubric version, reviewer account id (no email or
       name), and time. Rows are stably sorted.
 - [ ] **Version-comparison CLI.** Takes gold-set file(s) and versions (`committed`,
-      `current`, or a scores file).
+      `current`, or a run directory laid out like `runs/<run>/`).
       - It reports agreement counts and percentages overall, per task, per text and per
         grader path. `can't judge` and defect-flagged rows are counted separately, not in
         agreement.

@@ -9,7 +9,9 @@ A **version** is a source of verdicts for the gold rows:
 
 - ``committed``: the run's recorded scores, read now from each row's ``scores_path``;
 - ``current``: a re-score by the scorer code in this checkout (``score.score_answer``, default
-  graders, exactly as ``sacredbench score`` calls it). No network;
+  graders, exactly as ``sacredbench score`` calls it). No network. Each row's run must have been
+  scored with the default graders (its ``summary.json`` ``evaluators``); otherwise it fails, because
+  the comparison would blame the matcher for a grader-set difference;
 - a **run directory** with the layout of ``runs/<run>/``, for example a copy re-scored on another
   branch. A row's ``scores_path`` has its ``runs/<run>/`` prefix replaced by the directory.
 
@@ -31,6 +33,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 
+from sacredbench.graders import DEFAULT_EVALUATORS
 from sacredbench.review_sample import OUTCOMES, TASKS, grader_path
 from sacredbench.score import score_answer
 
@@ -281,6 +284,36 @@ def _scored_metrics(rows: list[dict], paths: list[Path], version: str) -> list[d
     return metrics
 
 
+def _require_default_graders(rows: list[dict], root: Path) -> None:
+    """``current`` re-scores with the default graders, so each row's run must have been scored with
+    them too. Otherwise a grader-set difference would show up as matcher movers. Reads the
+    ``evaluators`` that ``score_file`` records in the ``summary.json`` beside each ``scores_path``."""
+    default = sorted(DEFAULT_EVALUATORS)
+    checked: set[Path] = set()
+    for row in rows:
+        summary = Path(root).joinpath(*PurePosixPath(row["scores_path"]).parent.parts, "summary.json")
+        if summary in checked:
+            continue
+        where = f"version {CURRENT!r}: cell {row['cell_id']}"
+        if not summary.is_file():
+            raise ReviewCompareError(
+                f"{where}: {summary} not found, so the graders its run was scored with are unknown; "
+                f"{CURRENT!r} re-scores with the default graders {default} and needs that run's summary"
+            )
+        try:
+            recorded = json.loads(summary.read_text(encoding="utf-8")).get("evaluators")
+        except (json.JSONDecodeError, AttributeError) as exc:
+            raise ReviewCompareError(f"{where}: {summary} is not a JSON summary ({exc})") from exc
+        if not isinstance(recorded, list) or sorted(recorded) != default:
+            raise ReviewCompareError(
+                f"{where}: its run was scored with evaluators {recorded!r} ({summary}), but {CURRENT!r} "
+                f"re-scores with the default graders {default}, so a grader-set difference would show "
+                "as matcher movers. Re-score that run with the default graders, or compare a run "
+                "directory scored with the graders you want"
+            )
+        checked.add(summary)
+
+
 def _rescored_metrics(rows: list[dict]) -> list[dict]:
     """Re-score each row as ``score.score_file`` does: default graders, language/prompt/work."""
     return [
@@ -317,6 +350,7 @@ def version_metrics(version: str, rows: list[dict], root: Path) -> list[dict]:
     if version == COMMITTED:
         metrics = _scored_metrics(rows, [Path(root) / row["scores_path"] for row in rows], version)
     elif version == CURRENT:
+        _require_default_graders(rows, root)
         metrics = _rescored_metrics(rows)
     else:
         run_dir = Path(version)

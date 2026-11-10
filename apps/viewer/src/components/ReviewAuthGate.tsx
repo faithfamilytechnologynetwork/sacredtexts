@@ -45,18 +45,31 @@ function capitalize(s: string): string {
 /** "Signed in as …" strip + sign-out, for the top of a review page. */
 export function ReviewerBadge() {
   const status = useReviewStatus();
+  // A refused sign-out leaves the reviewer signed in (the server session is still live); say so.
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   if (!status.reviewer) return null;
+  const signOut = () => {
+    setSignOutError(null);
+    logoutReview().catch((e: unknown) => setSignOutError(e instanceof Error ? e.message : "sign-out failed"));
+  };
   return (
     <div
-      className="flex items-center justify-between gap-2 rounded-lg border border-default-200 bg-surface-secondary px-3 py-2 text-sm"
+      className="rounded-lg border border-default-200 bg-surface-secondary px-3 py-2 text-sm"
       data-testid="reviewer-badge"
     >
-      <span className="text-default-600">
-        Signed in as <strong>{status.reviewer.name || status.reviewer.email}</strong>
-      </span>
-      <button type="button" onClick={() => void logoutReview()} className="text-xs text-accent hover:underline">
-        Sign out
-      </button>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-default-600">
+          Signed in as <strong>{status.reviewer.name || status.reviewer.email}</strong>
+        </span>
+        <button type="button" onClick={signOut} className="text-xs text-accent hover:underline">
+          Sign out
+        </button>
+      </div>
+      {signOutError && (
+        <p className="mt-1 text-xs text-danger" role="alert" data-testid="sign-out-error">
+          Couldn&rsquo;t sign out ({signOutError}). You&rsquo;re still signed in; try again.
+        </p>
+      )}
     </div>
   );
 }
