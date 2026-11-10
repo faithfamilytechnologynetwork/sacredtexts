@@ -323,3 +323,43 @@
     doc now says so.
   - Deferred: a missing `/assets/*` should 404 instead of getting the SPA shell with a 200. I'll take
     this with the hosting work, since it matters most for stale tabs after a redeploy.
+
+## Review phase: hosting provisioned (2026-11-10, ~23:30–23:45Z)
+
+- **The `/assets/*` 404 (deferred item m) is fixed.** A missing bundle used to get the SPA shell with a 200.
+  It is now a JSON 404, so a stale tab after a redeploy fails plainly. There's a test, and a mutation
+  turns it red.
+- **The build is a Dockerfile, not Nixpacks** (`apps/api/Dockerfile`, with the repo root as context).
+  - It uses explicit COPYs, builds the viewer in its own stage, installs prod deps only and runs as `node`.
+  - `migrate.ts` now resolves `drizzle/` from its own file, so the pre-deploy step can run from any
+    working directory.
+  - Local check: the image built (463 MB) and ran against a fresh local DB. Migrations applied twice.
+    Health, the shell, the bundles and the 404s all answered correctly, and the sample was
+    byte-identical. A signup and a v1 save worked, and the unknown-sample guard returned 404.
+  - The throwaway DB `sacredtexts_review_docker` was dropped afterwards.
+- **Surprise: Railway rejects a config-as-code path on a new service** ("Config as Code is deprecated,
+  use .railway/railway.ts"). Its `Builder` enum has no DOCKERFILE either.
+  - So the settings are set on the service through `railway api`: `dockerfilePath`, `preDeployCommand`,
+    `healthcheckPath` and the restart policy. A `dockerfilePath` alone was enough for Railway to build
+    the Dockerfile.
+  - `apps/api/railway.json` was deleted, because a file nothing reads invites edits that do nothing.
+    The README lists the settings, with a read-back query.
+- **Provisioned:**
+  - A new project `sacredtexts-review` in the Haadi workspace, separate from multibench.
+  - The services: `review` and `Postgres`, one replica each, no HA or PITR.
+  - The backup: a DAILY schedule on the Postgres volume (cron `7 6 * * *`, 6-day retention). Nothing
+    asked for payment or a plan change.
+  - The variables: `DATABASE_URL=${{Postgres.DATABASE_URL}}` (the private host) and an absolute
+    `SAMPLE_PATH`. `REVIEW_INVITE_CODE` was generated locally and set through stdin. It lives only in
+    Railway and in the main checkout's gitignored `.env`, which the worktree's `.env` symlinks to.
+  - The deploy: a `railway up` of a `git archive` of 7926311b, covering `apps/api`, `apps/viewer` and
+    `review/samples` (4 MB, against 345 MB for the repo).
+  - The domain: https://review-production-8f474051.up.railway.app
+- **Hosted check, without an account (all pass):**
+  - The pre-deploy step logged `migrations applied`, and the DB has 4 tables, 0 rows.
+  - Health is `db up`, the deep links serve the app, and the bundle is gzipped.
+  - A missing asset gets 404, `/api/sample` and `/me` get 401, and the cookies are `Secure; SameSite=None`.
+  - Chrome shows the sign-in form.
+- **Not done by me: the in-browser sign-up → label → reload → download.** It's a production host, and
+  I don't create accounts or enter passwords or the invite code there. I asked the architect for a
+  human to run it.

@@ -294,6 +294,9 @@ None.
    parameter. That gives about 1,400 cells, roughly 110 per text.
 2. **Hosting go-ahead.** *Settled at the gate:* **not approved.** Build and verify locally
    only, and provision nothing. The deploy configuration and runbook still ship.
+   *Later go-ahead (2026-11-10T21:34Z, owner via the architect):* provision once the local walk
+   passes: a new Railway project, one service plus Postgres, the smallest tiers, a daily backup.
+   This was provisioned in the review phase. See `apps/api/README.md` § Hosting.
 
 ### Nice-to-know
 

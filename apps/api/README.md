@@ -76,14 +76,15 @@ public browsing viewer is the Cloudflare Pages build, which this service does no
 
 **The viewer's own host is untouched.** `apps/viewer/server/index.mjs` (its `pnpm start`), its
 smoke test and `apps/viewer/railway.json` are the pre-existing static-only host and stay as they are.
-Whether any live service still uses that config is the owner's call. The **review** deployment uses
-`apps/api/railway.json`, not the viewer's.
+Whether any live service still uses that config is the owner's call. The **review** deployment is
+built from `apps/api/Dockerfile` (see [Hosting](#hosting)), not from the viewer's config.
 
 ## Configuration
 
 Copy `.env.example` to `.env`, or set the variables in the environment. Secrets (the database URL
 and the invite code) come from the environment only. A relative path resolves against the directory
-the service starts in, which is `apps/api` under `pnpm -C apps/api start`.
+the service starts in, which is `apps/api` under `pnpm -C apps/api start`. The hosted image uses
+absolute paths (see [Hosting](#hosting)).
 
 | Variable | Required | Behaviour |
 |---|---|---|
@@ -213,43 +214,86 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 
 ## Hosting
 
-> **Requires an explicit go-ahead. NOT approved.** Hosting costs money. Nothing below has been
-> provisioned or run. Until a go-ahead, the review tool runs locally only.
+> **Provisioned 2026-11-10** on the owner's go-ahead (relayed by the architect at 21:34Z):
+> <https://review-production-8f474051.up.railway.app>. This is the Railway project
+> `sacredtexts-review`, one service `review` plus a managed Postgres, in the Haadi workspace.
+> It is separate from the multibench project.
 
-The deployment is one Railway service plus a managed Postgres:
+**What runs**
 
-- **Service root:** the repo root, so the build can see `apps/viewer`, `apps/api` and
-  `review/samples/`.
-- **Config path:** `apps/api/railway.json` (config as code):
-  - Build: `pnpm -C apps/viewer install --frozen-lockfile && pnpm -C apps/viewer build &&
-    pnpm -C apps/api install --frozen-lockfile`.
-  - Pre-deploy: `pnpm -C apps/api migrate`. It applies the committed, reviewed migrations on every
-    deploy, before the new version goes live, and a failed migration fails the deploy. It is
-    idempotent and never `db:push`.
-  - Start: `pnpm -C apps/api start`. Health check: `/api/health` (503 when Postgres is unreachable,
-    so a deploy that can't reach the database fails).
+- **Service `review`:** one replica, built from `apps/api/Dockerfile`.
+- **Postgres:** Railway's managed Postgres, one instance, no HA or point-in-time recovery.
+  - The volume is backed up **daily** (06:07 UTC) and each backup is kept for 6 days.
+- **Domain:** the generated Railway domain above, routed to port 8080. There is no other domain.
 
-Provisioning steps, for when a go-ahead is given:
+**The image** (`apps/api/Dockerfile`, built with the **repo root** as its context):
 
-1. Create a Railway project with a managed **Postgres** and one empty service connected to this
-   repository. Set the service's root directory to the repo root and its config path to
-   `apps/api/railway.json`.
-2. Set the service variables. The paths are relative to `apps/api`, where the start command runs:
-   - `DATABASE_URL`: a reference to the Postgres service's URL.
-   - `REVIEW_INVITE_CODE`: the shared code, given to reviewers out of band.
-   - `SAMPLE_PATH=../../review/samples/facct-2026-11-03-k10.json`
-   - `VIEWER_DIST=../viewer/dist`
-   - Leave `ALLOWED_ORIGINS` empty: the UI and `/api` share the origin.
-3. Deploy. Confirm the logs show the active sample id, `serving the viewer from …` and
-   `api listening on :8080`, and that the four tables exist.
-4. Generate the one public domain. The service needs no other domain.
-5. **Completion check:** through that domain, in real Chrome and Safari, sign up with the invite
-   code, pick texts, label a cell, reload to confirm it persists, and download the gold set.
+- One stage builds the viewer with the plain `vite build`.
+- The service stage holds:
+  - the API's production dependencies;
+  - `apps/api/src` and `drizzle/`;
+  - `review/samples/`;
+  - the built viewer.
+- It runs as the `node` user with `tsx src/server.ts`.
+- Every `COPY` names its paths, so no `node_modules`, `dist`, `runs/` or `texts/` reaches it.
+- Build it locally with `docker build -f apps/api/Dockerfile -t sacredtexts-review .`.
+- A Dockerfile is used, not Nixpacks or Railpack, because the repo root holds `requirements.txt`
+  and no `package.json`, so auto-detection would build Python.
 
-**Unverified until then.** The repo root has no `package.json`, so check on the first deploy that
-the builder detects Node and pnpm (Node 24, pnpm 10.30.2, as in `package.json`'s `engines` and
-`packageManager`). If it does not, the build needs an explicit Node setup before this config can be
-used.
+**Service settings** are set on the service itself. Railway rejects a config-as-code file path on a
+new service ("Config as Code is deprecated"), so there is no `railway.json` for it. The settings are:
+
+| Setting | Value |
+|---|---|
+| `dockerfilePath` | `apps/api/Dockerfile` |
+| `preDeployCommand` | `tsx /app/apps/api/src/migrate.ts`: applies the committed, reviewed migrations before each new version goes live. A failed migration fails the deploy. It is idempotent and never `db:push`. |
+| `healthcheckPath` | `/api/health`: 503 when Postgres is unreachable, so a deploy that can't reach the database fails. |
+| `restartPolicyType` / `restartPolicyMaxRetries` | `ON_FAILURE` / `3` |
+
+To read them back:
+`railway api 'query($s: String!, $e: String!) { serviceInstance(serviceId: $s, environmentId: $e) { dockerfilePath preDeployCommand healthcheckPath restartPolicyType restartPolicyMaxRetries } }' --raw-var s=<service id> --raw-var e=<environment id>`.
+
+**Variables** on the `review` service:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}`, a reference to the private `postgres.railway.internal` URL. Postgres has no public proxy. |
+| `SAMPLE_PATH` | `/app/review/samples/facct-2026-11-03-k10.json` (an absolute path in the image) |
+| `REVIEW_INVITE_CODE` | The shared signup code. It is kept only in Railway and the gitignored root `.env`, and given to reviewers out of band. It was set through stdin (`railway variable set --stdin`), so it is never on a command line. |
+
+- `VIEWER_DIST` is set by the image (`/app/apps/viewer/dist`).
+- `PORT` comes from Railway (8080).
+- `ALLOWED_ORIGINS` is unset, because the UI and `/api` share the origin.
+
+**Deploying.** The first deploy was a CLI upload of exactly the committed paths the image needs:
+
+```bash
+stage=$(mktemp -d)
+git archive HEAD apps/api apps/viewer review/samples | tar -x -C "$stage"
+railway up "$stage" --path-as-root --service review --detach
+```
+
+That uploads about 4 MB, where the whole repo is about 345 MB. To deploy on every merge instead,
+connect the service to the repository's `main` branch. That is the owner's call:
+`railway service source connect --repo <owner>/<repo> --branch main --service review`.
+
+**Checked on the first deploy (2026-11-10), over HTTPS, without an account:**
+
+- The pre-deploy step logged `migrations applied`.
+- At startup the service logged the active sample, `serving the viewer from /app/apps/viewer/dist`
+  and `api listening on :8080`. It did not log the "signup is CLOSED" line, so the invite code is set.
+- The database holds the four tables plus drizzle's migration record, with no rows.
+- `/api/health` returned `{"status":"ok","db":"up"}`.
+- `/`, `/review` and a `/review/cell/…` deep link serve the app.
+- The JS bundle is served gzipped: 145 KB of 486 KB.
+- A missing `/assets/*` file returns 404.
+- `/api/sample` and `/api/auth/me` return 401 when signed out.
+- The cookies are `Secure; SameSite=None`.
+- In Chrome, `/review` shows the sign-in and create-account forms.
+
+**Completion check (a human, in a real browser).** Through the domain, sign up with the invite code,
+pick texts, label a cell, reload to confirm it persists, and download the gold set. A builder agent
+doesn't create accounts or enter the invite code on the production host, so a person runs this.
 
 To switch the active sample, commit the new sample file, point `SAMPLE_PATH` at it and redeploy.
 Drafts for the old sample stay in the store and can be read or discarded, but no longer saved.
