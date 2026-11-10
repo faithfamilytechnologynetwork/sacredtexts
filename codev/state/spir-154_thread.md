@@ -185,3 +185,39 @@
   tiers, daily backup. The invite code lives only in Railway and the gitignored root `.env`. The
   multibench Railway project and `apps/viewer/railway.json` are not to be touched. The README's "NOT
   approved" banner stays until provision time, when it's rewritten to say what was actually provisioned.
+
+## Phase 5 — viewer review store, API client, sample and gold-set libraries (2026-11-10)
+
+- New in `apps/viewer/src/lib/`: `review.ts` (the store), `reviewApi.ts`, `reviewSample.ts`,
+  `rubric.ts`, `goldSet.ts`, and a test file for each of the first four plus `reviewStore.test.ts`.
+  `zod` is back in the viewer's dependencies (resolved `^3.25.76`).
+- **Gold-set parity holds byte for byte** with the Python-written `fixtures/review_gold_set.jsonl`. The TS
+  writer sorts keys by code point at every level. It doesn't lean on `JSON.stringify` key order, because
+  JS puts integer-like keys first (`"9"` before `"10"`) where Python's `sort_keys` doesn't. A test pins it.
+- **Store, ported from multibench and re-keyed to samples.** `ReviewState` is `{samples}`.
+  - multibench's `reviewer` info, JSON import/export, `evenSample`/`seededSample` and the submission
+    client calls are dropped. Nothing here uses them: sampling is the committed Python draw, and the
+    reviewer's output is the gold-set download.
+  - Every multibench fix has a regression test, and five of them were mutation-checked (each mutation
+    turns a test red).
+- **Choices worth knowing:**
+  - **"unavailable" vs signed out.** `AuthStatus` gains `"unavailable"`. Any non-JSON answer that isn't a
+    5xx or a 413 throws `ReviewUnavailableError`, so `initReview` lands on "review service unavailable"
+    instead of the sign-in form. A network error still lands on signed-out with the "couldn't reach"
+    notice, as in multibench.
+  - **413 is judged by status, not body.** The API's 413 is plain text (hono `bodyLimit`'s default), so
+    a body-type check alone would have read it as "unavailable".
+  - **Terminal saves.** A 413, or any 4xx that isn't 401, 409 or a CSRF 403 (`{error:"csrf"}`), sets
+    `errorKind: "rejected"`. No retry timer is armed, `flushReviewSaves` doesn't retry it, the labels
+    stay in memory, and the next real edit tries again.
+  - **Byte guard.** `putDraft` measures the exact UTF-8 body against `REVIEW_BODY_MAX_BYTES` before
+    sending. A test reads `apps/api/src/routes/review.ts` and pins the two caps equal.
+  - **Deletes refresh CSRF too.** multibench refreshed the token only on save 403s. Deletes now do it as
+    well, otherwise a stale token would loop the delete retry.
+  - **Labels.** `CellLabel.outcome` is `null` until picked. A label without an outcome isn't counted in
+    progress and isn't in the gold set. `withLabel` stamps `rubric_version`/`labelled_at` only on a real
+    change; a no-op returns the same state object, so the store doesn't save.
+  - **The gold set fails loudly on bad labels.** A label for a cell the sample doesn't hold, or one that
+    lost its stamp, throws instead of writing a file `review-compare` would reject. Labels on texts the
+    reviewer has since deselected are still written: they're real judgements.
+- Gate: viewer 348/348 (253 existing + 95 new), `check-types` clean.
