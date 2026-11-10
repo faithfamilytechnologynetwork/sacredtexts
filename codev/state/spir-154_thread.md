@@ -142,3 +142,34 @@
   Carried forward: (1) **Phase 4** should reject a draft PUT/submit whose `sampleId` isn't the active
   sample (two-line guard once the sample is loaded); (2) signup/login bodies have no `bodyLimit`
   (inherited from multibench verbatim) — a cheap follow-up, listed for the Phase 7 review doc.
+
+## 2026-11-10 — phase 4: one-service hosting (6c9d640d)
+
+- `SAMPLE_PATH` (required) → `src/sample.ts` validates the envelope once at startup (format 1, the
+  pipelines' `TOP_KEYS`, non-empty `sample_id`, cells/strata/texts lists of objects) and
+  `GET /api/sample` (auth) serves the committed bytes verbatim (2.8 MB; no per-request re-serialize).
+  The viewer still owns the strict per-cell parse (Phase 5).
+- Took phase 3's carry-forward: PUT and submit for any id but the active sample → 404
+  `{error:"unknown sample"}`. GET / list / DELETE stay open for every id, so a draft from an earlier
+  sample is still readable and removable. Two existing tests that PUT to a second sample now seed
+  that draft directly in the DB.
+- `VIEWER_DIST` (optional) → `src/static.ts` ports `apps/viewer/server/index.mjs` (serveStatic +
+  index.html fallback), excluding `/api/*` and serving GET/HEAD only. Any unmatched `/api` path is a
+  JSON 404 (with or without a viewer). `/api/review/<junk>` signed out is 401, not 404: the review
+  router's auth middleware covers its whole subtree. That's fine, and it's still JSON.
+- `apps/viewer/server/index.mjs`, its smoke test and `apps/viewer/railway.json` are untouched, as the
+  plan says.
+- `vitest.config.ts`: `testTimeout` 20 s. The first cold run timed out (5 s) in each file's first
+  PGlite boot while `server.test.ts` was spawning real servers. The warm re-run was 84/84 green.
+- Manual check, the same way the hosted config runs it: the exact railway build command from the repo
+  root, a throwaway initdb cluster on :55432 (scratchpad, TCP-only, stopped afterwards; the user's :5432
+  was not touched), `pnpm -C apps/api migrate`, then `pnpm -C apps/api start` with the
+  **Railway-style relative paths** (`../../review/samples/…`, `../viewer/dist`).
+  - Results: health 200, `/` and `/review/cell/x` serve index.html, the hashed JS is served as JS,
+    `/api/nope` is a JSON 404, `/api/sample` is 401 signed out and byte-identical to the committed
+    file signed in, a PUT to the active sample gives v1, and a PUT to another sample is 404.
+- **Unverified, flagged in the README:** the repo root has no `package.json`, so Nixpacks/Railpack
+  Node detection at a repo-root service root is unproven. It can only be checked on a first deploy,
+  which is not approved.
+- The README mentions the viewer's Vite `/api` proxy for API-only dev. The proxy itself lands in
+  Phase 6 (`vite.config.ts`), per the plan.
