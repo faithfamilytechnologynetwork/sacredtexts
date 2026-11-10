@@ -103,3 +103,10 @@
   10 cells (judged verify_source refusal + false-premise rows); scores_path must be relative w/o '..';
   README/hint nits. Declined the lazy-import refactor of cli.py (touches collect/score/main, out of
   phase scope; providers module loads no SDK) — rebuttal in 154-phase_2-iter1-rebuttals.md.
+- Phase 2 consult iter 2: claude APPROVE; codex REQUEST_CHANGES — real bug: `runs/<run>//etc/passwd`
+  passed the scores_path check and the raw prefix slice made the dir-version lookup absolute. Fixed in
+  b0e0fa61 (canonical-path check at load + component-wise join; regression test bypasses the loader).
+  Also took claude's notes: per-task expected-key check, `excluded.both`, smoke test via CLI.
+- **For the architect/owner (from claude iter 2):** the fixture's `broken` mover is a real
+  rubric-vs-matcher divergence — the approved rubric discounts only a *disclaimed* form-example echo,
+  but #118 drops an undisclaimed one beside another citation (`34:46 أو 3:140` scores correct).
