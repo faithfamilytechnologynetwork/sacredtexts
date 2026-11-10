@@ -29,3 +29,15 @@
   into test_audit.py's scan and the dispatcher (test_audit only scans runs/ — fixtures-gap class);
   keyed (HMAC) pseudonyms + languages snapshot; account delete stays cascading (port unchanged),
   figures tied to a committed export; claim-race criterion; #41 worklist in report; local e2e scope.
+
+## 2026-11-10 — owner rulings at spec gate (relayed by architect), spec rewritten
+
+- Owner reframed: internal verification tool + gold set for testing matcher VERSIONS, not a
+  publication instrument. Rulings: not blind; even stratified sample (outcome × task × text, k per
+  stratum, default 10 ⇒ ~1,400 cells / 151 strata); reviewers pick TEXTS not languages; core
+  version-comparison CLI (committed / current re-score / scores file, with movers); include NRSV, no
+  copyright machinery; one reviewer base case (no overlap/claims/IRR/pseudonyms); plain counts, no
+  stats; one Hono service serving /api + built UI + Postgres, no edge.
+- Rewritten spec picks the max-reuse design: multibench draft re-keyed tradition→sample (one draft
+  per reviewer per sample holds chosen texts + labels); gold set downloaded client-side; no cell
+  tables, no server export. Not approved yet — waiting for architect to relay approval.
