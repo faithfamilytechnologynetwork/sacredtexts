@@ -11,10 +11,10 @@ plan_phases:
     status: complete
   - id: phase_3
     title: API service with accounts and sample-keyed drafts
-    status: in_progress
+    status: complete
   - id: phase_4
     title: 'One-service hosting: sample endpoint and built-UI serving'
-    status: pending
+    status: in_progress
   - id: phase_5
     title: Viewer review store, API client, sample and gold-set libraries
     status: pending
@@ -24,7 +24,7 @@ plan_phases:
   - id: phase_7
     title: Local end-to-end verification and documentation
     status: pending
-current_plan_phase: phase_3
+current_plan_phase: phase_4
 gates:
   spec-approval:
     status: approved
@@ -39,7 +39,7 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
+build_complete: false
 history:
   - iteration: 1
     plan_phase: phase_2
@@ -66,7 +66,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_2-iter2-claude.txt
 started_at: '2026-11-10T03:45:40.348Z'
-updated_at: '2026-11-10T21:03:07.694Z'
+updated_at: '2026-11-10T21:06:54.483Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-11-10T19:46:50.712Z'
@@ -74,3 +74,5 @@ context_refreshes:
   - boundary: plan-phase:phase_3
     at: '2026-11-10T20:43:48.378Z'
     acknowledged_at: '2026-11-10T20:44:10.503Z'
+  - boundary: plan-phase:phase_4
+    at: '2026-11-10T21:06:54.483Z'
