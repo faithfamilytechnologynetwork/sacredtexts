@@ -26,3 +26,7 @@ Issue #157 — review tool results page + `review-compare --from-service`.
   build, 118 MB compressed, cold start 0.8 s; baked runs byte-identical to a local build:pages
   (apart from `_index` mtimes).
 - `sacredtexts.iaser.ai` did not answer from here on 2026-11-11; READMEs use it as instructed.
+
+## 2026-11-11 — PR #158 open, pr gate pending
+- porch gate checks green (tests 256 s, pr_exists, e2e_tests). CMAP skipped: architect runs a consult integration review.
+- After merge: redeploy the merged commit to Railway `review` (git archive now includes runs/ + items/for-test/).
