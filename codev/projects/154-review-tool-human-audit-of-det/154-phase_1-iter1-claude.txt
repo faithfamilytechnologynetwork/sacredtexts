@@ -1,0 +1,51 @@
+I'll start by reading the implementation files for phase_1.I'll wait for the suite to finish rather than poll.I read all phase_1 files from disk and verified the committed sample independently (not just by re-running the builder's own generator).
+
+## What I verified
+
+**Independent re-derivation of the sample** (my own script, read-only, against `runs/facct-2026-11-03`):
+- 304 `scores.jsonl` files, **32,478** eligible cells → matches the spec's census exactly.
+- **151 strata**, **13 texts**, **1,423 cells** = `sum(min(population, 10))`, and every stratum's recorded `population` equals a direct count.
+- The drawn set equals the independent top-k by `sha256(seed\0cell_id)` **for all 151 strata**, and the cell order equals `sha256(seed\0order\0cell_id)` — so the draw rule in the doc is the draw rule in the file, not just in the code.
+- `grader_path` is correct for all 1,423 cells under the Phase 1 rule (0 mismatches).
+- 4 random cells are byte-equal to their source `scores.jsonl`/`answers.jsonl` rows for `metrics`, `task`, `answer`, `prompt`, `expected`, `source` (verbatim carry confirmed).
+- `git diff HEAD -- runs/` is empty; the sample is tracked and not gitignored; 2.82 MB (inside the plan's estimate).
+- Labels read sensibly ("The Qur'an — Uthmani (QUL)", "Encyclicals — 26 works", "The Bible — NRSV" present per the owner's ruling). NRSV cells cite 29 distinct citations, matching the README.
+
+**Tests:** `pipelines/tests/test_review_sample.py` 16/16 pass; full pipelines suite **1520 passed, 35 skipped** (includes the copyright audit). The pin test genuinely regenerates from `runs/` and compares bytes, and also asserts `runs/` is unmodified.
+
+**Plan coverage:** command, read-only run access, text-id folder rule, grader path, strata/allocation/order, cell id, sample file shape, `load_sample`, committed FAccT sample, copyright exception recorded in `review/README.md`, and the `review/` → pipelines dispatcher line with its rationale comment — all present.
+
+## Minor notes (not blocking)
+
+1. **`load_sample` validates unevenly.** `format`, top keys, cell keys, task/outcome enums, text-id membership and duplicates are checked with `ReviewSampleError`, but `sample["texts"]` entries (`t["id"]`), `cells` being a list, and `strata`↔`cells` consistency aren't — a malformed file raises a raw `KeyError`/`TypeError`. Phase 4 calls this at service startup for fail-fast; it still fails fast, just with a worse message. Cheap to tighten when Phase 2/4 reuse it.
+2. **Run-row access is direct** (`score["metrics"]`, `answer["question"]["source"]["work"]`). Same class: fail-loud is preserved, but `main()` only pretty-prints `ReviewSampleError`.
+3. **`_text_label` multi-work path** uses `.capitalize()`, so a future hyphenated multi-work folder would render "Book of mormon". No live effect (only `encyclicals/english` is multi-work today).
+4. **No guard on `--out`.** Nothing stops `--out runs/...` writing inside committed run evidence. A one-line "out must not be under `runs/`" check would protect the project's read-only-evidence invariant.
+5. **Untested small paths:** `_key_rows` duplicate detection, `per_stratum < 1`, empty seed, run-dir-outside-root, and the rank/order rule itself (I verified the last one externally against the committed sample).
+6. **`texts[*].cells` means "drawn count"** — slightly ambiguous for the Phase 5 TS types; `drawn` would read better. Rename now or never, since Phase 5 will pin the shape.
+
+I made no changes to the tree.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 1 is complete and correct — the committed FAccT sample independently re-derives (151 strata, 1,423 cells, top-k and order rules, grader paths, verbatim inputs all verified), runs/ is untouched, and the full pipelines suite is green.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Nits: `load_sample` leaves `texts`/`cells`/`strata` shape unvalidated (raw KeyError instead of ReviewSampleError) — worth tightening before Phase 4 uses it for startup fail-fast.
+- No guard preventing `--out` from writing inside `runs/` (read-only-evidence invariant).
+- `_text_label` multi-work branch uses `.capitalize()` (hyphenated ids would render "Book of mormon"); untested paths: duplicate rows, `per_stratum < 1`, empty seed, run-dir-outside-root.
+- Consider renaming `texts[*].cells` → `drawn` now, before Phase 5 pins the TS type.That was the watcher for the full pipelines suite — it confirms what I already folded into the review: **1520 passed, 35 skipped** (including the copyright audit). No change to my assessment.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 1 is complete and correct — committed FAccT sample independently re-derives (151 strata, 1,423 cells, top-k/order rules, grader paths, verbatim inputs all verified), runs/ untouched, full pipelines suite green (1520 passed / 35 skipped).
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Nits: `load_sample` leaves `texts`/`cells`/`strata` shape unvalidated (raw KeyError instead of ReviewSampleError) — tighten before Phase 4 relies on it for startup fail-fast.
+- No guard preventing `--out` from writing inside `runs/` (read-only-evidence invariant).
+- `_text_label` multi-work branch uses `.capitalize()`; untested paths: duplicate rows, `per_stratum < 1`, empty seed, run-dir-outside-root.
+- Consider renaming `texts[*].cells` → `drawn` before Phase 5 pins the TS type.

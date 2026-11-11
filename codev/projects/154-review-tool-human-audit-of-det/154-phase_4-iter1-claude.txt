@@ -1,0 +1,41 @@
+I'll review the phase_4 implementation. Let me start by reading the key files.I've read the phase_4 implementation end to end and verified it by running the suite and typecheck.
+
+## What I verified
+
+**Ran it myself:** `pnpm -C apps/api test` → 11 files, **84 tests pass** (PGlite, no external DB). `pnpm -C apps/api build` (tsc --noEmit) → clean. `apps/viewer` and `runs/` have **zero** diff vs base, so the "existing viewer host and config left untouched" deliverable is literally true.
+
+**Spec/plan adherence — every phase_4 deliverable is present:**
+
+| Deliverable | Status |
+|---|---|
+| `SAMPLE_PATH` required, validated at startup, fail-fast | `server.ts:41-53` + `sample.ts`; `server.test.ts` exercises the **real entry point** (`tsx src/server.ts`) for unset / missing / `format: 2` → exit 1 |
+| `GET /api/sample` authenticated, verbatim bytes | `routes/sample.ts` serves `c.body(sample.json)`; test asserts 401 signed out, byte-equality signed in, and `loadSample` keeps the committed FAccT file's exact bytes |
+| `VIEWER_DIST` optional, static + history fallback | `static.ts` is a faithful port of `apps/viewer/server/index.mjs` with the two documented additions (`/api/*` excluded, GET/HEAD only) |
+| Unmatched `/api/*` → JSON 404, never `index.html` | tested for `/api`, `/api/nope`, `/api/unknown/deep/path` — **and** for `/api/secret.txt` where a dist folder literally named `api` exists. Nice adversarial test. |
+| Missing `index.html` → fail fast | `loadViewerDist` throws; covered in both unit and real-server tests |
+| railway.json, env table, runbook, gated hosting | all present; hosting section carries the "**NOT approved**" banner and nothing was provisioned |
+
+**Things I checked that could have been bugs and aren't:**
+- **Middleware ordering.** `mountViewer` registers `app.use('/*')` *after* the API routes, so an API handler that returns a response short-circuits before the static middleware. Confirmed by the "keeps the real API routes working with the viewer mounted" test.
+- **Path traversal.** Absolute `root` + decoded-then-rechecked `..` guard in `@hono/node-server@1.19.17`'s serve-static and `hono/utils/filepath` — the library rejects both raw and percent-encoded traversal. Absolute roots are supported (the `/assets/a.js` test would fail otherwise).
+- **`/runs/_index` falling through to the SPA shell.** `static.test.ts` asserts this returns `index.html` — which looked like it might break the browsing pages, but `apps/viewer/src/lib/runIndex.ts:73` *already* handles "prod static host: `/runs/_index` falls through to index.html (200 HTML) → no runs". So the README's claim that browsing pages show the "no runs" empty state is correct, not aspirational.
+- **`tsx` is a runtime `dependency`, not a dev one** — so `pnpm install` under `NODE_ENV=production` won't strip the thing `pnpm start` needs. Easy trap, avoided.
+
+## Minor observations (non-blocking)
+
+1. **`GET /api/sample` ships 2.7 MB uncompressed with no `ETag` or `Cache-Control`.** Fine locally; on the hosted origin the viewer will re-download it on every cold page load. A one-line `ETag` off a content hash (or `hono/compress`) would be cheap. Phases 5/6 don't plan client-side caching either, so this is worth a thought before hosting.
+2. **`PORT=""` resolves to port 0** (`Number("") === 0`, which is finite), so the service would bind a random port instead of failing or defaulting. `PORT=abc` correctly exits. Trivial.
+3. **`parseSample` accepts `cells: []`.** A zero-cell sample starts cleanly and yields an empty pass. Defensible (the envelope check is deliberately shallow, per plan — the viewer owns the strict per-cell parse), but a `cells.length > 0` check would turn a silently-useless deployment into a startup error.
+4. **The active-sample gate in `review.ts`** (save/submit 404 for a non-active id, reads/list/delete open) isn't in the phase_4 file list but is a sensible consequence of the sample arriving here, is documented in the README, and is tested. Noting it so it isn't mistaken for scope creep later.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 4 is complete and faithful to the plan — one-origin service with a validated active sample, a correct SPA fallback that never swallows /api, fail-fast startup tested on the real entry point, and hosting shipped as config-plus-runbook with nothing provisioned.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- `GET /api/sample` sends 2.7 MB with no ETag/Cache-Control or compression — consider before hosting.
+- `PORT=""` silently binds port 0 (`Number("")` is finite); `PORT=abc` correctly exits.
+- `parseSample` accepts an empty `cells` array, so a useless sample starts cleanly rather than failing fast.

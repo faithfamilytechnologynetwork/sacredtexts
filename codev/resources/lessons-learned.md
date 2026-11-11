@@ -185,6 +185,19 @@ Seeded from Spec 1 (Phase 1 benchmark).
   since Spec 52) rather than a fresh `in` check — one containment definition, tested to agree with the
   scorer, so the card can't drift from the headline (Spec 32, echoing Spec 15's
   single-refusal-definition discipline).
+- **Prove a hosting config is read before trusting it.** Railway rejects a config-as-code path on a
+  new service ("Config as Code is deprecated"), and its `Builder` enum has no DOCKERFILE. A committed
+  `railway.json` it never reads looks authoritative and silently does nothing. Set the settings on the
+  service, read them back through `railway api`, record them in the README, and delete the dead file
+  (Spec 154).
+- **A builder agent can't run the hosted sign-up check on a production host.** It won't create
+  accounts or enter passwords or invite codes there, so a hosted completion check that needs an
+  account is a human step. Plan it as one, and do every account-free check (health, routes, 401s,
+  cookies, the tables) from the agent (Spec 154).
+- **Verify a container image locally against a real database before the first deploy.** Build with the
+  real Dockerfile, run the pre-deploy migration twice on a fresh database (idempotency), then exercise
+  the service, all from the same image. The first Railway deploy of the review service passed on the
+  first try because of this (Spec 154).
 
 ## Map
 - (This cold archive pairs with `lessons-critical.md`'s hot tier; demote hot entries

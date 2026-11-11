@@ -1,0 +1,39 @@
+I'll review phase_6 (viewer review pages). Let me read the relevant files.## Review — Phase 6 (viewer review pages)
+
+I read every phase-6 file from disk, cross-checked against the plan's deliverables and ACs, and verified locally: `pnpm -C apps/viewer test` → **397 passed / 32 files**, `check-types` clean, and both `pnpm build` and `pnpm build:pages` succeed. No tracked file in the worktree was modified by me (builds only wrote gitignored `dist/`).
+
+### Plan alignment — all deliverables present
+
+| Plan item | State |
+|---|---|
+| `QuestionCard` extracted from `QuestionList` | Done, and the extraction is faithful: the old `<li>`'s `rounded-lg border p-4` moved onto the card div, badge/metric/dl markup byte-identical. Only addition is `dir="auto"` + `lang` + `script-text` on prompt/expected/answer. `QuestionList.test.tsx` green unchanged. |
+| `script-text` font stack | Local/system fonts only, no web-font fetch, covers Arabic/Hebrew/Gurmukhi/Devanagari + fallback. |
+| `ReviewAuthGate` / `ReviewerBadge` / `ReviewSaveStatus` | Ported; `unavailable` state renders the notice rather than an unusable sign-in form. `ReviewSaveStatus` surfaces the phase-5 terminal (`rejected`) error with no false promise of a retry — tested. |
+| `ReviewLabelControl` | Four-way outcome with click-to-clear, `aria-pressed`, defect checkbox, notes capped at `NOTES_MAX_CHARS` with counter and `dir="auto"`, plus the "pick an outcome" nudge so a note-only label isn't silently dropped. |
+| `ReviewProgress` | Per-text + overall, real `role="progressbar"` with valuenow/valuemax. |
+| `/review` | Auth gate, sample load, picker persisted in the draft (saved in *sample* text order, not click order — nice), choose-texts prompt, progress, pass list with per-cell label state, "continue with next unlabelled", gold-set download named `gold-<sample_id>.jsonl`. |
+| `/review/cell/$cellId` | Card + matcher verdict badge + every submetric + grader path, rubric with version, label control gated on `draft.loaded`, prev/next in pass order, not-found page. |
+| `reviewLinks` | Encoding left to the router (correctly — double-decoding would corrupt `%`), with a round-trip test through the *real* route tree for `:`, `/`, `%`, `#`, `?`, and non-ASCII ids. |
+| Router + nav + dev `/api` proxy (`API_ORIGIN`) | Done; `app.test.tsx` updated to expect the Review nav entry. |
+| No-invisible-text | The glob-based test auto-covers the new `.tsx` files; none use `text-white` / `bg-default-900`. |
+
+### Test coverage — strong
+
+The harness is the right shape: the **committed** `fixtures/review_sample.json` extended with real Hebrew/Gurmukhi cells and one deliberately nasty cell id, an in-memory service with real optimistic-concurrency versions, and the gold-set download asserted **byte-identical to `fixtures/review_gold_set.jsonl`** — that's the TS↔Python contract actually pinned, twice, via a captured `Blob`. Also covered: sample fetched once per session and refetched after sign-out; non-JSON → "unavailable"; 401 → signed out; failed sample load + retry; picker disabled until the draft loads; rubric iterated over *all four* tasks; `dir`/`lang`/`script-text` per script; full prev/next walk; terminal 400 save.
+
+### One minor issue (one-line fix, not a blocker)
+
+`ReviewCellPage.tsx:66-72,108-113` — `texts` is `review.samples[sid]?.texts`, which is `undefined` until the draft `GET` resolves (`ensureSampleLoaded` creates no store entry before then, review.ts:489). So `passCells(sample, [])` is empty, `pos === -1`, and the page renders **"This cell's text isn't one of your chosen texts"** during every direct load of a cell page (pasted link, reload, `/review/cell/...` as the entry URL) — and permanently if the draft load fails. The claim is false in both cases, and prev/next/position vanish with it.
+
+I settled this by reading rather than editing: your own test at `ReviewCellPage.test.tsx:172` (draft GET → 503, cell `ISLAM_CITE`, chosen text `islam/native`) is exactly that state, and it asserts only the disabled inputs — so the false banner is live but unasserted. Suggested fix: render the `outside-pass` notice only when `draft.loaded && pos < 0`, and consider hiding/placeholdering the nav block until then too.
+
+Nothing else. Phase 4's "existing viewer host untouched" invariant still holds (`deploy.test.ts` green), and the static build's Review route degrades exactly as the spec asks.
+
+---
+VERDICT: COMMENT
+SUMMARY: Phase 6 is complete and well-tested (397 viewer tests, typecheck and both builds green); one transient false "not one of your chosen texts" banner on direct cell loads is worth a one-line gate.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `ReviewCellPage.tsx:108` shows "This cell's text isn't one of your chosen texts" while the draft is still loading (and forever if the load fails), because `texts` is undefined until `ensureSampleLoaded` resolves — gate the notice (and the pass nav) on `draft.loaded`. Hit on every reload/pasted cell link; currently unasserted by the test at `ReviewCellPage.test.tsx:172` that reproduces the state.

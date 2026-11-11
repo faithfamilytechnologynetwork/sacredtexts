@@ -1,0 +1,60 @@
+I'll read the actual spec, plan, and the relevant code to verify the plan's claims.## Review: Plan 154 — review tool for human labels
+
+I read the plan and spec on disk, then verified the plan's factual claims against the actual run evidence, the scorer, the viewer, the test dispatcher, and the multibench port source. **I made no changes to the tree.**
+
+### What I verified (all correct)
+
+I ran a read-only scan of `runs/facct-2026-11-03`:
+
+- **151 strata**, and `sum(min(N,10))` = **1,423 cells** — exactly the plan's numbers.
+- **32,478 scored rows, zero duplicate `(model_id, question_id)`** run-wide, and **zero** scored rows missing an answer row. So the join key and the fail-loudly rule in Phase 1 are sound, and Phase 2's `--version <path>` lookup by `(model_id, question_id)` across a directory is unambiguous.
+- Every row has `metrics.outcome` (so the "unscored excluded" case is synthetic-only — fine).
+- The **folder rule gives exactly 13 texts**, and the label rule works as described: `christianity/native/masoretic` is one `(work, version)` across `he`+`arc` (2,559 + 128), `encyclicals/english` holds 26 works, everything else is 1:1. No special cases needed, as claimed.
+- `score_answer(task, answer, expected, graders=None, language=None, prompt=None, work=None)` matches Phase 2's call exactly.
+- `answers[].question` carries `{id, prompt, expected, source, task}`; `source` includes `citation` and `condition` (so the prompt-language arm is captured verbatim).
+- `noInvisibleText.test.ts` globs all `.tsx` under `src` — the Phase 6 claim that new files are covered automatically is true.
+- `apps/viewer` has no `zod` (Phase 5's addition is needed); multibench `apps/api` has every file the port lists, `bodyLimit({maxSize: 512*1024})` on PUT and submit, `tradition_id` on both tables, `published_issue_url` on submissions. Port inventory is accurate.
+- Size estimate: 62.8 MB of answers over 32,478 rows ≈ 1.9 KB/row ⇒ ~2.7 MB raw, more once pretty-printed. "About 2 MB" is a bit optimistic; call it 2–3.5 MB.
+
+This is an unusually well-grounded plan. My issues are gaps, not errors.
+
+### Issue 1 (blocking): the committed sample is a new restricted-text artifact outside the copyright gate
+
+`texts/raw/Protestant Christian/source.yaml` marks **NRSV `license: restricted`**, and `audit.py` gives it a 500-verse quotation allowance keyed on `(work, version, language)` + a per-row `source.citation`. The committed-artifact test (`test_audit.py:33`) scans only `git ls-files runs/`. The plan commits a ~3 MB `review/samples/*.json` containing NRSV `expected.text` and answers — a **new committed artifact derived from a restricted source that nothing audits**. `arch-critical.md` states the invariant flatly: "no committed artifact may derive from a `restricted` source."
+
+Worse, if you simply point the audit at it, it fails: `_iter_source_dicts` only looks at top-level `source` / `question.source`, so the plan's nested `cells[].source` is **invisible to the origin layer** ⇒ `quoted` stays empty ⇒ the content layer scans the blob and flags "contains restricted text" for any developer who holds the NRSV payload locally (green in CI, red on the owner's machine).
+
+Phase 1 should add: (a) teach `_iter_source_dicts` the sample shape (`cells[].source`) so the quotation allowance applies, (b) extend the committed-artifact audit test to `git ls-files review/`, and (c) an acceptance criterion that the committed sample passes the audit **with restricted payloads present**, plus a distinct-NRSV-citation count (~110 cells, far under 500 — but assert it).
+
+### Issue 2 (blocking, small): Phase 4 rebuilds a static host that already exists in-repo
+
+`apps/viewer/server/index.mjs` is already a Hono static host doing exactly `serveStatic({root: DIST})` + `notFound → index.html`, pinned by a **real smoke test** in `src/deploy.test.ts` (spawns `pnpm start`, asserts deep-link fallback and a real JS asset content-type). `apps/viewer/railway.json` already exists. Phase 4 says `static.ts` is "adapted from multibench's edge static half" and adds a second `railway.json`, without mentioning either in-repo artifact. Per `lessons-critical` ("check for existing work"), Phase 4 should port the in-repo host and state what happens to `apps/viewer/railway.json` / `pnpm start` (kept for the Pages-independent static host? retired?) so there aren't two un-reconciled deploy configs claiming to serve the viewer.
+
+Related, and worth one line in the plan: the Railway build is `pnpm -C apps/viewer build`, **not `build:pages`**, so the review host ships the viewer with no baked runs — `/`, `/errors`, `/standings` will show "no runs" there (README line 126 describes this exact behaviour under `wrangler dev`). That's acceptable for a review-only origin, but it should be stated, not discovered.
+
+### Issue 3 (blocking, small): a 413 on the ported store retries forever
+
+Worst case is ~1,423 labels × 1,000-char notes ≈ 1.4–1.5 MB against a 2 MB cap — thin headroom, and `review.ts` (multibench) schedules a **retry timer on any failed save**, keyed per draft. A 413 is permanent: the reviewer would get a silent save-retry loop with no path forward. Phase 5 should add a deliverable: a 413 (and any 4xx that isn't 409/403-CSRF/401) is a terminal, visibly-surfaced failure with no retry, plus a regression test. Consider also a client-side byte guard before PUT, or a 4 MB cap.
+
+### Non-blocking comments
+
+- **Prompt-language arm is invisible to stratification.** Five texts have `prompt-native` + `prompt-english` arms under the same text folder; strata collapse them, so a 10-cell draw can land entirely in one arm. Not a correctness bug (`source.condition` is recorded verbatim), but the per-text report may silently under-cover an arm. Either say so, or report arm counts in `review-compare`'s per-text breakdown.
+- **Pin-test cost.** Regenerating the sample means parsing all 63 MB of answers on every pipelines-lane run (and `runs/`-touching builders also pay the viewer lane). Fine, but consider whether a digest-only pin would do.
+- **Phase 6 is the heaviest phase** (6 new components, 2 routes, page tests, and the manual e2e). A split — components+pages, then the e2e walk + README/review doc — would give a cleaner commit boundary. Phase 3 is large but it's a verbatim port; that's fine.
+- **Env inventory.** Phase 4's runbook says "set the env"; name them explicitly (`DATABASE_URL`, `INVITE_CODE`, `SAMPLE_PATH`, `VIEWER_DIST`, `PORT`) and keep the spec's fail-closed-when-`INVITE_CODE`-unset assertion in Phase 3's acceptance criteria — it's currently only implicit in "ported unchanged".
+- `cell_id` contains `:` and is used as a route param (`/review/cell/$cellId`). Encoding is legal, but make sure the download filename and the link construction both round-trip it.
+
+Spec coverage is otherwise complete: every success criterion maps to a phase, sequencing respects dependencies, each phase is independently committable, and the hosting gate is honoured (nothing provisioned, runbook banner-gated).
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Technically excellent and factually verified plan (151 strata / 1,423 cells / join completeness all confirmed), but the new committed sample lands outside the copyright audit gate, Phase 4 re-implements an existing test-pinned static host, and the ported store would retry a 413 forever.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- The committed `review/samples/*.json` contains NRSV (`license: restricted`) text but is outside `test_audit.py`'s `git ls-files runs/` scan; and its nested `cells[].source` shape is invisible to `_iter_source_dicts`, so pointing the audit at it would content-flag it (no quotation-allowance credit) wherever the NRSV payload is present. Phase 1 must extend both the audit origin layer and the committed-artifact test, and assert the distinct-citation count against the 500-verse allowance.
+- Phase 4 writes a new SPA static host "adapted from multibench" while `apps/viewer/server/index.mjs` already does exactly that and is pinned by a real smoke test in `src/deploy.test.ts`; `apps/viewer/railway.json` already exists. Port the in-repo host and reconcile the two deploy configs.
+- The one-service Railway build uses `build`, not `build:pages`, so non-review viewer pages will show "no runs" on that origin — state it.
+- A 413 is permanent, but the ported store schedules a retry on any failed save; worst-case draft (~1.5 MB) is close to the 2 MB cap. Phase 5 needs terminal-failure handling plus a regression test (and optionally a client-side size guard).
+- Minor: prompt-language arms collapse into one stratum (possible single-arm draws); Phase 6 is oversized; env var inventory and the fail-closed invite gate should be named explicitly.

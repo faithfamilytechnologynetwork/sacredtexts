@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 2 is functionally complete, but its offline-import acceptance criterion is not actually met by the production CLI.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `pipelines/tests/test_review_compare.py::test_current_makes_no_network_calls_and_imports_no_provider` imports `review_compare` directly, bypassing the real `python -m sacredbench review-compare` entrypoint. The real entrypoint imports `sacredbench.cli`, which imports `sacredbench.providers` directly and indirectly through `collect.py`. Thus the test passes without verifying—and the command violates—the plan’s explicit “no provider module is imported” criterion. Make provider-dependent CLI imports lazy and test the actual entrypoint under the offline guard.

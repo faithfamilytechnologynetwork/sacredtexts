@@ -1,0 +1,59 @@
+I'll review phase_5 of this implementation. Let me start by reading the phase 5 files.# Phase 5 Review — Viewer review store, API client, sample & gold-set libraries
+
+## What I verified
+
+**Store public shape and ported semantics** (`apps/viewer/src/lib/review.ts`) — all of `useReviewState`, `useReviewStatus`, `updateReviewState`, `initReview`, `login/signup/logoutReview`, `ensureSampleLoaded`, `prefetchDrafts`, `flushReviewSaves`, `resetReviewStore` are present, re-keyed from tradition to sample. Debounce (600 ms), per-sample serialized queue, version-based optimistic concurrency (0 = insert), 409 → LWW retry → server-wins + `reconciled`, tolerant field-by-field zod draft parsing, flush on `pagehide`/`visibilitychange`.
+
+**Each multibench fix has a named regression test** — cross-reviewer leak on account switch/401, failed-load overwrite hole (`persistSample` refuses to PUT unless `loadState.get(sid) === "ok"`), CSRF-403 refresh+retry, prefetch clobber, editing gated on a successful load, start-over via DELETE, unreachable service failing visibly (`ReviewUnavailableError` vs `ReviewApiError`, discriminated on exact MIME essence). New-to-this-port: terminal save failures (`isTerminalSaveError` — 4xx that isn't 401/409/CSRF-403 is not retried, labels kept in memory) and the client-side 8 MB UTF-8 byte guard mirroring the API's `bodyLimit`.
+
+**Codex iter-1's isolation complaint is genuinely addressed.** The session-epoch design (`let session = 0`, bumped in `resetReviewStore`; `enqueue` runs `op()` only if `started === session`; `stale()` re-checked after every await in `persistSample`/`persistDelete`, including before `handleAuthError` and the CSRF retry; stale drops in `ensureSampleLoaded`/`prefetchDrafts`; `loadPromises.delete` guarded by identity; `initInFlight` → `initFor` so a reset re-arms init) closes the leak, and the 7 new tests at `reviewStore.test.ts:713-894` are the regression tests it asked for.
+
+**Pure libraries** — `reviewSample.ts` parses strictly and fails loudly (14 corruption cases tested), and the test parses the *real* committed `review/samples/facct-2026-11-03-k10.json`: 13 texts, 1423 cells, every cell's verdict verified through `toQuestionResult`. `goldSet.ts` reproduces `fixtures/review_gold_set.jsonl` byte for byte, with code-point key ordering (the "10" < "9" < "a" Python-vs-JS trap is explicitly tested) and non-ASCII unescaped. I chased a suspected TS↔Python float divergence (`1.0` vs `1`) and resolved it by reading `review_compare.py`'s `_js_number`/`dumps_gold_rows` — it deliberately matches `JSON.stringify` and raises where it can't. Not a defect. `rubric.ts` transcribes the spec's rubric faithfully. `zod ^3.25.76` is really in `apps/viewer/package.json` and really installed.
+
+`pnpm check-types` is clean.
+
+## The blocker
+
+The phase-5 acceptance criterion "`pnpm -C apps/viewer test` passes" is **currently red**:
+
+```
+❯ src/lib/reviewStore.test.ts (37 tests | 2 failed)
+  × A's save conflict that lands after B signs in neither retries nor adopts A's draft
+  × a save still queued when the session resets never runs
+    → expected [ 'b PUT /api/review/S' ] to deeply equal [ 'a PUT /api/review/S' ]
+ Tests  2 failed | 353 passed (355)
+```
+
+Two isolated reruns of that file alone: `37 passed`, `37 passed`. So this is **order-dependent flakiness in the new tests, not a store bug**.
+
+Diagnosis, by reading (I did not mutate the tree): `twoAccounts()` flips `who = "b"` when the login *request* is handled, whereas the store's `session` only bumps once the login *response* is consumed. The enqueued PUT is issued in a microtask whose interleaving with the login promise chain is unpinned, so the single PUT sometimes gets tagged `b` by the fake. Note the substantive invariant — **exactly one** PUT, no LWW retry, no second queued save — held in both the passing and the failing runs. The epoch logic is right; the assertion is reading the fake's caller tag, which isn't deterministic.
+
+Suggested fix: park the PUT in flight deterministically before switching accounts (drain to a macrotask), then assert the PUT *count* and the absence of A's state/version rather than the fake's caller attribution.
+
+## Minor notes (not blocking)
+
+- `persistDelete` doesn't apply `isTerminalSaveError`, so a terminal 4xx on DELETE would retry every 3 s forever. Unreachable today — the API's DELETE accepts any sample id and is idempotent — but the asymmetry with `persistSample` is worth a comment or the same guard.
+- `reviewApi.logout()` ignores `res.ok`, so a stale-CSRF 403 shows signed-out locally while the server session survives. This is multibench parity; flagging only for awareness.
+- The "does NOT overwrite a saved server draft" test's `server` map assertion is near-vacuous — `puts == []` is the assertion doing the work there.
+- The phase-5 store hardening and new tests are still **uncommitted** on top of `1c7a5e40`.
+
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 5 is substantively complete and the cross-reviewer isolation fix is sound, but two of the new session-epoch tests are order-dependently flaky, so the "viewer tests green" acceptance criterion fails in a full-suite run.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `reviewStore.test.ts:809` and `:830` fail in the full suite (`2 failed | 353 passed`) and pass when the file runs alone. Cause is in the test fake, not the store: `twoAccounts()` flips `who` at login-*request* time while `session` bumps at login-*response* time, so the single in-flight PUT is sometimes tagged `b`. Pin the PUT in flight before the account switch (drain to a macrotask) and assert PUT count + absence of A's state/version instead of the fake's caller tag. The real invariant (exactly one PUT, no LWW retry) held in both runs.
+- Minor: `persistDelete` omits the `isTerminalSaveError` rule that `persistSample` has, so a terminal 4xx on DELETE would retry every 3 s indefinitely. Unreachable with today's API (DELETE accepts any sample id, idempotent), but the asymmetry deserves the guard or a comment.
+- Minor: `reviewApi.logout()` ignores `res.ok`, so a stale-CSRF 403 leaves the UI signed out while the server session persists (multibench parity — noting, not requesting).
+- Note: phase-5 changes (store epoch hardening + 7 new tests) are uncommitted on top of `1c7a5e40`.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 2 paths changed while this lane was running:
+  - apps/viewer/src/lib/review.ts
+  - apps/viewer/src/lib/reviewStore.test.ts
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

@@ -12,6 +12,8 @@ import { GapsPage } from "./routes/GapsPage";
 import { ErrorsPage } from "./routes/ErrorsPage";
 import { JudgePage } from "./routes/JudgePage";
 import { FindingsPage } from "./routes/FindingsPage";
+import { ReviewPage } from "./routes/ReviewPage";
+import { ReviewCellPage } from "./routes/ReviewCellPage";
 import { NotFound } from "./routes/NotFound";
 import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
@@ -102,6 +104,20 @@ const errorsRoute = createRoute({
   }),
 });
 
+// The review pages (Spec 154): the reviewer's home and one cell's labelling page. A cell id carries
+// `:`, so links to it go through lib/reviewLinks (the router percent-encodes the param).
+const reviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/review",
+  component: ReviewPage,
+});
+
+const reviewCellRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/review/cell/$cellId",
+  component: ReviewCellPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   explorerRoute,
@@ -110,6 +126,8 @@ const routeTree = rootRoute.addChildren([
   errorsRoute,
   judgeRoute,
   findingsRoute,
+  reviewRoute,
+  reviewCellRoute,
 ]);
 
 export function createAppRouter(history?: RouterHistory) {

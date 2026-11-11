@@ -36,6 +36,8 @@ from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
 from sacredbench.jev import JevError
 from sacredbench.jev_agreement import AgreementError
+from sacredbench.review_compare import ReviewCompareError, compare, dumps_report, format_report, load_gold
+from sacredbench.review_sample import ReviewSampleError, build_sample, write_sample
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -877,13 +879,59 @@ def judge_agreement(
     typer.echo(md)
 
 
+@app.command("review-sample")
+def review_sample_cmd(
+    run_dir: Path = typer.Option(..., help="run directory, e.g. runs/facct-2026-11-03 (only read)"),
+    seed: str = typer.Option(..., help="seed string recorded in the sample"),
+    out: Path = typer.Option(..., help="sample file to write, e.g. review/samples/<sample-id>.json"),
+    per_stratum: int = typer.Option(10, help="cells drawn from each outcome x task x text stratum"),
+) -> None:
+    """Draw the review sample (Spec 154): min(N, k) cells from every outcome x task x text stratum.
+
+    The sample id is the output file's stem. Run from the repo root: recorded paths are relative
+    to the current directory.
+    """
+    if out.resolve().is_relative_to((Path.cwd() / "runs").resolve()):
+        raise ReviewSampleError(f"{out}: committed run evidence under runs/ is read-only; write the sample elsewhere")
+    sample = build_sample(run_dir, seed, per_stratum, sample_id=out.stem, root=Path.cwd())
+    write_sample(sample, out)
+    typer.echo(
+        f"wrote {out}: {len(sample['cells'])} cells from {len(sample['strata'])} strata "
+        f"across {len(sample['texts'])} texts (k={per_stratum}, seed={seed!r})"
+    )
+
+
+@app.command("review-compare")
+def review_compare_cmd(
+    gold: list[Path] = typer.Argument(..., help="gold-set JSONL file(s) downloaded from the review tool"),
+    version: list[str] = typer.Option(
+        ..., "--version",
+        help="'committed', 'current', or a run directory laid out like runs/<run>/; repeat it, "
+             "and the first is the baseline for movers",
+    ),
+    json_out: Path = typer.Option(None, "--json", help="also write the report as JSON to this path"),
+) -> None:
+    """Score matcher versions against human labels (Spec 154): agreement overall, per task, per
+    text and per grader path, every disagreement, and the movers against the first version.
+
+    Run from the repo root: each gold row's scores_path is relative to the current directory.
+    """
+    if json_out is not None and json_out.resolve().is_relative_to((Path.cwd() / "runs").resolve()):
+        raise ReviewCompareError(f"{json_out}: committed run evidence under runs/ is read-only; write elsewhere")
+    report = compare(load_gold(gold), version, root=Path.cwd())
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(dumps_report(report), encoding="utf-8")
+    typer.echo(format_report(report), nl=False)
+
+
 def main() -> None:
     try:
         app()
     except (
         schema.SchemaError, conv.ConvertError, cat.CatalogueError, exp.ExportError, CollectError,
         gen.GenerateError, ScoreError, aud.AuditError, ConfigError, EditionIndexError,
-        FacctError, JevError, AgreementError,
+        FacctError, JevError, AgreementError, ReviewSampleError, ReviewCompareError,
     ) as e:
         typer.secho(f"error: {e}", fg="red", err=True)
         sys.exit(2)

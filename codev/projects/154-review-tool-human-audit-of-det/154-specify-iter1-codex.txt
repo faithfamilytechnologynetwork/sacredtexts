@@ -1,0 +1,11 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Strong and feasible overall, but unresolved rubric, sampling, statistical, and ingest-security contracts prevent reliable planning.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The spec explicitly leaves critical behavior unresolved. Finalize the per-task rubric—especially what “may stop early,” “a little surrounding text,” and conflicting yes/no answers mean—and resolve restricted NRSV handling. Also settle assignment mode, allocation, overlap, language grouping, batch size, and hosted topology where acceptance criteria currently assume particular answers.
+- The statistical estimands are incorrect or ambiguous. “Precision on correct” is not the false-positive rate, and disagreement among scorer-incorrect cells is not the classical false-negative rate. Define confusion-matrix denominators, treatment of `can't judge` and defect flags, the population-weighted estimator, confidence intervals appropriate for weighted/clustered overlap data, nonresponse handling, and the exact chance-corrected agreement coefficient.
+- “Schema and digest check” cannot establish that a set was CLI-produced: a modified set can carry recomputed self-declared digests. Define a trust anchor, such as an operator-configured allowlist of committed set IDs/digests, and require canonical digest recomputation plus independent copyright/source validation during ingest.
+- Sampling is not fully specified. “Suspect cite paths are covered,” weighted allocation, minimums, rounding, overlap selection, and interleaving lack deterministic rules. Inclusion probabilities also need to distinguish review-set selection from assignment/completion and repeated overlap ratings; otherwise the claimed population-weighted report is not reproducible.
+- Privacy requirements should disclose that pseudonyms, declared languages, flags, and verbatim notes are published—not only notes. Require keyed pseudonymization rather than a reversible or dictionary-attackable email hash, and specify whether exported language declarations are snapshotted at assignment/judgement time or taken from the mutable current profile.

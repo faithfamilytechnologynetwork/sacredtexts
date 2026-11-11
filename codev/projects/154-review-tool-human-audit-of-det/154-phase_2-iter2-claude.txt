@@ -1,0 +1,37 @@
+I'll read the Phase 2 implementation files from disk.Full review complete. Verified by reading all Phase 2 files from disk, re-running the phase suite (40 passed) and the full pipelines suite (1565 passed, 35 skipped, 4m35s — includes the copyright audit and the Phase 1 sample pin), and confirming `git diff origin/main...HEAD -- runs/` is empty.
+
+## Iteration-1 items — verified as actually fixed
+
+| Concern | Status |
+|---|---|
+| codex: test the *real* entry point offline | **Fixed, genuinely.** `test_the_real_entrypoint_rescores_offline_without_a_provider_sdk` runs `runpy.run_module("sacredbench")` with `socket.socket.connect`/`create_connection` refused *and* a `sys.meta_path` finder that raises on `anthropic`/`openai`/`httpx`/`requests`/`google.genai`. Exit 0, correct report. |
+| codex: make `cli.py` provider imports lazy | **Declination justified.** I read `providers.py` independently: module-level imports are only `json`, `os`, `time`, `pathlib`, `typing`, `sacredbench.config`. No SDK, no client, no socket. The entry-point test would fail if that changed. Not re-raising. |
+| claude: `verify_source`/`refused` never pinned | **Fixed.** Fixture is 10 cells; `by_task["verify_source"] == 2/2` and `by_grader_path["verdict"] == 2/2` are asserted, plus an `outcome: refused` row (`AR_REFUSAL`) explicitly checked as agreeing under `current`. |
+| claude: `scores_path` containment | **Fixed.** `_validate_gold_row` rejects absolute paths and any `..` part (`PurePosixPath`), with two parametrized loader cases. |
+| claude: README arms wording, unsorted-rows hint | Both fixed. |
+
+## Phase 2 against the plan
+
+Every deliverable is present and tested: the gold row shape (`shown`/`label`/provenance groups, strict unknown-field rejection), all three version kinds, grader path re-derived from *each version's own* metrics, `n` excluding `cant_judge`/defect with separate counts, full disagreement list, movers with `fixed`/`broken`/`neither` (and the `agree(v) − agree(base) == fixed − broken` invariant asserted), per-text prompt-arm counts, deterministic text + `--json` output, run-prefix swap, and all four fail-loud cases. The shared fixture round-trips through `load_sample` and rebuilds byte-for-byte via `gold_row` + `dumps_gold_rows`.
+
+I also checked the JS-parity contract, since Phase 5 is held to it: `_js_number` plus `sort_keys`/`ensure_ascii=False`/compact separators does match `JSON.stringify` (control-char escapes agree, U+2028/29 left literal by both, non-integer floats ≥ 2^53 can't exist so Python never emits an exponent for them). And the rejected ranges can't fire on real data — `token_f1`/`token_f1_base` are `round(..., 4)`. Good forethought.
+
+## Non-blocking notes
+
+1. **`excluded` sub-counts overlap.** A row that is both `cant_judge` and defect-flagged is counted in both, while `total` de-dupes — so the line reads `excluded 3 (cant_judge 2, defect 2)`. Correct, but looks like an arithmetic error to a reader. Consider "(a row can be both)".
+2. **Malformed `expected` raises a raw `KeyError`.** The loader checks `expected` is a dict but not its per-task keys; `score_answer` then does `expected["text"]`. A hand-edited gold row would escape the uniform `error: …`/exit-2 path. Low risk (gold sets are machine-produced) — a per-task key check in `_validate_gold_row` would close it.
+3. **Directory versions are bound to a `runs/<run>/` prefix,** so a sample drawn from a run outside `runs/` can never use one. This matches the plan verbatim; flagging only that the constraint is now baked into the gold format.
+4. **Worth surfacing to the owner:** the `AR_CITE` "broken" mover encodes a human label that contradicts the sanctioned #118 rule (an *undisclaimed* echo of the form example beside the right verse — the matcher credits it, the spec's rubric treats it as two locations). The fixture documents this, and it's a legitimate construction, but it means the tool's first fixture already exhibits a rubric-vs-matcher divergence — exactly the kind of finding #41 exists to produce.
+5. The smoke test calls `compare()` rather than the CLI (plan said "run the CLI once"); the CLI itself is covered by two other tests, so coverage is not actually thinner.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2 is complete, tested, and the iteration-1 concerns are genuinely fixed — including a real offline entry-point test and a verified-inert provider import that justifies the one declination.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- Nit: `excluded` sub-counts overlap (cant_judge + defect) while `total` de-dupes, making the printed line read as an arithmetic error.
+- Nit: a gold row with a valid `expected` dict but wrong per-task keys raises a raw `KeyError` from `score_answer` instead of a `ReviewCompareError`.
+- Observation: the fixture's `broken` mover encodes a human label that contradicts the sanctioned #118 echo rule — honest and documented, but worth surfacing to the owner as a rubric/matcher divergence.

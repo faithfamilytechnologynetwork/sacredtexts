@@ -1,0 +1,39 @@
+I'll review phase_2 by reading the actual implementation files.I read all the phase-2 implementation files from disk, ran the suite (44 passed), and verified both prior iterations' disputed points against the actual code.
+
+## Verification of prior-iteration concerns
+
+**codex iter-1 (offline entry point) — genuinely addressed.** `test_the_real_entrypoint_rescores_offline_without_a_provider_sdk` runs the real `python -m sacredbench review-compare … --version current` via `runpy` with `socket.connect`/`create_connection` refused and a `sys.meta_path` finder raising on `anthropic`/`openai`/`httpx`/`requests`/`google.genai`. The builder's declination to make `cli.py`'s provider imports lazy is correct: those imports predate this phase, serve `collect`/`score`, and `review_compare.py` itself imports only `review_sample` + `score`.
+
+**codex iter-2 (directory-version path escape) — fixed structurally, not cosmetically.** `_run_dir_paths` (lines 295–312) matches `parts[:2]` against `("runs", <run>)`, rejects `..`, and builds with `run_dir.joinpath(*parts[2:])` — no string slicing. The loader independently rejects non-canonical `scores_path` via `str(PurePosixPath(p)) != p`, with parametrized cases for `doubled_slash` and `dot`. The regression test bypasses the loader and confirms resolution stays inside `run_dir`.
+
+## Phase-2 acceptance criteria
+
+All met. Notable strengths:
+
+- **`current` is true parity with production scoring.** `_rescored_metrics` calls `score_answer(task, answer, expected, language=source.language, prompt=prompt, work=source.work)` — I diffed this against `score_file`'s own call at `score.py:1290-1295`; identical, and `score_answer` already applies `_with_outcome`, so the outcome/refusal contract (Spec 48, #23) is honored rather than re-derived.
+- **Movers are algebraically consistent with agreement.** `_movers` filters on the same `_judged` predicate, and `test_movers_…` asserts `agree(current) - agree(committed) == fixed - broken`. That invariant is the right thing to pin.
+- **The JS-parity writer is sound.** `_js_number` rejects exactly the ranges where Python's `repr` and JS's shortest-round-trip diverge (`<1e-4`, `≥1e21` integral, non-finite). Non-integral floats can't exceed 2^52 ≈ 4.5e15, so they never reach Python's 1e16 exponent threshold — the guard is complete, not approximate. With `sort_keys` + `ensure_ascii=False` + compact separators, the escaping rules match `JSON.stringify` for everything a textarea can produce.
+- **Fixture now exercises `verify_source`/`refused` in a pinned table**, per claude iter-1: a real Sonnet non-leading-verdict refusal (human and scorer agree `refused`) and an Aeterni-Patris-as-Gita false premise. `by_task["verify_source"]` and `by_grader_path["verdict"]` are asserted.
+
+## Comments (non-blocking)
+
+1. **`grader_path` degrades silently on a non-default-grader version.** It reads submetrics with `.get()` (`review_sample.py:39-53`). A directory version scored with `--evaluator containment` emits no `exact`/`normalized` keys (`score.py:1077` projects to `submetrics_for(graders)`), so an exact-match cell would be labelled `contained` and a miss labelled `none` with no complaint. The breakdown is a label, not a verdict, so nothing is miscounted — but per the project's fail-fast principle, consider either requiring the default text-retrieval submetric keys when reading a `committed`/directory version, or stating the assumption in `review/README.md`. (This is phase-1 code reused here; fine to defer.)
+
+2. **Multi-reviewer `n` is per-label, not per-cell.** A cell labelled by two reviewers contributes twice to `overall`/`by_task` (`test_two_reviewers_of_one_cell_are_both_counted` pins 12/16). That's a defensible choice and `reviewers` makes it visible, but #41's inter-rater work will read these numbers — one sentence in the README's "Pass several gold-set files to combine reviewers" paragraph would prevent a misread.
+
+3. **The `AR_CITE` divergence is a real finding, not a fixture bug** — the approved rubric discounts only a *disclaimed* echo of the form example; matcher #118 drops an undisclaimed one too. The builder has acknowledged it. Make sure it reaches `codev/reviews/154-…md` and the architect, not just the thread: it is the first substantive output of the tool and arguably validates the whole spec.
+
+4. **`review/README.md:138` asserts "29 distinct verses"** for NRSV coverage. The plan deliberately declined to pin this with a test, so note that it can go stale if the sample is regenerated.
+
+I made no changes to the tree.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2 is complete and correct; both prior iterations' concerns are verifiably fixed in code, with genuine production-parity re-scoring and a structurally safe directory lookup.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Minor: `grader_path` silently reports `none`/`contained` for a version scored with a non-default grader set (breakdown label only, not a verdict).
+- Minor: multi-reviewer agreement is per-label, so a doubly-labelled cell counts twice in `n` — worth one README sentence before #41 consumes these numbers.
+- Follow-up (not a code defect): the `AR_CITE` rubric-vs-matcher divergence on undisclaimed form-example echoes should be recorded in the review document for the architect.
