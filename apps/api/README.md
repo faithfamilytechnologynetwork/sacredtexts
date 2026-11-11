@@ -94,7 +94,9 @@ unchanged.
 - **The list.** The viewer stage of `apps/api/Dockerfile` has one `COPY runs/<id> runs/<id>` line per
   hosted run, and that is the only place the hosted set is named. To host another run, add its line
   (an archive run is `runs/archive/<name>`) and redeploy. A named run that is missing fails the
-  build, and nothing else under `runs/`, tracked or not, reaches the image.
+  build, and no other directory under `runs/`, tracked or not, reaches the image. Untracked files
+  inside a named run would reach a local `docker build`. The `git archive` deploy carries only
+  tracked files.
 - **The test.** `apps/viewer/vite/hostedBake.test.ts` reads the list, bakes exactly those runs, and
   checks the index, the artifacts, and that the review sample's `source_run` is among them. It also
   pins the list to `facct-2026-11-03`, so changing the hosted set means editing that line too.
@@ -274,8 +276,8 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 
 - One stage builds the viewer with `build:pages`, the Cloudflare Pages command: `vite build`, then
   `scripts/bake-runs.ts` bakes `runs/` into `dist/runs/` (reading `items/for-test/` for the panel's
-  questions). That stage's `runs/` holds only the runs it names (see
-  [What the review origin shows](#topology)).
+  questions). That stage's `runs/` holds only the runs it names (see "What the review origin
+  shows" under [Topology](#topology)).
 - The service stage holds:
   - the API's production dependencies;
   - `apps/api/src` and `drizzle/`;

@@ -38,3 +38,18 @@
   Judge/Findings show their empty state (documented in the README).
 - Docs: apps/api/README (what the origin shows, how to change the list, sizes: `dist/runs` 69 MB,
   image 541 MB unpacked / 111 MB gzipped locally), apps/viewer/README, arch.md § Review tool.
+
+## PR #160 and CMAP (2026-11-10)
+
+- CMAP: codex APPROVE (HIGH), claude APPROVE (HIGH), gemini skipped (`agy` exited 3, non-blocking).
+  The first dispatch failed for all three with "Multiple projects found". It needs
+  `--issue 159 --project-id bugfix-159` from the builder worktree.
+- Folded claude's minor items: the Dockerfile and README now say "no other directory under runs/"
+  and note that untracked files inside a named run would reach a local build (the git-archive
+  deploy is tracked-only). Fixed a misleading anchor text. Re-measured fails-without-fix: 4 of 6
+  (the non-empty guard added after the first measurement makes the index test fail too).
+- Left as is: the samples test checks every committed sample (stricter than the one active
+  `SAMPLE_PATH`, which lives only in Railway); the extra ~10 s bake in the viewer lane.
+- For the owner: on the hosted origin, `/judge` and `/findings` go empty, because the Jev
+  sidecars sit only under the top-level panel folders. Claude's review agrees there is no clean
+  way to keep them without bringing back the `panel` run.

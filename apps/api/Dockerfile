@@ -32,8 +32,9 @@ COPY apps/viewer/src apps/viewer/src
 COPY apps/viewer/scripts apps/viewer/scripts
 # The hosted runs: one `COPY runs/<id> runs/<id>` line per run, and nothing else from runs/ (#159).
 # This list is the only place the hosted set is named. To host another run, add its line here.
-# A named run that is missing fails the build; anything else under runs/, tracked or not, never
-# reaches the bake.
+# A named run that is missing fails the build; no other directory under runs/, tracked or not,
+# reaches the bake. (Untracked files inside a named run would, in a local build; the git archive
+# deploy carries tracked files only.)
 COPY runs/facct-2026-11-03 runs/facct-2026-11-03
 COPY items/for-test items/for-test
 RUN pnpm -C apps/viewer build:pages
