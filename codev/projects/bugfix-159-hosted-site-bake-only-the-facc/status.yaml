@@ -1,0 +1,17 @@
+id: bugfix-159
+title: hosted-site-bake-only-the-facc
+protocol: bugfix
+phase: verified
+plan_phases: []
+current_plan_phase: null
+gates:
+  pr:
+    status: approved
+    requested_at: '2026-11-11T04:29:39.650Z'
+    approved_at: '2026-11-11T15:48:14.188Z'
+iteration: 1
+build_complete: false
+history: []
+started_at: '2026-11-11T04:12:43.799Z'
+updated_at: '2026-11-11T15:48:16.418Z'
+pr_ready_for_human: false

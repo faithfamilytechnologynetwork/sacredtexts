@@ -74,7 +74,7 @@ it, so the viewer behaves the same on both hosts:
 - Every served file carries a validator: a weak `ETag` from its size and mtime, plus
   `Last-Modified`. A matching `If-None-Match` gets an empty **304**. A `/runs/*` file that `_headers`
   gives no `Cache-Control` gets `no-cache`. So a revisit revalidates instead of re-downloading
-  about 130 MB of runs, and a redeploy's new runs show at once.
+  about 70 MB of baked run files, and a redeploy's new runs show at once.
 
 Responses are gzip- or deflate-compressed for a client that accepts it (`hono/compress`). That matters
 for the sample (2.8 MB, about 0.5 MB gzipped) and the viewer bundle, because nothing sits in front of
@@ -85,10 +85,24 @@ id only. A save or submit for any other id gets 404 `{error: "unknown sample"}`.
 discarding drafts still work for every id, so a draft from an earlier sample stays visible and can be
 removed.
 
-**What the review origin shows.** The full viewer: the image builds it with `build:pages`, the same
-command and the same committed `runs/` (and `items/for-test/`) as the Cloudflare Pages deploy, so
-`/`, `/errors`, `/standings` and `/gaps` show the same runs as the public viewer, beside the review
-pages. The Pages build itself is unchanged.
+**What the review origin shows.** The full viewer, over **one run: `facct-2026-11-03`** (#159). The
+image builds the viewer with `build:pages`, the Cloudflare Pages command, but copies in only the runs
+the Dockerfile names (and `items/for-test/`), so `/`, `/errors`, `/standings` and `/gaps` see that
+run alone and `/runs/_index` has one entry. The Pages deploy still bakes all of `runs/`; its build is
+unchanged.
+
+- **The list.** The viewer stage of `apps/api/Dockerfile` has one `COPY runs/<id> runs/<id>` line per
+  hosted run, and that is the only place the hosted set is named. To host another run, add its line
+  (an archive run is `runs/archive/<name>`) and redeploy. A named run that is missing fails the
+  build, and no other directory under `runs/`, tracked or not, reaches the image. Untracked files
+  inside a named run would reach a local `docker build`. The `git archive` deploy carries only
+  tracked files.
+- **The test.** `apps/viewer/vite/hostedBake.test.ts` reads the list, bakes exactly those runs, and
+  checks the index, the artifacts, and that the review sample's `source_run` is among them. It also
+  pins the list to `facct-2026-11-03`, so changing the hosted set means editing that line too.
+- **Judge and Findings are empty here.** Both pages read `/runs/_judge`, built from the Jev
+  `judgments-v5.jsonl` files. Those sit only under the top-level panel folders (`runs/<model>/`),
+  not under `facct-2026-11-03`, so on this origin both pages show "No judgments-v5 files yet."
 
 **The viewer's own host is untouched.** `apps/viewer/server/index.mjs` (its `pnpm start`), its
 smoke test and `apps/viewer/railway.json` are the pre-existing static-only host and stay as they are.
@@ -224,7 +238,7 @@ export VIEWER_DIST="$PWD/apps/viewer/dist"
 pnpm -C apps/api install --frozen-lockfile
 pnpm -C apps/viewer install --frozen-lockfile
 pnpm -C apps/api migrate
-pnpm -C apps/viewer build:pages   # bakes runs/ into dist/runs/, as the image does
+pnpm -C apps/viewer build:pages   # bakes all of runs/ into dist/runs/; the image bakes only its named runs
 pnpm -C apps/api start         # api listening on :8080
 
 curl -s localhost:8080/api/health    # {"status":"ok","db":"up"}
@@ -260,9 +274,10 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 
 **The image** (`apps/api/Dockerfile`, built with the **repo root** as its context):
 
-- One stage builds the viewer with `build:pages`, as the Cloudflare Pages deploy does: `vite build`,
-  then `scripts/bake-runs.ts` bakes `runs/` into `dist/runs/` (reading `items/for-test/` for the
-  panel's questions).
+- One stage builds the viewer with `build:pages`, the Cloudflare Pages command: `vite build`, then
+  `scripts/bake-runs.ts` bakes `runs/` into `dist/runs/` (reading `items/for-test/` for the panel's
+  questions). That stage's `runs/` holds only the runs it names (see "What the review origin
+  shows" under [Topology](#topology)).
 - The service stage holds:
   - the API's production dependencies;
   - `apps/api/src` and `drizzle/`;
@@ -270,7 +285,7 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
   - the built viewer, with its baked `dist/runs/`.
 - It runs as the `node` user with `tsx src/server.ts`.
 - Every `COPY` names its paths, so no `node_modules`, `dist` or `texts/` reaches it. Run evidence
-  reaches it only as the baked `dist/runs/`.
+  reaches it only as the baked `dist/runs/` of the named runs.
 - Build it locally with `docker build -f apps/api/Dockerfile -t sacredtexts-review .`.
 - A Dockerfile is used, not Nixpacks or Railpack, because the repo root holds `requirements.txt`
   and no `package.json`, so auto-detection would build Python.
@@ -308,10 +323,13 @@ git archive HEAD apps/api apps/viewer review/samples runs items/for-test | tar -
 railway up "$stage" --path-as-root --service review --detach
 ```
 
-That uploads about 165 MB (17 MB gzipped), almost all of it `runs/` for the bake, where the whole
-repo is about 345 MB. With the runs baked (2026-11-11), the image is about 118 MB compressed
-(614 MB unpacked; 105 MB and 463 MB without them), and a cold container answers `/api/health`
-in under a second, because the baked files are read from disk only when they are requested. To deploy on every merge instead,
+That uploads about 165 MB (17 MB gzipped), almost all of it `runs/`, where the whole repo is about
+345 MB. The upload still carries all of `runs/`, but the image keeps only the runs the Dockerfile
+names. With all the runs baked (2026-11-11), the image was about 118 MB compressed (614 MB
+unpacked; 105 MB and 463 MB without them). With only `facct-2026-11-03` baked (#159), its
+`dist/runs/` is 69 MB, and a local build is 541 MB unpacked, 111 MB as a gzipped `docker save`.
+A cold container answers `/api/health` in under a second, because the baked files are read from
+disk only when they are requested. To deploy on every merge instead,
 connect the service to the repository's `main` branch. That is the owner's call:
 `railway service source connect --repo faithfamilytechnologynetwork/sacredtexts --branch main --service review`.
 
