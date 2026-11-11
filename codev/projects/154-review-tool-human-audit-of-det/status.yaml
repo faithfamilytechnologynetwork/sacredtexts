@@ -36,6 +36,7 @@ gates:
     approved_at: '2026-11-10T19:26:54.809Z'
   pr:
     status: pending
+    requested_at: '2026-11-11T00:07:03.132Z'
   verify-approval:
     status: pending
 iteration: 1
@@ -78,7 +79,7 @@ history:
         file: >-
           /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_5-iter1-claude.txt
 started_at: '2026-11-10T03:45:40.348Z'
-updated_at: '2026-11-10T23:44:57.195Z'
+updated_at: '2026-11-11T00:07:03.132Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-11-10T19:46:50.712Z'
@@ -101,3 +102,4 @@ context_refreshes:
   - boundary: enter:review
     at: '2026-11-10T23:26:33.588Z'
     acknowledged_at: '2026-11-10T23:27:40.331Z'
+pr_ready_for_human: true
