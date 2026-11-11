@@ -151,8 +151,9 @@ its own labels.
 
 **Where it runs.** The pages call `/api/*` on their own origin, so they work only where the
 review API serves the viewer: the one service in `apps/api` (see its README for the local run
-and the deployment). That service serves a plain `pnpm build`, with **no runs baked in**:
-the review pages read the sample from the API, not from `runs/`.
+and the deployment). That service serves a `build:pages` dist, with the same runs baked in as
+the Pages deploy, so the whole viewer works there too. The review pages read the sample from
+the API, not from `runs/`.
 
 **Developing the pages.** Run the API on `:8080` without `VIEWER_DIST`, then
 `pnpm -C apps/viewer dev`. The dev server proxies `/api` to `API_ORIGIN`

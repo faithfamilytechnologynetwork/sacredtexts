@@ -60,6 +60,18 @@ The static serving ports the in-repo viewer host (`apps/viewer/server/index.mjs`
 an `index.html` fallback). The differences are that `/api/*` is excluded from both, and only `GET`
 and `HEAD` are served.
 
+The run data a `build:pages` dist bakes under `dist/runs/` is served the way Cloudflare Pages serves
+it, so the viewer behaves the same on both hosts:
+
+- A found file gets the headers the dist's `_headers` file (the viewer's `public/_headers`) gives
+  its path: every `/runs/*` file as `text/plain; charset=utf-8`, so it is compressed, and
+  `/runs/_index` and `/runs/_gaps` as `no-cache`. The service reads `_headers` at startup and stops
+  on a rule it can't read (only exact paths and a trailing `*` are supported).
+- An encoded run id (`/runs/archive%2F<name>/summary.json`, as the client requests it) gets a
+  **307** to the decoded path, as Pages' asset server answers it. Outside `/runs/` an encoded `/`
+  is left alone, so a review cell id that holds one still deep-links.
+- A missing run file gets the SPA shell, as on Pages. The client reads that as "absent".
+
 Responses are gzip- or deflate-compressed for a client that accepts it (`hono/compress`). That matters
 for the sample (2.8 MB, about 0.5 MB gzipped) and the viewer bundle, because nothing sits in front of
 the service.
@@ -69,10 +81,10 @@ id only. A save or submit for any other id gets 404 `{error: "unknown sample"}`.
 discarding drafts still work for every id, so a draft from an earlier sample stays visible and can be
 removed.
 
-**What the review origin shows.** The deployment builds the viewer with `pnpm build`, not
-`build:pages`, so it bakes in no runs. The browsing pages (`/`, `/errors`, `/standings`) on this
-origin show their usual "no runs" empty state. That is expected: this origin is for review. The
-public browsing viewer is the Cloudflare Pages build, which this service does not change.
+**What the review origin shows.** The full viewer: the image builds it with `build:pages`, the same
+command and the same committed `runs/` (and `items/for-test/`) as the Cloudflare Pages deploy, so
+`/`, `/errors`, `/standings` and `/gaps` show the same runs as the public viewer, beside the review
+pages. The Pages build itself is unchanged.
 
 **The viewer's own host is untouched.** `apps/viewer/server/index.mjs` (its `pnpm start`), its
 smoke test and `apps/viewer/railway.json` are the pre-existing static-only host and stay as they are.
@@ -208,7 +220,7 @@ export VIEWER_DIST="$PWD/apps/viewer/dist"
 pnpm -C apps/api install --frozen-lockfile
 pnpm -C apps/viewer install --frozen-lockfile
 pnpm -C apps/api migrate
-pnpm -C apps/viewer build      # not build:pages: the review origin bakes in no runs
+pnpm -C apps/viewer build:pages   # bakes runs/ into dist/runs/, as the image does
 pnpm -C apps/api start         # api listening on :8080
 
 curl -s localhost:8080/api/health    # {"status":"ok","db":"up"}
@@ -244,14 +256,17 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 
 **The image** (`apps/api/Dockerfile`, built with the **repo root** as its context):
 
-- One stage builds the viewer with the plain `vite build`.
+- One stage builds the viewer with `build:pages`, as the Cloudflare Pages deploy does: `vite build`,
+  then `scripts/bake-runs.ts` bakes `runs/` into `dist/runs/` (reading `items/for-test/` for the
+  panel's questions).
 - The service stage holds:
   - the API's production dependencies;
   - `apps/api/src` and `drizzle/`;
   - `review/samples/`;
-  - the built viewer.
+  - the built viewer, with its baked `dist/runs/`.
 - It runs as the `node` user with `tsx src/server.ts`.
-- Every `COPY` names its paths, so no `node_modules`, `dist`, `runs/` or `texts/` reaches it.
+- Every `COPY` names its paths, so no `node_modules`, `dist` or `texts/` reaches it. Run evidence
+  reaches it only as the baked `dist/runs/`.
 - Build it locally with `docker build -f apps/api/Dockerfile -t sacredtexts-review .`.
 - A Dockerfile is used, not Nixpacks or Railpack, because the repo root holds `requirements.txt`
   and no `package.json`, so auto-detection would build Python.
@@ -285,11 +300,14 @@ To read them back:
 
 ```bash
 stage=$(mktemp -d)
-git archive HEAD apps/api apps/viewer review/samples | tar -x -C "$stage"
+git archive HEAD apps/api apps/viewer review/samples runs items/for-test | tar -x -C "$stage"
 railway up "$stage" --path-as-root --service review --detach
 ```
 
-That uploads about 4 MB, where the whole repo is about 345 MB. To deploy on every merge instead,
+That uploads about 165 MB (17 MB gzipped), almost all of it `runs/` for the bake, where the whole
+repo is about 345 MB. With the runs baked (2026-11-11), the image is about 118 MB compressed
+(614 MB unpacked; 105 MB and 463 MB without them), and a cold container answers `/api/health`
+in under a second, because the baked files are read from disk only when they are requested. To deploy on every merge instead,
 connect the service to the repository's `main` branch. That is the owner's call:
 `railway service source connect --repo faithfamilytechnologynetwork/sacredtexts --branch main --service review`.
 

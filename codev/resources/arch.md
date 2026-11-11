@@ -291,8 +291,10 @@ version. Detail: `review/README.md`, `apps/api/README.md`, `apps/viewer/README.m
   agreement overall, per task, per text and per grader path, lists the disagreements, and lists the
   movers (fixed/broken) between two versions. `current` calls `score_answer` exactly as `score_file`
   does, offline.
-- **Hosting** — Railway project `sacredtexts-review`: one service built from `apps/api/Dockerfile`
-  (repo-root context) plus a managed Postgres with a daily volume backup. The build/deploy settings
+- **Hosting** — Railway project `sacredtexts-review` (`https://sacredtexts.iaser.ai`): one service built from `apps/api/Dockerfile`
+  (repo-root context) plus a managed Postgres with a daily volume backup. The image builds the viewer
+  with `build:pages` (the Pages bake of `runs/`), and `static.ts` serves `dist/runs/` as Pages does
+  (`_headers`, encoded run ids 307 to the decoded path). The build/deploy settings
   are set on the service (Railway rejects a config-as-code path on a new service), so there is no
   `railway.json` for it. The invite code lives only in Railway and the gitignored root `.env`.
 - **Copyright** — by the owner's ruling (counsel: fair use), `review/` samples are outside the
