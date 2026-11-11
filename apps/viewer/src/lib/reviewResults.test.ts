@@ -12,7 +12,12 @@ describe("agreementReport", () => {
   it("counts the fixture labels exactly as review-compare --version committed does (the shared fixture)", () => {
     const sample = parseSample(JSON.parse(read("review_sample.json")));
     const report = agreementReport(goldRows(sample, goldFixtureLabels(), REVIEWER.id));
-    expect(report).toEqual(JSON.parse(read("review_results.json")));
+    const fixture = JSON.parse(read("review_results.json"));
+    expect(report).toEqual(fixture);
+    // toEqual ignores key order, but the page renders the groups in it: review-compare's sorted order.
+    for (const group of ["by_task", "by_text", "by_grader_path"] as const) {
+      expect(Object.keys(report[group]), group).toEqual(Object.keys(fixture[group]));
+    }
   });
 
   it("is empty with no labels", () => {

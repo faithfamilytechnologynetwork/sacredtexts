@@ -8,8 +8,9 @@ disk, and neither the credentials nor the token appear in any message. Standard 
 
 from __future__ import annotations
 
+import contextlib
 import json
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
@@ -37,8 +38,10 @@ def _send(request: Request) -> tuple[int, object, bytes]:
             return resp.status, resp.headers, resp.read()
     except HTTPError as exc:
         return exc.code, exc.headers, exc.read()
-    except URLError as exc:
-        raise ReviewCompareError(f"cannot reach the review service at {request.full_url} ({exc.reason})") from exc
+    except OSError as exc:  # URLError, or a connection dropped mid-response
+        raise ReviewCompareError(
+            f"cannot reach the review service at {request.full_url} ({getattr(exc, 'reason', exc)})"
+        ) from exc
 
 
 def _json(what: str, status: int, headers, body: bytes) -> dict:
@@ -69,12 +72,14 @@ def fetch_gold_set(base_url: str, email: str, password: str) -> str:
     if not token or not isinstance(csrf, str) or cookies.get(CSRF_COOKIE) != csrf:
         raise ReviewCompareError(f"login to {base}: the response has no session cookie or CSRF token")
     signed_in = {"Cookie": f"{SESSION_COOKIE}={token}; {CSRF_COOKIE}={csrf}"}
+    logout = Request(f"{base}/api/auth/logout", data=b"", headers={**signed_in, CSRF_HEADER: csrf}, method="POST")
     try:
         status, headers, body = _send(Request(f"{base}/api/gold-set", headers=signed_in))
-    finally:
-        out_status, out_headers, out_body = _send(
-            Request(f"{base}/api/auth/logout", data=b"", headers={**signed_in, CSRF_HEADER: csrf}, method="POST")
-        )
+    except BaseException:
+        with contextlib.suppress(Exception):  # still close the session, but never mask why the fetch failed
+            _send(logout)
+        raise
+    out_status, out_headers, out_body = _send(logout)
     if status != 200:
         raise ReviewCompareError(f"gold set from {base}: {status} ({_json('gold set', status, headers, body).get('error')})")
     if out_status != 200:

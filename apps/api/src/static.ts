@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { Context, Hono, MiddlewareHandler } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
@@ -90,7 +90,7 @@ export function loadViewerDist(dir: string): ViewerDist {
  * gets a 307 to the decoded path, as Pages' asset server answers it.
  */
 export function mountViewer(app: Hono<any>, viewer: ViewerDist): void {
-  const files = serveStatic({ root: viewer.root });
+  const files = serveStatic({ root: viewer.root, onFound: (path, c) => c.set(FOUND_FILE, path) });
   const staticFiles: MiddlewareHandler = async (c, next) => {
     if (isApiPath(c.req.path) || !isRead(c)) return next();
     const url = new URL(c.req.url);
@@ -98,10 +98,38 @@ export function mountViewer(app: Hono<any>, viewer: ViewerDist): void {
       return c.redirect(`${url.pathname.replace(/%2f/gi, '/')}${url.search}`, 307);
     }
     const res = await files(c, next);
-    if (res) for (const [name, value] of headersFor(viewer.headers, c.req.path)) res.headers.set(name, value);
-    return res;
+    const file: string | undefined = c.get(FOUND_FILE);
+    if (!res || !file) return res;
+    for (const [name, value] of headersFor(viewer.headers, c.req.path)) res.headers.set(name, value);
+    return revalidated(c, res, file);
   };
   app.use('/*', staticFiles);
+}
+
+const FOUND_FILE = 'viewerFile';
+
+/**
+ * Give a served file a validator (a weak ETag from its size and mtime, plus Last-Modified) and answer
+ * a matching `If-None-Match` with an empty 304, so a revisit does not re-transfer the baked runs
+ * (about 130 MB). A run file without a `Cache-Control` from `_headers` gets `no-cache`: always
+ * revalidated, so a redeploy's new runs are seen at once. Range responses are left as they are.
+ */
+async function revalidated(c: Context, res: Response, file: string): Promise<Response> {
+  if (res.status !== 200) return res;
+  const stat = statSync(file);
+  const etag = `W/"${stat.size.toString(16)}-${Math.trunc(stat.mtimeMs).toString(16)}"`;
+  res.headers.set('ETag', etag);
+  res.headers.set('Last-Modified', stat.mtime.toUTCString());
+  if (c.req.path.startsWith('/runs/') && !res.headers.has('Cache-Control')) res.headers.set('Cache-Control', 'no-cache');
+  const match = c.req.header('If-None-Match')?.split(',').map((t) => t.trim());
+  if (!match?.includes(etag) && !match?.includes('*')) return res;
+  await res.body?.cancel(); // close the file stream serveStatic opened
+  const headers = new Headers();
+  for (const name of ['ETag', 'Last-Modified', 'Cache-Control']) {
+    const value = res.headers.get(name);
+    if (value !== null) headers.set(name, value);
+  }
+  return new Response(null, { status: 304, headers });
 }
 
 /**

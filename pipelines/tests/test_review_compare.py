@@ -592,6 +592,8 @@ class _FakeService(BaseHTTPRequestHandler):
                 "st_session=tok-1; Path=/; HttpOnly; Secure; SameSite=None",
                 "st_csrf=csrf-1; Path=/; Secure; SameSite=None",
             ))
+        elif self.mode == "drop":
+            self.close_connection = True  # the logout fails too: its error must not replace the fetch's
         elif self.headers["X-CSRF-Token"] == "csrf-1" and "st_csrf=csrf-1" in self.headers["Cookie"]:
             self._reply(200, b'{"ok":true}', "application/json")  # logout
         else:
@@ -599,7 +601,9 @@ class _FakeService(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self.calls.append(f"GET {self.path}")
-        if self.path == "/api/gold-set" and "st_session=tok-1" in self.headers["Cookie"]:
+        if self.mode == "drop":  # the connection dies mid-request (and the logout after it fails too)
+            self.close_connection = True
+        elif self.path == "/api/gold-set" and "st_session=tok-1" in self.headers["Cookie"]:
             self._reply(200, b"" if self.mode == "empty" else self.gold, "application/jsonl; charset=utf-8")
         else:
             self._reply(401, b'{"error":"unauthorized"}', "application/json")
@@ -659,6 +663,7 @@ def test_from_service_prompts_for_unset_credentials_and_hides_the_password(
     ("ok", "wrong-password", r"login to http://127\.0\.0\.1:\d+ failed \(401: invalid credentials\)"),
     ("html", PASSWORD, r"answered 200 with text/html, not JSON"),
     ("empty", PASSWORD, r"is empty: this account has no labelled cells"),
+    ("drop", PASSWORD, r"cannot reach the review service at http://127\.0\.0\.1:\d+/api/gold-set"),
 ])
 def test_from_service_fails_loudly(service, mode: str, password: str, message: str) -> None:
     handler, base = service
@@ -666,7 +671,7 @@ def test_from_service_fails_loudly(service, mode: str, password: str, message: s
     with pytest.raises(ReviewCompareError, match=message) as failure:
         fetch_gold_set(base, EMAIL, password)
     assert password not in str(failure.value) and EMAIL not in str(failure.value)
-    if mode == "empty":  # the session it opened is closed again
+    if mode in ("empty", "drop"):  # the session it opened is closed again; a failing logout masks nothing
         assert handler.calls[-1] == "POST /api/auth/logout"
 
 

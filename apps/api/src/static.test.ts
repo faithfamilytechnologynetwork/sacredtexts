@@ -183,8 +183,29 @@ describe('the run data a build:pages dist bakes', () => {
     const res = await app.request('/runs/archive/first-run/scores.jsonl', { headers: { 'Accept-Encoding': 'gzip' } });
     expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
     expect(res.headers.get('content-encoding')).toBe('gzip');
-    expect(res.headers.get('cache-control')).toBeNull();
+    expect(res.headers.get('cache-control')).toBe('no-cache'); // the service's default for /runs/*
     expect(gunzipSync(Buffer.from(await res.arrayBuffer())).toString('utf8')).toBe(SCORES);
+  });
+
+  it('revalidates run files: an ETag, no-cache, and a 304 with no body for a matching If-None-Match', async () => {
+    const path = '/runs/archive/first-run/scores.jsonl';
+    const first = await app.request(path);
+    const etag = first.headers.get('etag');
+    expect(etag).toMatch(/^W\/"[0-9a-f]+-[0-9a-f]+"$/);
+    expect(first.headers.get('last-modified')).toBeTruthy();
+    expect(first.headers.get('cache-control')).toBe('no-cache');
+    const again = await app.request(path, { headers: { 'If-None-Match': etag!, 'Accept-Encoding': 'gzip' } });
+    expect(again.status).toBe(304);
+    expect(again.headers.get('etag')).toBe(etag);
+    expect(await again.text()).toBe('');
+    // the run index keeps its own Cache-Control from _headers; a changed file gets a new ETag
+    const index = await app.request('/runs/_index');
+    expect(index.headers.get('cache-control')).toBe('no-cache');
+    writeFileSync(join(dist, 'runs', 'archive', 'first-run', 'scores.jsonl'), `${SCORES}{}\n`);
+    const changed = await app.request(path, { headers: { 'If-None-Match': etag! } });
+    expect(changed.status).toBe(200);
+    expect(changed.headers.get('etag')).not.toBe(etag);
+    writeFileSync(join(dist, 'runs', 'archive', 'first-run', 'scores.jsonl'), SCORES);
   });
 
   it('answers an encoded run id with a 307 to the decoded path, as Pages does', async () => {

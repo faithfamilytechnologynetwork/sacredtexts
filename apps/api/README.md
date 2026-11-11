@@ -71,6 +71,10 @@ it, so the viewer behaves the same on both hosts:
   **307** to the decoded path, as Pages' asset server answers it. Outside `/runs/` an encoded `/`
   is left alone, so a review cell id that holds one still deep-links.
 - A missing run file gets the SPA shell, as on Pages. The client reads that as "absent".
+- Every served file carries a validator: a weak `ETag` from its size and mtime, plus
+  `Last-Modified`. A matching `If-None-Match` gets an empty **304**. A `/runs/*` file that `_headers`
+  gives no `Cache-Control` gets `no-cache`. So a revisit revalidates instead of re-downloading
+  about 130 MB of runs, and a redeploy's new runs show at once.
 
 Responses are gzip- or deflate-compressed for a client that accepts it (`hono/compress`). That matters
 for the sample (2.8 MB, about 0.5 MB gzipped) and the viewer bundle, because nothing sits in front of

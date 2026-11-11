@@ -31,6 +31,15 @@ describe('buildGoldSet', () => {
     expect(buildGoldSet(SAMPLE.sampleId, cells, fixtureDraft(), FIXTURE_REVIEWER)).toBe(GOLD);
   });
 
+  it("writes exactly the fixture's row and label fields (a new field must reach every writer)", () => {
+    const rows = buildGoldSet(SAMPLE.sampleId, cells, fixtureDraft(), FIXTURE_REVIEWER).trimEnd().split('\n').map((l) => JSON.parse(l));
+    for (const [i, row] of rows.entries()) {
+      expect(Object.keys(row).sort()).toEqual(Object.keys(ROWS[i]).sort());
+      expect(Object.keys(row.label).sort()).toEqual(Object.keys(ROWS[i].label).sort());
+      expect(Object.keys(row.shown).sort()).toEqual(Object.keys(ROWS[i].shown).sort());
+    }
+  });
+
   it('reads the draft as the viewer does: a broken field falls back to its default', () => {
     const draft = fixtureDraft();
     const [first, second, third] = ROWS.map((r) => r.cell_id as string);

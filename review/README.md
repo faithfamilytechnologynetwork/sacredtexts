@@ -105,6 +105,11 @@ These are the numbers `review-compare --version committed` prints for the same l
 `fixtures/review_results.json` pins both to the same numbers: the pipelines tests check
 `review-compare` against it, and the viewer tests check the page.
 
+One caveat: the page counts the verdicts shown at labelling time (each row's `shown`), while
+`--version committed` re-reads the run's scores from `scores_path`. The two agree until the
+run is rebaselined. After a sanctioned rebaseline they can differ, and a failing parity test
+is the signal to regenerate the sample.
+
 ## Gold sets
 
 A reviewer's labels come out as a **gold set**: JSONL with one row per labelled cell, sorted

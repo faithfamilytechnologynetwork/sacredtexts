@@ -3,7 +3,8 @@
 // draft: the draft is read as the viewer's tolerant loader reads it (`parseSampleReview`: each label
 // field falls back to its default on its own), so this writes exactly the bytes the download would.
 // All three writers (this, the viewer, `review_compare.dumps_gold_rows`) are pinned to
-// fixtures/review_gold_set.jsonl.
+// fixtures/review_gold_set.jsonl. A new row or label field means editing every writer (and
+// `review_compare.GOLD_KEYS` / `LABEL_KEYS`); the tests pin each writer's key sets to the fixture's.
 
 /** Labels that can't be written as a gold set (the viewer's download refuses the same labels). */
 export class GoldSetError extends Error {
