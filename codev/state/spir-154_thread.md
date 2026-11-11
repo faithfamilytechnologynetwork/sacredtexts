@@ -363,3 +363,35 @@
 - **Not done by me: the in-browser sign-up → label → reload → download.** It's a production host, and
   I don't create accounts or enter passwords or the invite code there. I asked the architect for a
   human to run it.
+
+## Review phase: the PR review and the architect's integration review (2026-11-10, ~23:50Z–00:10Z)
+
+- **PR #155** opened with `Closes #154`.
+  - The porch PR consult: codex REQUEST_CHANGES, on the auth body limit, the human hosted check, and
+    the untracked consult files. Claude APPROVE, with notes.
+  - The architect's integration review named four fixes. All are in 26956177, and each is
+    mutation-checked:
+    1. The signup and login bodies are capped at 16 KiB before parsing, with a 413 over it. The
+       widest legal password is 1,024 three-byte characters, because the password cap counts UTF-16
+       units.
+    2. `logout()` throws on a refused sign-out. `logoutReview()` refreshes a stale CSRF token and
+       retries once; a further refusal leaves the reviewer signed in and shows "Couldn't sign out".
+    3. `review-compare --version current` fails fast unless each row's run `summary.json` records the
+       default `strict` + `containment`. The test helper now writes those summaries.
+    4. The spec says a version is a **run directory**, not "a scores file".
+- **Declined, per the owner's ruling:** narrowing the `review/` audit exemption.
+- **Follow-up issue #156** holds the non-blocking list.
+- **Open question for the architect:** the consult files for phases 2–7 are untracked (this builder's
+  standing order), while those for the spec, the plan and phase 1 are committed. The repo's other
+  projects commit them all.
+- **CI was green on 01b11e0f** (api, pipelines and viewer, on both the push and PR runs). The local
+  pipelines run: 1572 passed, 35 skipped.
+- **Redeployed 01b11e0f to Railway** with the same `git archive` + `railway up` recipe. It came up as
+  SUCCESS in about 60 s, and the pre-deploy step logged `migrations applied`. Checked on the live
+  service, with no credentials sent:
+  - a 20 KB body to `/api/auth/login` or `/signup` gets 413;
+  - `{}` to login gets 400;
+  - a logout without CSRF gets 403;
+  - the pages load, and a missing asset gets 404;
+  - `/api/sample` gets 401;
+  - the new bundle (`index-DrmSvooF.js`) carries the sign-out error UI.
