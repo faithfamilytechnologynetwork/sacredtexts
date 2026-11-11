@@ -8,7 +8,7 @@ version of the matcher can be scored against.
 
 ```text
 review/samples/<sample-id>.json   a committed sample: the cells a reviewer is shown
-gold-<sample-id>.jsonl            a reviewer's labels, downloaded from the review tool (not committed here)
+gold-<sample-id>.jsonl            an optional backup of a reviewer's labels, downloaded from the review tool (not committed here)
 ```
 
 ## The workflow, end to end
@@ -24,16 +24,22 @@ gold-<sample-id>.jsonl            a reviewer's labels, downloaded from the revie
       beside it. Tick **Question defect** if the expected text or the prompt is itself wrong.
       Add notes in any language.
    3. Labels save as you go. You can stop and pick up later, on any device.
-4. **Download** your labels: **Download gold set** at the bottom of `/review` saves
-   `gold-<sample-id>.jsonl`. Downloading twice gives the same file. See [Gold sets](#gold-sets).
-5. **Compare** matcher versions against the labels, from the repo root:
+4. **See how the matcher did**: open **Results** (`/review/results`, linked from `/review`).
+   It updates as you label. See [Results](#results).
+5. **Compare** matcher versions against your labels, from the repo root. The command reads
+   your labels from the review service, so there is no file to pass around:
 
    ```bash
-   uv --project pipelines run python -m sacredbench review-compare gold-<sample-id>.jsonl \
+   uv --project pipelines run python -m sacredbench review-compare \
+     --from-service https://sacredtexts.iaser.ai \
      --version committed --version current
    ```
 
-   See [Comparing matcher versions](#comparing-matcher-versions).
+   It asks for your review email and password (or reads `REVIEW_EMAIL` and
+   `REVIEW_PASSWORD`). See [Comparing matcher versions](#comparing-matcher-versions).
+
+**Download gold set** at the bottom of `/review` still saves your labels as
+`gold-<sample-id>.jsonl`. It is a backup copy. The workflow above does not need it.
 
 What a reviewer sees on each cell:
 
@@ -85,10 +91,25 @@ compares it, so a change to `runs/` that moves the sample fails that test. If th
 deliberately (a sanctioned rebaseline), regenerate the sample in the same PR and say so.
 Labels already downloaded stay valid, because they carry their own inputs.
 
+## Results
+
+`/review/results` shows how often the matcher's verdict (the one shown on each cell) matches
+your labels. It counts only your own labels, in your browser, from the sample and your
+saved labels:
+
+- agreement as `agree / n (pct)`: overall, per task, per text and per grader path;
+- `can't judge` and question-defect labels, counted on their own line and left out of `n`;
+- every disagreement, linking to its cell.
+
+These are the numbers `review-compare --version committed` prints for the same labels.
+`fixtures/review_results.json` pins both to the same numbers: the pipelines tests check
+`review-compare` against it, and the viewer tests check the page.
+
 ## Gold sets
 
-A reviewer downloads their labels as a **gold set**: a JSONL file with one row per labelled
-cell, sorted by `cell_id`. Each row carries everything needed to re-score its cell, so a gold
+A reviewer's labels come out as a **gold set**: JSONL with one row per labelled cell, sorted
+by `cell_id`. `review-compare --from-service` fetches it from the review service
+(`GET /api/gold-set`). **Download gold set** on `/review` saves the same bytes as a file. Each row carries everything needed to re-score its cell, so a gold
 set does not depend on any one version of the matcher.
 
 | Field | What it holds |
@@ -116,19 +137,40 @@ order, or the same reviewer labelling the same cell twice (in one file or across
 
 `fixtures/review_sample.json` and `fixtures/review_gold_set.jsonl` are a small sample (10
 cells: every task, in `islam/native` and `hinduism/english`) and its gold set. They are the
-contract between the two writers: the pipelines tests pin them, and the review tool's download
-must reproduce `review_gold_set.jsonl` byte for byte from them.
+contract between the writers: the pipelines tests pin them, and both the review tool's download
+and the service's `GET /api/gold-set` must reproduce `review_gold_set.jsonl` byte for byte from
+them.
 
 ## Comparing matcher versions
 
-Score one or more versions of the matcher against gold sets. Run from the repo root:
+Score one or more versions of the matcher against gold sets. Run from the repo root.
+Read your labels from the review service:
+
+```bash
+uv --project pipelines run python -m sacredbench review-compare \
+  --from-service https://sacredtexts.iaser.ai \
+  --version committed --version current
+```
+
+- It signs in with your review email and password, fetches your gold set for the
+  service's active sample, and signs out again.
+- It reads `REVIEW_EMAIL` and `REVIEW_PASSWORD`, and asks for any that are unset. The
+  password is not echoed.
+- It writes nothing to disk and prints no credentials.
+- The URL must be `https://`. Plain `http://` is allowed only to `localhost`, for a local run
+  (`--from-service http://localhost:8080`).
+- It stops with an error if the sign-in fails, if the service does not answer JSON, or if
+  your gold set is empty.
+
+Or pass gold-set files instead, for example downloaded backups. Pass several to combine
+reviewers:
 
 ```bash
 uv --project pipelines run python -m sacredbench review-compare gold-facct-2026-11-03-k10.jsonl \
   --version committed --version current
 ```
 
-Pass several gold-set files to combine reviewers. Each `--version` is one of:
+Give either files or `--from-service`, not both. Each `--version` is one of:
 
 - `committed`: the run's recorded scores, read now from each row's `scores_path`;
 - `current`: a re-score by the scorer code in this checkout, exactly as `sacredbench score`

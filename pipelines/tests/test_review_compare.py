@@ -18,10 +18,13 @@ with Yes/No, and a "Yes" to a false premise); two more are ``cant_judge`` and de
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -37,10 +40,12 @@ from sacredbench.review_compare import (
     load_gold,
 )
 from sacredbench.review_sample import load_sample
+from sacredbench.review_service import fetch_gold_set, service_base
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_SAMPLE = REPO_ROOT / "fixtures" / "review_sample.json"
 FIXTURE_GOLD = REPO_ROOT / "fixtures" / "review_gold_set.jsonl"
+FIXTURE_RESULTS = REPO_ROOT / "fixtures" / "review_results.json"
 COMMITTED_SAMPLE = REPO_ROOT / "review" / "samples" / "facct-2026-11-03-k10.json"
 REVIEWER = "3f2b8c1e-5d4a-4e6f-9b7c-1a2d3e4f5a6b"
 
@@ -163,6 +168,16 @@ def test_committed_counts_match_the_hand_computed_numbers(gold: list[dict], root
     assert [(d["cell_id"], d["human"], d["version"]) for d in v["disagreements"]] == [
         (AR_RETRIEVE, "incorrect", "correct"), (EN_RETRIEVE, "correct", "incorrect"),
     ]
+
+
+def test_committed_matches_the_results_page_fixture(gold: list[dict], root: Path) -> None:
+    """The review tool's results page counts the shown verdicts as ``committed`` does (issue #157):
+    the viewer's vitest pins its numbers to the same file."""
+    v = compare(gold, ["committed"], root)["versions"][0]
+    del v["version"]
+    for tally in v["by_text"].values():
+        del tally["arms"]
+    assert v == json.loads(FIXTURE_RESULTS.read_text(encoding="utf-8"))
 
 
 def test_current_rescores_with_the_real_scorer(gold: list[dict], root: Path) -> None:
@@ -539,3 +554,148 @@ def test_smoke_first_20_committed_sample_cells_agree_with_themselves(
     report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert [v["overall"] for v in report["versions"]] == [_tally(20, 20)] * 2
     assert report["movers"][0]["cells"] == []
+
+
+# --- --from-service: the gold set from the review service (issue #157) ----------------------------
+
+EMAIL, PASSWORD = "rev@example.com", "a-secret-passphrase"
+
+
+class _FakeService(BaseHTTPRequestHandler):
+    """The review service's login, gold-set and logout endpoints. ``mode`` breaks one of them."""
+
+    gold = b""
+    mode = "ok"
+    calls: list[str] = []
+
+    def log_message(self, *args) -> None:
+        pass
+
+    def _reply(self, status: int, body: bytes, content_type: str, cookies: tuple[str, ...] = ()) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        for cookie in cookies:
+            self.send_header("Set-Cookie", cookie)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_POST(self) -> None:
+        body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        self.calls.append(f"POST {self.path}")
+        if self.path == "/api/auth/login" and self.mode == "html":
+            self._reply(200, b"<!doctype html><html></html>", "text/html")
+        elif self.path == "/api/auth/login" and json.loads(body) != {"email": EMAIL, "password": PASSWORD}:
+            self._reply(401, b'{"error":"invalid credentials"}', "application/json")
+        elif self.path == "/api/auth/login":
+            self._reply(200, b'{"csrfToken":"csrf-1","reviewer":{}}', "application/json", (
+                "st_session=tok-1; Path=/; HttpOnly; Secure; SameSite=None",
+                "st_csrf=csrf-1; Path=/; Secure; SameSite=None",
+            ))
+        elif self.headers["X-CSRF-Token"] == "csrf-1" and "st_csrf=csrf-1" in self.headers["Cookie"]:
+            self._reply(200, b'{"ok":true}', "application/json")  # logout
+        else:
+            self._reply(403, b'{"error":"csrf"}', "application/json")
+
+    def do_GET(self) -> None:
+        self.calls.append(f"GET {self.path}")
+        if self.path == "/api/gold-set" and "st_session=tok-1" in self.headers["Cookie"]:
+            self._reply(200, b"" if self.mode == "empty" else self.gold, "application/jsonl; charset=utf-8")
+        else:
+            self._reply(401, b'{"error":"unauthorized"}', "application/json")
+
+
+@pytest.fixture
+def service():
+    handler = type("Handler", (_FakeService,), {"gold": FIXTURE_GOLD.read_bytes(), "mode": "ok", "calls": []})
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield handler, f"http://127.0.0.1:{server.server_address[1]}"
+    server.shutdown()
+    server.server_close()
+
+
+def test_from_service_reports_exactly_as_the_downloaded_file_does(
+    gold: list[dict], root: Path, service, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
+    handler, base = service
+    monkeypatch.chdir(root)
+    monkeypatch.setenv("REVIEW_EMAIL", EMAIL)
+    monkeypatch.setenv("REVIEW_PASSWORD", PASSWORD)
+    files_before = sorted(root.rglob("*"))
+    result = CliRunner().invoke(
+        app, ["review-compare", "--from-service", f"{base}/", "--version", "committed", "--version", "current"]
+    )
+    assert result.exit_code == 0, result.output
+    assert result.output == format_report(compare(gold, ["committed", "current"], root))
+    assert handler.calls == ["POST /api/auth/login", "GET /api/gold-set", "POST /api/auth/logout"]
+    assert not any(secret in result.output for secret in (EMAIL, PASSWORD, "tok-1", "csrf-1"))
+    assert sorted(root.rglob("*")) == files_before
+
+
+def test_from_service_prompts_for_unset_credentials_and_hides_the_password(
+    root: Path, service, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
+    _, base = service
+    monkeypatch.chdir(root)
+    monkeypatch.delenv("REVIEW_EMAIL", raising=False)
+    monkeypatch.delenv("REVIEW_PASSWORD", raising=False)
+    result = CliRunner().invoke(
+        app, ["review-compare", "--from-service", base, "--version", "committed"], input=f"{EMAIL}\n{PASSWORD}\n"
+    )
+    assert result.exit_code == 0, result.output
+    assert "overall: 6 / 8 (75.0%)" in result.output and PASSWORD not in result.output
+
+
+@pytest.mark.parametrize(("mode", "password", "message"), [
+    ("ok", "wrong-password", r"login to http://127\.0\.0\.1:\d+ failed \(401: invalid credentials\)"),
+    ("html", PASSWORD, r"answered 200 with text/html, not JSON"),
+    ("empty", PASSWORD, r"is empty: this account has no labelled cells"),
+])
+def test_from_service_fails_loudly(service, mode: str, password: str, message: str) -> None:
+    handler, base = service
+    handler.mode = mode
+    with pytest.raises(ReviewCompareError, match=message) as failure:
+        fetch_gold_set(base, EMAIL, password)
+    assert password not in str(failure.value) and EMAIL not in str(failure.value)
+    if mode == "empty":  # the session it opened is closed again
+        assert handler.calls[-1] == "POST /api/auth/logout"
+
+
+def test_a_failed_login_exits_non_zero_without_printing_credentials(root: Path, service) -> None:
+    _, base = service
+    env = {**os.environ, "REVIEW_EMAIL": EMAIL, "REVIEW_PASSWORD": "wrong-password"}
+    proc = subprocess.run(
+        [sys.executable, "-m", "sacredbench", "review-compare", "--from-service", base, "--version", "committed"],
+        cwd=root, env=env, capture_output=True, text=True,
+    )
+    assert proc.returncode == 2 and proc.stdout == ""
+    assert re.search(r"^error: login to .* failed \(401: invalid credentials\)", proc.stderr), proc.stderr
+    assert "wrong-password" not in proc.stderr and EMAIL not in proc.stderr
+
+
+def test_the_service_must_be_https_off_this_machine() -> None:
+    for url in ("http://review.example.com", "ftp://localhost/", "localhost:8080"):
+        with pytest.raises(ReviewCompareError, match="must be https://"):
+            service_base(url)
+    assert service_base("https://review.example.com/") == "https://review.example.com"
+    assert service_base("http://localhost:8080/") == "http://localhost:8080"
+
+
+def test_review_compare_takes_files_or_a_service_exactly_one(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from typer.testing import CliRunner
+
+    from sacredbench.cli import app
+
+    monkeypatch.chdir(root)
+    for args in ([str(FIXTURE_GOLD), "--from-service", "https://review.example.com"], []):
+        result = CliRunner().invoke(app, ["review-compare", *args, "--version", "committed"])
+        assert isinstance(result.exception, ReviewCompareError), result.output

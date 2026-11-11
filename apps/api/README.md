@@ -3,7 +3,7 @@
 A small Postgres-backed service that holds the human review store for Spec 154: reviewer accounts,
 one review draft per reviewer per sample, and immutable submissions. Reviewers label the cells of a
 committed review sample (`review/samples/<sample_id>.json`); their labels live here and come out as
-a gold-set file that `sacredbench review-compare` reads.
+a gold set (`GET /api/gold-set`) that `sacredbench review-compare --from-service` reads.
 
 The same service is the whole review deployment: it serves `/api`, the active sample, and the built
 viewer from **one origin** (see [Topology](#topology)).
@@ -118,6 +118,7 @@ All live under `/api`.
 | `DELETE /api/review/:sampleId` | session + CSRF | Discard the draft ("start over"). Idempotent. |
 | `POST /api/review/:sampleId/submit` | session + CSRF | Freeze `{review}` as a new immutable submission. Returns `{submission: {id, submittedAt}}`. Active sample only, else 404 `{error: "unknown sample"}`. |
 | `GET /api/review/:sampleId/submissions` | session | The reviewer's submissions for the sample, newest first (metadata only). |
+| `GET /api/gold-set` | session | The reviewer's gold set for the active sample, as JSONL (`application/jsonl`), built from their saved draft. See [Gold set](#gold-set). |
 
 **Drafts.** `state` is the viewer's per-sample review state (the chosen texts and the per-cell
 labels). The API stores it opaquely as JSONB and does not validate its inner shape; it only requires
@@ -136,6 +137,20 @@ id, so a conflict never leaks another reviewer's draft.
 in bytes) with **413**. The cap is sized from a maximal draft: 1,500 labels, each with a
 1,000-character note of 4-byte UTF-8 characters plus ids and metadata, is about 6.2 MB. The client
 caps notes at 1,000 characters and checks the byte size before sending.
+
+### Gold set
+
+`GET /api/gold-set` returns the bytes the review page's **Download gold set** saves for the same saved
+labels. `review-compare --from-service` reads it, so a reviewer never passes a file around.
+`src/goldSet.ts` ports the viewer's writer (`apps/viewer/src/lib/goldSet.ts`). It reads the draft the
+way the viewer's tolerant loader does, and the tests pin it to `fixtures/review_gold_set.jsonl`.
+
+- No labels: an empty body.
+- Labels the download would refuse (one for a cell outside the sample, or one that lost its rubric
+  version or time): **422** `{error}`, with the download's message.
+
+The CLI signs in through `POST /api/auth/login`, fetches the gold set and signs out again
+(`POST /api/auth/logout`), so its session row is deleted at once.
 
 **Submissions** are insert-only: there is no update or delete route, so a submission never changes
 once made. Account delete is the only thing that removes them.
@@ -224,7 +239,8 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 - **Service `review`:** one replica, built from `apps/api/Dockerfile`.
 - **Postgres:** Railway's managed Postgres, one instance, no HA or point-in-time recovery.
   - The volume is backed up **daily** (06:07 UTC) and each backup is kept for 6 days.
-- **Domain:** the generated Railway domain above, routed to port 8080. There is no other domain.
+- **Domains:** `https://sacredtexts.iaser.ai`, the name reviewers use, and the generated Railway
+  domain above. Both reach the same service on port 8080.
 
 **The image** (`apps/api/Dockerfile`, built with the **repo root** as its context):
 
@@ -292,7 +308,8 @@ connect the service to the repository's `main` branch. That is the owner's call:
 - In Chrome, `/review` shows the sign-in and create-account forms.
 
 **Completion check (a human, in a real browser).** Through the domain, sign up with the invite code,
-pick texts, label a cell, reload to confirm it persists, and download the gold set. A builder agent
+pick texts, label a cell, reload to confirm it persists, open Results, and run
+`review-compare --from-service <domain>`. A builder agent
 doesn't create accounts or enter the invite code on the production host, so a person runs this.
 
 To switch the active sample, commit the new sample file, point `SAMPLE_PATH` at it and redeploy.

@@ -6,6 +6,7 @@ import { healthRoute } from './routes/health';
 import { authRoutes } from './routes/auth';
 import type { AuthConfig } from './routes/auth';
 import { accountRoutes } from './routes/account';
+import { goldSetRoute } from './routes/goldSet';
 import { reviewRoutes } from './routes/review';
 import { sampleRoute } from './routes/sample';
 import type { ActiveSample } from './sample';
@@ -52,6 +53,7 @@ export function createApp(db: AppDb, opts: AppOptions): Hono {
   app.route('/api/account', accountRoutes(db, { secureCookies: opts.auth.secureCookies }));
   app.route('/api/sample', sampleRoute(db, opts.sample));
   app.route('/api/review', reviewRoutes(db, opts.sample.sampleId));
+  app.route('/api/gold-set', goldSetRoute(db, opts.sample));
 
   // The built viewer goes after every API route, so a real API route always wins.
   if (opts.viewer) mountViewer(app, opts.viewer);

@@ -15,7 +15,7 @@ import type { AppEnv } from '../middleware/auth';
 export const REVIEW_BODY_MAX_BYTES = 8 * 1024 * 1024;
 
 /** The reviewer's current draft for one sample, or the empty (version 0) sentinel. */
-async function currentDraft(
+export async function currentDraft(
   db: AppDb,
   reviewerId: string,
   sampleId: string,

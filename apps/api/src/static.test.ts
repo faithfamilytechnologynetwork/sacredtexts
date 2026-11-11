@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { Hono } from 'hono';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { createApp } from './app';
 import { createTestDb } from './testing/pglite';
 import { testSample } from './testing/sample';
-import { isApiPath, isAssetPath, loadViewerDist } from './static';
+import { isApiPath, isAssetPath, loadViewerDist, parseHeaders } from './static';
 
 const auth = { inviteCode: 'test-invite', secureCookies: false };
 const SHELL = '<!doctype html><html><body><div id="root"></div><!-- spa-shell --></body></html>';
@@ -147,5 +147,67 @@ describe('isApiPath', () => {
     expect(isApiPath('/apis')).toBe(false);
     expect(isApiPath('/api-docs')).toBe(false);
     expect(isApiPath('/review/api')).toBe(false);
+  });
+});
+
+// Issue #157: the hosted image builds the viewer with `build:pages`, so the dist carries the baked
+// run data under runs/ and the Pages `_headers` file. This dist uses the viewer's real `_headers`.
+describe('the run data a build:pages dist bakes', () => {
+  let dist: string;
+  let app: Hono;
+  const INDEX = '[{"id":"facct-2026-11-03"}]';
+  const SUMMARY = '{"run":"archive/first-run"}';
+  const SCORES = `${'{"question_id":"q","metrics":{"outcome":"correct"}}\n'.repeat(100)}`;
+
+  beforeAll(async () => {
+    dist = mkdtempSync(join(tmpdir(), 'api-dist-runs-'));
+    writeFileSync(join(dist, 'index.html'), SHELL);
+    copyFileSync(join(process.cwd(), '../viewer/public/_headers'), join(dist, '_headers'));
+    mkdirSync(join(dist, 'runs', 'archive', 'first-run'), { recursive: true });
+    writeFileSync(join(dist, 'runs', '_index'), INDEX);
+    writeFileSync(join(dist, 'runs', 'archive', 'first-run', 'summary.json'), SUMMARY);
+    writeFileSync(join(dist, 'runs', 'archive', 'first-run', 'scores.jsonl'), SCORES);
+    app = createApp(await createTestDb(), { allowedOrigins: [], auth, sample: testSample(), viewer: loadViewerDist(dist) });
+  });
+  afterAll(() => rmSync(dist, { recursive: true, force: true }));
+
+  it('serves the extension-less run index as text, never cached', async () => {
+    const res = await app.request('/runs/_index');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(res.headers.get('cache-control')).toBe('no-cache');
+    expect(await res.text()).toBe(INDEX);
+  });
+
+  it('serves every run file as text/plain, so it is gzipped', async () => {
+    const res = await app.request('/runs/archive/first-run/scores.jsonl', { headers: { 'Accept-Encoding': 'gzip' } });
+    expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(res.headers.get('content-encoding')).toBe('gzip');
+    expect(res.headers.get('cache-control')).toBeNull();
+    expect(gunzipSync(Buffer.from(await res.arrayBuffer())).toString('utf8')).toBe(SCORES);
+  });
+
+  it('answers an encoded run id with a 307 to the decoded path, as Pages does', async () => {
+    const res = await app.request('/runs/archive%2Ffirst-run/summary.json');
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('/runs/archive/first-run/summary.json');
+    expect(await (await app.request(res.headers.get('location')!)).text()).toBe(SUMMARY);
+  });
+
+  it('leaves the shell and the cell route alone (an encoded slash outside /runs is not decoded)', async () => {
+    for (const path of ['/', '/review/cell/run%3Avendor%2Fmodel%3Aq']) {
+      const res = await app.request(path);
+      expect(res.status, path).toBe(200);
+      expect(await res.text(), path).toBe(SHELL);
+    }
+  });
+
+  it('reads _headers as Pages writes it, and refuses a rule it would misread', () => {
+    expect(parseHeaders('# c\n/runs/*\n  Content-Type: text/plain\n\n/runs/_index\n  Cache-Control: no-cache\n')).toEqual([
+      { path: '/runs/*', headers: [['Content-Type', 'text/plain']] },
+      { path: '/runs/_index', headers: [['Cache-Control', 'no-cache']] },
+    ]);
+    expect(() => parseHeaders('/runs/:id/x\n  A: b\n')).toThrow(/unsupported path/);
+    expect(() => parseHeaders('  A: b\n')).toThrow(/under a path/);
   });
 });

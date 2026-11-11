@@ -36,8 +36,11 @@ from sacredbench.editions import edition_run, format_editions
 from sacredbench.splits import format_splits, split_run
 from sacredbench.jev import JevError
 from sacredbench.jev_agreement import AgreementError
-from sacredbench.review_compare import ReviewCompareError, compare, dumps_report, format_report, load_gold
+from sacredbench.review_compare import (
+    ReviewCompareError, compare, dumps_report, format_report, load_gold, parse_gold,
+)
 from sacredbench.review_sample import ReviewSampleError, build_sample, write_sample
+from sacredbench.review_service import fetch_gold_set, service_base
 from sacredbench.score import TEXT_KEY_SEP, ScoreError, score_file, summary_markdown, text_key
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, pretty_exceptions_enable=False)
@@ -903,22 +906,36 @@ def review_sample_cmd(
 
 @app.command("review-compare")
 def review_compare_cmd(
-    gold: list[Path] = typer.Argument(..., help="gold-set JSONL file(s) downloaded from the review tool"),
+    gold: list[Path] = typer.Argument(None, help="gold-set JSONL file(s) downloaded from the review tool"),
     version: list[str] = typer.Option(
         ..., "--version",
         help="'committed', 'current', or a run directory laid out like runs/<run>/; repeat it, "
              "and the first is the baseline for movers",
     ),
     json_out: Path = typer.Option(None, "--json", help="also write the report as JSON to this path"),
+    from_service: str = typer.Option(
+        None, "--from-service",
+        help="read your gold set from the review service at this base URL instead of files, signing in "
+             "with REVIEW_EMAIL / REVIEW_PASSWORD (prompted for when unset)",
+    ),
 ) -> None:
     """Score matcher versions against human labels (Spec 154): agreement overall, per task, per
     text and per grader path, every disagreement, and the movers against the first version.
 
     Run from the repo root: each gold row's scores_path is relative to the current directory.
     """
+    if bool(gold) == bool(from_service):
+        raise ReviewCompareError("give either gold-set files or --from-service <base-url>, exactly one")
     if json_out is not None and json_out.resolve().is_relative_to((Path.cwd() / "runs").resolve()):
         raise ReviewCompareError(f"{json_out}: committed run evidence under runs/ is read-only; write elsewhere")
-    report = compare(load_gold(gold), version, root=Path.cwd())
+    if from_service:
+        base = service_base(from_service)
+        email = os.environ.get("REVIEW_EMAIL") or typer.prompt("Review email", err=True)
+        password = os.environ.get("REVIEW_PASSWORD") or typer.prompt("Review password", hide_input=True, err=True)
+        rows = parse_gold([(f"{base}/api/gold-set", fetch_gold_set(base, email, password))])
+    else:
+        rows = load_gold(gold)
+    report = compare(rows, version, root=Path.cwd())
     if json_out is not None:
         json_out.parent.mkdir(parents=True, exist_ok=True)
         json_out.write_text(dumps_report(report), encoding="utf-8")

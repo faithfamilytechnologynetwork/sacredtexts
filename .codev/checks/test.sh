@@ -41,8 +41,10 @@ touched=$(printf '%s\n' "$changed" \
 # BOTH the pipelines pytest and the apps/viewer vitest suites. It matches no prefix above, so a
 # fixture-only edit would otherwise run ZERO tests and let the two implementations drift unchecked.
 # Map it to both lanes.
+# The api lane reads fixtures/ too: apps/api/src/routes/goldSet.test.ts pins the server-built gold set
+# to fixtures/review_gold_set.jsonl (#157).
 if printf '%s\n' "$changed" | grep -qE '^fixtures/'; then
-  touched=$(printf '%s\npipelines\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+  touched=$(printf '%s\npipelines\napps/viewer\napps/api\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
 # items/** is asserted by BOTH the items lane (items/for-test/test_*.py) and the pipelines lane:
@@ -78,6 +80,12 @@ fi
 # (Spec 154). An api-only change to the cap would otherwise run only the api lane and let the two drift.
 if printf '%s\n' "$changed" | grep -qE '^apps/api/'; then
   touched=$(printf '%s\napps/viewer\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
+fi
+
+# apps/viewer/public/_headers is read by the api lane: apps/api/src/static.test.ts serves a baked dist
+# under the viewer's real Pages headers (#157), so a headers-only change must run the api tests too.
+if printf '%s\n' "$changed" | grep -qE '^apps/viewer/public/_headers$'; then
+  touched=$(printf '%s\napps/api\n' "$touched" | grep -v '^[[:space:]]*$' | sort -u)
 fi
 
 if [ -z "${touched//[$'\n']/}" ]; then
