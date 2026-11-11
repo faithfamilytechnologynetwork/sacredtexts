@@ -1,0 +1,35 @@
+I'll review phase_3 — the `apps/api` service port. Let me read the implementation files.I read every `apps/api` file against multibench's `apps/api` (at `/Users/mwk/Development/faithfamilytechnologynetwork/multibench`), ran the suite, and verified the dispatcher wiring.
+
+## Verification performed
+
+- **Port fidelity (file-by-file diff vs multibench):** `cors.ts`, `db.ts`, `migrate.ts`, `server.ts`, `auth/{constantTime,csrf,inviteCode,password,session}.ts`, `routes/{account,health}.ts`, `testing/pglite.ts`, `schema/{reviewers,sessions}.ts` are **byte-identical**. `app.ts`, `middleware/auth.ts`, `routes/auth.ts`, `auth/cookies.ts` differ only in comments and the cookie rename (`mb_*` → `st_*`, with a justified rationale). Every named fix is present: essence-exact MIME check (`middleware/auth.ts:24`), password cap 8–1024 (`auth.ts:28-31`, re-checked pre-hash on login), race-safe `onConflictDoNothing` signup (`auth.ts:74-84`), CSRF in body + `/csrf` recovery (`auth.ts:117-125`), cookie-clear attribute parity (`cookies.ts:28-32`), pg pool error handler (`db.ts:22-24`).
+- **Re-keying is complete:** `grep -ri "tradition\|published_issue_url\|publishedIssueUrl"` across `apps/api` returns only the README's "changes from multibench" note and the test name that asserts absence. The drizzle snapshot has 5 `sample_id` occurrences and zero `tradition_id`/`published_issue_url`.
+- **Tests + typecheck:** `pnpm build` (tsc --noEmit) exit 0; `pnpm test` → **7 files, 59 tests passed** on PGlite, no external DB. Test coverage is a strict superset of multibench's minus the two publish-URL cases (correctly deleted), plus: absent-draft sentinel, second-version-0 insert 409, CSRF-403-then-refresh-retry, DELETE-without-CSRF, expired/revoked session, non-JSON signup, invite-unset fail-closed across `{undefined,''} × {code,'',undefined}`, four body-cap cases, information_schema column pins for both `reviews` and `submissions`, three isolation cases, cascade-with-bystander.
+- **Migration discipline:** `drizzle/0000_review_store.sql` + `meta/_journal.json` (one entry, tag matches) + snapshot; no `db:push` script anywhere; `drizzle.config.ts` documents why `?? ''` is not a silent fallback. PGlite applies the real committed SQL, so the column pins double as a schema↔migration consistency check.
+- **Gate wiring:** replayed the dispatcher's selection logic on this branch — it yields `apps/api` and `pipelines` (plus `apps/viewer` via the `fixtures/` rule). The `apps/api)` registry line is present.
+
+## Plan deliverables, item by item
+
+All Phase 3 deliverables are met: routes re-keyed to `/api/review/:sampleId` (+ list, submit, submissions, delete), publish column and its URL validation removed, cap raised to 8 MiB **in bytes** (the "counts bytes, not characters" test with 3-byte Gurmukhi is exactly the right test), generated-and-reviewed SQL, `engines.node 24.x` matching the viewer, README covering stack/scripts/config/endpoints/auth/migrations/local-run. Phase 4 items (`railway.json`, `/api/sample`, `static.ts`) are correctly **absent**.
+
+## Non-blocking observations
+
+1. **Signup/login bodies are not byte-capped.** `requireJsonRequest` → `c.req.json()` parses the whole body before the 1024-char password check, so a multi-MB unauthenticated POST is parsed into memory (argon2 work is bounded, memory isn't). This is inherited from multibench verbatim, which the plan mandates, so I'd not change it here — but a `bodyLimit` on `/api/auth/*` would be a cheap follow-up.
+2. **`sampleId` is an unvalidated path param.** A reviewer can create a draft row for any string, each up to 8 MiB — 16× multibench's per-row ceiling with unbounded keys. Trusted-reviewer assumption covers it, but once Phase 4 loads the one active sample, rejecting a PUT whose `sampleId` isn't the active one is a two-line guard worth taking.
+3. **Doc nit:** `review.ts:12` says the worst case is "about 6.5 MB"; `README.md:91` says "about 6.2 MB"; the test asserts `> 6_000_000`. Pick one number.
+4. **Nit:** the plan's documentation item asked for a comment on the `apps/api` dispatcher line. The `review/` line got its rationale block; `apps/api)` relies on the registry's general header comment. Harmless.
+5. `.github/workflows/tests.yml` gained an `api` job (typecheck + vitest, node 24, PGlite). Not in the plan's Phase 3 file list, but it's the right addition and correctly needs no service container.
+
+I did not modify, create, or revert anything in the worktree; the only commands I ran were read-only (`diff`, `grep`, `git diff --name-only`) plus `pnpm build`/`pnpm test` against the already-installed `node_modules`.
+
+---
+VERDICT: APPROVE
+SUMMARY: Faithful multibench port with every named fix intact, clean tradition→sample re-keying, generated-and-pinned migration, and a test suite that is a strict superset of the source — 59 tests and typecheck green.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking.
+- (Minor) `/api/auth/signup|login` bodies are parsed without a `bodyLimit`; inherited from multibench, worth a follow-up rather than a change here.
+- (Minor) `sampleId` is accepted unvalidated, so drafts can be created for arbitrary ids at 8 MiB each — consider gating it against the active sample in Phase 4.
+- (Nit) Worst-case draft size stated as 6.5 MB in `review.ts:12` but 6.2 MB in `README.md:91`.

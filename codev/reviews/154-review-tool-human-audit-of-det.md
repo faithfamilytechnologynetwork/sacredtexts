@@ -349,7 +349,7 @@ on its own consults (the Gemini lane was skipped, `agy` exit 3) and named four f
 #### Codex
 - **Concern**: the signup and login bodies have no `bodyLimit` → **Addressed**: a 16 KiB cap (`AUTH_BODY_MAX_BYTES`) before parsing, with 413 tests. Removing the cap turns 3 tests red.
 - **Concern**: the hosted sign-up → label → reload → download check isn't done → **N/A** for the builder: it needs a human account on the production host. The architect ruled that it doesn't block the merge, but it does gate inviting reviewers.
-- **Concern**: the consult files for phases 2–7 are untracked, while those for the spec, the plan and phase 1 are committed → **N/A**, raised with the architect. Untracked was a standing order of this builder, but the repo's other projects commit theirs.
+- **Concern**: the consult files for phases 2–7 are untracked, while those for the spec, the plan and phase 1 are committed → **Addressed**: on the architect's ruling, the consult, context and rebuttal files for phases 2–7 and the review round are committed, as other projects do.
 
 #### Claude
 - **Notes** (none blocking) → **N/A**, follow-ups:

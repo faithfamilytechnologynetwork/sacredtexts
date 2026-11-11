@@ -1,0 +1,48 @@
+I'll start by reading the key implementation files for phase_2.Now let me read the CLI, fixtures, and the review_sample module it depends on.Let me run the phase-2 test suite to verify.Let me verify `current` re-scoring matches how `score_file` actually calls `score_answer`.Let me verify the real user path — an actual CLI invocation.I've read all the phase-2 files, run the targeted suite (37 pass), the full pipelines suite (1562 pass, 35 skipped), and exercised the real CLI path.
+
+## Assessment
+
+**Spec/plan adherence — complete.** Every phase-2 deliverable is present: the gold-row format with `shown`/`label`/provenance groups, the strict loader, all three version kinds (`committed`, `current`, run directory with the run-prefix swap), the four breakdowns, per-text prompt-arm counts, disagreement listing, movers with fixed/broken/neither, text + `--json` output, and the two shared fixtures. `review/README.md` documents the format and both commands. `git diff -- runs/` is empty.
+
+**Notably good work, not just adequate:**
+
+- `_js_number`/`_canonical` is the right answer to a risk the plan only named ("the gold-set format drifts between TS and Python"). Rather than hoping Python's float repr matches `JSON.stringify`, it converts integral floats to ints and *fails loudly* on exactly the divergent classes (exponent below 1e-4, ≥1e21, non-finite). The 1e21 boundary is precisely where JS switches to exponent notation — that's correct, not lucky. This materially de-risks Phase 5.
+- `_require_keys` rejects *unknown* fields, which turns the spec's "no email or name" from a convention into an enforced property (the `extra: email` test case).
+- `test_movers_against_the_baseline_are_fixed_and_broken` asserts the structural invariant `agree(version) − agree(baseline) == fixed − broken`. That catches a whole class of judged-set/mover-set mismatch bugs that per-cell assertions would miss.
+- `current` offline-ness is tested at the module level, and the builder is mid-flight adding a *real entrypoint* version of that test (uncommitted, closing the gap that `cli.py` imports `sacredbench.providers`). I left it alone.
+- The CLI refuses `--json` under `runs/`, matching the read-only-evidence constraint.
+
+## Findings (none blocking)
+
+**1. `verify_source` and `refused` are structurally absent from every pinned comparison table — and the fixture gets frozen by Phase 5.**
+
+Both fixture `verify_source` rows are excluded from `n` (`EN_VERIFY` is defect-flagged, `AR_VERIFY` is `cant_judge`), so `by_task["verify_source"]` and `by_grader_path["verdict"]` never appear in any asserted result — confirmed by `test_committed_counts_match_the_hand_computed_numbers`, whose `by_task` has only three keys. No row carries the human label `refused` either. The plan's criterion is "the hand-computed counts per task"; one of four tasks is unverifiable in the comparison.
+
+This is coverage, not correctness — `grader_path` is unit-tested for all four tasks in `test_review_sample.py:142`. But `fixtures/review_gold_set.jsonl` is the shared TS/Python contract, and Phase 5 pins it byte-for-byte. Adding a judged `verify_source` row (and one `refused`/`refused` agreement) costs two fixture rows and a few assertion updates **now**; after Phase 5 it also costs re-pinning the viewer test. Cheapest moment is before phase 3 lands.
+
+**2. `committed` reads `root / row["scores_path"]` with no containment check** (`review_compare.py:302`). The CLI guards *writes* under `runs/`, but `scores_path` comes from a downloaded file and could contain `../`. Read-only, so impact is low — but a one-line `is_relative_to(root)` guard would make the read path as disciplined as the write path.
+
+**3. `review/README.md` arms wording.** `_version_report` builds `arms` from the `judged` index list, so the counts sum to `n`, not to the text's row count — in my CLI run `islam/native` showed `arms: ask_english 1, ask_native 2` (3) against 4 total rows. README line 108 says "how many of its rows came from each prompt arm"; "judged rows" is the accurate phrasing. Also worth noting in the `--json` section that `by_text` entries carry a 4th `arms` key while `by_task`/`by_grader_path` do not.
+
+**4. `load_gold`'s sort check is per-file.** Legitimate fail-fast, but a reviewer who `cat`s two downloads together gets "rows are not sorted by cell_id" with no hint. Appending "— pass each downloaded file as its own argument rather than concatenating" would save a confused minute.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 2 is complete and correct, with genuinely strong JS-parity and mover-invariant engineering; the only real gap is that `verify_source`/`refused` never reach a pinned comparison table in a fixture that Phase 5 will freeze.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `verify_source` and `refused` are excluded from every asserted breakdown (both fixture verify rows are `defect`/`cant_judge`; no human label is `refused`). Coverage only — `grader_path` is unit-tested per task in phase 1 — but the fixture is the Phase 5 byte-parity contract, so extending it is cheapest now.
+- `committed` resolves `root / scores_path` without a containment check, while the CLI guards writes under `runs/`; low impact (read-only) but asymmetric.
+- `review/README.md` describes the per-text prompt-arm counts as covering the text's rows; they cover only its *judged* rows.
+- `load_gold`'s "rows are not sorted by cell_id" error doesn't hint at the likely cause (concatenated gold files instead of multiple arguments).
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 1 path changed while this lane was running:
+  - pipelines/tests/test_review_compare.py
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

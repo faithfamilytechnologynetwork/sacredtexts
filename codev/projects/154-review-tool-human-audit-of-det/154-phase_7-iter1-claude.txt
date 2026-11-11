@@ -1,0 +1,37 @@
+I'll review phase_7, which is the local end-to-end verification and documentation phase. Let me start by reading the key artifacts.The walk is documented. Let me examine the actual phase 7 code changes.Phase 7's code delta is small. Let me verify the `verify_source` data assumption and check the test-gate evidence.The walk's data claims check out precisely. Let me run the viewer suite and check results.I'll wait for the pipelines suite while I finish reviewing. Let me check one remaining doc-accuracy item.I'll let the pipelines suite finish in the background and check its result before closing.I independently verified all three test lanes and the walk's numeric claims. Here is my review.
+
+## What phase 7 delivers
+
+The phase is deliberately thin — a verified walk, docs, and whatever the walk turns up. All three parts are present:
+
+**1. The walk is real, not asserted.** I checked its numbers against the committed sample rather than taking them on trust:
+- Step 2 claims the pass became "339 cells (101 + 120 + 118)" for Qur'an Uthmani + Talmud Aramaic + SGGS. The sample's `texts` entries are exactly `islam/native` 101, `judaism/native` 120, `sikhism/native` 118 → 339. Match.
+- Step 1's header figures (`facct-2026-11-03-k10`, 1,423 cells, seed `spec-154`, k = 10, 13 texts) all match the sample file.
+- The fix rationale ("about a third of the sample's 389 `verify_source` cells have a blank citation") is exact: 389 `verify_source` cells, 131 with an empty `source.citation`, and **all 131 are the `answer: "no"` items**. That is precisely the population the old page left unexplained, since the `<h1>` renders `cell.source.citation`.
+
+**2. The one fix is the right one and is tested.** `PassageSource` reads `expected.true_*`, which every one of the 389 `verify_source` cells carries (`true_citation` is non-empty on all of them, yes- and no-items alike), so there is no silent-null case. The test pins the rendered string on a "No" cell and asserts absence on a `retrieve_quote` cell. The explorer is untouched, which is correct — this is reviewer-only affordance.
+
+**3. Docs check out against the code**, which is where doc phases usually drift:
+- `API_ORIGIN` default `http://localhost:8080` → matches `vite.config.ts`.
+- "Review service unavailable" → matches `UNAVAILABLE_MESSAGE` and the `auth === "unavailable"` branch.
+- `gold-<sample_id>.jsonl` → matches `goldSetFilename`.
+- `dropdb sacredtexts_review_dev` is in the runbook, satisfying the "name how to drop it" deliverable; the hosting section keeps its **NOT approved** banner and nothing was provisioned.
+
+**4. Test gate — verified myself, not taken on trust.** pipelines `1569 passed, 35 skipped`; `apps/api` `87/87`; `apps/viewer` `399/399`. `git diff origin/main...HEAD -- runs/ texts/` is empty, so committed evidence is untouched. I also ran `review-compare` on `fixtures/review_gold_set.jsonl` myself — it produced a correct report (8 judged, 2 excluded, per-task/text/path breakdowns, 2 disagreements), confirming the workflow the README documents.
+
+## Minor points (none blocking)
+
+1. **Review-doc inconsistency in the evidence record.** Step 4 narrates 6 labels and names *one* defect flag ("One SGGS cell has the defect flag"), while step 8 reports "judged 4 and excluded the 2 defect-flagged rows". Having read the formatter (`review_compare.py:480`), the printed line separates `cant_judge` from `defect`, so "defect 2" was likely literal and step 4's prose just under-reports. Worth reconciling in the review-phase write-up — this document is the evidence.
+2. **`review/README.md` says the FAccT sample's NRSV cells "cite 29 distinct verses".** The actual count of distinct non-empty NRSV `source.citation` values is **28**; 29 is what you get by counting the empty citation on the negatives as a verse. Nothing rests on it (the plan explicitly says no test enforces it), but it sits in the Copyright section where precision is cheap.
+3. **`PassageSource` gating is looser than its intent.** It renders for any cell whose `expected.true_citation` is a non-empty string rather than on `cell.task === "verify_source"`, and `parts` is computed before the early return. Harmless today (only `verify_source` expected dicts carry `true_*`), but the guard and the comment disagree about what selects it.
+4. **The `/assets/*` fallback is the thing that made the blank page confusing.** The walk documented "restart after a rebuild" rather than changing behaviour, which is a defensible call — the fallback is inherited from the pinned viewer host and is phase-4 scope. But a missing bundle returning the SPA shell with a 200 is exactly the silent fallback the project's fail-fast principle warns about. Excluding `/assets/*` from `notFoundHandler` the way `/api/*` already is would turn a blank page into a legible 404. Worth considering, not here.
+5. The new "Passage source" line was verified in jsdom, not in the browser pass that preceded it. Very low risk (plain text in an already-exercised layout), but the walk step wasn't re-run after the fix.
+
+---
+VERDICT: APPROVE
+SUMMARY: The end-to-end walk is genuine and verifiable against the committed sample, its one fix is correct and tested, the docs match the code, and all three test lanes pass on my own run.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Nits: review doc's step 4 (one defect flag) vs step 8 ("the 2 defect-flagged rows") should be reconciled; `review/README.md`'s "29 distinct verses" is 28 (29 counts the negatives' blank citation); `PassageSource` keys off `expected.true_citation` rather than `task === "verify_source"` and computes `parts` before its early return; the `/assets/*` → SPA-shell-200 fallback (documented, not fixed) is the root of the blank-page confusion and could be a legible 404 — phase-4 scope.

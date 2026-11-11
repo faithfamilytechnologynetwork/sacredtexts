@@ -1,0 +1,50 @@
+I'll review Phase 5 — the viewer review store, API client, sample and gold-set libraries. Let me read the actual implementation files.Now let me read the remaining library files and the iteration-2 fix commit.Let me run the viewer test suite (the iteration-1 blocker was flakiness) while I read the remaining files.Let me verify specific claims: the gold-set fixture parity, the body-cap pin test, and zod dependency.Tests passed. Let me verify the flakiness fix holds across repeated runs and read the session-epoch regression tests.The first run actually **failed** 1 test (the exit code was `tail`'s, not vitest's). Let me identify which test.Let me check whether this flake is related to Phase 5 at all, and run the explorer test in isolation repeatedly.Let me check a latent float-formatting divergence risk between the TS and Python gold-set writers.The Python side already handles number formatting. Let me verify `_canonical` and check the three repeat runs.Three clean runs — the earlier failure was in pre-existing `ExplorerPage.test.tsx`. Now let me assess the new session-epoch regression tests for rigor.Let me confirm each plan-mandated regression test exists and check the remaining test files.Let me verify the type-check criterion and the cross-language fixture parity.I have what I need. Let me confirm the one correctness nit I spotted by reading the exact control flow around `persistSample`'s early returns.## Review — Phase 5: Viewer review store, API client, sample and gold-set libraries
+
+I read all seven Phase 5 source/test files from disk, ran the viewer suite four times, ran `check-types`, and cross-checked the gold-set fixture against the Python side.
+
+### Verification performed
+
+| Check | Result |
+|---|---|
+| `pnpm -C apps/viewer test` × 4 | 358/358 on runs 2–4; run 1 failed 1 test — **not** Phase 5 code (see below) |
+| `pnpm -C apps/viewer check-types` | clean |
+| `pytest pipelines/tests/test_review_compare.py` | 44 passed — cross-language fixture parity holds |
+| `zod` dependency | present, `^3.25.76` in `apps/viewer/package.json` |
+| Body-cap pin | `reviewApi.test.ts:116` greps the API source and asserts equality with `apps/api/src/routes/review.ts:15` — a real pin, not a duplicated constant |
+
+### Iteration-1 blockers are genuinely resolved
+
+**codex's cross-reviewer leak** — the session-epoch fix is correct and the tests are not vacuous. I traced each test to the guard it covers: the load-map identity check is proven by `expect(ensureSampleLoaded("S")).toBe(bLoad)` (line 783), the `stale()` check after the PUT by the "no LWW retry" assertion (line 820), and the `enqueue` session gate by the start-over test (line 845) — remove that gate and A's queued DELETE fires against B's draft, turning it red. The `twoAccounts` fake models the right semantics: the account a request runs as is fixed when it is *sent*, which is what a cookie actually does.
+
+One honest asymmetry, which the builder already disclosed: "a save still queued when the session resets never runs" (line 826) is a characterization test, not a guard-proving one. Removing the `enqueue` gate would not break it, because after a reset `current.samples.S` is empty and `persistSample` bails at line 297. The delete test is the one carrying the weight. That's fine — just don't read it as covering the save path.
+
+**claude's flakiness blocker** — fixed. The `settle()` macrotask drain parks A's PUT on the wire before B signs in, so the caller tag is deterministic rather than racing `enqueue`'s microtasks.
+
+### Phase 5 deliverables
+
+Every plan-named multibench fix has a regression test, and I matched them one by one: account switch/401 wipe (486, 505, 528), failed-load overwrite hole (160, 192), CSRF 403 refresh-and-retry (580), prefetch clobber skip (434), edit gating on load (356, 385), start-over DELETE (251), unreachable service failing visibly (542). The two additions beyond multibench — terminal non-retryable saves (618, 649, 669, 687) and the client byte guard (700) — are both implemented and tested, including the "a 5xx is *not* terminal" negative case.
+
+`reviewSample.test.ts:26` is the strongest test here: it parses the committed 1,423-cell FAccT sample and asserts every cell's verdict survives `toQuestionResult`'s join through the real explorer code path. That catches format drift between Phase 1 and the viewer, not just fixture-shaped happy paths.
+
+Gold-set parity is real, and the number-formatting trap I went looking for was already closed: `review_compare._canonical` routes floats through `_js_number` so Python matches `JSON.stringify` (integral floats would otherwise emit `1.0` vs `1`). `compareCodePoints` correctly orders by code point rather than UTF-16 unit, with the astral-surrogate skip, and the integer-like-key test (line 85) pins JS insertion order against Python's `sort_keys`.
+
+### Notes, none blocking
+
+1. **The run-1 failure is a pre-existing flake outside this PR.** `src/routes/ExplorerPage.test.tsx:98` ("parses a tradition from the URL") does a synchronous `getByText(/Showing 3 of 3/)` straight after `findByRole("heading", …)`, with no `waitFor`; the dumped DOM still read "Loading run fix…". That file is not in the PR file list, was last touched before this branch, and imports nothing from Phase 5 — the only viewer-wide change is adding `zod`. It failed 1 of 4 runs under load. Not a Phase 5 defect, but since the phase criterion is "the viewer suite is green," the architect may want it fixed separately (a one-line `waitFor`).
+
+2. **Two early returns bypass the `saving` reset.** `persistSample` returns at lines 297–300 and 315–316, both outside the `try`/`finally` that clears `saving: false`. I reasoned this through rather than testing it: the only way `current.samples[sid]` becomes undefined is `withoutSample`, and `scheduleDelete` always enqueues a `persistDelete` whose `finally` clears the flag — so a stuck spinner isn't reachable. Recording it because the invariant is implicit and a future edit to the delete path could break it.
+
+3. **Agreed on `reviewApi.logout()` ignoring `res.ok`** — multibench parity, and fixing it properly means a CSRF refresh-and-retry on logout. Correctly deferred.
+
+4. **The residual sign-in window** the builder recorded is genuinely unreachable through the UI. Phase 6 should preserve the invariant that the sign-in form renders only while signed out, since that is what closes it.
+
+---
+VERDICT: APPROVE
+SUMMARY: Phase 5 is complete and well-tested; the iteration-1 leak and flakiness blockers are genuinely fixed, and the one remaining suite failure is a pre-existing flake in an unrelated, unchanged test file.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Informational: `ExplorerPage.test.tsx:98` is a pre-existing flake (1 of 4 full-suite runs, missing `waitFor`) outside this PR's file list — worth a separate fix so the "viewer suite green" criterion is stable.
+- Informational: the queued-save session test (reviewStore.test.ts:826) is characterization only; the `enqueue` session gate is proven solely by the start-over test at line 845 (builder disclosed this).
+- Informational: `persistSample`'s early returns at review.ts:297–300 and 315–316 skip the `saving: false` cleanup; unreachable today only because `scheduleDelete` always follows with a `persistDelete`.

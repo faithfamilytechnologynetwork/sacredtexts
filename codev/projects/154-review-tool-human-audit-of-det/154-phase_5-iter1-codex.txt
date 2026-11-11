@@ -1,0 +1,8 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 5 is largely complete, but stale asynchronous operations can leak one reviewer’s draft into another reviewer’s session.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- `resetReviewStore()` clears maps but does not invalidate requests already in flight. After an account switch, logout, or 401 reset, an earlier reviewer’s pending `ensureSampleLoaded`, `prefetchDrafts`, or conflict response can still mutate global `current`, `versions`, and status when it resolves (`review.ts:281-345`, `442-469`, `481-512`). This violates the explicit cross-reviewer isolation requirement. Add a session-generation token or cancellation mechanism and discard stale completions. Add regression tests that defer reviewer A’s GET/LIST, switch to reviewer B, then resolve A’s request and assert no A state or versions reappear.

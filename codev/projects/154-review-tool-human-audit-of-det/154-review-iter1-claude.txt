@@ -1,0 +1,96 @@
+I'll review this PR. Let me start by understanding the context — the spec, plan, and review docs — then dig into the actual code.The worktree is live — I'll read from disk without touching anything. Let me get the lay of the land on sizes first.Manageable code volume — the 69k additions are mostly the sample JSON and lockfiles. Let me read the spec and review doc.Spec and review doc are unusually thorough. Now let me verify the claims against actual code — starting with the security-sensitive surface.Auth primitives are carefully done. Now the routes — where isolation and the active-sample guard live.Now the Python side — the sample draw and the byte-level gold-set contract, which is the genuinely novel part.Let me verify the documented sample statistics empirically against the committed file.All sample claims verify exactly. Let me confirm the NRSV copyright-relevant breakdown, since that's the fair-use claim's factual basis.The 105/28 claim verifies exactly — 28 scattered single verses. Now the comparison CLI, the largest new Python module.Careful work — the `_js_number` cross-language float contract is correct (Python/JS exponent thresholds differ exactly where it guards). Now the TS side of that byte contract.Byte contract is genuinely pinned bidirectionally. Let me check the one asymmetry (TS doesn't guard the divergent float range) against real data, and start the test suites.Dispatcher mappings are right. Now the highest-value check: actually running the gate rather than trusting the claim.While those run, let me examine the review store — the most race-prone code, and where the ported multibench fixes live.The session-counter guard is applied consistently across every async path. Let me check test results.API: 89/89 — matches the claim exactly. Let me run the viewer and full pipelines suites.While those run, let me check the test-vacuity question by reading — do the regression tests actually pin the fixes they claim to?Non-vacuous — it parks the draft GET behind a promise gate and asserts both the position and the "outside pass" note are absent mid-load; removing the `draft.loaded` guard would render the note and fail. Let me check the suite results.Viewer: 399/399, no flake this run. Let me check CI wiring and the consult-artifact completeness while pipelines finishes.Prior projects commit only `status.yaml`, so the uncommitted transcripts match repo convention. Let me verify the static-serving path-traversal surface and check pipelines.Traversal is correctly guarded — `serveStatic` decodes first, *then* rejects `..`, doubled slashes and backslashes. Let me get the pipelines result.Still running. Let me review the CLI wiring and hosting runbook meanwhile.CLI wiring is correct (Typer, both error types registered, `runs/` write guard). Let me check the pipelines suite.All three suites verified independently — exactly the claimed numbers. Final checks: branch currency and code cleanliness.Branch is current with main, no debug code. Let me verify one last observation — the ported-but-unused submissions surface.I've verified every substantive claim independently. Here is my review.
+
+## Verification Performed
+
+I re-ran all three suites rather than trusting the review doc, and reproduced the claimed numbers **exactly**:
+
+| Lane | Claimed | Measured |
+|---|---|---|
+| `apps/api` | 89/89 | ✅ 89/89 (11 files) |
+| `apps/viewer` | 399/399 | ✅ 399/399 (32 files, no flake this run) |
+| `pipelines` | 1569 passed / 35 skipped | ✅ 1569 passed / 35 skipped (audit included) |
+
+I also recomputed the sample invariants from the committed file: 1,423 cells / 151 strata / 13 texts; `min(N,k)` holds for **all 151** strata; zero duplicate `cell_id`s; `texts[].drawn` agrees with the cell counts; and `dumps_sample()` reproduces the committed bytes exactly. The copyright-relevant NRSV figure checks out precisely — 111 cells, of which 105 cite **28 distinct, non-contiguous verses**, the other 6 being `verify_source` "No" items quoting the Book of Mormon. Branch is current with `main` (0 behind), no debug code, no stray `TODO`/`.only`/`.skip`.
+
+## What's Genuinely Strong
+
+**The cross-language byte contract is correct, not just claimed.** `_js_number` guards exactly where Python and JS shortest-form float output diverge: integral floats are emitted as ints (matching JS for ≥1e16 where Python would use exponent form), ≥1e21 raises, and `<1e-4` raises — Python switches to exponent notation at 1e-4 while JS waits until 1e-6, so the guard is correct and deliberately conservative. Non-integral floats above 2^53 can't exist, so that gap is unreachable. I confirmed no metric in the real sample lands in the risky range (smallest nonzero: 0.0104). The shared `fixtures/review_gold_set.jsonl` pins **both** writers, which is the only thing that makes this a test rather than a hope.
+
+**The session-counter guard is applied uniformly.** Every async path in `review.ts` — load, list, save, delete, init, sample fetch — captures `started = session` and drops its result on reset. That closes the reviewer-A-draft-lands-in-reviewer-B's-state leak properly rather than at one call site.
+
+**Path traversal is actually safe.** `serveStatic` decodes via `tryDecodeURI` *then* rejects `.`/`..` segments, doubled slashes and backslashes, so `/%2e%2e/...` is caught. `mountViewer` is correctly mounted after the API routes, and `isApiPath`/`isAssetPath` keep `/api/*` and missing bundles off the SPA fallback.
+
+**I spot-checked a regression test for vacuity by reading** (not by mutating the tree): the phase-6 "claims nothing about the pass while loading" test parks the draft GET behind a promise gate and asserts both `pass-position` and `outside-pass` are absent mid-load. Remove the `draft.loaded` guard and `pos` becomes -1 during load, rendering the note and failing the assertion. It genuinely pins the fix.
+
+One nice detail: in `signup`, `hashPassword` runs *after* the invite-code check, and `login` only calls `verifyPassword` for an existing email. That keeps unauthenticated argon2 CPU amplification small — a real consideration now that the service is public.
+
+## Observations (none blocking)
+
+1. **`SameSite=None` deserves promotion from "deferred cleanup" to near-term.** It's already in your follow-ups, but there's an extra reason now that it's hosted: on a shared parent domain like `*.up.railway.app`, a sibling service could set a `Domain=.up.railway.app` cookie and defeat the double-submit check by cookie-tossing. Whether that's reachable depends on `up.railway.app` being Public-Suffix-List registered — worth confirming rather than assuming. Everything is same-origin now, so `Lax` is a one-line change that closes it structurally.
+
+2. **The spec's "no hardening" assumption predates provisioning.** Spec Assumptions say "no rate-limit or email-enumeration hardening" — written when Open Question 2 read *not approved*. It's now internet-facing. The surface is genuinely small (see above), so I'd treat this as a conscious re-affirmation of the trade-off, not a code change.
+
+3. **The submissions surface is unreachable** — table, two routes, tests, no client caller (honestly disclosed at `reviewApi.ts:14`). Fine as port parity, but it's live code with no exercised path.
+
+4. **Minor asymmetry:** TS `canonicalJson` doesn't mirror Python's `_js_number` guard, so TS could emit bytes Python refuses. Fail-loud direction, unreachable with real data.
+
+5. **Cosmetic:** `load_gold`'s order check validates `cell_id` only, not the `(cell_id, reviewer_id)` tuple the writer sorts by — advisory only, since it re-sorts. And phase 2–7 consult transcripts are uncommitted while specify/plan/phase_1 are committed; repo convention is `status.yaml` only, so this matches convention but is internally inconsistent.
+
+The one open item — the hosted in-browser sign-up → label → download check — is a legitimate human handoff, correctly surfaced in both the PR body and the review doc rather than quietly skipped.
+
+---
+VERDICT: APPROVE
+SUMMARY: Exceptionally disciplined work; all three test suites and every documented sample/NRSV figure independently reproduced, with only minor non-blocking notes.
+CONFIDENCE: HIGH
+---
+
+KEY_ISSUES:
+- None blocking. Notes: (1) promote `SameSite=None` → `Lax` from deferred to near-term — closes cookie-tossing CSRF on a shared parent domain, now that the service is hosted; (2) the spec's "no rate-limit/enumeration hardening" assumption was written when hosting was *not approved* and deserves conscious re-affirmation now that it's public (surface is small: invite gate precedes argon2, and `verifyPassword` only runs for an existing email); (3) the submissions table/routes have no client caller (disclosed) — live code with no exercised path; (4) TS `canonicalJson` lacks Python's `_js_number` divergent-float guard (fail-loud direction, unreachable with real data); (5) cosmetic — `load_gold` order check covers `cell_id` only, not the `(cell_id, reviewer_id)` sort key.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds an internal review tool for auditing SacredBench's deterministic matcher against human
+  judgement. Reviewers label a committed, seeded sample of scored cells with the true outcome;
+  those labels form a gold set that any matcher version — committed scores, the current checkout,
+  or an external re-score — can be measured against. Closes #154.
+
+  ## Key Changes
+  - **Sample** (`pipelines`): `sacredbench review-sample` draws an even stratified sample
+    (outcome × task × text, k per stratum, seeded, byte-reproducible). The committed FAccT sample
+    is 1,423 cells across 151 strata and 13 texts, pinned by a test that regenerates it from `runs/`.
+  - **Compare** (`pipelines`): `sacredbench review-compare` reports agreement overall and per task,
+    text and grader path, lists every disagreement, and marks fixed/broken/neither movers between
+    versions. Numbers pinned by a hand-built gold set.
+  - **Review service** (`apps/api`): one Hono + Drizzle + Postgres process serving `/api`, the active
+    sample and the built viewer from a single origin. Invite-gated argon2id accounts, hashed
+    server-side sessions, double-submit CSRF, drafts with optimistic concurrency, insert-only
+    submissions. One reviewed `drizzle-kit generate` migration; `db:push` never used.
+  - **Review pages** (`apps/viewer`): `/review` and `/review/cell/$cellId` — text picker, per-task
+    rubric, label control, progress, RTL-aware rendering, and a gold-set download that is
+    byte-identical to the Python writer (pinned by a shared cross-language fixture).
+  - **Hosting + gate**: `apps/api/Dockerfile`, a documented Railway runbook, `apps/api` registered in
+    the per-builder test dispatcher (with `review/` → pipelines and `apps/api` → viewer cross-lane
+    mappings), and a CI `api` job.
+
+  ## Test Plan
+  - Full gate, independently reproduced: `apps/api` 89/89, `apps/viewer` 399/399,
+    `pipelines` 1569 passed / 35 skipped (copyright audit included).
+  - Sample invariants recomputed from the committed file: `min(N,k)` holds for all 151 strata, no
+    duplicate cell ids, `texts[].drawn` consistent, canonical bytes reproduce exactly.
+  - Gold-set byte contract verified in both directions against `fixtures/review_gold_set.jsonl`.
+  - Local end-to-end walk in Chrome against a real Postgres (9 steps: sign-up → pick texts → label
+    → reload → reviewer isolation → download twice → compare), recorded in the review doc.
+  - Docker image built and run against a fresh Postgres before deploy; migrations idempotent.
+  - Hosted checks over HTTPS without an account: health, routes/deep links, gzip, missing-asset 404,
+    `/api/sample` and `/me` 401, Secure cookies.
+  - **Open, needs a human:** the hosted in-browser sign-up → label → reload → download check
+    (an agent should not create accounts or enter the invite code on a production host).
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the claude review (#1649).
+A consultant reviews the tree; it must never write to it. 1 path changed while this lane was running:
+  - .builder-state.md
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

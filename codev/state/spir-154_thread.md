@@ -395,3 +395,8 @@
   - the pages load, and a missing asset gets 404;
   - `/api/sample` gets 401;
   - the new bundle (`index-DrmSvooF.js`) carries the sign-out error UI.
+- **The architect ruled on the consult files (00:07Z): commit them.** The phase 2–7 and review-round
+  consult, context and rebuttal files are now committed by explicit path; none contains the invite
+  code. The architect also relayed the owner's standing instruction ("continue and don't stop until
+  you are done") as his approval of the pr gate: once CI is green on the final commit, run
+  `porch approve 154 pr` and merge.

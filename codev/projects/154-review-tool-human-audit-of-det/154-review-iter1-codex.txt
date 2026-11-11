@@ -1,0 +1,33 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Implementation is thorough, but the live workflow remains unverified and two PR-readiness/security gaps remain.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- The production sign-up → label → reload → download workflow is still explicitly untested. Complete this human check before merging the already-live service.
+- `POST /api/auth/signup` and `/login` call `c.req.json()` without a body limit. An unauthenticated request can force an arbitrarily large body into memory; apply a modest `bodyLimit` before parsing and add regression tests.
+- Consultation artifacts for phases 2–7 remain untracked, although the committed status/review documents cite them and phase-1 artifacts were committed. Commit the intended Codev evidence or explicitly resolve its exclusion before PR completion.
+
+PR_SUMMARY: |
+  ## Summary
+  Adds a human-review workflow for validating SacredBench’s deterministic matcher. It includes deterministic stratified sampling, a hosted review service and UI, canonical gold-set export, and CLI comparison across matcher versions.
+
+  ## Key Changes
+  - Added reproducible review sampling and matcher-comparison commands.
+  - Added the Hono/Postgres review API, authentication, drafts, migrations, and container deployment.
+  - Added reviewer pages, rubric-driven labeling, progress tracking, and gold-set download.
+  - Added comprehensive API, viewer, and pipeline tests plus operational documentation.
+
+  ## Test Plan
+  - Run `.codev/checks/test.sh`.
+  - Verify API typechecking and all API, viewer, and pipeline suites.
+  - Complete the hosted browser flow: sign up, label a cell, reload, and download a valid gold set.
+
+---
+
+## ⚠️ WORKING TREE CHANGED during the codex review (#1649).
+A consultant reviews the tree; it must never write to it. 1 path changed while this lane was running:
+  - .builder-state.md
+Check `git status` and `git diff` before trusting this review or shipping the branch.
+Note: under cmap the lanes run concurrently in one worktree, so another lane — or you —
+may be the writer. This warning names what moved, not who moved it.

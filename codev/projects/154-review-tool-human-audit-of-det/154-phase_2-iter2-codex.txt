@@ -1,0 +1,7 @@
+---
+VERDICT: REQUEST_CHANGES
+SUMMARY: Phase 2 is otherwise complete, but directory-version lookup can escape the selected run directory.
+CONFIDENCE: HIGH
+---
+KEY_ISSUES:
+- `review_compare.py:148-152, 295-303`: `scores_path="runs/fixture-run//etc/passwd"` passes validation, but raw prefix slicing produces `/etc/passwd`; joining that to `run_dir` discards `run_dir`. I reproduced `_run_dir_paths` returning `/etc/passwd`. Resolve the suffix structurally or reject non-canonical paths, and add a doubled-slash regression test.
