@@ -293,7 +293,9 @@ version. Detail: `review/README.md`, `apps/api/README.md`, `apps/viewer/README.m
   does, offline.
 - **Hosting** — Railway project `sacredtexts-review` (`https://sacredtexts.iaser.ai`): one service built from `apps/api/Dockerfile`
   (repo-root context) plus a managed Postgres with a daily volume backup. The image builds the viewer
-  with `build:pages` (the Pages bake of `runs/`), and `static.ts` serves `dist/runs/` as Pages does
+  with `build:pages` over only the runs its viewer stage names, one `COPY runs/<id> runs/<id>` line
+  each (today `facct-2026-11-03`; #159, pinned by `apps/viewer/vite/hostedBake.test.ts`), and
+  `static.ts` serves `dist/runs/` as Pages does
   (`_headers`, encoded run ids 307 to the decoded path). The build/deploy settings
   are set on the service (Railway rejects a config-as-code path on a new service), so there is no
   `railway.json` for it. The invite code lives only in Railway and the gitignored root `.env`.
