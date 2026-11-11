@@ -3,7 +3,7 @@
 A small Postgres-backed service that holds the human review store for Spec 154: reviewer accounts,
 one review draft per reviewer per sample, and immutable submissions. Reviewers label the cells of a
 committed review sample (`review/samples/<sample_id>.json`); their labels live here and come out as
-a gold-set file that `sacredbench review-compare` reads.
+a gold set (`GET /api/gold-set`) that `sacredbench review-compare --from-service` reads.
 
 The same service is the whole review deployment: it serves `/api`, the active sample, and the built
 viewer from **one origin** (see [Topology](#topology)).
@@ -60,6 +60,22 @@ The static serving ports the in-repo viewer host (`apps/viewer/server/index.mjs`
 an `index.html` fallback). The differences are that `/api/*` is excluded from both, and only `GET`
 and `HEAD` are served.
 
+The run data a `build:pages` dist bakes under `dist/runs/` is served the way Cloudflare Pages serves
+it, so the viewer behaves the same on both hosts:
+
+- A found file gets the headers the dist's `_headers` file (the viewer's `public/_headers`) gives
+  its path: every `/runs/*` file as `text/plain; charset=utf-8`, so it is compressed, and
+  `/runs/_index` and `/runs/_gaps` as `no-cache`. The service reads `_headers` at startup and stops
+  on a rule it can't read (only exact paths and a trailing `*` are supported).
+- An encoded run id (`/runs/archive%2F<name>/summary.json`, as the client requests it) gets a
+  **307** to the decoded path, as Pages' asset server answers it. Outside `/runs/` an encoded `/`
+  is left alone, so a review cell id that holds one still deep-links.
+- A missing run file gets the SPA shell, as on Pages. The client reads that as "absent".
+- Every served file carries a validator: a weak `ETag` from its size and mtime, plus
+  `Last-Modified`. A matching `If-None-Match` gets an empty **304**. A `/runs/*` file that `_headers`
+  gives no `Cache-Control` gets `no-cache`. So a revisit revalidates instead of re-downloading
+  about 130 MB of runs, and a redeploy's new runs show at once.
+
 Responses are gzip- or deflate-compressed for a client that accepts it (`hono/compress`). That matters
 for the sample (2.8 MB, about 0.5 MB gzipped) and the viewer bundle, because nothing sits in front of
 the service.
@@ -69,10 +85,10 @@ id only. A save or submit for any other id gets 404 `{error: "unknown sample"}`.
 discarding drafts still work for every id, so a draft from an earlier sample stays visible and can be
 removed.
 
-**What the review origin shows.** The deployment builds the viewer with `pnpm build`, not
-`build:pages`, so it bakes in no runs. The browsing pages (`/`, `/errors`, `/standings`) on this
-origin show their usual "no runs" empty state. That is expected: this origin is for review. The
-public browsing viewer is the Cloudflare Pages build, which this service does not change.
+**What the review origin shows.** The full viewer: the image builds it with `build:pages`, the same
+command and the same committed `runs/` (and `items/for-test/`) as the Cloudflare Pages deploy, so
+`/`, `/errors`, `/standings` and `/gaps` show the same runs as the public viewer, beside the review
+pages. The Pages build itself is unchanged.
 
 **The viewer's own host is untouched.** `apps/viewer/server/index.mjs` (its `pnpm start`), its
 smoke test and `apps/viewer/railway.json` are the pre-existing static-only host and stay as they are.
@@ -118,6 +134,7 @@ All live under `/api`.
 | `DELETE /api/review/:sampleId` | session + CSRF | Discard the draft ("start over"). Idempotent. |
 | `POST /api/review/:sampleId/submit` | session + CSRF | Freeze `{review}` as a new immutable submission. Returns `{submission: {id, submittedAt}}`. Active sample only, else 404 `{error: "unknown sample"}`. |
 | `GET /api/review/:sampleId/submissions` | session | The reviewer's submissions for the sample, newest first (metadata only). |
+| `GET /api/gold-set` | session | The reviewer's gold set for the active sample, as JSONL (`application/jsonl`), built from their saved draft. See [Gold set](#gold-set). |
 
 **Drafts.** `state` is the viewer's per-sample review state (the chosen texts and the per-cell
 labels). The API stores it opaquely as JSONB and does not validate its inner shape; it only requires
@@ -136,6 +153,20 @@ id, so a conflict never leaks another reviewer's draft.
 in bytes) with **413**. The cap is sized from a maximal draft: 1,500 labels, each with a
 1,000-character note of 4-byte UTF-8 characters plus ids and metadata, is about 6.2 MB. The client
 caps notes at 1,000 characters and checks the byte size before sending.
+
+### Gold set
+
+`GET /api/gold-set` returns the bytes the review page's **Download gold set** saves for the same saved
+labels. `review-compare --from-service` reads it, so a reviewer never passes a file around.
+`src/goldSet.ts` ports the viewer's writer (`apps/viewer/src/lib/goldSet.ts`). It reads the draft the
+way the viewer's tolerant loader does, and the tests pin it to `fixtures/review_gold_set.jsonl`.
+
+- No labels: an empty body.
+- Labels the download would refuse (one for a cell outside the sample, or one that lost its rubric
+  version or time): **422** `{error}`, with the download's message.
+
+The CLI signs in through `POST /api/auth/login`, fetches the gold set and signs out again
+(`POST /api/auth/logout`), so its session row is deleted at once.
 
 **Submissions** are insert-only: there is no update or delete route, so a submission never changes
 once made. Account delete is the only thing that removes them.
@@ -193,7 +224,7 @@ export VIEWER_DIST="$PWD/apps/viewer/dist"
 pnpm -C apps/api install --frozen-lockfile
 pnpm -C apps/viewer install --frozen-lockfile
 pnpm -C apps/api migrate
-pnpm -C apps/viewer build      # not build:pages: the review origin bakes in no runs
+pnpm -C apps/viewer build:pages   # bakes runs/ into dist/runs/, as the image does
 pnpm -C apps/api start         # api listening on :8080
 
 curl -s localhost:8080/api/health    # {"status":"ok","db":"up"}
@@ -224,18 +255,22 @@ To remove the local database afterwards: `dropdb sacredtexts_review_dev`.
 - **Service `review`:** one replica, built from `apps/api/Dockerfile`.
 - **Postgres:** Railway's managed Postgres, one instance, no HA or point-in-time recovery.
   - The volume is backed up **daily** (06:07 UTC) and each backup is kept for 6 days.
-- **Domain:** the generated Railway domain above, routed to port 8080. There is no other domain.
+- **Domains:** `https://sacredtexts.iaser.ai`, the name reviewers use, and the generated Railway
+  domain above. Both reach the same service on port 8080.
 
 **The image** (`apps/api/Dockerfile`, built with the **repo root** as its context):
 
-- One stage builds the viewer with the plain `vite build`.
+- One stage builds the viewer with `build:pages`, as the Cloudflare Pages deploy does: `vite build`,
+  then `scripts/bake-runs.ts` bakes `runs/` into `dist/runs/` (reading `items/for-test/` for the
+  panel's questions).
 - The service stage holds:
   - the API's production dependencies;
   - `apps/api/src` and `drizzle/`;
   - `review/samples/`;
-  - the built viewer.
+  - the built viewer, with its baked `dist/runs/`.
 - It runs as the `node` user with `tsx src/server.ts`.
-- Every `COPY` names its paths, so no `node_modules`, `dist`, `runs/` or `texts/` reaches it.
+- Every `COPY` names its paths, so no `node_modules`, `dist` or `texts/` reaches it. Run evidence
+  reaches it only as the baked `dist/runs/`.
 - Build it locally with `docker build -f apps/api/Dockerfile -t sacredtexts-review .`.
 - A Dockerfile is used, not Nixpacks or Railpack, because the repo root holds `requirements.txt`
   and no `package.json`, so auto-detection would build Python.
@@ -269,11 +304,14 @@ To read them back:
 
 ```bash
 stage=$(mktemp -d)
-git archive HEAD apps/api apps/viewer review/samples | tar -x -C "$stage"
+git archive HEAD apps/api apps/viewer review/samples runs items/for-test | tar -x -C "$stage"
 railway up "$stage" --path-as-root --service review --detach
 ```
 
-That uploads about 4 MB, where the whole repo is about 345 MB. To deploy on every merge instead,
+That uploads about 165 MB (17 MB gzipped), almost all of it `runs/` for the bake, where the whole
+repo is about 345 MB. With the runs baked (2026-11-11), the image is about 118 MB compressed
+(614 MB unpacked; 105 MB and 463 MB without them), and a cold container answers `/api/health`
+in under a second, because the baked files are read from disk only when they are requested. To deploy on every merge instead,
 connect the service to the repository's `main` branch. That is the owner's call:
 `railway service source connect --repo faithfamilytechnologynetwork/sacredtexts --branch main --service review`.
 
@@ -292,7 +330,8 @@ connect the service to the repository's `main` branch. That is the owner's call:
 - In Chrome, `/review` shows the sign-in and create-account forms.
 
 **Completion check (a human, in a real browser).** Through the domain, sign up with the invite code,
-pick texts, label a cell, reload to confirm it persists, and download the gold set. A builder agent
+pick texts, label a cell, reload to confirm it persists, open Results, and run
+`review-compare --from-service <domain>`. A builder agent
 doesn't create accounts or enter the invite code on the production host, so a person runs this.
 
 To switch the active sample, commit the new sample file, point `SAMPLE_PATH` at it and redeploy.

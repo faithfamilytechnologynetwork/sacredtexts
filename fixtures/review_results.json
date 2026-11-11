@@ -1,0 +1,93 @@
+{
+  "by_grader_path": {
+    "citation": {
+      "agree": 2,
+      "n": 2,
+      "pct": 100.0
+    },
+    "contained": {
+      "agree": 0,
+      "n": 1,
+      "pct": 0.0
+    },
+    "exact": {
+      "agree": 1,
+      "n": 1,
+      "pct": 100.0
+    },
+    "none": {
+      "agree": 1,
+      "n": 2,
+      "pct": 50.0
+    },
+    "verdict": {
+      "agree": 2,
+      "n": 2,
+      "pct": 100.0
+    }
+  },
+  "by_task": {
+    "cite_passage": {
+      "agree": 2,
+      "n": 2,
+      "pct": 100.0
+    },
+    "complete_unit": {
+      "agree": 2,
+      "n": 2,
+      "pct": 100.0
+    },
+    "retrieve_quote": {
+      "agree": 0,
+      "n": 2,
+      "pct": 0.0
+    },
+    "verify_source": {
+      "agree": 2,
+      "n": 2,
+      "pct": 100.0
+    }
+  },
+  "by_text": {
+    "hinduism/english": {
+      "agree": 3,
+      "n": 4,
+      "pct": 75.0
+    },
+    "islam/native": {
+      "agree": 3,
+      "n": 4,
+      "pct": 75.0
+    }
+  },
+  "disagreements": [
+    {
+      "cell_id": "fixture-run:model-a:7c41160f85999097",
+      "human": "incorrect",
+      "reviewer_id": "3f2b8c1e-5d4a-4e6f-9b7c-1a2d3e4f5a6b",
+      "task": "retrieve_quote",
+      "text": "islam/native",
+      "version": "correct"
+    },
+    {
+      "cell_id": "fixture-run:model-a:b9bdeb4400fc2a64",
+      "human": "correct",
+      "reviewer_id": "3f2b8c1e-5d4a-4e6f-9b7c-1a2d3e4f5a6b",
+      "task": "retrieve_quote",
+      "text": "hinduism/english",
+      "version": "incorrect"
+    }
+  ],
+  "excluded": {
+    "both": 0,
+    "cant_judge": 1,
+    "defect": 1,
+    "total": 2
+  },
+  "overall": {
+    "agree": 6,
+    "n": 8,
+    "pct": 75.0
+  },
+  "rows": 10
+}

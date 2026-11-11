@@ -1,7 +1,7 @@
 """Score matcher versions against human labels (Spec 154).
 
-A **gold set** is a JSONL file of human labels, one row per labelled cell, downloaded from the
-review tool. Each row carries everything needed to re-score its cell (task, prompt, expected,
+A **gold set** is JSONL of human labels, one row per labelled cell, read from the review service
+(``review_service``) or from a file downloaded from the review tool. Each row carries everything needed to re-score its cell (task, prompt, expected,
 answer, source), the verdict the matcher showed at labelling time (``shown``), and the human
 ``label``. So a gold set does not depend on any one matcher version.
 
@@ -195,23 +195,30 @@ def _validate_gold_row(row: object, where: str) -> None:
 
 
 def load_gold(paths: list[Path]) -> list[dict]:
-    """Read and validate gold-set files; any problem fails loudly. Rows come back sorted by
-    ``(cell_id, reviewer_id)``. A ``(reviewer_id, cell_id)`` labelled twice, in one file or across
-    files, is an error."""
+    """Read and validate gold-set files; any problem fails loudly (see ``parse_gold``)."""
     if not paths:
         raise ReviewCompareError("no gold-set files given")
-    rows: list[dict] = []
-    first_seen: dict[tuple[str, str], str] = {}
+    sources: list[tuple[str, str]] = []
     for path in paths:
         try:
-            lines = Path(path).read_text(encoding="utf-8").splitlines()
+            sources.append((str(path), Path(path).read_text(encoding="utf-8")))
         except OSError as exc:
             raise ReviewCompareError(f"{path}: cannot read gold set ({exc})") from exc
+    return parse_gold(sources)
+
+
+def parse_gold(sources: list[tuple[str, str]]) -> list[dict]:
+    """Validate gold-set texts, each a ``(name, text)`` pair (a file, or the review service's
+    response); any problem fails loudly. Rows come back sorted by ``(cell_id, reviewer_id)``. A
+    ``(reviewer_id, cell_id)`` labelled twice, in one text or across texts, is an error."""
+    rows: list[dict] = []
+    first_seen: dict[tuple[str, str], str] = {}
+    for name, text in sources:
         previous_cell = ""
-        for line_no, line in enumerate(lines, start=1):
+        for line_no, line in enumerate(text.splitlines(), start=1):
             if not line.strip():
                 continue
-            where = f"{path}:{line_no}"
+            where = f"{name}:{line_no}"
             try:
                 row = json.loads(line)
             except json.JSONDecodeError as exc:
@@ -231,7 +238,7 @@ def load_gold(paths: list[Path]) -> list[dict]:
             previous_cell = row["cell_id"]
             rows.append(row)
     if not rows:
-        raise ReviewCompareError(f"no gold rows in {[str(p) for p in paths]}")
+        raise ReviewCompareError(f"no gold rows in {[name for name, _ in sources]}")
     rows.sort(key=lambda r: (r["cell_id"], r["reviewer_id"]))
     return rows
 

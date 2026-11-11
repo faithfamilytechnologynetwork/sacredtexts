@@ -277,18 +277,24 @@ version. Detail: `review/README.md`, `apps/api/README.md`, `apps/viewer/README.m
   `/api/*` and `/assets/*` never fall back). It holds one draft per reviewer per sample, with
   optimistic concurrency. Saves and submits are accepted for the active sample only. Schema changes
   go through `drizzle-kit generate` → review → `pnpm migrate`, never `db:push`.
-- **UI** — `/review` (texts picker, progress, gold-set download) and `/review/cell/$cellId` (the
+- **UI** — `/review` (texts picker, progress, a backup gold-set download), `/review/results`
+  (agreement with the shown verdicts, `lib/reviewResults.ts`, pinned to `review-compare --version
+  committed` by `fixtures/review_results.json`) and `/review/cell/$cellId` (the
   explorer's `QuestionCard` plus the rubric and label control) in `apps/viewer`. The store is
   `lib/review.ts`; its session counter drops in-flight results from a previous reviewer. On the
   static Pages build `/api` answers HTML, so the review routes show "review service unavailable".
 - **Gold set** — `lib/goldSet.ts` writes canonical JSONL (keys sorted by code point at every level,
-  integral floats as ints) byte-identical to the Python writer. A shared fixture pins the two.
-- **Compare** — `sacredbench review-compare GOLD... --version committed|current|<run dir>` reports
+  integral floats as ints) byte-identical to the Python writer; `apps/api/src/goldSet.ts` ports it to
+  serve `GET /api/gold-set` from the stored draft. A shared fixture pins all three.
+- **Compare** — `sacredbench review-compare GOLD...|--from-service <url> --version committed|current|<run dir>`
+  (`--from-service` signs in, fetches `/api/gold-set`, signs out; `review_service.py`) reports
   agreement overall, per task, per text and per grader path, lists the disagreements, and lists the
   movers (fixed/broken) between two versions. `current` calls `score_answer` exactly as `score_file`
   does, offline.
-- **Hosting** — Railway project `sacredtexts-review`: one service built from `apps/api/Dockerfile`
-  (repo-root context) plus a managed Postgres with a daily volume backup. The build/deploy settings
+- **Hosting** — Railway project `sacredtexts-review` (`https://sacredtexts.iaser.ai`): one service built from `apps/api/Dockerfile`
+  (repo-root context) plus a managed Postgres with a daily volume backup. The image builds the viewer
+  with `build:pages` (the Pages bake of `runs/`), and `static.ts` serves `dist/runs/` as Pages does
+  (`_headers`, encoded run ids 307 to the decoded path). The build/deploy settings
   are set on the service (Railway rejects a config-as-code path on a new service), so there is no
   `railway.json` for it. The invite code lives only in Railway and the gitignored root `.env`.
 - **Copyright** — by the owner's ruling (counsel: fair use), `review/` samples are outside the

@@ -7,6 +7,8 @@
 // fixtures/review_gold_set.jsonl): rows sorted by cell id, one compact JSON object per line, keys
 // sorted by code point at every level, non-ASCII unescaped. The builder reads no clock (each row's
 // `labelled_at` is its label's own stamp), so two downloads of unchanged labels are byte-identical.
+// The service builds the same file for `GET /api/gold-set` (apps/api/src/goldSet.ts): a new row or
+// label field means editing every writer (this, that, and `review_compare.GOLD_KEYS` / `LABEL_KEYS`).
 
 import type { CellLabel } from "./review";
 import type { ReviewSample, SampleCell } from "./reviewSample";

@@ -22,7 +22,7 @@ import { cellLink } from "../lib/reviewLinks";
 // `/review` (Spec 154): the reviewer's home. Behind the auth gate it loads the active sample and the
 // reviewer's saved draft, then shows the text picker (the choice is saved in the draft), progress per
 // text and overall, the pass (the sample's cells from the chosen texts, in sample order, each linking
-// to its labelling page), and the gold-set download.
+// to its labelling page), a link to the results page, and the gold-set download (a backup export).
 
 export function ReviewPage() {
   return (
@@ -81,8 +81,11 @@ function ReviewHome({ sample }: { sample: ReviewSample }) {
         <h1 className="text-xl font-semibold">Review</h1>
         <p className="text-sm text-default-600">
           Record the true outcome of each cell in your pass, guided by the rubric beside it. Your labels
-          save as you go; download them as a gold set to compare matcher versions.
+          save as you go.
         </p>
+        <Link to="/review/results" className="self-start text-sm text-accent hover:underline" data-testid="results-link">
+          See how the matcher agrees with your labels →
+        </Link>
         <p className="text-xs text-default-500" data-testid="sample-meta">
           Sample <span className="font-mono">{sid}</span> · {sample.cells.length} cells from{" "}
           <span className="font-mono">{sample.source_run}</span> · seed{" "}
@@ -162,18 +165,18 @@ function ReviewHome({ sample }: { sample: ReviewSample }) {
 
       <section className="flex flex-col gap-2 border-t border-default-200 pt-4" aria-labelledby="gold-heading">
         <h2 id="gold-heading" className="text-sm font-semibold">
-          Gold set
+          Export
         </h2>
         <p className="text-xs text-default-500">
-          Every cell you&rsquo;ve given an outcome, with everything needed to re-score it, as JSONL for{" "}
-          <span className="font-mono">review-compare</span>. You have {labelledCount} labelled{" "}
-          {labelledCount === 1 ? "cell" : "cells"}.
+          A backup copy of your labels as a gold-set file (JSONL). You have {labelledCount} labelled{" "}
+          {labelledCount === 1 ? "cell" : "cells"}. <span className="font-mono">review-compare --from-service</span> reads
+          your labels from the service, so you don&rsquo;t need the file to compare matcher versions.
         </p>
         <button
           type="button"
           onClick={downloadGoldSet}
           disabled={!draft.loaded || labelledCount === 0}
-          className="self-start rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground disabled:opacity-50"
+          className="self-start text-xs text-accent hover:underline disabled:text-default-400 disabled:no-underline"
         >
           Download gold set
         </button>

@@ -1,6 +1,6 @@
-# The review service (Spec 154) as one image: /api, the active sample and the built viewer, from one
-# origin. The build context is the REPO ROOT, because the image needs apps/viewer, apps/api and
-# review/samples:
+# The review service (Spec 154) as one image: /api, the active sample and the built viewer with its
+# runs baked in, from one origin. The build context is the REPO ROOT, because the image needs
+# apps/viewer, apps/api, review/samples, and the runs/ and items/for-test/ the viewer bakes:
 #
 #   docker build -f apps/api/Dockerfile -t sacredtexts-review .
 #
@@ -8,8 +8,8 @@
 # Dockerfile, not Nixpacks/Railpack: the repo root holds requirements.txt and no package.json, so
 # auto-detection would build Python.
 #
-# Every COPY names its paths, so no node_modules, dist or run evidence reaches the image, with or
-# without a .dockerignore.
+# Every COPY names its paths, so no node_modules or dist reaches the image, with or without a
+# .dockerignore. Run evidence reaches it only as the viewer's baked dist/runs/.
 
 FROM node:24-bookworm-slim AS base
 # The pnpm the lockfiles were written with (package.json packageManager). Prepared at build time, so
@@ -17,8 +17,9 @@ FROM node:24-bookworm-slim AS base
 RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
 WORKDIR /app
 
-# Stage 1: build the viewer. The plain `vite build`, not `build:pages`: the review origin bakes in no
-# runs.
+# Stage 1: build the viewer exactly as the Cloudflare Pages deploy does (`build:pages`: vite build,
+# then scripts/bake-runs.ts bakes runs/ into dist/runs/, reading items/for-test/ for the panel's
+# questions), so the hosted origin shows the same runs as the public viewer (#157).
 FROM base AS viewer
 COPY apps/viewer/package.json apps/viewer/pnpm-lock.yaml apps/viewer/
 RUN pnpm -C apps/viewer install --frozen-lockfile
@@ -26,7 +27,10 @@ COPY apps/viewer/index.html apps/viewer/vite.config.ts apps/viewer/tsconfig.json
 COPY apps/viewer/public apps/viewer/public
 COPY apps/viewer/vite apps/viewer/vite
 COPY apps/viewer/src apps/viewer/src
-RUN pnpm -C apps/viewer build
+COPY apps/viewer/scripts apps/viewer/scripts
+COPY runs runs
+COPY items/for-test items/for-test
+RUN pnpm -C apps/viewer build:pages
 
 # Stage 2: the service. Production dependencies only (tsx, which runs the TypeScript, is one).
 FROM base AS service
