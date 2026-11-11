@@ -1,7 +1,7 @@
 id: '154'
 title: review-tool-human-audit-of-det
 protocol: spir
-phase: review
+phase: verify
 plan_phases:
   - id: phase_1
     title: Review sample builder and committed FAccT sample
@@ -41,46 +41,10 @@ gates:
   verify-approval:
     status: pending
 iteration: 1
-build_complete: true
-history:
-  - iteration: 1
-    plan_phase: phase_2
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_2-iter1-codex.txt
-      - model: claude
-        verdict: APPROVE
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_2-iter1-claude.txt
-  - iteration: 2
-    plan_phase: phase_2
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_2-iter2-codex.txt
-      - model: claude
-        verdict: APPROVE
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_2-iter2-claude.txt
-  - iteration: 1
-    plan_phase: phase_5
-    build_output: ''
-    reviews:
-      - model: codex
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_5-iter1-codex.txt
-      - model: claude
-        verdict: REQUEST_CHANGES
-        file: >-
-          /Users/mwk/Development/faithfamilytechnologynetwork/sacredtexts/.builders/spir-154/codev/projects/154-review-tool-human-audit-of-det/154-phase_5-iter1-claude.txt
+build_complete: false
+history: []
 started_at: '2026-11-10T03:45:40.348Z'
-updated_at: '2026-11-11T00:13:19.101Z'
+updated_at: '2026-11-11T00:19:21.025Z'
 context_refreshes:
   - boundary: plan-phase:phase_2
     at: '2026-11-10T19:46:50.712Z'
