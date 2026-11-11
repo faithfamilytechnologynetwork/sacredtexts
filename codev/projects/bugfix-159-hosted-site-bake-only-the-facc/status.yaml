@@ -1,7 +1,7 @@
 id: bugfix-159
 title: hosted-site-bake-only-the-facc
 protocol: bugfix
-phase: investigate
+phase: fix
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -11,4 +11,4 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-11T04:12:43.799Z'
-updated_at: '2026-11-11T04:12:43.801Z'
+updated_at: '2026-11-11T04:16:19.795Z'
