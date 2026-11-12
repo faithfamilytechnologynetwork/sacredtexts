@@ -125,6 +125,7 @@ or raag the model adds beside the Ang is ignored; a second Ang is a hedge.
 `retrieve_quote` asks for the first or last pankti of the Ang, never a
 heading or a multi-tuk record, for the same reason. An Ang asks at most two such questions, so
 a passage drawn from an Ang that already has two gets no retrieve row.
+A familiarity passage is asked for by its name (the Mool Mantar).
 
 The Aramaic Talmud is asked and scored at daf+amud (issue #147). The `:3` of
 `Megillah 23b:3` is Sefaria's paragraph split, which no model can know.
