@@ -279,7 +279,8 @@ version. Detail: `review/README.md`, `apps/api/README.md`, `apps/viewer/README.m
   go through `drizzle-kit generate` → review → `pnpm migrate`, never `db:push`.
 - **UI** — `/review` (texts picker, progress, a backup gold-set download), `/review/results`
   (agreement with the shown verdicts, `lib/reviewResults.ts`, pinned to `review-compare --version
-  committed` by `fixtures/review_results.json`) and `/review/cell/$cellId` (the
+  committed` by `fixtures/review_results.json`), `/review/progress` (every reviewer's counts by name
+  from `GET /api/progress`, #161) and `/review/cell/$cellId` (the
   explorer's `QuestionCard` plus the rubric and label control) in `apps/viewer`. The store is
   `lib/review.ts`; its session counter drops in-flight results from a previous reviewer. On the
   static Pages build `/api` answers HTML, so the review routes show "review service unavailable".

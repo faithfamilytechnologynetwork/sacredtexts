@@ -11,7 +11,8 @@ export class GoldSetError extends Error {
   override name = 'GoldSetError';
 }
 
-const LABEL_OUTCOMES = ['correct', 'incorrect', 'refused', 'cant_judge'];
+/** The outcomes a label can carry; a label with any other outcome is not labelled (the viewer's `LABEL_OUTCOMES`). */
+export const LABEL_OUTCOMES = ['correct', 'incorrect', 'refused', 'cant_judge'];
 
 type Cell = Record<string, unknown>;
 

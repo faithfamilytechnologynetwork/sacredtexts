@@ -149,6 +149,7 @@ All live under `/api`.
 | `POST /api/review/:sampleId/submit` | session + CSRF | Freeze `{review}` as a new immutable submission. Returns `{submission: {id, submittedAt}}`. Active sample only, else 404 `{error: "unknown sample"}`. |
 | `GET /api/review/:sampleId/submissions` | session | The reviewer's submissions for the sample, newest first (metadata only). |
 | `GET /api/gold-set` | session | The reviewer's gold set for the active sample, as JSONL (`application/jsonl`), built from their saved draft. See [Gold set](#gold-set). |
+| `GET /api/progress` | session | Every reviewer's progress on the active sample (#161): `{sampleId, reviewers: [{name, texts, labelledCellIds, submissions, updatedAt}]}`, one entry per reviewer with a draft, by name. A cell counts once its label has an outcome; only cells in the sample are listed. Names only, never emails. |
 
 **Drafts.** `state` is the viewer's per-sample review state (the chosen texts and the per-cell
 labels). The API stores it opaquely as JSONB and does not validate its inner shape; it only requires
@@ -161,7 +162,8 @@ optimistic concurrency:
   `{error: "conflict", state, version}` holding the current draft, so the client can reconcile.
 
 A reviewer only ever reads or writes their own rows: every query is keyed on the session's reviewer
-id, so a conflict never leaks another reviewer's draft.
+id, so a conflict never leaks another reviewer's draft. The one cross-reviewer read is
+`GET /api/progress`, which gives names and counted cell ids, never labels or emails.
 
 **Body cap.** `PUT /api/review/:sampleId` and `POST …/submit` reject bodies over **8 MB** (counted
 in bytes) with **413**. The cap is sized from a maximal draft: 1,500 labels, each with a
