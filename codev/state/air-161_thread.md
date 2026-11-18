@@ -22,3 +22,9 @@
   Postgres DB (since dropped) with the real `facct-2026-11-03-k10` sample: two reviewers via curl,
   then `/review/progress` in Chrome. Names only in the body, signed-out 401, a null-outcome label
   not counted, and the rollup counts a cell both reviewers labelled once (116 + 1 = 117 / 1423).
+- **PR #162 CMAP**: codex APPROVE (no issues), claude APPROVE with nits. Fixed in place: the
+  submissions `sampleId` filter is now under test (an earlier-sample submission), `getProgress`
+  validates every reviewer entry (fail fast instead of a TypeError in render), the dashboard memo
+  depends on `load.reviewers` (it recomputed every render), and a name tie sorts by reviewer id.
+  Left as is: `submissions` on the wire but unrendered, and the progress page's denominators
+  (whole sample) differing from `/review`'s (your chosen texts). Both are deliberate and documented.

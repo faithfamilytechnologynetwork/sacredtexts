@@ -5,7 +5,7 @@ import type { Hono } from 'hono';
 import { createApp } from '../app';
 import type { AppDb } from '../db';
 import { parseSample } from '../sample';
-import { reviews } from '../schema';
+import { reviews, submissions } from '../schema';
 import { createTestDb } from '../testing/pglite';
 import { CSRF_COOKIE, CSRF_HEADER } from '../auth/cookies';
 
@@ -57,8 +57,9 @@ describe('GET /api/progress', () => {
       'other-run:m:q': label('correct'), // not in the sample
     };
     expect((await amir.save({ texts: ['hinduism/english', 7], labels: amirLabels })).status).toBe(200);
-    // A draft from an earlier active sample is not counted.
+    // A draft or a submission from an earlier active sample is not counted.
     await db.insert(reviews).values({ reviewerId: idle.id, sampleId: 'earlier-sample', state: { texts: ['islam/native'], labels: { [c0]: label('correct') } } });
+    await db.insert(submissions).values({ reviewerId: amir.id, sampleId: 'earlier-sample', review: {} });
 
     const res = await progress(app, idle.cookie);
     expect(res.status).toBe(200);

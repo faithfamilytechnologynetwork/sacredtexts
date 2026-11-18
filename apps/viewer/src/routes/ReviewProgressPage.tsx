@@ -55,7 +55,8 @@ function useProgress(sampleId: string): ProgressLoad & { retry: () => void } {
 
 function Dashboard({ sample }: { sample: ReviewSample }) {
   const load = useProgress(sample.sample_id);
-  const dashboard = useMemo(() => (load.state === "ok" ? progressDashboard(sample, load.reviewers) : null), [sample, load]);
+  const reviewers = load.state === "ok" ? load.reviewers : null;
+  const dashboard = useMemo(() => reviewers && progressDashboard(sample, reviewers), [sample, reviewers]);
 
   let body;
   if (load.state === "loading") body = <CenteredSpinner label="Loading the progress…" />;

@@ -28,7 +28,7 @@ export function progressRoute(db: AppDb, sample: ActiveSample): Hono<AppEnv> {
       .from(reviews)
       .innerJoin(reviewers, eq(reviewers.id, reviews.reviewerId))
       .where(eq(reviews.sampleId, sample.sampleId))
-      .orderBy(asc(reviewers.name), asc(reviews.updatedAt));
+      .orderBy(asc(reviewers.name), asc(reviewers.id)); // one draft per reviewer; the id only breaks a name tie
     const counts = await db
       .select({ reviewerId: submissions.reviewerId, n: sql<number>`count(*)::int` })
       .from(submissions)

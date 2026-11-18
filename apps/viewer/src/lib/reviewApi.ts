@@ -167,6 +167,18 @@ export async function getProgress(): Promise<{ sampleId: string; reviewers: Revi
   if (typeof json?.sampleId !== "string" || !Array.isArray(json.reviewers)) {
     throw new ReviewApiError(res.status, "the progress response has no sampleId or reviewers");
   }
+  const strings = (v: unknown) => Array.isArray(v) && v.every((s) => typeof s === "string");
+  for (const r of json.reviewers) {
+    if (
+      typeof r?.name !== "string" ||
+      !strings(r.texts) ||
+      !strings(r.labelledCellIds) ||
+      typeof r.submissions !== "number" ||
+      typeof r.updatedAt !== "string"
+    ) {
+      throw new ReviewApiError(res.status, "the progress response has a malformed reviewer entry");
+    }
+  }
   return json;
 }
 

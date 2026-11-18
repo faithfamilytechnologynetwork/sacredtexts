@@ -69,6 +69,12 @@ describe("/review/progress", () => {
     expect(await screen.findAllByTestId("reviewer-row")).toHaveLength(2);
   });
 
+  it("refuses a malformed reviewer entry", async () => {
+    serveProgress(() => json({ ...PROGRESS, reviewers: [{ ...PROGRESS.reviewers[0], labelledCellIds: null }] }));
+    renderApp("/review/progress");
+    expect(await screen.findByRole("alert")).toHaveTextContent("the progress response has a malformed reviewer entry");
+  });
+
   it("refuses progress for a different sample than the one loaded", async () => {
     serveProgress(() => json({ ...PROGRESS, sampleId: "another-sample" }));
     renderApp("/review/progress");
