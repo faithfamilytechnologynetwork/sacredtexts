@@ -22,7 +22,7 @@ import { cellLink } from "../lib/reviewLinks";
 // `/review` (Spec 154): the reviewer's home. Behind the auth gate it loads the active sample and the
 // reviewer's saved draft, then shows the text picker (the choice is saved in the draft), progress per
 // text and overall, the pass (the sample's cells from the chosen texts, in sample order, each linking
-// to its labelling page), a link to the results page, and the gold-set download (a backup export).
+// to its labelling page), links to the results and progress pages, and the gold-set download (a backup export).
 
 export function ReviewPage() {
   return (
@@ -85,6 +85,9 @@ function ReviewHome({ sample }: { sample: ReviewSample }) {
         </p>
         <Link to="/review/results" className="self-start text-sm text-accent hover:underline" data-testid="results-link">
           See how the matcher agrees with your labels →
+        </Link>
+        <Link to="/review/progress" className="self-start text-sm text-accent hover:underline" data-testid="progress-link">
+          See every reviewer&rsquo;s progress →
         </Link>
         <p className="text-xs text-default-500" data-testid="sample-meta">
           Sample <span className="font-mono">{sid}</span> · {sample.cells.length} cells from{" "}

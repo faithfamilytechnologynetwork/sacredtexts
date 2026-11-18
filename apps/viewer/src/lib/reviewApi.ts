@@ -145,6 +145,43 @@ export async function getSample(): Promise<ReviewSample> {
   return parseSample(json);
 }
 
+/** One reviewer's progress on the active sample, from `GET /api/progress` (issue #161). */
+export interface ReviewerProgress {
+  /** The reviewer's name; the API never sends the email. */
+  name: string;
+  /** The texts they chose. */
+  texts: string[];
+  /** The sample cells they have labelled (with an outcome), in sample order. */
+  labelledCellIds: string[];
+  submissions: number;
+  /** When their draft was last saved (ISO 8601). */
+  updatedAt: string;
+}
+
+/** Every reviewer's progress on the active sample (any signed-in reviewer may read it). */
+export async function getProgress(): Promise<{ sampleId: string; reviewers: ReviewerProgress[] }> {
+  const res = await call("/api/progress");
+  if (res.status === 401) throw new ReviewApiError(401, "unauthorized");
+  const json = await readJson(res);
+  if (!res.ok) throw new ReviewApiError(res.status, json?.error ?? "progress load failed");
+  if (typeof json?.sampleId !== "string" || !Array.isArray(json.reviewers)) {
+    throw new ReviewApiError(res.status, "the progress response has no sampleId or reviewers");
+  }
+  const strings = (v: unknown) => Array.isArray(v) && v.every((s) => typeof s === "string");
+  for (const r of json.reviewers) {
+    if (
+      typeof r?.name !== "string" ||
+      !strings(r.texts) ||
+      !strings(r.labelledCellIds) ||
+      typeof r.submissions !== "number" ||
+      typeof r.updatedAt !== "string"
+    ) {
+      throw new ReviewApiError(res.status, "the progress response has a malformed reviewer entry");
+    }
+  }
+  return json;
+}
+
 export interface DraftEnvelope {
   /** The stored SampleReview shape (opaque here; the store's tolerant zod parses it). */
   state: unknown;

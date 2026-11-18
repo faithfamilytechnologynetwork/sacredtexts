@@ -144,10 +144,11 @@ a sample to comparing matcher versions, is in `review/README.md`.
 |---|---|
 | `/review` | Sign in. Pick the texts you know. Your pass (the sample's cells from those texts, in sample order), progress per text, a link to **Results**, and **Download gold set** (a backup export). |
 | `/review/results` | How often the matcher's shown verdict matches your labels, as `agree / n (pct)`: overall, per task, per text and per grader path. Can't-judge and defect labels are counted apart. Every disagreement links to its cell. It updates as you label, and gives the same numbers as `review-compare --version committed`. |
+| `/review/progress` | Every reviewer's progress on the sample, by name: the texts they chose, `labelled / cells in the sample` per text, total labelled and last activity. Above it, how much of each text anyone has labelled, so gaps show. Plain counts, from each reviewer's last save. |
 | `/review/cell/<cell id>` | One cell: the explorer's card (prompt, expected, answer), the matcher's verdict with every submetric and its grader path, the task's rubric, and the label control (true outcome, question-defect flag, notes). Previous / next walk your pass. A `verify_source` cell also shows where its passage really comes from. |
 
 Labels save to your account as you go and come back on any device. Each account sees only
-its own labels.
+its own labels; `/review/progress` shows every reviewer's counts, not their labels.
 
 **Where it runs.** The pages call `/api/*` on their own origin, so they work only where the
 review API serves the viewer: the one service in `apps/api` (see its README for the local run
@@ -167,7 +168,7 @@ The rest of the viewer is unaffected.
 The code: `src/lib/review.ts` (the store: labels, saving, sign-in state),
 `src/lib/reviewApi.ts` (the API client), `src/lib/reviewSample.ts` (sample parsing and the
 pass), `src/lib/goldSet.ts` (writes the gold-set file), `src/lib/reviewResults.ts` (the results
-page's numbers), `src/lib/rubric.ts`, and the pages in
+page's numbers), `src/lib/reviewProgress.ts` (the progress page's counts), `src/lib/rubric.ts`, and the pages in
 `src/routes/Review*.tsx`.
 
 ## Status

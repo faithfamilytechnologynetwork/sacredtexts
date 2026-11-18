@@ -15,6 +15,7 @@ import { FindingsPage } from "./routes/FindingsPage";
 import { ReviewPage } from "./routes/ReviewPage";
 import { ReviewCellPage } from "./routes/ReviewCellPage";
 import { ReviewResultsPage } from "./routes/ReviewResultsPage";
+import { ReviewProgressPage } from "./routes/ReviewProgressPage";
 import { NotFound } from "./routes/NotFound";
 import { FAILURE_KINDS, type FailureKind } from "./lib/failureKind";
 import { type ExplorerFilters } from "./lib/explorer";
@@ -105,7 +106,7 @@ const errorsRoute = createRoute({
   }),
 });
 
-// The review pages (Spec 154): the reviewer's home, their results (#157) and one cell's labelling page. A cell id carries
+// The review pages (Spec 154): the reviewer's home, their results (#157), every reviewer's progress (#161) and one cell's labelling page. A cell id carries
 // `:`, so links to it go through lib/reviewLinks (the router percent-encodes the param).
 const reviewRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -117,6 +118,12 @@ const reviewResultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/review/results",
   component: ReviewResultsPage,
+});
+
+const reviewProgressRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/review/progress",
+  component: ReviewProgressPage,
 });
 
 const reviewCellRoute = createRoute({
@@ -135,6 +142,7 @@ const routeTree = rootRoute.addChildren([
   findingsRoute,
   reviewRoute,
   reviewResultsRoute,
+  reviewProgressRoute,
   reviewCellRoute,
 ]);
 
