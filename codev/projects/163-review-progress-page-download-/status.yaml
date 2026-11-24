@@ -1,7 +1,7 @@
 id: '163'
 title: review-progress-page-download-
 protocol: air
-phase: pr
+phase: verified
 plan_phases: []
 current_plan_phase: null
 gates:
@@ -13,5 +13,5 @@ iteration: 1
 build_complete: false
 history: []
 started_at: '2026-11-24T17:53:46.620Z'
-updated_at: '2026-11-24T18:34:31.438Z'
+updated_at: '2026-11-24T18:34:49.573Z'
 pr_ready_for_human: false
