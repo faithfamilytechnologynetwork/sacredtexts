@@ -23,3 +23,14 @@
 - Surprise: `Response.text()` strips a UTF-8 BOM (Fetch spec), so the test reads bytes.
 - Live check: served the app on a socket with the real `facct-2026-11-03-k10` sample (PGlite),
   signed up, saved 4 labels, curl'd the CSV: headers, gzip, 401, and Python `csv` round-trip OK.
+
+## 2026-11-24 pr (#164)
+
+- CMAP: codex REQUEST_CHANGES (formula injection), claude APPROVE. Fixed claude's items (sort tie-break
+  pinned by a second unknown cell + mutation check, literal header assertion, `﻿` escape instead of
+  a literal BOM, cross-sample matcher_outcome caveat in the README, formula caution on the page + test).
+- Did NOT add formula escaping: verbatim is what analysts need, every downloader can already read the
+  whole file, and no sample payload starts with `= + - @` (only typed notes/names can). Raised to the
+  architect as an owner decision; it's a one-line change in `csvField` if they want Excel-safe output.
+- Note: `consult` right after `pr-create` said "No PR found for branch" (GitHub index lag); a re-run
+  a minute later worked.
