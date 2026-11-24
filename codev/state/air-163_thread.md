@@ -27,7 +27,7 @@
 ## 2026-11-24 pr (#164)
 
 - CMAP: codex REQUEST_CHANGES (formula injection), claude APPROVE. Fixed claude's items (sort tie-break
-  pinned by a second unknown cell + mutation check, literal header assertion, `﻿` escape instead of
+  pinned by a second unknown cell + mutation check, literal header assertion, the `U+FEFF` escape instead of
   a literal BOM, cross-sample matcher_outcome caveat in the README, formula caution on the page + test).
 - Did NOT add formula escaping: verbatim is what analysts need, every downloader can already read the
   whole file, and no sample payload starts with `= + - @` (only typed notes/names can). Raised to the
