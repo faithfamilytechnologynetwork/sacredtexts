@@ -81,6 +81,13 @@ describe("/review/progress", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(`the progress is for sample another-sample, not ${SAMPLE_ID}`);
   });
 
+  it("links the all-labels CSV straight to the API, so the browser downloads it with the session cookie", async () => {
+    serveProgress(() => json(PROGRESS));
+    renderApp("/review/progress");
+    expect(await screen.findByTestId("labels-csv-link")).toHaveAttribute("href", "/api/labels.csv");
+    expect(screen.getByRole("link", { name: "Download CSV" })).toBe(screen.getByTestId("labels-csv-link"));
+  });
+
   it("is linked from /review", async () => {
     serveProgress(() => json(PROGRESS));
     const { router } = renderApp("/review");
