@@ -58,3 +58,4 @@ apps/viewer/dist/
 .DS_Store
 *.DS_Store
 texput.log
+tmp/
