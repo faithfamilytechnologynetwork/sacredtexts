@@ -167,7 +167,9 @@ function Dashboard({ sample }: { sample: ReviewSample }) {
         </div>
         <p className="text-xs text-default-500">
           The CSV has every reviewer&rsquo;s labels (name, email, outcome, defect, notes), one row per labelled cell, with
-          each cell&rsquo;s text, task, model, prompt, expected text, answer and matcher outcome.
+          each cell&rsquo;s text, task, model, prompt, expected text, answer and matcher outcome. Fields are exact, so a
+          note starting with <span className="font-mono">=</span>, <span className="font-mono">+</span>,{" "}
+          <span className="font-mono">-</span> or <span className="font-mono">@</span> may show as a formula in Excel.
         </p>
       </header>
       {body}

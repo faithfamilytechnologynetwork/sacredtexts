@@ -201,13 +201,17 @@ outside the site (`src/routes/labelsCsv.ts`).
 - **Columns.** `reviewer_name, reviewer_email, sample_id, cell_id, question_id, run, text, task,
   model_id, prompt, expected, answer, matcher_outcome, human_outcome, defect, notes, rubric_version,
   labelled_at, draft_updated_at`. The cell's context (`question_id` to `matcher_outcome`) comes from
-  the active sample by cell id. It is empty for a cell that is not in it. `expected` is the expected
+  the active sample by cell id. It is empty for a cell that is not in it. A label from an earlier
+  sample whose cell is also in the active sample gets the active sample's context, so its
+  `matcher_outcome` may not be the verdict the reviewer was shown. `expected` is the expected
   text as the pipeline's `expected_text` reads it: the scored text for `retrieve_quote` and
   `complete_unit`, the citation for `cite_passage`, `yes`/`no` for `verify_source`. The full
   expected dict is in the committed sample.
 - **Format.** RFC 4180: a field with a comma, quote or line break is quoted, quotes doubled; CRLF line
   ends. UTF-8 with a byte-order mark, so a spreadsheet reads Arabic, Hebrew or Gurmukhi text
-  correctly. Fields are written verbatim, with no spreadsheet-formula escaping.
+  correctly. Fields are written verbatim, with no spreadsheet-formula escaping: a field starting with
+  `=`, `+`, `-` or `@` (in the committed sample, only a reviewer's notes or name can) may be read as a
+  formula by Excel. Everyone who can download the file can already read all of it.
 
 ## Auth model
 

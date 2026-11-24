@@ -62,6 +62,7 @@ const csvField = (s: string) => (/[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""'
 export function labelsCsvRoute(db: AppDb, sample: ActiveSample): Hono<AppEnv> {
   const cells = cellsById(sample.json);
   const order = new Map([...cells.keys()].map((id, i) => [id, i]));
+  const rank = (cellId: string) => order.get(cellId) ?? cells.size; // a cell outside the sample goes last
   const route = new Hono<AppEnv>();
   route.use('*', requireAuth(db));
   route.get('/', async (c) => {
@@ -75,7 +76,7 @@ export function labelsCsvRoute(db: AppDb, sample: ActiveSample): Hono<AppEnv> {
       const labels = isRecord(d.state) && isRecord(d.state.labels) ? d.state.labels : {};
       const cellIds = Object.keys(labels)
         .filter((id) => isRecord(labels[id]) && labels[id].outcome != null)
-        .sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity) || (a < b ? -1 : a > b ? 1 : 0));
+        .sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0));
       for (const cellId of cellIds) {
         const label = labels[cellId] as Record<string, unknown>;
         const cell = cells.get(cellId) ?? {};
@@ -104,7 +105,7 @@ export function labelsCsvRoute(db: AppDb, sample: ActiveSample): Hono<AppEnv> {
       }
     }
     const filename = `review-labels-${new Date().toISOString().slice(0, 10)}.csv`;
-    return c.body(`﻿${lines.map((l) => `${l}\r\n`).join('')}`, 200, {
+    return c.body(`\uFEFF${lines.map((l) => `${l}\r\n`).join('')}`, 200, {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="${filename}"`,
     });

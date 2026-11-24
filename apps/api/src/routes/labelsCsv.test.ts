@@ -75,7 +75,11 @@ async function rowsOf(res: Response): Promise<Array<Record<string, string>>> {
   const bytes = new Uint8Array(await res.arrayBuffer());
   expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]); // read as bytes: decoding strips the BOM
   const [header, ...rows] = parseCsv(new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes.slice(3)));
-  expect(header).toEqual([...LABELS_CSV_COLUMNS]);
+  // Literal, so a reordered or renamed column fails here, not only in the generator's own constant.
+  expect(header!.join(',')).toBe(
+    'reviewer_name,reviewer_email,sample_id,cell_id,question_id,run,text,task,model_id,prompt,expected,answer,' +
+      'matcher_outcome,human_outcome,defect,notes,rubric_version,labelled_at,draft_updated_at',
+  );
   return rows.map((r) => Object.fromEntries(LABELS_CSV_COLUMNS.map((k, i) => [k, r[i]!])));
 }
 
@@ -93,6 +97,7 @@ describe('GET /api/labels.csv', () => {
       [c3.cell_id]: label(null), // picked no outcome yet: no row
       [c2.cell_id]: 'not a label', // no row
       [c1.cell_id]: label('incorrect', { defect: true, notes: note, rubric_version: '2' }),
+      'another-run:m:a': label('correct', { notes: '=1+1' }), // two cells outside the sample go by id; notes stay verbatim
     };
     expect((await amir.save({ texts: ['hinduism/english'], labels: amirLabels })).status).toBe(200);
     // A draft from an earlier sample is exported too, under its own sample id.
@@ -117,6 +122,7 @@ describe('GET /api/labels.csv', () => {
     const zaraRow = { reviewer_name: 'Zara', reviewer_email: 'zara@example.com' };
     expect(rows.map(({ draft_updated_at, ...r }) => r)).toEqual([
       { ...amirRow, cell_id: c1.cell_id, ...context(c1), human_outcome: 'incorrect', defect: 'true', notes: note, rubric_version: '2', labelled_at: stamp.labelled_at },
+      { ...amirRow, cell_id: 'another-run:m:a', ...noContext, human_outcome: 'correct', defect: 'false', notes: '=1+1', ...stamp },
       { ...amirRow, cell_id: 'other-run:m:q', ...noContext, human_outcome: 'maybe', defect: 'false', notes: '', ...stamp },
       { ...zaraRow, sample_id: 'earlier-sample', cell_id: c0.cell_id, ...context(c0), human_outcome: 'refused', defect: 'false', notes: '', ...stamp },
       { ...zaraRow, sample_id: SAMPLE.sampleId, cell_id: c0.cell_id, ...context(c0), human_outcome: 'cant_judge', defect: 'false', notes: '', ...stamp },
