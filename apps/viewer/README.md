@@ -144,11 +144,12 @@ a sample to comparing matcher versions, is in `review/README.md`.
 |---|---|
 | `/review` | Sign in. Pick the texts you know. Your pass (the sample's cells from those texts, in sample order), progress per text, a link to **Results**, and **Download gold set** (a backup export). |
 | `/review/results` | How often the matcher's shown verdict matches your labels, as `agree / n (pct)`: overall, per task, per text and per grader path. Can't-judge and defect labels are counted apart. Every disagreement links to its cell. It updates as you label, and gives the same numbers as `review-compare --version committed`. |
-| `/review/progress` | Every reviewer's progress on the sample, by name: the texts they chose, `labelled / cells in the sample` per text, total labelled and last activity. Above it, how much of each text anyone has labelled, so gaps show. Plain counts, from each reviewer's last save. |
+| `/review/progress` | Every reviewer's progress on the sample, by name: the texts they chose, `labelled / cells in the sample` per text, total labelled and last activity. Above it, how much of each text anyone has labelled, so gaps show. Plain counts, from each reviewer's last save. **Download CSV** saves every reviewer's labels (name, email, outcome, defect, notes, and each cell's text, task, model, prompt, expected text, answer and matcher outcome) from `GET /api/labels.csv`. |
 | `/review/cell/<cell id>` | One cell: the explorer's card (prompt, expected, answer), the matcher's verdict with every submetric and its grader path, the task's rubric, and the label control (true outcome, question-defect flag, notes). Previous / next walk your pass. A `verify_source` cell also shows where its passage really comes from. |
 
-Labels save to your account as you go and come back on any device. Each account sees only
-its own labels; `/review/progress` shows every reviewer's counts, not their labels.
+Labels save to your account as you go and come back on any device. The labelling pages show
+each account only its own labels; `/review/progress` shows every reviewer's counts, and its **Download CSV** gives every
+reviewer's labels with names and emails (#163).
 
 **Where it runs.** The pages call `/api/*` on their own origin, so they work only where the
 review API serves the viewer: the one service in `apps/api` (see its README for the local run

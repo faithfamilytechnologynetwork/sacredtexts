@@ -156,9 +156,19 @@ function Dashboard({ sample }: { sample: ReviewSample }) {
           <span className="font-mono">labelled / cells in the sample</span>. A cell counts once it has an outcome. The counts
           are each reviewer&rsquo;s last save; last activity is in UTC.
         </p>
-        <Link to="/review" className="self-start text-sm text-accent hover:underline">
-          ← Back to your pass
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link to="/review" className="text-sm text-accent hover:underline">
+            ← Back to your pass
+          </Link>
+          {/* A plain link, not a router Link: the API answers with the file (#163). */}
+          <a href="/api/labels.csv" className="text-sm text-accent hover:underline" data-testid="labels-csv-link">
+            Download CSV
+          </a>
+        </div>
+        <p className="text-xs text-default-500">
+          The CSV has every reviewer&rsquo;s labels (name, email, outcome, defect, notes), one row per labelled cell, with
+          each cell&rsquo;s text, task, model, prompt, expected text, answer and matcher outcome.
+        </p>
       </header>
       {body}
     </div>

@@ -145,7 +145,8 @@ function ReviewAuthForm({ initError }: { initError?: string | null }) {
     >
       <h2 className="text-lg font-semibold">{mode === "login" ? "Sign in to review" : "Create a reviewer account"}</h2>
       <p className="text-sm text-default-500">
-        Your labels are saved privately to your account and sync across your devices.
+        Your labels are saved to your account and sync across your devices. Signed-in reviewers can download every
+        reviewer&rsquo;s labels, with names and emails, from the progress page.
       </p>
 
       {initError && (

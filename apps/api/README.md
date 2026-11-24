@@ -150,6 +150,7 @@ All live under `/api`.
 | `GET /api/review/:sampleId/submissions` | session | The reviewer's submissions for the sample, newest first (metadata only). |
 | `GET /api/gold-set` | session | The reviewer's gold set for the active sample, as JSONL (`application/jsonl`), built from their saved draft. See [Gold set](#gold-set). |
 | `GET /api/progress` | session | Every reviewer's progress on the active sample (#161): `{sampleId, reviewers: [{name, texts, labelledCellIds, submissions, updatedAt}]}`, one entry per reviewer with a draft, by name. A cell counts once its label has an outcome; only cells in the sample are listed. Names only, never emails. |
+| `GET /api/labels.csv` | session | Every reviewer's labels as CSV (#163), downloaded as `review-labels-<date>.csv`. See [Labels CSV](#labels-csv). |
 
 **Drafts.** `state` is the viewer's per-sample review state (the chosen texts and the per-cell
 labels). The API stores it opaquely as JSONB and does not validate its inner shape; it only requires
@@ -162,8 +163,10 @@ optimistic concurrency:
   `{error: "conflict", state, version}` holding the current draft, so the client can reconcile.
 
 A reviewer only ever reads or writes their own rows: every query is keyed on the session's reviewer
-id, so a conflict never leaks another reviewer's draft. The one cross-reviewer read is
-`GET /api/progress`, which gives names and counted cell ids, never labels or emails.
+id, so a conflict never leaks another reviewer's draft. There are two cross-reviewer reads, both
+for any signed-in reviewer: `GET /api/progress`, which gives names and counted cell ids, never labels
+or emails, and `GET /api/labels.csv`, which gives every reviewer's labels with their name and email
+(the owner's call, #163).
 
 **Body cap.** `PUT /api/review/:sampleId` and `POST …/submit` reject bodies over **8 MB** (counted
 in bytes) with **413**. The cap is sized from a maximal draft: 1,500 labels, each with a
@@ -186,6 +189,25 @@ The CLI signs in through `POST /api/auth/login`, fetches the gold set and signs 
 
 **Submissions** are insert-only: there is no update or delete route, so a submission never changes
 once made. Account delete is the only thing that removes them.
+
+### Labels CSV
+
+`GET /api/labels.csv` is the progress page's **Download CSV**: every reviewer's labels, for analysis
+outside the site (`src/routes/labelsCsv.ts`).
+
+- **Rows.** One per labelled cell per draft. A label counts once its `outcome` is non-null; the
+  outcome is written as stored. Drafts of every sample are included, so nothing stored is left out.
+  Rows go by reviewer name, then sample id, then cell (sample order, then any other cell id).
+- **Columns.** `reviewer_name, reviewer_email, sample_id, cell_id, question_id, run, text, task,
+  model_id, prompt, expected, answer, matcher_outcome, human_outcome, defect, notes, rubric_version,
+  labelled_at, draft_updated_at`. The cell's context (`question_id` to `matcher_outcome`) comes from
+  the active sample by cell id. It is empty for a cell that is not in it. `expected` is the expected
+  text as the pipeline's `expected_text` reads it: the scored text for `retrieve_quote` and
+  `complete_unit`, the citation for `cite_passage`, `yes`/`no` for `verify_source`. The full
+  expected dict is in the committed sample.
+- **Format.** RFC 4180: a field with a comma, quote or line break is quoted, quotes doubled; CRLF line
+  ends. UTF-8 with a byte-order mark, so a spreadsheet reads Arabic, Hebrew or Gurmukhi text
+  correctly. Fields are written verbatim, with no spreadsheet-formula escaping.
 
 ## Auth model
 
